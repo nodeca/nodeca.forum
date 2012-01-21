@@ -1,0 +1,45 @@
+---
+forumgroups:
+
+  # Read Permissions
+
+  forum_can_list_threads:
+    extends: true
+    
+  forum_can_read_posts:
+    extends: true
+
+  forum_can_view_deleted:
+    extends: true
+
+  # Write Permissions
+    
+  forum_can_create_threads:
+    extends: true
+    
+  forum_can_reply_own_threads:
+    extends: true
+
+  forum_can_reply_foreign_threads:
+    extends: true
+
+  # only if no replies + in grace period
+  forum_can_delete_own:
+    extends: true
+
+  # in grace period
+  forum_can_edit_own:
+    extends: true
+
+  forum_can_close_and_open:
+    extends: true
+
+  forum_can_tag_own:
+    extends: true
+
+  forum_can_tag_foreign:
+    extends: true
+
+  forum_can_vote_posts:
+    extends: true
+
