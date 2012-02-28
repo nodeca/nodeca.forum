@@ -8,7 +8,7 @@ usergroup:
     default: true
     group: Forum
     priority: 0
-    
+
   forum_can_read_posts:
     type: boolean
     default: true
@@ -22,13 +22,13 @@ usergroup:
     priority: 0
 
   # Write Permissions
-    
+
   forum_can_create_threads:
     type: boolean
     default: false
     group: Forum Write
     priority: 0
-    
+
   forum_can_reply_own_threads:
     type: boolean
     default: false

@@ -5,7 +5,7 @@ forumgroups:
 
   forum_can_list_threads:
     extends: true
-    
+
   forum_can_read_posts:
     extends: true
 
@@ -13,10 +13,10 @@ forumgroups:
     extends: true
 
   # Write Permissions
-    
+
   forum_can_create_threads:
     extends: true
-    
+
   forum_can_reply_own_threads:
     extends: true
 
