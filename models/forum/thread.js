@@ -16,9 +16,9 @@ var Thread = module.exports.Thread = new mongoose.Schema({
   , forum           : Schema.ObjectId
   , forum_id        : Number
 
-  , post_count      : { type: Number, default: 0; }
-  , attach_count    : { type: Number, default: 0; }
-  , views_count     : { type: Number, default: 0; }
+  , post_count      : { type: Number, default: 0 }
+  , attach_count    : { type: Number, default: 0 }
+  , views_count     : { type: Number, default: 0 }
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
@@ -43,7 +43,7 @@ var Thread = module.exports.Thread = new mongoose.Schema({
   , tags_list       : [String]  // cache
 
     // "Similar" threads cache
-    similar         : [Schema.ObjectId]
+  , similar         : [Schema.ObjectId]
 
     // SEO
   , keywords        : String

@@ -8,7 +8,7 @@ var Section = module.exports.Section = new mongoose.Schema({
   , description     : String
   , display_order   : { type: Number, default: 0 }
 
-  , thread_count    : { type: Number, default: 0; }
+  , thread_count    : { type: Number, default: 0 }
 
     // user-friendly id (autoincremented)
   , id              : { type: Number, required: true, min: 1, index: true }

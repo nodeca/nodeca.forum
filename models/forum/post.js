@@ -43,7 +43,7 @@ var Post = module.exports.Post = new mongoose.Schema({
   , has_infraction  : Boolean // true is post have infractions
   , report          : Schema.ObjectId // ID of thread with reports
 
-  , attach_count    : { type: Number, default: 0; }
+  , attach_count    : { type: Number, default: 0 }
   , attach_list     : [Schema.ObjectId]
 
 
