@@ -1,0 +1,8 @@
+i18n:
+  en-US:
+    forum:
+      index:
+        title: Welcome, stranger!
+      section:
+        show:
+          title: "Threads of #{section}"

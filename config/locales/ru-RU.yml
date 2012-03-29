@@ -1,0 +1,8 @@
+i18n:
+  ru-RU:
+    forum:
+      index:
+        title: Добрый день!
+      section:
+        show:
+          title: "Топики раздела #{section}"
