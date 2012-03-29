@@ -3,5 +3,8 @@ router:
     forum.thread.list:
       "/threads": ~
 
+    forum.thread.show:
+      "/threads/{id}": ~
+
   mount:
     forum: /forum

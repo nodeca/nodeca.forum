@@ -1,5 +1,7 @@
 h1 Threads
 
 .threads
-  - for (var idx in threads)
-    p= threads[idx].title
+  ul
+    - for (var idx in threads)
+      li
+        a(href=link_to('forum.thread.show', threads[idx]))= threads[idx].title
