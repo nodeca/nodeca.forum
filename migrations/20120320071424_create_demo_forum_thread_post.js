@@ -4,18 +4,20 @@ var NLib = require('nlib');
 
 var Async = NLib.Vendor.Async;
 
+var models = global.nodeca.models;
+
 module.exports.up = function(cb) {
 
-  var category = new global.nodeca.models.forum.section();
-  var forum = new global.nodeca.models.forum.section();
-  var thread = new global.nodeca.models.forum.thread();
-  var post = new global.nodeca.models.forum.post();
+  var category = new models.forum.section();
+  var forum = new models.forum.section();
+  var thread = new models.forum.thread();
+  var post = new models.forum.post();
 
   Async.waterfall([
     // create basic section record
     function(callback){
       category.title = 'Demo category';
-      category.description = 'Demo category';
+      category.description = 'Description of demo category';
 
       category.id = 1;
 
@@ -27,7 +29,7 @@ module.exports.up = function(cb) {
     // create basic forum record
     function(callback){
       forum.title = 'Demo forum';
-      forum.description = 'Demo forum';
+      forum.description = 'Description for demo forum';
 
       forum.id = 2;
 
