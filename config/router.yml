@@ -1,0 +1,7 @@
+router:
+  map:
+    forum.thread.list:
+      "/threads": ~
+
+  mount:
+    forum: /forum
