@@ -6,7 +6,7 @@ module.exports = function (params, next) {
 };
 
 
-nodeca.filters.before('@', 100, function (params, next) {
+nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
   nodeca.models.forum.section.findOne({id: params.id}, function (err, section) {
@@ -15,7 +15,7 @@ nodeca.filters.before('@', 100, function (params, next) {
   });
 });
 
-nodeca.filters.before('@', 100, function (params, next) {
+nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
   nodeca.models.forum.thread.find({forum_id: params.id}, function (err, threads) {

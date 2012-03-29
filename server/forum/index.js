@@ -6,7 +6,7 @@ module.exports = function (params, next) {
 };
 
 
-nodeca.filters.before('@', 100, function (params, next) {
+nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
   nodeca.models.forum.section.find({}, function (err, sections) {
