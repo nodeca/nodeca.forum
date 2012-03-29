@@ -1,9 +1,9 @@
 router:
   map:
-    forum.section.list:
+    forum.index:
       "/": ~
 
-    forum.thread.list:
+    forum.section.show:
       "/f{id}":
         id: /\d+/
 
