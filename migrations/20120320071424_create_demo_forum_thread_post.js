@@ -1,10 +1,12 @@
 "use strict";
 
+/*global nodeca*/
+
 var NLib = require('nlib');
 
 var Async = NLib.Vendor.Async;
 
-var models = global.nodeca.models;
+var models = nodeca.models;
 
 module.exports.up = function(cb) {
 
