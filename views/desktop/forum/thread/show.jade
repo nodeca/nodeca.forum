@@ -2,6 +2,6 @@ h1= thread.title
 
 ul
   - for (var idx in posts)
-    li= posts[idx].html
+    li= posts[idx].text
 
 a(href=link_to('forum.section.show', {id: thread.forum_id})) Show threads
