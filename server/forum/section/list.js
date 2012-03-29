@@ -9,8 +9,8 @@ module.exports = function (params, next) {
 nodeca.filters.before('@', 100, function (params, next) {
   var data = this.response.data;
 
-  nodeca.models.forum.thread.find({forum_id: params.id}, function (err, threads) {
-    data.threads = threads;
+  nodeca.models.forum.section.find({}, function (err, sections) {
+    data.sections = sections;
     next(err);
   });
 });

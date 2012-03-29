@@ -1,10 +1,13 @@
 router:
   map:
+    forum.section.list:
+      "/": ~
+
     forum.thread.list:
-      "/threads": ~
+      "/f{id}":
+        id: /\d+/
 
     forum.thread.show:
-      "/threads/{id}": ~
-
-  mount:
-    forum: /forum
+      "/f{forum_id}/thread{id}":
+        forum_id: /\d+/
+        id: /\d+/
