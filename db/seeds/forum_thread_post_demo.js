@@ -9,13 +9,13 @@ var Async = NLib.Vendor.Async;
 var Faker = NLib.Vendor.Faker;
 
 
-var CATEGORIES_COUNT = 3;
-var FORUMS_COUNT  = 10;
-var THREADS_COUNT  = 200
-var POSTS_COUNT  = 100;
+var CATEGORY_COUNT = 3;
+var FORUM_COUNT  = 10;
+var THREAD_COUNT_IN_BIG_FORUM  = 200
+var POST_COUNT_IN_BIG_THREAD  = 100;
 
 var CATEGORY_ID_SHIFT = 3;
-var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORIES_COUNT;
+var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
 var THREAD_ID_SHIFT = 2;
 var POST_ID_SHIFT = 2;
 
@@ -28,14 +28,15 @@ Faker.Ids = {
 }
 
 Faker.Ids.next = function(type){
-  var prop_name = type + '_last_id';
-  if (!this[prop_name]) {
-    if (!this[type + '_shift']) {
-      this[type + '_shift'] = 0;
+  var last_id_prop_name = type + '_last_id';
+  if (!this[last_id_prop_name]) {
+    var shift_prop_name = type + '_shift';
+    if (!this[shift_prop_name]) {
+      this[shift_prop_name] = 0;
     }
-    this[prop_name] = this[type + '_shift'];
+    this[last_id_prop_name] = this[shift_prop_name];
   }
-  return ++this[prop_name]
+  return ++this[last_id_prop_name]
 }
 
 Faker.Helpers.category = function (){
@@ -77,7 +78,6 @@ Faker.Helpers.thread = function (forum){
 };
 
 Faker.Helpers.post = function (thread){
-
   return {
     text: Faker.Lorem.paragraph(),
     fmt:  'txt',
@@ -100,6 +100,9 @@ var forum_model = nodeca.models.forum.section;
 var thread_model = nodeca.models.forum.thread;
 var post_model = nodeca.models.forum.post;
 
+var is_big_thread = true;
+var is_big_forum = true;
+
 var create_post = function(thread, callback) {
   var post = new post_model(Faker.Helpers.post(thread));
 
@@ -110,6 +113,13 @@ var create_thread = function(forum, callback) {
   var first_post;
   var last_post;
 
+  if (is_big_thread) {
+    is_big_thread = false;
+    var post_count = POST_COUNT_IN_BIG_THREAD;
+  } else{
+    var post_count = 1;
+  };
+
   var thread = new thread_model(Faker.Helpers.thread(forum));
   Async.series([
     function(cb){
@@ -117,7 +127,7 @@ var create_thread = function(forum, callback) {
     },
     // create posts
     function(cb){
-      Async.forEach(_.range(POSTS_COUNT), function (post, next_post) {
+      Async.forEach(_.range(post_count), function (post, next_post) {
         create_post(thread, function(err, post){
           if (!first_post){
             first_post = post;
@@ -129,7 +139,7 @@ var create_thread = function(forum, callback) {
     },
     // update thread
     function(cb){
-      thread.post_count = POSTS_COUNT;
+      thread.post_count = post_count;
 
       thread.first_post = first_post;
       thread.first_post_id = first_post.id;
@@ -149,15 +159,22 @@ var create_thread = function(forum, callback) {
 var create_forum = function(category, callback){
   var last_thread;
 
+  if (is_big_forum) {
+    is_big_forum = false;
+    var thread_count = THREAD_COUNT_IN_BIG_FORUM;
+  } else{
+    var thread_count = 1;
+  };
+
   var forum = new forum_model(Faker.Helpers.forum(category));
 
   Async.series([
     function(cb){
       forum.save(cb);
     },
-    // create posts
+    // create threads
     function(cb){
-      Async.forEach(_.range(THREADS_COUNT), function (thread, next_thread) {
+      Async.forEach(_.range(thread_count), function (thread, next_thread) {
         create_thread(forum, function(err, thread){
           last_thread = thread;
           next_thread();
@@ -181,7 +198,7 @@ var create_forum = function(category, callback){
 }
 
 module.exports.up = function(callback) {
-  Async.forEachSeries(_.range(CATEGORIES_COUNT), function(category, next_category) {
+  Async.forEachSeries(_.range(CATEGORY_COUNT), function(category, next_category) {
     var category = new category_model(Faker.Helpers.category());
     var forum_list = [];
     var forum_id_list = [];
@@ -192,7 +209,7 @@ module.exports.up = function(callback) {
       },
       // create forums
       function(cb){
-        Async.forEach( _.range(FORUMS_COUNT), function (forum, next_forum) {
+        Async.forEach( _.range(FORUM_COUNT), function (forum, next_forum) {
           create_forum(category, function(err, forum){
             forum_list.push(forum);
             forum_id_list.push(forum.id);
