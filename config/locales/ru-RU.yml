@@ -6,3 +6,7 @@ i18n:
       section:
         show:
           title: "Топики раздела #{section}"
+    menus:
+      common:
+        topnav:
+          forum: Форумы

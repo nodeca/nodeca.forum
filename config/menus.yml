@@ -1,0 +1,5 @@
+menus:
+  common:
+    topnav:
+      forum:
+        to: forum.index

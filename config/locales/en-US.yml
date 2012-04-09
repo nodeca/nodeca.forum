@@ -6,3 +6,7 @@ i18n:
       section:
         show:
           title: "Threads of #{section}"
+    menus:
+      common:
+        topnav:
+          forum: Forums
