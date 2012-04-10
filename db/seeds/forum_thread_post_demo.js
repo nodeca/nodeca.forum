@@ -2,6 +2,14 @@
 
 /*global nodeca*/
 
+/*
+ * This seed create data for demo forum:
+ *   3 category, each category contain 10 forums
+ *   first forum contain 200 threads, all others only one
+ *   first thread in first thread contain 100 post, all others only one
+ *
+ */
+
 var NLib = require('nlib');
 
 var _ = NLib.Vendor.Underscore;
@@ -20,6 +28,7 @@ var THREAD_ID_SHIFT = 2;
 var POST_ID_SHIFT = 2;
 
 // extend Faker
+// add numeric id generator
 Faker.Ids = {
   category_shift: CATEGORY_ID_SHIFT,
   forum_shift: FORUM_ID_SHIFT,
@@ -38,7 +47,7 @@ Faker.Ids.next = function(type){
   }
   return ++this[last_id_prop_name]
 }
-
+// add helpers for categorys,forums, threads and posts
 Faker.Helpers.category = function (){
   return {
     title: Faker.Lorem.words(),
@@ -121,6 +130,7 @@ var create_thread = function(forum, callback) {
   };
 
   var thread = new thread_model(Faker.Helpers.thread(forum));
+
   Async.series([
     function(cb){
       thread.save(cb);
@@ -199,9 +209,10 @@ var create_forum = function(category, callback){
 
 module.exports.up = function(callback) {
   Async.forEachSeries(_.range(CATEGORY_COUNT), function(category, next_category) {
-    var category = new category_model(Faker.Helpers.category());
     var forum_list = [];
     var forum_id_list = [];
+
+    var category = new category_model(Faker.Helpers.category());
 
     Async.series([
       function(cb){
