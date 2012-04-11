@@ -45,7 +45,8 @@ Faker.Ids.next = function(type){
     }
     this[last_id_prop_name] = this[shift_prop_name];
   }
-  return ++this[last_id_prop_name]
+  this[last_id_prop_name]++;
+  return this[last_id_prop_name];
 }
 // add helpers for categorys,forums, threads and posts
 Faker.Helpers.category = function (){
@@ -207,7 +208,7 @@ var create_forum = function(category, callback){
   });
 }
 
-module.exports.up = function(callback) {
+module.exports = function(callback) {
   Async.forEachSeries(_.range(CATEGORY_COUNT), function(category, next_category) {
     var forum_list = [];
     var forum_id_list = [];
