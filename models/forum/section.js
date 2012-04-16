@@ -39,7 +39,7 @@ var Section = module.exports.Section = new mongoose.Schema({
   , is_prefix_required  : { type: Boolean, default: false }
   , prefix_groups   : [Schema.ObjectId] // allowed groups of prefixes
 
-    // Last post info/cache 
+    // Last post info/cache
   , last_post       : Schema.ObjectId
   , last_post_id    : Number
   , last_thread     : Schema.ObjectId
@@ -50,9 +50,7 @@ var Section = module.exports.Section = new mongoose.Schema({
     // Filters
   , excludable      : Boolean
   , closed_ui_show         : { type: Boolean, default: false }
-  , closed_hide_by_default : { type: Boolean, default: false }  
-
-    
+  , closed_hide_by_default : { type: Boolean, default: false }
 
 }, { strict: true });
 

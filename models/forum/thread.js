@@ -30,12 +30,12 @@ var Thread = module.exports.Thread = new mongoose.Schema({
                               // (general `state` is used for fast selects)
   , state_prev      : Number  // previous value, to rollback `delete`
 
-    // First post info/cache 
+    // First post info/cache
   , first_post      : Schema.ObjectId
   , first_post_id   : Number
   , first_user      : Schema.ObjectId
   , first_ts        : Date
-    // Last post info/cache 
+    // Last post info/cache
   , last_post       : Schema.ObjectId
   , last_post_id    : Number
   , last_user       : Schema.ObjectId
