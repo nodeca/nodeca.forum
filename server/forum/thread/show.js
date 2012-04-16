@@ -11,7 +11,7 @@ module.exports = function (params, next) {
 nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
-  nodeca.models.forum.thread.findOne({id: params.id}, function (err, thread) {
+  nodeca.models.forum.Thread.findOne({id: params.id}, function (err, thread) {
     data.thread = thread;
     next(err);
   });
@@ -21,7 +21,7 @@ nodeca.filters.before('@', function (params, next) {
 nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
-  nodeca.models.forum.post.find({thread: data.thread._id}, function (err, posts) {
+  nodeca.models.forum.Post.find({thread: data.thread._id}, function (err, posts) {
     data.posts = posts;
     next(err);
   });
