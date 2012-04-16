@@ -73,5 +73,5 @@ Post.index({
 
 
 module.exports.__init__ = function __init__() {
-  return mongoose.model('post', Post);
+  return mongoose.model('forum.Post', Post);
 };

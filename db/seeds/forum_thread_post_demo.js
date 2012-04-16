@@ -48,6 +48,7 @@ Faker.Ids.next = function(type){
   this[last_id_prop_name]++;
   return this[last_id_prop_name];
 };
+
 // add helpers for categorys,forums, threads and posts
 Faker.Helpers.category = function (){
   return {
@@ -105,16 +106,16 @@ Faker.Helpers.post = function (thread){
   };
 };
 
-var category_model = nodeca.models.forum.section;
-var forum_model = nodeca.models.forum.section;
-var thread_model = nodeca.models.forum.thread;
-var post_model = nodeca.models.forum.post;
+var Category = nodeca.models.forum.Section;
+var Forum    = nodeca.models.forum.Section;
+var Thread   = nodeca.models.forum.Thread;
+var Post     = nodeca.models.forum.Post;
 
 var is_big_thread = true;
 var is_big_forum = true;
 
 var create_post = function(thread, callback) {
-  var post = new post_model(Faker.Helpers.post(thread));
+  var post = new Post(Faker.Helpers.post(thread));
 
   post.save(callback);
 };
@@ -131,7 +132,7 @@ var create_thread = function(forum, callback) {
     post_count = 1;
   }
 
-  var thread = new thread_model(Faker.Helpers.thread(forum));
+  var thread = new Thread(Faker.Helpers.thread(forum));
 
   Async.series([
     function(cb){
@@ -179,7 +180,7 @@ var create_forum = function(category, callback){
     thread_count = 1;
   }
 
-  var forum = new forum_model(Faker.Helpers.forum(category));
+  var forum = new Forum(Faker.Helpers.forum(category));
 
   Async.series([
     function(cb){
@@ -215,7 +216,7 @@ module.exports = function(callback) {
     var forum_list = [];
     var forum_id_list = [];
 
-    var category = new category_model(Faker.Helpers.category());
+    var category = new Category(Faker.Helpers.category());
 
     Async.series([
       function(cb){

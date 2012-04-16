@@ -56,5 +56,5 @@ var Section = module.exports.Section = new mongoose.Schema({
 
 
 module.exports.__init__ = function __init__() {
-  return mongoose.model('section', Section);
+  return mongoose.model('forum.Section', Section);
 };

@@ -10,10 +10,10 @@ var models = nodeca.models;
 
 module.exports.up = function(cb) {
 
-  var category = new models.forum.section();
-  var forum = new models.forum.section();
-  var thread = new models.forum.thread();
-  var post = new models.forum.post();
+  var category = new models.forum.Section();
+  var forum    = new models.forum.Section();
+  var thread   = new models.forum.Thread();
+  var post     = new models.forum.Post();
 
   Async.waterfall([
     // create basic section record
@@ -70,7 +70,7 @@ module.exports.up = function(cb) {
 
       // Stub. This constants should be defined globally
       post.state = 0;
-      
+
       post.thread_id = thread.id;
       post.thread = thread; //embedded
 
@@ -81,7 +81,7 @@ module.exports.up = function(cb) {
         callback(err);
       });
     },
-    
+
     // update category dependent info
     function(callback){
       category.child_list.push(forum); //embedded

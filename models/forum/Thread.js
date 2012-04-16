@@ -74,5 +74,5 @@ Thread.index({
 
 
 module.exports.__init__ = function __init__() {
-  return mongoose.model('thread', Thread);
+  return mongoose.model('forum.Thread', Thread);
 };
