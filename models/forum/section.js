@@ -1,3 +1,6 @@
+"use strict";
+
+/*global nodeca*/
 
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
@@ -56,4 +59,4 @@ var Section = module.exports.Section = new mongoose.Schema({
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('section', Section);
-}
+};

@@ -1,3 +1,6 @@
+"use strict";
+
+/*global nodeca*/
 
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
@@ -72,4 +75,4 @@ Thread.index({
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('thread', Thread);
-}
+};
