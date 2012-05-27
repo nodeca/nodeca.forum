@@ -55,7 +55,8 @@ Faker.Helpers.category = function (){
     title: Faker.Lorem.words(),
     description: Faker.Lorem.sentence(),
 
-    id: Faker.Ids.next('category')
+    id: Faker.Ids.next('category'),
+    is_category: true
   };
 };
 

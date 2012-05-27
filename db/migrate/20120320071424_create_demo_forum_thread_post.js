@@ -16,12 +16,13 @@ module.exports.up = function(cb) {
   var post     = new models.forum.Post();
 
   Async.waterfall([
-    // create basic section record
+    // create basic category record
     function(callback){
       category.title = 'Demo category';
       category.description = 'Description of demo category';
 
       category.id = 1;
+      category.is_category = true;
 
       category.save(function (err) {
         callback(err);
