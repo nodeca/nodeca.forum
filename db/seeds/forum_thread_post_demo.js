@@ -67,10 +67,10 @@ Faker.Helpers.forum = function (category){
 
     id: Faker.Ids.next('forum'),
 
-    parent: category, //embedded
+    parent: category._id,
     parent_id: category.id,
 
-    parent_list: [category], //embedded
+    parent_list: [category._id],
     parent_id_list: [category.id]
   };
 };
@@ -85,7 +85,7 @@ Faker.Helpers.thread = function (forum){
     state:  0,
 
     forum_id: forum.id,
-    forum: forum //embedded
+    forum: forum._id
   };
 };
 
@@ -100,10 +100,13 @@ Faker.Helpers.post = function (thread){
     state: 0,
 
     thread_id: thread.id,
-    thread: thread, //embedded
+    thread: thread._id,
 
     forum_id: thread.forum_id,
-    forum: thread.forum
+    forum: thread.forum._id,
+
+    ts: new Date()
+    // ToDo user
   };
 };
 
@@ -155,11 +158,11 @@ var create_thread = function(forum, callback) {
     function(cb){
       thread.post_count = post_count;
 
-      thread.first_post = first_post;
+      thread.first_post = first_post._id;
       thread.first_post_id = first_post.id;
       thread.first_ts = first_post.ts;
 
-      thread.last_post = last_post;
+      thread.last_post = last_post._id;
       thread.last_post_id = last_post.id;
       thread.last_ts = last_post.ts;
 
@@ -198,12 +201,12 @@ var create_forum = function(category, callback){
     },
     // update forum dependent info
     function(cb){
-      forum.last_thread = last_thread;
-      forum.last_thread_is = last_thread.id;
+      forum.last_thread = last_thread._id;
+      forum.last_thread_id = last_thread.id;
 
       forum.last_post = last_thread.last_post;
       forum.last_post_id = last_thread.last_post_id;
-      forum.last_ts = last_thread.last_post.ts;
+      forum.last_ts = last_thread.last_ts;
 
       forum.save(cb);
     }
@@ -227,7 +230,7 @@ module.exports = function(callback) {
       function(cb){
         Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
           create_forum(category, function(err, forum){
-            forum_list.push(forum);
+            forum_list.push(forum._id);
             forum_id_list.push(forum.id);
             next_forum(err);
           });

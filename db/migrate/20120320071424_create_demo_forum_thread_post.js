@@ -36,10 +36,10 @@ module.exports.up = function(cb) {
 
       forum.id = 2;
 
-      forum.parent = category; //embedded
+      forum.parent = category._id;
       forum.parent_id = category.id;
 
-      forum.parent_list.push(category); //embedded
+      forum.parent_list.push(category._id);
       forum.parent_id_list.push(category.id);
 
       forum.save(function (err) {
@@ -56,7 +56,7 @@ module.exports.up = function(cb) {
       thread.state = 0;
 
       thread.forum_id = forum.id;
-      thread.forum = forum; //embedded
+      thread.forum = forum._id;
 
       thread.save(function (err) {
         callback(err);
@@ -68,15 +68,16 @@ module.exports.up = function(cb) {
       post.text = 'Welcome to nodeca forum';
       post.fmt =  'txt';
       post.id = 1;
+      post.ts = new Date;
 
       // Stub. This constants should be defined globally
       post.state = 0;
 
       post.thread_id = thread.id;
-      post.thread = thread; //embedded
+      post.thread = thread._id;
 
       post.forum_id = forum.id;
-      post.forum = forum; //embedded
+      post.forum = forum._id;
 
       post.save(function (err) {
         callback(err);
@@ -85,7 +86,7 @@ module.exports.up = function(cb) {
 
     // update category dependent info
     function(callback){
-      category.child_list.push(forum); //embedded
+      category.child_list.push(forum._id);
       category.child_id_list.push(forum.id);
 
       category.save(function (err) {
@@ -95,10 +96,11 @@ module.exports.up = function(cb) {
 
     // update forum dependent info
     function(callback){
-      forum.last_post =  post; //embedded
+      forum.last_post = post._id;
       forum.last_post_id = post.id;
+      forum.last_ts = post.ts;
 
-      forum.last_thread = thread; //embedded
+      forum.last_thread = thread._id;
       forum.last_thread_id = thread.id;
 
       forum.save(function (err) {
@@ -110,8 +112,9 @@ module.exports.up = function(cb) {
     function(callback){
       thread.post_count +=1;
 
-      thread.first_post = thread.last_post = post; //embedded
+      thread.first_post = thread.last_post = post._id;
       thread.first_post_id = thread.last_post_id = post.id;
+      thread.first_ts = thread.last_ts = thread.last_post.ts;
 
       thread.save(function (err) {
         callback(err);
