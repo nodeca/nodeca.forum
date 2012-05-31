@@ -2,6 +2,10 @@
 
 /*global nodeca*/
 
+var NLib = require('nlib');
+
+var _ = NLib.Vendor.Underscore;
+
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
@@ -54,6 +58,48 @@ var Section = module.exports.Section = new mongoose.Schema({
 
 }, { strict: true });
 
+Section.statics.fetchCategories = function (root, callback) {
+  var model = this;
+  var conditions = {};
+
+  if (callback === undefined){
+    callback = root;
+    root = null;
+  }
+  else {
+    conditions = {parent_id: root};
+  }
+
+  var result = [];
+  model.find({parent_id: root}, function(err, category_list){
+    if (err) {
+      callback(err, result);
+    }
+    var category_id_list = category_list.map(function(category) {
+      return category._id.toString();
+    });
+    
+    model.find({parent:{$in:category_id_list}}, function(err, forum_list){
+      if (!err) {
+        category_list.forEach(function(item) {
+          var category = item._doc;
+
+          var child_list = forum_list.filter(function(forum){
+            return forum.parent.toString() === category._id.toString();
+          });
+          
+          category.child_list = child_list.map(function(forum) {
+            return forum._doc;
+          });
+          result.push(category);
+        });
+      }
+      callback(err, result);
+    });
+    
+    //model.find(
+  });
+};
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Section', Section);

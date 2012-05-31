@@ -2,6 +2,16 @@ h1= t('forum.index.title')
 
 .threads
   ul
-    - for (var idx in sections)
+    - each category in sections
       li
-        a(href=link_to('forum.section.show', sections[idx]))= sections[idx].title
+        a(href=link_to('forum.section.show', category))= category.title
+        div.forums_container
+          - each forum in category.child_list
+            div.forum
+              div.forum_title
+                a(href=link_to('forum.section.show', forum))= forum.title
+              div.last_thread
+                p #{forum.last_thread.title}
+                p #{forum.last_ts}
+                p #{forum.last_user}
+                

@@ -72,6 +72,20 @@ Thread.index({
   , _id: -1
 });
 
+Thread.statics.fetchThredByIdList = function (id_list, callback) {
+  var condition = {_id:{$in:id_list}};
+  nodeca.models.forum.Thread.find(condition, function(err, docs){
+    if (err) {
+      callback(err);
+      return;
+    }
+    var result = {};
+    docs.forEach(function(item) {
+      result[item._id.toString()] = item._doc;
+    });
+    callback(null, result);
+  });
+};
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Thread', Thread);
