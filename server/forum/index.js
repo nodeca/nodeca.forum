@@ -5,6 +5,7 @@
 var NLib = require('nlib');
 
 var Async = NLib.Vendor.Async;
+var _ = NLib.Vendor.Underscore;
 
 module.exports = function (params, next) {
   next();
@@ -39,7 +40,6 @@ nodeca.filters.before('@', function (params, next) {
             });
           });
         }
-        console.dir(_.first(data.sections));
         callback(err);
       });
     }
