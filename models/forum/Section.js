@@ -96,10 +96,15 @@ Section.statics.fetchCategories = function (root, callback) {
       }
       callback(err, result);
     });
-    
-    //model.find(
   });
 };
+
+Section.statics.fetchSectionById = function (sectionId, callback) {
+  this.findOne({id:sectionId}, function (err, section) {
+    callback(err, section);
+  });
+};
+
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Section', Section);

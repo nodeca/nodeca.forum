@@ -1,7 +1,26 @@
-h1= t('forum.section.show.title', {section: section.title})
+h1= t('forum.section.show.title', {section: forum.title})
 
 .threads
   ul
-    - for (var idx in threads)
-      li
-        a(href=link_to('forum.thread.show', threads[idx]))= threads[idx].title
+    - each thread in threads
+      li.tl-row.clearfix
+        div.tl-last-col
+          div.tl-title
+            h2
+              a(href=link_to('forum.thread.show', thread))= thread.title
+            a.mark-i-attach._tip(href="#")=thread.attach_count
+          footer.tl-meta
+            p #{thread.first_user}
+            time.tl-start-date
+              p #{thread.first_ts}
+          div.tl-row-pages
+        ul.tl-stat-col
+          li
+            p #{thread.post_count}
+          li
+            p #{thread.views_count}
+        ul.tl-last-col
+          li.tl-last-date
+            p #{thread.last_ts}
+          li.tl-last-author
+            p #{thread.last_user}

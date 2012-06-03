@@ -72,9 +72,9 @@ Thread.index({
   , _id: -1
 });
 
-Thread.statics.fetchThredByIdList = function (id_list, callback) {
+Thread.statics.fetchThredsByRealIdList = function (id_list, callback) {
   var condition = {_id:{$in:id_list}};
-  nodeca.models.forum.Thread.find(condition, function(err, docs){
+  this.find(condition, function(err, docs){
     if (err) {
       callback(err);
       return;
@@ -83,7 +83,20 @@ Thread.statics.fetchThredByIdList = function (id_list, callback) {
     docs.forEach(function(item) {
       result[item._id.toString()] = item._doc;
     });
-    callback(null, result);
+    callback(err, result);
+  });
+};
+
+Thread.statics.fetchById = function( id, callback) {
+  this.findOne({id: id}, function (err, thread) {
+    callback(err, thread);
+  });
+};
+
+
+Thread.statics.fetchThredsByForumId = function (forum_id, callback) {
+  this.find({forum_id: forum_id}, function (err, threads) {
+    callback(err, threads);
   });
 };
 

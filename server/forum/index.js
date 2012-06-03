@@ -32,7 +32,7 @@ nodeca.filters.before('@', function (params, next) {
           return forum.last_thread.toString();
         });
       }));
-      Thread.fetchThredByIdList(last_thread_list, function(err, threads) {
+      Thread.fetchThredsByRealIdList(last_thread_list, function(err, threads) {
         if (!err) {
           data.sections.forEach(function(category) {
             category.child_list.forEach(function(forum) {

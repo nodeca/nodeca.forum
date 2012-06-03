@@ -2,6 +2,8 @@
 
 /*global nodeca*/
 
+var Section = nodeca.models.forum.Section;
+var Thread = nodeca.models.forum.Thread;
 
 module.exports = function (params, next) {
   next();
@@ -11,8 +13,8 @@ module.exports = function (params, next) {
 nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
-  nodeca.models.forum.Section.findOne({id: params.id}, function (err, section) {
-    data.section = section;
+  Section.fetchSectionById(params.id, function (err, forum) {
+    data.forum = forum;
     next(err);
   });
 });
@@ -20,7 +22,7 @@ nodeca.filters.before('@', function (params, next) {
 nodeca.filters.before('@', function (params, next) {
   var data = this.response.data;
 
-  nodeca.models.forum.Thread.find({forum_id: params.id}, function (err, threads) {
+  Thread.fetchThredsByForumId(params.id, function (err, threads) {
     data.threads = threads;
     next(err);
   });

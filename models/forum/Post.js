@@ -71,6 +71,19 @@ Post.index({
   , _id: -1
 });
 
+Post.statics.fetchPostsByThread = function( thread_id, callback) {
+  this.find({thread:thread_id}, function(err, docs){
+    if (err) {
+      callback(err);
+      return;
+    }
+    var result = {};
+    docs.forEach(function(item) {
+      result[item._id.toString()] = item._doc;
+    });
+    callback(err, result);
+  });
+};
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Post', Post);
