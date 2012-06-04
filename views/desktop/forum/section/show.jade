@@ -4,8 +4,8 @@ h1= t('forum.section.show.title', {section: forum.title})
   ul
     - each thread in threads
       li.tl-row.clearfix
-        div.tl-last-col
-          div.tl-title
+        .tl-last-col
+          .tl-title
             h2
               a(href=link_to('forum.thread.show', thread))= thread.title
             a.mark-i-attach._tip(href="#")=thread.attach_count
@@ -13,7 +13,7 @@ h1= t('forum.section.show.title', {section: forum.title})
             p #{thread.first_user}
             time.tl-start-date
               p #{thread.first_ts}
-          div.tl-row-pages
+          .tl-row-pages
         ul.tl-stat-col
           li
             p #{thread.post_count}

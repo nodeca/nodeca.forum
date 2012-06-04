@@ -3,11 +3,11 @@ h1= thread.title
 ul
   - each post in posts
     li
-      div.head
+      .head
         p #{post.user}
         p #{post.ts}
-      div.userpic
+      .userpic
         p userpic should be hear
-      div.message= post.text
+      .message= post.text
 
 a(href=link_to('forum.section.show', {id: thread.forum_id})) Show threads
