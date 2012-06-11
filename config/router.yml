@@ -13,4 +13,4 @@ router:
         id: /\d+/
 
     admin.forum.index:
-      "/admin/forums": ~
+      "/forums": ~
