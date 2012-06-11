@@ -3,3 +3,8 @@ menus:
     topnav:
       forum:
         to: forum.index
+
+  admin:
+    topnav:
+      forum:
+        to: admin.forum.index

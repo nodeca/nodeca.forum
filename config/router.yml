@@ -11,3 +11,6 @@ router:
       "/f{forum_id}/thread{id}":
         forum_id: /\d+/
         id: /\d+/
+
+    admin.forum.index:
+      "/admin/forums": ~

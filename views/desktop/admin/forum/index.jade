@@ -1,0 +1,27 @@
+h1= t('admin.forum.index.title')
+
+ul.context_menu
+  li
+    a(href=link_to('admin.forum.add_category'))= t('admin.forum.index.add.forum')
+  li
+    a(href=link_to('admin.forum.add_forum'))= t('admin.forum.index.add.category')
+
+.threads
+  ul
+    - each category in sections
+      li
+        p= category.title
+        .controls
+          // Category controls should be here
+        - each forum in category.child_list
+          ul
+            li
+              p= forum.title
+              .controls
+                // Forum controls should be here
+  .permissions
+    form
+      input(type="text", name='moderator')
+      select(name='moderator_group')
+        option(value='')
+    input(type="button", value=t('admin.forum.index.add_moderator'))

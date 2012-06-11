@@ -10,3 +10,7 @@ i18n:
       common:
         topnav:
           forum: Forum
+
+      admin:
+        topnav:
+          forum: Forums

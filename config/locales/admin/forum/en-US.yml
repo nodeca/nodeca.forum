@@ -1,0 +1,10 @@
+i18n:
+  en-US:
+    admin:
+      forum:
+        index:
+          title: Category and Forum Overview
+          add:
+            forum: Add forum
+            category: Add category
+          add_moderator: Add moderator to checked forum(s)
