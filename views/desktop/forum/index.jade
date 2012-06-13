@@ -1,14 +1,21 @@
-h1= t('forum.index.title')
+//h1= t('forum.index.title')
 
-.threads
-  ul
-    - each category in sections
-      li
-        a(href=link_to('forum.section.show', category))= category.title
-        - each forum in category.child_list
-          ul
-            li
-              a(href=link_to('forum.section.show', forum))= forum.title
+- each category in sections
+  article.fl-category
+    header
+      h2(name=category.title)= category.title
+      a._collapser(href='#')
+
+    ul.fl-cat-list  
+
+      - each forum in category.child_list
+        li
+          .row
+            .span7.fl-item-summary
+              h3
+                a(href=link_to('forum.section.show', forum))= forum.title
+            .span2.fl-item-counters Counters
+            .span3.fl-item-lastpost
               p #{forum.last_thread.title}
               p #{forum.last_ts}
               p #{forum.last_user}
