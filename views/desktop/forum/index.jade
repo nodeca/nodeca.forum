@@ -10,19 +10,24 @@
 
       - each forum in category.child_list
         li
+          // Add 'unread' class below, for new data
           .row
             .span7.fl-item-summary
               h3
                 a(href=link_to('forum.section.show', forum))= forum.title
             
             ul.span2.fl-item-counters
-              li <strong>345</strong> topics
-              li <strong>78 901</strong> posts
+              li
+                strong 345
+                |  topics
+              li 
+                strong 78 901
+                |  posts
             
             ul.span3.fl-item-lastpost
               li.lastpost-title
                 a(href='#') #{forum.last_thread.title}
               li.lastpost-user
-                | by
+                | by 
                 a(href='#') #{forum.last_user} User username Name
               li.lastpost-time #{forum.last_ts}
