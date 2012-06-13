@@ -3,11 +3,11 @@
 .fl-category
   margin-bottom baseLineHeight
 
-  & > header
+  > header
     border-bottom 2px solid grayLighter
     margin-bottom (baseLineHeight/2)
 
-    & > h2
+    > h2
       display inline-block
       font-weight normal
       font-style italic
@@ -17,40 +17,71 @@
   margin 0
   list-style none
 
-  & > li
-    padding 10px 0
+  > li
+    padding 15px 0
     border-bottom 1px solid grayLightest
-    min-height 50px
+    min-height 40px
 
     &:last-child
       border 0
 
 .fl-item-summary
-  padding-left baseLineHeight*1.5
+  padding-left 2em
   -moz-box-sizing border-box
   box-sizing border-box
 
-  & > h3
+  > h3
     position relative
     font-weight normal
+    line-height 1.1em
+    font-family sansWideFontFamily
 
     &:before
       content ''
 
       position absolute
       left -20px
-      top baseLineHeight*.25
+      top 0
 
-      height baseLineHeight
-      width 6px
+      height 1.1em
+      width 4px
       background-color grayLighter
 
-    & > a
+    > a
       color grayDark
 
-.unread > div > .fl-item-summary > h3:before
+.unread > .fl-item-summary > h3:before
   background-color colorUnread
+  width 6px
 
 .fl-item-counters
+  list-style none
+  color gray
+  font-size 13px
+  font-family sansWideFontFamily
+
+  > li
+    line-height 1.2em
+
 .fl-item-lastpost
-  color #800
+  list-style none
+  font-size 11px
+
+  > li
+    line-height 1.4em
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
+
+  > .lastpost-title > a
+    color grayLight
+    font-family sansWideFontFamily
+
+  > .lastpost-user
+  > .lastpost-user > a
+    color gray
+
+  > .lastpost-time
+    font-size 9px
+    color grayLight
+    padding-left 0.3em

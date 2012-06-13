@@ -14,8 +14,15 @@
             .span7.fl-item-summary
               h3
                 a(href=link_to('forum.section.show', forum))= forum.title
-            .span2.fl-item-counters Counters
-            .span3.fl-item-lastpost
-              p #{forum.last_thread.title}
-              p #{forum.last_ts}
-              p #{forum.last_user}
+            
+            ul.span2.fl-item-counters
+              li <strong>345</strong> topics
+              li <strong>78 901</strong> posts
+            
+            ul.span3.fl-item-lastpost
+              li.lastpost-title
+                a(href='#') #{forum.last_thread.title}
+              li.lastpost-user
+                | by
+                a(href='#') #{forum.last_user} User username Name
+              li.lastpost-time #{forum.last_ts}
