@@ -3,11 +3,11 @@ router:
     forum.index:
       "/": ~
 
-    forum.section.show:
+    forum.section:
       "/f{id}":
         id: /\d+/
 
-    forum.thread.show:
+    forum.thread:
       "/f{forum_id}/thread{id}":
         forum_id: /\d+/
         id: /\d+/

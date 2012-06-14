@@ -1,4 +1,4 @@
-include ../../widgets/breadcrumbs
+include ../widgets/breadcrumbs
 
 h1= forum.title
 
@@ -9,7 +9,7 @@ h1= forum.title
         .tl-last-col
           .tl-title
             h2
-              a(href=link_to('forum.thread.show', thread))= thread.title
+              a(href=link_to('forum.thread', thread))= thread.title
             a.mark-i-attach._tip(href="#")=thread.attach_count
           footer.tl-meta
             p #{thread.first_user}

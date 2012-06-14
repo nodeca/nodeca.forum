@@ -5,7 +5,7 @@
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 
-var forum_breadcrumbs = require('../../../lib/widgets/breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
 
 module.exports = function (params, next) {
   next();

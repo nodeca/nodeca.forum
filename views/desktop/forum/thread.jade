@@ -1,4 +1,4 @@
-include ../../widgets/breadcrumbs
+include ../widgets/breadcrumbs
 
 h1= thread.title
 
@@ -12,4 +12,4 @@ ul
         p userpic should be hear
       .message= post.text
 
-a(href=link_to('forum.section.show', {id: thread.forum_id})) Show threads
+a(href=link_to('forum.section', {id: thread.forum_id})) Show threads
