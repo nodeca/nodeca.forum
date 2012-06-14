@@ -1,5 +1,7 @@
 i18n:
   en-US:
+    common:
+      home: Forums
     forum:
       index:
         title: Welcome, stranger!

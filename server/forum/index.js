@@ -7,6 +7,8 @@ var NLib = require('nlib');
 var Async = NLib.Vendor.Async;
 var _ = NLib.Vendor.Underscore;
 
+var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
+
 module.exports = function (params, next) {
   next();
 };
@@ -45,3 +47,9 @@ nodeca.filters.before('@', function (params, next) {
     }
   ], next);
 });
+
+nodeca.filters.after('@', function (params, next) {
+  this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
+  next();
+});
+
