@@ -56,7 +56,7 @@ function capitalize(str) {
 // add helpers for categorys,forums, threads and posts
 Faker.Helpers.category = function (){
   return {
-    title: capitalize(Faker.Lorem.sentence()),
+    title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
 
     id: Faker.Ids.next('category'),
@@ -66,7 +66,7 @@ Faker.Helpers.category = function (){
 
 Faker.Helpers.forum = function (category){
   return {
-    title: capitalize(Faker.Lorem.sentence()),
+    title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
 
     id: Faker.Ids.next('forum'),
@@ -81,7 +81,7 @@ Faker.Helpers.forum = function (category){
 
 Faker.Helpers.thread = function (forum){
   return {
-    title: capitalize(Faker.Lorem.sentence()),
+    title: capitalize(Faker.Lorem.sentence(1)),
 
     id: Faker.Ids.next('thread'),
 
