@@ -42,7 +42,7 @@ nodeca.filters.after('@', function (params, next) {
     }
     Section.fetchSections(forum.parent_list, function(err, parents) {
       parents.push(forum);
-      data.widgets.breadcrumbs = forum_breadcrumbs(env, parents, data.thread.title);
+      data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
       next(err);
     });
   });

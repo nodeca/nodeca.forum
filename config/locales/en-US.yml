@@ -5,9 +5,6 @@ i18n:
     forum:
       index:
         title: Welcome, stranger!
-      section:
-        show:
-          title: "Threads of #{section}"
     menus:
       common:
         topnav:
