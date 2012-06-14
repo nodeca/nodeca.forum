@@ -3,11 +3,12 @@ i18n:
     forum:
       index:
         title: Welcome, stranger!
-    menus:
-      common:
+    common:
+      menus:
         topnav:
           forum: Forum
 
-      admin:
+    admin:
+      menus:
         topnav:
           forum: Forums
