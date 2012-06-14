@@ -49,11 +49,15 @@ Faker.Ids.next = function(type){
   return this[last_id_prop_name];
 };
 
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 // add helpers for categorys,forums, threads and posts
 Faker.Helpers.category = function (){
   return {
-    title: Faker.Lorem.words(),
-    description: Faker.Lorem.sentence(),
+    title: capitalize(Faker.Lorem.sentence()),
+    description: capitalize(Faker.Lorem.sentence()),
 
     id: Faker.Ids.next('category'),
     is_category: true
@@ -62,8 +66,8 @@ Faker.Helpers.category = function (){
 
 Faker.Helpers.forum = function (category){
   return {
-    title: Faker.Lorem.words(),
-    description: Faker.Lorem.sentence(),
+    title: capitalize(Faker.Lorem.sentence()),
+    description: capitalize(Faker.Lorem.sentence()),
 
     id: Faker.Ids.next('forum'),
 
@@ -77,7 +81,7 @@ Faker.Helpers.forum = function (category){
 
 Faker.Helpers.thread = function (forum){
   return {
-    title: Faker.Lorem.words(),
+    title: capitalize(Faker.Lorem.sentence()),
 
     id: Faker.Ids.next('thread'),
 
@@ -91,7 +95,7 @@ Faker.Helpers.thread = function (forum){
 
 Faker.Helpers.post = function (thread){
   return {
-    text: Faker.Lorem.paragraph(),
+    text: capitalize(Faker.Lorem.paragraph()),
     fmt:  'txt',
 
     id: Faker.Ids.next('post'),
