@@ -4,6 +4,7 @@ i18n:
       index:
         title: Welcome, stranger!
     common:
+      menus:
         topnav:
           forum: Forum
 
