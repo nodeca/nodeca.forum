@@ -18,7 +18,7 @@ include ../widgets/breadcrumbs
               h3
                 a(href=link_to('forum.section.show', forum))= forum.title
             
-            ul.span2.fl-item-counters
+            ul.span2.fl-item-counters.hidden-phone
               li
                 strong 345
                 |  topics
@@ -26,7 +26,7 @@ include ../widgets/breadcrumbs
                 strong 78 901
                 |  posts
             
-            ul.span3.fl-item-lastpost
+            ul.span3.fl-item-lastpost.hidden-phone
               li.lastpost-title
                 a(href='#') #{forum.last_thread.title}
               li.lastpost-user
