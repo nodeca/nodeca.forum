@@ -34,7 +34,7 @@ nodeca.filters.after('@', function (params, next) {
   var env = this;
   var data = this.response.data;
   Section.fetchSections(data.forum.parent_list, function(err, parents) {
-    data.widgets.breadcrumbs = forum_breadcrumbs(env, parents, data.forum.title);
+    data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
     next(err);
   });
 });
