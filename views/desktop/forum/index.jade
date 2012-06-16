@@ -1,43 +1,80 @@
-include ../widgets/breadcrumbs
+article
+  include ../widgets/breadcrumbs
 
-//h1= t('forum.index.title')
+  //h1= t('forum.index.title')
 
-- each category in sections
-  article.fl-category
-    header
-      h2(name=category.title)= category.title
-      a._collapser(href='#')
+  - each category in sections
+    article.fl-category
+      header
+        h2(name=category.title)= category.title
+        a._collapser(href='#')
 
-    ul.fl-cat-list  
+      ul.fl-cat-list  
 
-      - each forum in category.child_list
+        - each forum in category.child_list
+          li
+            // Add 'unread' class & #id below, for new data
+            .row
+              .span7.fl-item-summary
+                h3
+                  a(href=link_to('forum.section', forum))= forum.title
+              
+              ul.span2.fl-item-counters.hidden-phone
+                li
+                  strong 345
+                  |  topics
+                li 
+                  strong 78 901
+                  |  posts
+              
+              ul.span3.fl-item-lastpost.hidden-phone
+                li.lastpost-title
+                  a(href='#') #{forum.last_thread.title}
+                li.lastpost-user
+                  | by 
+                  a(href='#') #{forum.last_user} User username Name
+                li.lastpost-time #{forum.last_ts}
+
+footer
+  .btn-toolbar
+    a.btn.btn-small(href='#') Mark all read
+    | 
+    a.btn.btn-small(href='#') Exclude forums (5 now)
+  
+  dl.page-summary
+    dt 710 active users in the past 30 minutes
+    dd.small 128 members, 576 guests, 6 anonymous users:
+    dd
+      ul.hlist
         li
-          // Add 'unread' class & #id below, for new data
-          .row
-            .span7.fl-item-summary
-              h3
-                a(href=link_to('forum.section', forum))= forum.title
-            
-            ul.span2.fl-item-counters.hidden-phone
-              li
-                strong 345
-                |  topics
-              li 
-                strong 78 901
-                |  posts
-            
-            ul.span3.fl-item-lastpost.hidden-phone
-              li.lastpost-title
-                a(href='#') #{forum.last_thread.title}
-              li.lastpost-user
-                | by 
-                a(href='#') #{forum.last_user} User username Name
-              li.lastpost-time #{forum.last_ts}
+          a(href='#') Google
+        li
+          a(href='#') Asso
+        li
+          a(href='#') Warfo
+        li
+          a(href='#') ibra
+        li
+          a(href='#') Brandon
+        li
+          a(href='#') hao-sama
+        li
+          a(href='#') Lesovsky
+        li
+          a(href='#') RUAHusker
+        li
+          a(href='#') MSN/Bing
 
-.btn-toolbar
-  a.btn.btn-small(href='#') Mark all read
-  | 
-  a.btn.btn-small(href='#') Exclude forums (5 now)
 
-.well.well-small
-  | 123
+    dt Total
+    dd
+      ul.hlist
+        li
+          | Topics: 
+          strong 35 836
+        li
+          | Posts: 
+          strong 456 949
+        li
+          | Members: 
+          strong 269 270
