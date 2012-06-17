@@ -4,12 +4,13 @@ article
   //h1= t('forum.index.title')
 
   - each category in sections
-    article.fl-category
+    article.fl-category(name=category.id)
       header
-        h2(name=category.title)= category.title
+        h2(name=category.title)
+          a(href='##{category.id}', data-toggle='collapse', data-target='#cat_#{category.id}')= category.title
         a._collapser(href='#')
 
-      ul.fl-cat-list  
+      ul.fl-cat-list(id='cat_#{category.id}').collapse.in
 
         - each forum in category.child_list
           li
