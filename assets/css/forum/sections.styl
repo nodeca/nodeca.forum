@@ -43,8 +43,10 @@
 //
 // Subsections list
 //
+////////////////////////////////////////
 
 .fl-cat-list
+  font-family sansWideFontFamily
   margin 0
   list-style none
   > li
@@ -54,7 +56,9 @@
     &:last-child
       border 0
 
+//
 // subsection name
+//
 
 .fl-item-summary
   padding-left 2em
@@ -65,7 +69,6 @@
     position relative
     font-weight normal
     line-height 1.1em
-    font-family sansWideFontFamily
 
     &:before
       content ''
@@ -80,43 +83,82 @@
 
     > a
       color grayDark
+      &:hover
+        color linkColorHover
 
-.unread > .fl-item-summary > h3:before
-  background-color colorUnread
-  width 6px
+// Moderators list
+.fl-moderators
+  font-size 11px
+  margin-left .7em
+  color grayLight
+  line-height 1.2em
+  > dt, dd
+    line-height 1.2em
+  > dd > a
+    color grayLight
+    &:hover
+      color linkColorHover
 
+// Subsections list
+.fl-subsections
+  position relative
+  font-size 12px
+  margin-left 1.5em
+  margin-top .1em
+  color grayLight
+  line-height 1.4em
+  > li
+    line-height 1.4em
+    > a
+      font-weight: bold
+      color grayLight
+      &:hover
+        color linkColorHover
+  &:before
+    content '╰ '
+    position absolute
+    top 0
+    left -1em
+
+//
 // topics/posts counters
+//
 
 .fl-item-counters
   list-style none
   color gray
   font-size 13px
-  font-family sansWideFontFamily
 
   > li
     line-height 1.2em
 
+//
 // last post info
+//
 
 .fl-item-lastpost
   list-style none
   font-size 11px
-
   > li
     line-height 1.4em
     white-space nowrap
     overflow hidden
     text-overflow ellipsis
-
   > .lastpost-title > a
     color grayLight
-    font-family sansWideFontFamily
-
   > .lastpost-user
   > .lastpost-user > a
     color gray
-
   > .lastpost-time
     font-size 9px
     color grayLight
     padding-left 0.3em
+
+//
+// Markers
+//
+////////////////////////////////////////////////
+
+.unread > .fl-item-summary > h3:before
+  background-color colorUnread
+  width 6px
