@@ -15,8 +15,34 @@
         color grayLight
         text-decoration none
 
+//
+// Categories collapsers/states
+//
 
+.fl-category > header
+  > h2:after
+    font-family 'nodeca'
+    font-style normal
+    content '\e75f'
+    speak none
+    margin-left .4em
+    opacity 0
+    transition opacity .3s ease
+  &:hover > h2:after
+    opacity 1
+
+.fl-category.collapsed > header
+  transition opacity .3s ease
+  opacity .2
+  &:hover
+    opacity .7
+  > h2:after
+    content '\e75c'
+
+
+//
 // Subsections list
+//
 
 .fl-cat-list
   margin 0
@@ -69,13 +95,6 @@
 
   > li
     line-height 1.2em
-
-//
-// Categories collapsers/states
-//
-
-
-
 
 // last post info
 
