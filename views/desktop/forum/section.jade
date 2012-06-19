@@ -27,7 +27,13 @@ article
             h2
               a(href=link_to('forum.thread', thread))= thread.title
             //a.mark-i-attach._tip(href="#")=thread.attach_count
-            span.tl-pages 1..2..3
+            ul.tl-pages
+              li
+                a(href='#') 1
+              li
+                a(href='#') 2
+              li
+                a(href='#') 3
             .tl-meta
               a.tl-preview-ctl.icon-down(href='#') Preview
               a.tl-starter(href='#') #{thread.first_user} Vunder (diggger) Vaflin
