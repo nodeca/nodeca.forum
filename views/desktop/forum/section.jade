@@ -10,12 +10,24 @@ article
 
   nav.btn-toolbar.controlbar
     .btn-group
-      a.btn.btn-small.icon-back-alt(href='#')
+      a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
+    .btn-group.pull-right
+      a.btn.btn-small.icon-cog.dropdown-toggle(href='#',data-toggle='dropdown')
+        span.caret
+      ul.dropdown-menu
+        li
+          a(href='#') Announce
+        li
+          a(href='#') Add moderator
+        li
+          a(href='#') Mass move
+        li
+          a(href='#') Mass prune
     .btn-group.pull-right
       a.btn.btn-small.icon-eye(href='#') 24
     .btn-group.pull-right
-      a.btn.btn-small.icon-ok(href='#')
+      a.btn.btn-small.btn-icon-only.icon-ok(href='#')
     .btn-group.pull-right
       a.btn.btn-small.btn-primary(href='#') New Topic
 
