@@ -1,28 +1,46 @@
-include ../widgets/breadcrumbs
+article
+  include ../widgets/breadcrumbs
 
-h1= forum.title
+  header.head
+    h1= forum.title
+    p
+      | Subject Category Beginners Section <b>Model aircraft - General</b>
+      | Hi all aviators! from a novice. This week bought a boat with Inet
+      | pusher propeller. Can sit on the water, snow, ...
 
-.threads
-  ul
+  nav.btn-toolbar.controlbar
+    .btn-group
+      a.btn.btn-small.icon-back-alt(href='#')
+
+    .btn-group.pull-right
+      a.btn.btn-small.icon-eye(href='#') 24
+    .btn-group.pull-right
+      a.btn.btn-small.icon-ok(href='#')
+    .btn-group.pull-right
+      a.btn.btn-small.btn-primary(href='#') New Topic
+
+  ul.tl-thread-list
     - each thread in threads
-      li.tl-row.clearfix
-        .tl-last-col
-          .tl-title
+      li
+        .row
+          .span7.tl-item-summary
             h2
               a(href=link_to('forum.thread', thread))= thread.title
-            a.mark-i-attach._tip(href="#")=thread.attach_count
-          footer.tl-meta
-            p #{thread.first_user}
-            time.tl-start-date
-              p #{thread.first_ts}
-          .tl-row-pages
-        ul.tl-stat-col
-          li
-            p #{thread.post_count}
-          li
-            p #{thread.views_count}
-        ul.tl-last-col
-          li.tl-last-date
-            p #{thread.last_ts}
-          li.tl-last-author
-            p #{thread.last_user}
+            //a.mark-i-attach._tip(href="#")=thread.attach_count
+            span.tl-pages 1..2..3
+            .tl-meta
+              a.tl-preview-ctl.icon-down(href='#') Preview
+              a.tl-starter(href='#') #{thread.first_user} Vunder (diggger) Vaflin
+              time.tl-start-date #{thread.first_ts}
+
+          ul.span2.tl-item-counters.hidden-phone
+            li #{thread.post_count} replies
+            li #{thread.views_count} vews
+
+          ul.span3.tl-item-lastpost.hidden-phone
+            li.lastpost-time
+              a(href='#') #{thread.last_ts}
+            li.lastpost-user
+              a(href='#') #{thread.last_user} User username Name
+
+  footer

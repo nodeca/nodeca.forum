@@ -3,5 +3,36 @@
 @import '../common/variables.styl'
 
 @import 'sections.styl'
+@import 'threadlist.styl'
+@import 'thread.styl'
 
 @import 'responsive.styl'
+
+.head
+  max-width 700px
+  p
+    font-size 12px
+    line-height 1.3em
+    color grayLighter
+
+.controlbar
+  padding 10px 15px 5px
+  background-color #fbfbfb
+  border-radius 4px
+  border 1px solid #eee
+  border 1px solid rgba(0,0,0,.05)
+  box-shadow 0 0px 2px rgba(0,0,0,.05)
+  color grayLight
+  font-family sansWideFontFamily
+
+.fl-thread-list
+  font-family sansWideFontFamily
+  margin 0
+  list-style none
+  > li
+    padding 15px 0
+    border-bottom 1px solid grayLightest
+    //min-height 40px
+    &:last-child
+      border 0
+
