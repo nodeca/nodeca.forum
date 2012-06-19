@@ -12,8 +12,44 @@ article
     .btn-group
       a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
+    .btn-group
+      ul.pagination
+        li
+          a(href='#') 1
+        li.dropdown
+          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+          div.dropdown-menu
+              label.input Jump to:
+                .input-append
+                  input.input-small(type='text', size='8', placeholder='Page number')
+                  button.btn.btn-inverse(type='button') Go!
+        li
+          a(href='#') 13
+        li
+          a(href='#') 14
+        li.dropdown
+          a.current.dropdown-toggle(href='#', data-toggle='dropdown') 15
+          div.dropdown-menu
+              label.input Jump to:
+                .input-append
+                  input.input-small(type='text', size='8', placeholder='Page number')
+                  button.btn.btn-inverse(type='button') Go!
+        li
+          a(href='#') 16
+        li
+          a(href='#') 17
+        li.dropdown
+          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+          div.dropdown-menu
+              label.input Jump to:
+                .input-append
+                  input.input-small(type='text', size='8', placeholder='Page number')
+                  button.btn.btn-inverse(type='button') Go!
+        li
+          a(href='#') 325
+
     .btn-group.pull-right
-      a.btn.btn-small.icon-cog.dropdown-toggle(href='#',data-toggle='dropdown')
+      a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
         span.caret
       ul.dropdown-menu
         li
@@ -25,9 +61,9 @@ article
         li
           a(href='#') Mass prune
     .btn-group.pull-right
-      a.btn.btn-small.icon-eye(href='#') 24
+      a.btn.btn-small.icon-eye.tip(href='#', title='Subscribe to new topics notification') 24
     .btn-group.pull-right
-      a.btn.btn-small.btn-icon-only.icon-ok(href='#')
+      a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title='Mark all read')
     .btn-group.pull-right
       a.btn.btn-small.btn-primary(href='#') New Topic
 
