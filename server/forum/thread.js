@@ -8,13 +8,8 @@ var Post = nodeca.models.forum.Post;
 
 var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
 
-module.exports = function (params, next) {
-  next();
-};
-
-
 nodeca.filters.before('@', function (params, next) {
-  var data = this.response.data;
+  var data = this.data;
 
   Thread.fetchById(params.id, function (err, thread) {
     data.thread = thread;
@@ -22,9 +17,8 @@ nodeca.filters.before('@', function (params, next) {
   });
 });
 
-
 nodeca.filters.before('@', function (params, next) {
-  var data = this.response.data;
+  var data = this.data;
 
   Post.fetchPostsByThread(data.thread._id, function (err, posts) {
     data.posts = posts;
@@ -32,18 +26,44 @@ nodeca.filters.before('@', function (params, next) {
   });
 });
 
-nodeca.filters.after('@', function (params, next) {
-  var env = this;
+module.exports = function (params, next) {
   var data = this.response.data;
-  Section.fetchSectionById(data.thread.forum_id, function(err, forum) {
-    if (err) {
-      next(err);
-      return;
-    }
-    Section.fetchSections(forum.parent_list, function(err, parents) {
-      parents.push(forum);
-      data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
-      next(err);
-    });
+
+  // ToDo hb users check
+  var post_count = this.data.thread.cache.counters.post_count;
+  data.thread = {
+    id: params.id,
+    title: this.data.thread.title,
+    post_count: post_count
+  };
+
+  data.posts = this.data.posts.map(function(post) {
+    var doc = post._doc;
+    doc._id = doc._id.toString();
+    return {
+      _id:              doc._id,
+      id:               doc.id,
+      attach_list:      doc.attach_list,
+      text:             doc.text,
+      fmt:              doc.fmt,
+      html:             doc.html,
+      user:             doc.user,
+      ts:               doc.ts
+    };
   });
+  next();
+};
+
+nodeca.filters.after('@', function (params, next) {
+  var data = this.data;
+
+  var forum_id = this.data.thread.cache.forum_id;
+  var forum = this.data.sections[forum_id];
+  var parents = [forum];
+  forum.cache.parent_id_list.forEach(function(parent) {
+    parents.push(data.sections[parent]);
+  });
+
+  this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);
+  next();
 });
