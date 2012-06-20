@@ -1,0 +1,66 @@
+//
+// Posts list
+//
+////////////////////////////////////////
+
+.forum-post
+  margin-bottom 20px
+
+.controlbar + .forum-post
+  margin-top 20px
+
+.post-meta
+  background-color grayLightest
+  border 1px solid rgba(0, 0, 0, 0.05)
+  border-radius 2px
+  box-shadow 0 0 2px rgba(0, 0, 0, 0.05)
+  padding 10px 15px
+  font-size 12px
+  color gray
+  margin-bottom:10px
+
+.post-author
+  color gray
+  font-size 18px
+
+.post-permalink
+  margin-left 1em
+
+.post-check
+  margin 0 0 0 1em !important
+  vertical-align text-top
+
+.post-aside
+  float left
+  width 150px
+  margin 5px 15px 0
+
+.post-content
+  font-family sansWideFontFamily
+  overflow hidden
+  margin 0 15px
+  > .message
+    margin-bottom 10px
+    min-height 125px
+
+.post-controls
+  > ul
+    margin 0
+    list-style none
+    > li
+      display inline-block
+    > li + li
+      margin-left 15px
+
+.post-action
+  color grayDark
+  text-decoration underline
+
+//
+// Hovering magick
+/////////////////////////////////////////
+
+.forum-post:not(:hover)
+  .post-action, .vote-up, .vote-down
+    transition opacity .3s ease
+    opacity .2

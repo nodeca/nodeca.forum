@@ -1,15 +1,104 @@
-include ../widgets/breadcrumbs
+article
+  include ../widgets/breadcrumbs
 
-h1= thread.title
+  header.page-head
+    h1= thread.title
+    p
+      | Subject Category Beginners Section <b>Model aircraft - General</b>
+      | Hi all aviators! from a novice. This week bought a boat with Inet
+      | pusher propeller. Can sit on the water, snow, ...
 
-ul
+  nav.btn-toolbar.controlbar
+    .btn-group
+      a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
+
+    .btn-group
+      ul.pagination
+        li
+          a(href='#') 1
+        li.dropdown
+          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+          form.dropdown-menu
+            label.input Jump to:
+              .input-append
+                input.input-small(type='text', size='8', placeholder='Page number')
+                button.btn.btn-inverse(type='button') Go!
+        li
+          a(href='#') 5
+        li
+          a(href='#') 6
+        li.dropdown
+          a.current.dropdown-toggle(href='#', data-toggle='dropdown') 7
+          form.dropdown-menu
+            label.input Jump to:
+              .input-append
+                input.input-small(type='text', size='8', placeholder='Page number')
+                button.btn.btn-inverse(type='button') Go!
+        li
+          a(href='#') 8
+        li
+          a(href='#') 9
+        li.dropdown
+          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+          form.dropdown-menu
+            label.input Jump to:
+              .input-append
+                input.input-small(type='text', size='8', placeholder='Page number')
+                button.btn.btn-inverse(type='button') Go!
+        li
+          a(href='#') 129
+
+    .btn-group.pull-right
+      a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
+        span.caret
+      ul.dropdown-menu
+        li
+          a(href='#') Delete
+        li
+          a(href='#') Close
+        li.divider
+        li
+          a(href='#') Pin
+        li
+          a(href='#') History
+        li
+          a(href='#') Approve
+        li
+          a(href='#') Merge
+    .btn-group.pull-right
+      a.btn.btn-small.icon-eye.tip(href='#', title='Subscribe to new posts notification') 24
+    .btn-group.pull-right
+      a.btn.btn-small.btn-primary(href='#') Add Reply
+
+
   - each post in posts
-    li
-      .head
-        p #{post.user}
-        p #{post.ts}
-      .userpic
-        p userpic should be hear
-      .message= post.text
-
-a(href=link_to('forum.section', {id: thread.forum_id})) Show threads
+    article.forum-post.clearfix
+      footer.post-meta.clearfix
+        a.post-author.pull-left(href='#')
+          #{post.user} Vasya (daun) Pupkin
+        .pull-right
+          time.post-time #{post.ts}
+          a.post-permalink(href='#') #
+          input.post-check(type='checkbox')
+      .post-aside
+        a.post-userpic(href='#')
+          img.av-xl(src='http://lorempixel.com/150/150/sports/a#{post.id}')
+      .post-content
+        .message= post.text
+        footer.post-controls.clearfix
+          ul.pull-left
+            li
+              a.post-action(href='#') Report
+            li
+              a.post-action(href='#') IP
+          ul.pull-right
+            li
+              a.post-action(href='#') Reply
+            li
+              a.post-action(href='#') Edit
+            li
+              a.post-action(href='#') Delete
+            li
+              a.vote-up.icon-thumbs-up(href='#')
+              span.vote-count +47
+              a.vote-down.icon-thumbs-down(href='#')

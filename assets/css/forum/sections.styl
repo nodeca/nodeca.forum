@@ -26,10 +26,9 @@
     content '\e75f'
     speak none
     margin-left .4em
+  &:not(:hover) > h2:after
     opacity 0
     transition opacity .3s ease
-  &:hover > h2:after
-    opacity 1
 
 .fl-category.collapsed > header
   transition opacity .3s ease
