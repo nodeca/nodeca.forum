@@ -5,6 +5,49 @@
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
+var cache = {
+    prefix_text     : String
+  , prefix_style    : String
+
+  , forum_id        : Number
+
+  , tags_list       : [String]  // cache
+
+  , counters            : {
+        post_count      : { type: Number, default: 0 }
+      , attach_count    : { type: Number, default: 0 }
+      , views_count     : { type: Number, default: 0 }
+
+        // First post
+      , first_post      : Schema.ObjectId
+      , first_post_id   : Number
+      , first_user      : Schema.ObjectId
+      , first_ts        : Date
+        // Last post
+      , last_post       : Schema.ObjectId
+      , last_post_id    : Number
+      , last_user       : Schema.ObjectId
+      , last_ts         : Date
+  }
+  , hb_counters         : {
+        post_count      : { type: Number, default: 0 }
+      , attach_count    : { type: Number, default: 0 }
+      , views_count     : { type: Number, default: 0 }
+
+        // First post
+      , first_post      : Schema.ObjectId
+      , first_post_id   : Number
+      , first_user      : Schema.ObjectId
+      , first_ts        : Date
+        // Last post
+      , last_post       : Schema.ObjectId
+      , last_post_id    : Number
+      , last_user       : Schema.ObjectId
+      , last_ts         : Date
+  }
+
+};
+
 var Thread = module.exports.Thread = new mongoose.Schema({
 
     title           : { type: String, required: true }
@@ -13,15 +56,8 @@ var Thread = module.exports.Thread = new mongoose.Schema({
 
     // prefix id/cache
   , prefix          : Schema.ObjectId
-  , prefix_text     : String  // cache
-  , prefix_style    : String  // cache
 
   , forum           : Schema.ObjectId
-  , forum_id        : Number
-
-  , post_count      : { type: Number, default: 0 }
-  , attach_count    : { type: Number, default: 0 }
-  , views_count     : { type: Number, default: 0 }
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
@@ -30,26 +66,17 @@ var Thread = module.exports.Thread = new mongoose.Schema({
                               // (general `state` is used for fast selects)
   , state_prev      : Number  // previous value, to rollback `delete`
 
-    // First post info/cache
-  , first_post      : Schema.ObjectId
-  , first_post_id   : Number
-  , first_user      : Schema.ObjectId
-  , first_ts        : Date
-    // Last post info/cache
-  , last_post       : Schema.ObjectId
-  , last_post_id    : Number
-  , last_user       : Schema.ObjectId
-  , last_ts         : Date
-
     // Tags
   , tags_id_list    : [Number]
-  , tags_list       : [String]  // cache
 
     // "Similar" threads cache
   , similar         : [Schema.ObjectId]
 
     // SEO
   , keywords        : String
+
+    // Cache
+  , cache           : cache
 
 }, { strict: true });
 
@@ -88,16 +115,12 @@ Thread.statics.fetchThredsByRealIdList = function (id_list, callback) {
 };
 
 Thread.statics.fetchById = function( id, callback) {
-  this.findOne({id: id}, function (err, thread) {
-    callback(err, thread);
-  });
+  this.findOne({id: id}, callback);
 };
 
 
 Thread.statics.fetchThredsByForumId = function (forum_id, callback) {
-  this.find({forum_id: forum_id}, function (err, threads) {
-    callback(err, threads);
-  });
+  this.find({'cache.forum_id': forum_id}, callback);
 };
 
 module.exports.__init__ = function __init__() {

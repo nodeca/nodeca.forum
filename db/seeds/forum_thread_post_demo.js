@@ -1,6 +1,6 @@
 "use strict";
 
-/*global nodeca*/
+/*global nodeca, _*/
 
 /*
  * This seed create data for demo forum:
@@ -12,7 +12,6 @@
 
 var NLib = require('nlib');
 
-var _ = NLib.Vendor.Underscore;
 var Async = NLib.Vendor.Async;
 var Faker = NLib.Vendor.Faker;
 
@@ -72,10 +71,13 @@ Faker.Helpers.forum = function (category){
     id: Faker.Ids.next('forum'),
 
     parent: category._id,
-    parent_id: category.id,
-
     parent_list: [category._id],
-    parent_id_list: [category.id]
+
+    cache: {
+      counters: {},
+      parent_id: category.id,
+      parent_id_list: [category.id]
+    }
   };
 };
 
@@ -88,7 +90,12 @@ Faker.Helpers.thread = function (forum){
     // Stub. This constants should be defined globally
     state:  0,
 
-    forum_id: forum.id,
+    cache: {
+      counters: {
+        views_count: Faker.Helpers.randomNumber(1000),
+      },
+      forum_id: forum.id
+    },
     forum: forum._id
   };
 };
@@ -103,11 +110,14 @@ Faker.Helpers.post = function (thread){
     // Stub. This constants should be defined globally
     state: 0,
 
-    thread_id: thread.id,
     thread: thread._id,
 
-    forum_id: thread.forum_id,
     forum: thread.forum._id,
+
+    cache: {
+      thread_id: thread.id,
+      forum_id: thread.forum_id,
+    },
 
     ts: new Date()
     // ToDo user
@@ -160,15 +170,17 @@ var create_thread = function(forum, callback) {
     },
     // update thread
     function(cb){
-      thread.post_count = post_count;
+      thread.cache.counters.post_count = post_count;
 
-      thread.first_post = first_post._id;
-      thread.first_post_id = first_post.id;
-      thread.first_ts = first_post.ts;
+      thread.cache.counters.first_post = first_post._id;
+      thread.cache.counters.first_post_id = first_post.id;
+      thread.cache.counters.first_ts = first_post.ts;
 
-      thread.last_post = last_post._id;
-      thread.last_post_id = last_post.id;
-      thread.last_ts = last_post.ts;
+      thread.cache.counters.last_post = last_post._id;
+      thread.cache.counters.last_post_id = last_post.id;
+      thread.cache.counters.last_ts = last_post.ts;
+
+      _.extend(thread.cache.hb_counters, thread.cache.counters);
 
       thread.save(cb);
     }
@@ -179,6 +191,7 @@ var create_thread = function(forum, callback) {
 
 var create_forum = function(category, callback){
   var last_thread;
+  var post_count = 0;
   var thread_count;
 
   if (is_big_forum) {
@@ -199,19 +212,25 @@ var create_forum = function(category, callback){
       Async.forEach(_.range(thread_count), function (current_thread, next_thread) {
         create_thread(forum, function(err, thread){
           last_thread = thread;
+          post_count += thread.cache.counters.post_count;
           next_thread();
         });
       }, cb);
     },
     // update forum dependent info
     function(cb){
-      forum.last_thread = last_thread._id;
-      forum.last_thread_id = last_thread.id;
+      forum.cache.counters.last_thread = last_thread._id;
+      forum.cache.counters.last_thread_id = last_thread.id;
+      forum.cache.counters.last_thread_title = last_thread.title;
 
-      forum.last_post = last_thread.last_post;
-      forum.last_post_id = last_thread.last_post_id;
-      forum.last_ts = last_thread.last_ts;
+      var thread_counters = last_thread.cache.counters;
+      forum.cache.counters.last_post = thread_counters.last_post;
+      forum.cache.counters.last_post_id = thread_counters.last_post_id;
+      forum.cache.counters.last_ts = thread_counters.last_ts;
 
+      forum.cache.counters.post_count = post_count;
+      forum.cache.counters.thread_count = thread_count;
+      _.extend(forum.cache.hb_counters, forum.cache.counters);
       forum.save(cb);
     }
   ], function(err) {
@@ -243,7 +262,7 @@ module.exports = function(callback) {
       // update parent category dependent info
       function(cb){
         category.child_list = forum_list;
-        category.child_id_list = forum_id_list;
+        category.cache.child_id_list = forum_id_list;
 
         category.save(cb);
       }
