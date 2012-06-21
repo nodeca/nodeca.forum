@@ -85,7 +85,7 @@ article
             .tl-meta
               a.tl-preview-ctl.icon-down(href='#') Preview
               a.tl-starter(href='#') #{thread.first_user} Vunder (diggger) Vaflin
-              time.tl-start-date #{thread.first_ts}
+              time.tl-start-date #{thread.first_ts} start time
 
           ul.span2.tl-item-counters.hidden-phone
             li #{thread.post_count} replies
@@ -93,6 +93,6 @@ article
 
           ul.span3.tl-item-lastpost.hidden-phone
             li.lastpost-time
-              a(href='#') #{thread.last_ts}
+              a(href='#') #{thread.last_ts} time
             li.lastpost-user
               a(href='#') #{thread.last_user} User username Name
