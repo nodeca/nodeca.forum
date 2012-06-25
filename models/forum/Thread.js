@@ -6,15 +6,12 @@ var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
 var cache = {
-    prefix_text     : String
-  , prefix_style    : String
+    real    : {
+        prefix_text     : String
+      , prefix_style    : String
 
-  , forum_id        : Number
-
-  , tags_list       : [String]  // cache
-
-  , counters            : {
-        post_count      : { type: Number, default: 0 }
+      , tags_list       : [String]  // cache
+      , post_count      : { type: Number, default: 0 }
       , attach_count    : { type: Number, default: 0 }
       , views_count     : { type: Number, default: 0 }
 
@@ -29,8 +26,12 @@ var cache = {
       , last_user       : Schema.ObjectId
       , last_ts         : Date
   }
-  , hb_counters         : {
-        post_count      : { type: Number, default: 0 }
+  , hb    : {
+      prefix_text     : String
+    , prefix_style    : String
+
+    , tags_list       : [String]  // cache
+      , post_count      : { type: Number, default: 0 }
       , attach_count    : { type: Number, default: 0 }
       , views_count     : { type: Number, default: 0 }
 
@@ -58,6 +59,7 @@ var Thread = module.exports.Thread = new mongoose.Schema({
   , prefix          : Schema.ObjectId
 
   , forum           : Schema.ObjectId
+  , forum_id        : Number
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
@@ -120,7 +122,7 @@ Thread.statics.fetchById = function( id, callback) {
 
 
 Thread.statics.fetchThredsByForumId = function (forum_id, callback) {
-  this.find({'cache.forum_id': forum_id}, callback);
+  this.find({'forum_id': forum_id}, callback);
 };
 
 module.exports.__init__ = function __init__() {

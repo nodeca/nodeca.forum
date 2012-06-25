@@ -37,10 +37,10 @@ module.exports.up = function(cb) {
       forum.id = 2;
 
       forum.parent = category._id;
-      forum.cache.parent_id = category.id;
+      forum.parent_id = category.id;
 
       forum.parent_list.push(category._id);
-      forum.cache.parent_id_list.push(category.id);
+      forum.parent_id_list.push(category.id);
 
       forum.save(function (err) {
         callback(err);
@@ -55,7 +55,7 @@ module.exports.up = function(cb) {
       // Stub. This constants should be defined globally
       thread.state = 0;
 
-      thread.cache.forum_id = forum.id;
+      thread.forum_id = forum.id;
       thread.forum = forum._id;
 
       thread.save(function (err) {
@@ -73,10 +73,10 @@ module.exports.up = function(cb) {
       // Stub. This constants should be defined globally
       post.state = 0;
 
-      post.cache.thread_id = thread.id;
+      post.thread_id = thread.id;
       post.thread = thread._id;
 
-      post.cache.forum_id = forum.id;
+      post.forum_id = forum.id;
       post.forum = forum._id;
 
       post.save(function (err) {
@@ -87,7 +87,7 @@ module.exports.up = function(cb) {
     // update category dependent info
     function(callback){
       category.child_list.push(forum._id);
-      category.cache.child_id_list.push(forum.id);
+      category.child_id_list.push(forum.id);
 
       category.save(function (err) {
         callback(err);
@@ -96,18 +96,18 @@ module.exports.up = function(cb) {
 
     // update forum dependent info
     function(callback){
-      forum.cache.counters.last_post = post._id;
-      forum.cache.counters.last_post_id = post.id;
-      forum.cache.counters.last_ts = post.ts;
+      forum.cache.real.last_post = post._id;
+      forum.cache.real.last_post_id = post.id;
+      forum.cache.real.last_ts = post.ts;
 
-      forum.cache.counters.last_thread = thread._id;
-      forum.cache.counters.last_thread_id = thread.id;
-      forum.cache.counters.last_thread_title = thread.title;
+      forum.cache.real.last_thread = thread._id;
+      forum.cache.real.last_thread_id = thread.id;
+      forum.cache.real.last_thread_title = thread.title;
 
-      forum.cache.counters.thread_count = 1;
-      forum.cache.counters.post_count = 1;
+      forum.cache.real.thread_count = 1;
+      forum.cache.real.post_count = 1;
 
-      _.extend(forum.cache.hb_counters, forum.cache.counters);
+      _.extend(forum.cache.hb, forum.cache.real);
       forum.save(function (err) {
         callback(err);
       });
@@ -115,18 +115,18 @@ module.exports.up = function(cb) {
 
     // update thread dependent info
     function(callback){
-      thread.cache.counters.post_count = 1;
+      thread.cache.real.post_count = 1;
 
-      thread.cache.counters.first_post = post._id;
-      thread.cache.counters.last_post = post._id;
+      thread.cache.real.first_post = post._id;
+      thread.cache.real.last_post = post._id;
 
-      thread.cache.counters.first_post_id = post.id;
-      thread.cache.counters.last_post_id = post.id;
+      thread.cache.real.first_post_id = post.id;
+      thread.cache.real.last_post_id = post.id;
 
-      thread.cache.counters.first_ts = post.ts;
-      thread.cache.counters.last_ts = post.ts;
+      thread.cache.real.first_ts = post.ts;
+      thread.cache.real.last_ts = post.ts;
 
-      _.extend(thread.cache.hb_counters, thread.cache.counters);
+      _.extend(thread.cache.hb, thread.cache.real);
       thread.save(function (err) {
         callback(err);
       });

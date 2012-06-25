@@ -8,7 +8,7 @@ var Section = nodeca.models.forum.Section;
 
 module.exports = function (params, next) {
 
-  var sections = _.values(this.data.sections).map(function(section) {
+  var sections = _.values(nodeca.cache.get('sections', [])).map(function(section) {
     var doc = section._doc;
     doc._id = doc._id.toString();
     if (doc.parent) {

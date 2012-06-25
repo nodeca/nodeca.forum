@@ -5,22 +5,15 @@
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
-var cache = {
-    thread_id       : Number
-  , forum_id        : Number
-
-  , counters        : {
-      attach_count    : { type: Number, default: 0 }
-  }
-};
-
 var Post = module.exports.Post = new mongoose.Schema({
 
     // user-friendly id (autoincremented)
     id              : { type: Number, required: true, min: 1, index: true }
 
   , thread          : Schema.ObjectId
+  , thread_id       : Number
   , forum           : Schema.ObjectId
+  , forum_id        : Number
 
   , user            : Schema.ObjectId
   , ts              : Date    // timestamp
@@ -45,18 +38,7 @@ var Post = module.exports.Post = new mongoose.Schema({
                               // (general `state` is used for fast selects)
   , state_prev      : Number  // previous value, to rollback `delete`
 
-  // Options
-  , is_smiles_off   : Boolean
-  , is_autolinks_off  : Boolean
-
-  // Infractions/Reports
-  , has_infraction  : Boolean // true is post have infractions
-  , report          : Schema.ObjectId // ID of thread with reports
-
   , attach_list     : [Schema.ObjectId]
-
-  , cache           : cache
-
 }, { strict: true });
 
 // Indexes
@@ -79,7 +61,7 @@ Post.index({
 });
 
 Post.statics.fetchPostsByThread = function( thread_id, callback) {
-  this.find({thread:thread_id}, callback);
+  this.find({thread_id:thread_id}, callback);
 };
 
 module.exports.__init__ = function __init__() {

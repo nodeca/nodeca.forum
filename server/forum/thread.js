@@ -8,60 +8,60 @@ var Post = nodeca.models.forum.Post;
 
 var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
 
-nodeca.filters.before('@', function (params, next) {
-  var data = this.data;
 
-  Thread.fetchById(params.id, function (err, thread) {
-    data.thread = thread;
-    next(err);
-  });
-});
-
-nodeca.filters.before('@', function (params, next) {
-  var data = this.data;
-
-  Post.fetchPostsByThread(data.thread._id, function (err, posts) {
-    data.posts = posts;
-    next(err);
-  });
-});
-
+// fetch and prepare posts
+// ToDo add sorting and pagination
 module.exports = function (params, next) {
   var data = this.response.data;
 
-  // ToDo hb users check
-  var post_count = this.data.thread.cache.counters.post_count;
-  data.thread = {
-    id: params.id,
-    title: this.data.thread.title,
-    post_count: post_count
-  };
-
-  data.posts = this.data.posts.map(function(post) {
-    var doc = post._doc;
-    doc._id = doc._id.toString();
-    return {
-      _id:              doc._id,
-      id:               doc.id,
-      attach_list:      doc.attach_list,
-      text:             doc.text,
-      fmt:              doc.fmt,
-      html:             doc.html,
-      user:             doc.user,
-      ts:               doc.ts
-    };
+  Post.fetchPostsByThread(params.id, function (err, posts) {
+    data.posts = posts.map(function(post) {
+      var doc = post._doc;
+      doc._id = doc._id.toString();
+      return {
+        _id:              doc._id,
+        id:               doc.id,
+        attach_list:      doc.attach_list,
+        text:             doc.text,
+        fmt:              doc.fmt,
+        html:             doc.html,
+        user:             doc.user,
+        ts:               doc.ts
+      };
+    });
+    // ToDo build users list (authors, editors, quote authors)
+    next();
   });
-  next();
 };
 
-nodeca.filters.after('@', function (params, next) {
-  var data = this.data;
 
-  var forum_id = this.data.thread.cache.forum_id;
-  var forum = this.data.sections[forum_id];
+// fetch and prepare thread info
+nodeca.filters.after('@', function (params, next) {
+  var env = this;
+
+  Thread.fetchById(params.id, function (err, thread) {
+    env.data.thread = thread;
+    // ToDo hb users check
+    var post_count = thread.cache.real.post_count;
+    env.response.data.thread = {
+      id: params.id,
+      title: thread.title,
+      post_count: post_count
+    };
+    next(err);
+  });
+});
+
+
+// breadcrumbs
+nodeca.filters.after('@', function (params, next) {
+  var sections = nodeca.cache.get('sections');
+
+  var forum_id = this.data.thread.forum_id;
+  var forum = sections[forum_id];
   var parents = [forum];
-  forum.cache.parent_id_list.forEach(function(parent) {
-    parents.push(data.sections[parent]);
+  forum.parent_id_list.forEach(function(parent) {
+    parents.push(sections[parent]);
   });
 
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);

@@ -10,14 +10,7 @@ var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
 var cache =  {
-
-    parent_id             : Number
-  , parent_id_list        : [Number]
-  , child_id_list         : [Number]
-
-  , moderators_id_list    : [String]
-
-  , counters              : {
+    real                  : {
         thread_count      : { type: Number, default: 0 }
       , post_count        : { type: Number, default: 0 }
 
@@ -29,7 +22,7 @@ var cache =  {
       , last_user         : Schema.ObjectId
       , last_ts           : Date
   }
-  , hb_counters           : {
+  , hb                    : {
         thread_count      : { type: Number, default: 0 }
       , post_count        : { type: Number, default: 0 }
 
@@ -55,9 +48,13 @@ var Section = module.exports.Section = new mongoose.Schema({
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
+  , parent_id             : Number
   , parent_list     : [Schema.ObjectId]
+  , parent_id_list        : [Number]
   , child_list      : [Schema.ObjectId]
+  , child_id_list         : [Number]
 
+  , moderators_id_list    : [String]
   , moderators_list   : [Schema.ObjectId]
 
     // If set, section works as redirect link
@@ -66,7 +63,7 @@ var Section = module.exports.Section = new mongoose.Schema({
     // Options
   , is_category     : { type: Boolean, default: false } // subforum or category
   , is_enabled      : { type: Boolean, default: true }  // hiden inactive
-  , is_archive      : { type: Boolean, default: false } // read-only archive
+  , is_writeble     : { type: Boolean, default: false } // read-only archive
   , is_searcheable  : { type: Boolean, default: true }
   , is_voteable     : { type: Boolean, default: true }
   , is_counted      : { type: Boolean, default: true }  // inc user's counter, when posted here
@@ -78,8 +75,6 @@ var Section = module.exports.Section = new mongoose.Schema({
 
     // Filters
   , excludable      : Boolean
-  , closed_ui_show         : { type: Boolean, default: false }
-  , closed_hide_by_default : { type: Boolean, default: false }
 
     // Cache
   , cache           : cache
