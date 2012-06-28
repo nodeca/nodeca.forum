@@ -48,14 +48,12 @@ article
                   li
                     a(href='#') Content
 
-                dl.def-hlist.fl-moderators
-                  dt moderators:
-                  dd
-                    a(href='#') Qwerjksdy
-                  dd
-                    a(href='#') Jsujke
-                  dd
-                    a(href='#') O9ekdisi Widos
+                - if (forum.moderators.length > 0)
+                  dl.def-hlist.fl-moderators
+                    dt moderators:
+                    - each moderator in forum.moderators
+                      dd
+                        a(href='#') #{users[moderator].login} 
 
               ul.span2.fl-item-counters.hidden-phone
                 li
@@ -70,8 +68,8 @@ article
                   a(href='#') #{forum.last_thread.title}
                 li.lastpost-user
                   | by 
-                  a(href='#') #{forum.last_user} User username Name
-                li.lastpost-time #{forum.last_ts} last post time
+                  a(href='#') #{users[forum.last_thread.user].login} 
+                li.lastpost-time #{forum.last_thread.ts}
 
 footer
   .btn-toolbar

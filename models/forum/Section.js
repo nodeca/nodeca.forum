@@ -54,8 +54,8 @@ var Section = module.exports.Section = new mongoose.Schema({
   , child_list      : [Schema.ObjectId]
   , child_id_list         : [Number]
 
-  , moderators_id_list    : [String]
-  , moderators_list   : [Schema.ObjectId]
+  , moderator_id_list    : [String]
+  , moderator_list   : [Schema.ObjectId]
 
     // If set, section works as redirect link
   , redirect        : String

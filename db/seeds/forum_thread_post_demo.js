@@ -20,11 +20,14 @@ var CATEGORY_COUNT = 3;
 var FORUM_COUNT  = 10;
 var THREAD_COUNT_IN_BIG_FORUM  = 200;
 var POST_COUNT_IN_BIG_THREAD  = 100;
+var USER_COUNT = 200;
+var MAX_MODERATOR_COUNT = 4;
 
 var CATEGORY_ID_SHIFT = 3;
 var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
 var THREAD_ID_SHIFT = 2;
 var POST_ID_SHIFT = 2;
+var USER_ID_SHIFT = 2;
 
 // extend Faker
 // add numeric id generator
@@ -32,7 +35,8 @@ Faker.Ids = {
   category_shift: CATEGORY_ID_SHIFT,
   forum_shift: FORUM_ID_SHIFT,
   thread_shift: THREAD_ID_SHIFT,
-  post_shift: POST_ID_SHIFT
+  post_shift: POST_ID_SHIFT,
+  user_shift: USER_ID_SHIFT
 };
 
 Faker.Ids.next = function(type){
@@ -47,6 +51,8 @@ Faker.Ids.next = function(type){
   this[last_id_prop_name]++;
   return this[last_id_prop_name];
 };
+
+Faker.users = [];
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -64,6 +70,17 @@ Faker.Helpers.category = function (){
 };
 
 Faker.Helpers.forum = function (category){
+  var moderator_id_list = [];
+  var moderator_list = [];
+  var moderator;
+
+  var moderator_count = Faker.Helpers.randomNumber(MAX_MODERATOR_COUNT+1);
+  for (var i=0; i < moderator_count; i++) {
+    moderator = Faker.users[Faker.Helpers.randomNumber(USER_COUNT)];
+    moderator_list.push(moderator);
+    moderator_id_list.push(moderator.id);
+  }
+ 
   return {
     title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
@@ -75,6 +92,9 @@ Faker.Helpers.forum = function (category){
 
     parent_id: category.id,
     parent_id_list: [category.id],
+
+    moderator_id_list: _.uniq(moderator_id_list),
+    moderator_list: _.uniq(moderator_list),
 
     cache: {
       real: {},
@@ -118,8 +138,30 @@ Faker.Helpers.post = function (thread){
     thread_id: thread.id,
     forum_id: thread.forum_id,
 
+    user: Faker.users[Faker.Helpers.randomNumber(USER_COUNT)],
+
     ts: new Date()
     // ToDo user
+  };
+};
+
+
+Faker.Helpers.user = function (){
+  return {
+    id          : Faker.Ids.next('user'),
+    first_name  : Faker.Name.firstName(),
+    last_name   : Faker.Name.lastName(),
+    login       : Faker.Internet.userName(),
+
+    email       : Faker.Internet.email(),
+    
+    joined_ts   : new Date(),
+    
+    cache       : {
+      userpic_version   : Faker.Helpers.randomNumber(15),
+      avatar_version    : Faker.Helpers.randomNumber(15)
+    }
+    // ToDo add groups
   };
 };
 
@@ -127,9 +169,11 @@ var Category = nodeca.models.forum.Section;
 var Forum    = nodeca.models.forum.Section;
 var Thread   = nodeca.models.forum.Thread;
 var Post     = nodeca.models.forum.Post;
+var User     = nodeca.models.users.User;
 
 var is_big_thread = true;
 var is_big_forum = true;
+
 
 var create_post = function(thread, callback) {
   var post = new Post(Faker.Helpers.post(thread));
@@ -174,10 +218,12 @@ var create_thread = function(forum, callback) {
       thread.cache.real.first_post = first_post._id;
       thread.cache.real.first_post_id = first_post.id;
       thread.cache.real.first_ts = first_post.ts;
+      thread.cache.real.first_user = first_post.user;
 
       thread.cache.real.last_post = last_post._id;
       thread.cache.real.last_post_id = last_post.id;
       thread.cache.real.last_ts = last_post.ts;
+      thread.cache.real.last_user = last_post.user;
 
       _.extend(thread.cache.hb, thread.cache.real);
 
@@ -226,6 +272,7 @@ var create_forum = function(category, callback){
       forum.cache.real.last_post = thread_real.last_post;
       forum.cache.real.last_post_id = thread_real.last_post_id;
       forum.cache.real.last_ts = thread_real.last_ts;
+      forum.cache.real.last_user = thread_real.last_user;
 
       forum.cache.real.post_count = post_count;
       forum.cache.real.thread_count = thread_count;
@@ -237,7 +284,7 @@ var create_forum = function(category, callback){
   });
 };
 
-module.exports = function(callback) {
+var create_categories = function(callback) {
   Async.forEachSeries(_.range(CATEGORY_COUNT), function(current_category, next_category) {
     var forum_list = [];
     var forum_id_list = [];
@@ -268,5 +315,18 @@ module.exports = function(callback) {
     ], next_category);
   }, function(err){
     callback(err);
+  });
+};
+
+module.exports = function(callback) {
+  Async.forEachSeries(_.range(USER_COUNT), function(current_user, next_user) {
+    var user = new User(Faker.Helpers.user());
+    user.setPass(Faker.Lorem.words(1)[0]);
+    user.save(next_user);
+
+    // add to iwn store
+    Faker.users.push(user);
+  }, function(err){
+    create_categories(callback);
   });
 };

@@ -15,7 +15,24 @@ module.exports.up = function(cb) {
   var thread   = new models.forum.Thread();
   var post     = new models.forum.Post();
 
+  var user     = new models.users.User();
+
   Async.waterfall([
+    // create admin user
+    
+    function(callback){
+      user.id = 1;
+      user.login = 'admin';
+      user.email = 'admin@localhost';
+      user.joined_ts = new Date;
+      // password salt based on joined_ts value
+      user.setPass('admin');
+      // ToDo add to admin group
+      user.save(function (err) {
+        callback(err);
+      });
+    },
+   
     // create basic category record
     function(callback){
       category.title = 'Demo category';
@@ -79,6 +96,8 @@ module.exports.up = function(cb) {
       post.forum_id = forum.id;
       post.forum = forum._id;
 
+      post.user = user;
+
       post.save(function (err) {
         callback(err);
       });
@@ -98,6 +117,7 @@ module.exports.up = function(cb) {
     function(callback){
       forum.cache.real.last_post = post._id;
       forum.cache.real.last_post_id = post.id;
+      forum.cache.real.last_user = user;
       forum.cache.real.last_ts = post.ts;
 
       forum.cache.real.last_thread = thread._id;
@@ -122,6 +142,9 @@ module.exports.up = function(cb) {
 
       thread.cache.real.first_post_id = post.id;
       thread.cache.real.last_post_id = post.id;
+
+      thread.cache.real.first_user = user;
+      thread.cache.real.last_user = user;
 
       thread.cache.real.first_ts = post.ts;
       thread.cache.real.last_ts = post.ts;

@@ -13,11 +13,16 @@ var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
 module.exports = function (params, next) {
   var data = this.response.data;
 
+  var user_id_list = this.data.users = [];
   Thread.fetchThredsByForumId(params.id, function (err, threads) {
     data.threads = threads.map(function(thread) {
       // ToDo check permissions
       var doc = thread._doc;
       doc._id = doc._id.toString();
+
+      user_id_list.push(doc.cache.real.first_user);
+      user_id_list.push(doc.cache.real.last_user);
+
       return {
         _id:              doc._id,
         id:               doc.id,
@@ -28,15 +33,14 @@ module.exports = function (params, next) {
         views_count:      doc.cache.real.views_count,
 
         first_post: {
-          first_post_id:  doc.cache.real.first_post_id,
-          first_user:     doc.cache.real.first_user,
-          first_ts:       doc.cache.real.first_ts
-
+          id:  doc.cache.real.first_post_id,
+          user:     doc.cache.real.first_user,
+          ts:       doc.cache.real.first_ts
         },
         last_post: {
-          last_post_id:   doc.cache.real.last_post_id,
-          last_user:      doc.cache.real.last_user,
-          last_ts:        doc.cache.real.last_ts
+          id:   doc.cache.real.last_post_id,
+          user:      doc.cache.real.last_user,
+          ts:        doc.cache.real.last_ts
         }
       };
 
