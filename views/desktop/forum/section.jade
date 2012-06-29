@@ -85,7 +85,7 @@ article
             .tl-meta
               a.tl-preview-ctl.icon-down(href='#') Preview
               a.tl-starter(href='#') #{users[thread.first_post.user].first_name}  (#{users[thread.first_post.user].login}) #{users[thread.first_post.user].last_name}
-              time.tl-start-date #{thread.first_post.ts} start
+              time.tl-start-date(date-time=thread.first_post.ts.valueOf()) #{thread.first_post.ts.toLocaleDateString()}
 
           ul.span2.tl-item-counters.hidden-phone
             li #{thread.post_count} replies
@@ -93,6 +93,7 @@ article
 
           ul.span3.tl-item-lastpost.hidden-phone
             li.lastpost-time
-              a(href='#') #{thread.last_post.ts}
+              a(href='#')
+                time(date-time=thread.last_post.ts.valueOf()) #{thread.last_post.ts.toLocaleDateString()}
             li.lastpost-user
               a(href='#') #{users[thread.last_post.user].first_name}  (#{users[thread.last_post.user].login}) #{users[thread.last_post.user].last_name}

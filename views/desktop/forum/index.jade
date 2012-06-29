@@ -69,7 +69,8 @@ article
                 li.lastpost-user
                   | by 
                   a(href='#') #{users[forum.last_thread.user].login} 
-                li.lastpost-time #{forum.last_thread.ts}
+                li.lastpost-time
+                  time(date-time=forum.last_thread.ts.valueOf()) #{forum.last_thread.ts.toLocaleDateString()}
 
 footer
   .btn-toolbar

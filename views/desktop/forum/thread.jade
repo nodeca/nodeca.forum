@@ -75,9 +75,9 @@ article
     article.forum-post.clearfix
       footer.post-meta.clearfix
         a.post-author.pull-left(href='#')
-          #{users[post.user].first_name} (#{users[post.user].login}) #{users[post.user].last_name}
+          | #{users[post.user].first_name} (#{users[post.user].login}) #{users[post.user].last_name}
         .pull-right
-          time.post-time #{post.ts}
+          time.post-time(date-time=post.ts.valueOf()) #{post.ts.toLocaleDateString()}
           a.post-permalink(href='#') #
           input.post-check(type='checkbox')
       .post-aside
