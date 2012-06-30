@@ -2,8 +2,8 @@ article
   include ../widgets/breadcrumbs
 
   header.page-head
-    h1= thread.title
-    p
+    h1(itemprop='name')= thread.title
+    p(itemprop='description')
       | Subject Category Beginners Section <b>Model aircraft - General</b>
       | Hi all aviators! from a novice. This week bought a boat with Inet
       | pusher propeller. Can sit on the water, snow, ...
@@ -72,12 +72,12 @@ article
 
 
   - each post in posts
-    article.forum-post.clearfix
+    article.forum-post.clearfix(itemscope,itemtype='http://schema.org/WebPageElement')
       footer.post-meta.clearfix
         a.post-author.pull-left(href='#')
           | #{users[post.user].first_name} (#{users[post.user].login}) #{users[post.user].last_name}
         .pull-right
-          time.post-time(date-time=post.ts.valueOf()) #{post.ts.toLocaleDateString()}
+          time.post-time(itemprop='datePublished', date-time=post.ts.valueOf()) #{post.ts.toLocaleDateString()}
           a.post-permalink(href='#') #
           input.post-check(type='checkbox')
       .post-aside
