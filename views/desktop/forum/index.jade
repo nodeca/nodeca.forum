@@ -20,40 +20,18 @@ article
                 h3
                   a(href=link_to('forum.section', forum))= forum.title
 
-                ul.hlist.fl-subsections
-                  li
-                    a(href='#') Auto Gyros
-                  li
-                    a(href='#') Blimps
-                  li
-                    a(href='#') RC Kites
-                  li
-                    a(href='#') Content
-                  li
-                    a(href='#') Pipers 234 hjk
-                  li
-                    a(href='#') Auto Gyros
-                  li
-                    a(href='#') Blimps
-                  li
-                    a(href='#') RC Kites
-                  li
-                    a(href='#') Content
-                  li
-                    a(href='#') Auto Gyros
-                  li
-                    a(href='#') Blimps
-                  li
-                    a(href='#') RC Kites
-                  li
-                    a(href='#') Content
+                - if (forum.child_list.length > 0)
+                  ul.hlist.fl-subsections
+                    - each sub_forum in forum.child_list
+                      li
+                        a(href=link_to('forum.section', sub_forum))= sub_forum.title
 
                 - if (forum.moderators.length > 0)
                   dl.def-hlist.fl-moderators
                     dt moderators:
-                    - each moderator in forum.moderators
-                      dd
-                        a(href='#') #{users[moderator].login} 
+                      - each moderator in forum.moderators
+                        dd
+                          a(href='#') #{users[moderator].login} 
 
               ul.span2.fl-item-counters.hidden-phone
                 li

@@ -7,8 +7,13 @@ var NLib = require('nlib');
 var Async = NLib.Vendor.Async;
 
 var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
-var build_tree = require('../../lib/helpers/forum.js').build_tree;
+
 var build_avatar_path = require('../../lib/helpers/forum.js').build_avatar_path;
+
+var forum_helpers = require('../../lib/helpers/forum.js');
+var build_tree = forum_helpers.build_tree;
+var prepare_section_display_info = forum_helpers.prepare_section_display_info;
+
 
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
