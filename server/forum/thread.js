@@ -62,10 +62,11 @@ nodeca.filters.after('@', function (params, next) {
 
   var forum_id = this.data.thread.forum_id;
   var forum = sections[forum_id];
-  var parents = [forum];
+  var parents = [];
   forum.parent_id_list.forEach(function(parent) {
     parents.push(sections[parent]);
   });
+  parents.push(forum);
 
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);
   next();
