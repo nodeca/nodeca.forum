@@ -22,6 +22,7 @@ var THREAD_COUNT_IN_BIG_FORUM  = 200;
 var POST_COUNT_IN_BIG_THREAD  = 100;
 var USER_COUNT = 200;
 var MAX_MODERATOR_COUNT = 4;
+var MAX_SUB_FORUM_COUNT = 10;
 
 var CATEGORY_ID_SHIFT = 3;
 var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
@@ -69,7 +70,7 @@ Faker.Helpers.category = function (){
   };
 };
 
-Faker.Helpers.forum = function (category){
+Faker.Helpers.forum = function (parent){
   var moderator_id_list = [];
   var moderator_list = [];
   var moderator;
@@ -87,11 +88,11 @@ Faker.Helpers.forum = function (category){
 
     id: Faker.Ids.next('forum'),
 
-    parent: category._id,
-    parent_list: [category._id],
+    parent: parent._id,
+    parent_list: parent.parent_list.slice().concat([parent._id]),
 
-    parent_id: category.id,
-    parent_id_list: [category.id],
+    parent_id: parent.id,
+    parent_id_list: parent.parent_id_list.slice().concat([parent.id]),
 
     moderator_id_list: _.uniq(moderator_id_list),
     moderator_list: _.uniq(moderator_list),
@@ -234,10 +235,13 @@ var create_thread = function(forum, callback) {
   });
 };
 
-var create_forum = function(category, callback){
+var create_forum = function(category, sub_forum_deep, callback){
   var last_thread;
   var post_count = 0;
   var thread_count;
+
+  var sub_forum_list = [];
+  var sub_forum_id_list = [];
 
   if (is_big_forum) {
     is_big_forum = false;
@@ -252,6 +256,7 @@ var create_forum = function(category, callback){
     function(cb){
       forum.save(cb);
     },
+
     // create threads
     function(cb){
       Async.forEach(_.range(thread_count), function (current_thread, next_thread) {
@@ -262,6 +267,23 @@ var create_forum = function(category, callback){
         });
       }, cb);
     },
+
+    // add sub-forums
+    function(cb) {
+      if (!sub_forum_deep || Faker.Helpers.randomNumber(3) === 2) {
+        cb();
+        return;
+      }
+      var sub_forum_count = Faker.Helpers.randomNumber(MAX_SUB_FORUM_COUNT);
+      Async.forEach( _.range(sub_forum_count), function (current_forum, next_forum) {
+        create_forum(forum, sub_forum_deep-1, function(err, sub_forum){
+          sub_forum_list.push(sub_forum._id);
+          sub_forum_id_list.push(sub_forum.id);
+          next_forum(err);
+        });
+      }, cb);
+    },
+
     // update forum dependent info
     function(cb){
       forum.cache.real.last_thread = last_thread._id;
@@ -277,12 +299,20 @@ var create_forum = function(category, callback){
       forum.cache.real.post_count = post_count;
       forum.cache.real.thread_count = thread_count;
       _.extend(forum.cache.hb, forum.cache.real);
+
+      forum.child_list = sub_forum_list;
+      forum.child_id_list = sub_forum_id_list;
       forum.save(cb);
     }
   ], function(err) {
     callback(err, forum);
   });
 };
+
+var create_big_forum = function(category, sub_forum_deep, callback){
+  create_forum(category, THREAD_COUNT_IN_BIG_FORUM, 1, callback);
+};
+
 
 var create_categories = function(callback) {
   Async.forEachSeries(_.range(CATEGORY_COUNT), function(current_category, next_category) {
@@ -298,7 +328,7 @@ var create_categories = function(callback) {
       // create forums
       function(cb){
         Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
-          create_forum(category, function(err, forum){
+          create_forum(category, 3, function(err, forum){
             forum_list.push(forum._id);
             forum_id_list.push(forum.id);
             next_forum(err);
@@ -324,7 +354,7 @@ module.exports = function(callback) {
     user.setPass(Faker.Lorem.words(1)[0]);
     user.save(next_user);
 
-    // add to iwn store
+    // add user to store
     Faker.users.push(user);
   }, function(err){
     create_categories(callback);
