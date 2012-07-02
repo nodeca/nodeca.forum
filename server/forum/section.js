@@ -74,6 +74,7 @@ nodeca.filters.after('@', function (params, next) {
   this.response.data.forum = {
     id: params.id,
     title: sections[params.id].title,
+    description: sections[params.id].description,
     thread_count: thread_count
   };
   next();
