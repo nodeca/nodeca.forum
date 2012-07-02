@@ -67,6 +67,48 @@ article
     .btn-group.pull-right
       a.btn.btn-small.btn-primary.icon-doc-text(href='#') New Topic
 
+  ul.fl-cat-list(id='cat_list_#{forum.id}', data-notify='#cat_box_#{forum.id}').collapse.in
+    - each sub_forum in sections
+      li
+        // Add 'unread' class & #id below, for new data
+        .row
+          .span7.fl-item-summary
+            h3
+              a(href=link_to('forum.section', sub_forum))= sub_forum.title
+
+            - if (sub_forum.child_list.length > 0)
+              ul.hlist.fl-subsections
+                - each therd_level in sub_forum.child_list
+                  li
+                    a(href=link_to('forum.section', therd_level))= therd_level.title
+
+            - if (sub_forum.moderators.length > 0)
+              dl.def-hlist.fl-moderators
+                dt moderators:
+                  - each moderator in sub_forum.moderators
+                    dd
+                      a(href='#') #{users[moderator].login} 
+
+          ul.span2.fl-item-counters.hidden-phone
+            li
+              strong #{sub_forum.thread_count}
+              |  topics
+            li 
+              strong #{sub_forum.post_count}
+              |  posts
+          
+          ul.span3.fl-item-lastpost.hidden-phone
+            li.lastpost-title
+              a(href='#') #{sub_forum.last_thread.title}
+            li.lastpost-user
+              | by 
+              a(href='#') #{users[sub_forum.last_thread.user].login} 
+            li.lastpost-time
+              time(date-time=sub_forum.last_thread.ts.valueOf()) #{sub_forum.last_thread.ts.toLocaleDateString()}
+a
+
+
+
   ul.tl-thread-list
     - each thread in threads
       li
