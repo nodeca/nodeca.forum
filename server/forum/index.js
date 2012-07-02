@@ -83,8 +83,10 @@ nodeca.filters.after('forum', function (params, next) {
 });
 
 
-// breadcrumbs
+// breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
+  // ToDo get header from settings
+  this.response.data.head.title = 'Nodeca forums';
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
   next();
 });

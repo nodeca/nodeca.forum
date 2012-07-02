@@ -80,12 +80,15 @@ nodeca.filters.after('@', function (params, next) {
 });
 
 
-// breadcrumbs
+// breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
   var sections = nodeca.cache.get('sections');
 
   var parents = [];
   var forum = sections[params.id];
+  
+  this.response.data.head.title = forum.title;
+
   forum.parent_id_list.forEach(function(parent) {
     parents.push(sections[parent]);
   });

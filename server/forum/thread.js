@@ -56,13 +56,16 @@ nodeca.filters.after('@', function (params, next) {
 });
 
 
-// breadcrumbs
+// breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
   var sections = nodeca.cache.get('sections');
 
   var forum_id = this.data.thread.forum_id;
   var forum = sections[forum_id];
   var parents = [];
+
+  this.response.data.head.title = this.response.data.thread.title;
+
   forum.parent_id_list.forEach(function(parent) {
     parents.push(sections[parent]);
   });
