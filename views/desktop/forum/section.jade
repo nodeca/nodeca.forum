@@ -67,6 +67,7 @@ article
 
   ul.fl-cat-list(id='cat_list_#{forum.id}', data-notify='#cat_box_#{forum.id}').collapse.in
     - each sub_forum in sections
+      - last_thread = sub_forum.last_thread
       li
         // Add 'unread' class & #id below, for new data
         .row
@@ -76,16 +77,16 @@ article
 
             - if (sub_forum.child_list.length > 0)
               ul.hlist.fl-subsections
-                - each therd_level in sub_forum.child_list
+                - each third_level in sub_forum.child_list
                   li
-                    a(href=link_to('forum.section', therd_level))= therd_level.title
+                    a(href=link_to('forum.section', third_level))= third_level.title
 
             - if (sub_forum.moderators.length > 0)
               dl.def-hlist.fl-moderators
                 dt moderators:
                   - each moderator in sub_forum.moderators
                     dd
-                      a(href='#') #{users[moderator].login} 
+                      a(href=link_to('users.member', users[moderator])) #{users[moderator].login} 
 
           ul.span2.fl-item-counters.hidden-phone
             li
@@ -97,18 +98,20 @@ article
           
           ul.span3.fl-item-lastpost.hidden-phone
             li.lastpost-title
-              a(href='#') #{sub_forum.last_thread.title}
+              a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{last_thread.title}
             li.lastpost-user
               | by 
-              a(href='#') #{users[sub_forum.last_thread.user].login} 
+              a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].login} 
             li.lastpost-time
-              time(date-time=sub_forum.last_thread.ts.valueOf()) #{sub_forum.last_thread.ts.toLocaleDateString()}
+              time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
 a
 
 
 
   ul.tl-thread-list
     - each thread in threads
+      - fp = thread.first_post
+      - lp = thread.last_post
       li
         .row
           .span7.tl-item-summary
@@ -124,8 +127,8 @@ a
                 a(href='#') 3
             .tl-meta
               a.tl-preview-ctl.icon-down(href='#') Preview
-              a.tl-starter(href='#') #{users[thread.first_post.user].first_name}  (#{users[thread.first_post.user].login}) #{users[thread.first_post.user].last_name}
-              time.tl-start-date(date-time=thread.first_post.ts.valueOf()) #{thread.first_post.ts.toLocaleDateString()}
+              a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].login}
+              time.tl-start-date(date-time=fp.ts.valueOf()) #{fp.ts.toLocaleDateString()}
 
           ul.span2.tl-item-counters.hidden-phone
             li #{thread.post_count} replies
@@ -134,6 +137,6 @@ a
           ul.span3.tl-item-lastpost.hidden-phone
             li.lastpost-time
               a(href='#')
-                time(date-time=thread.last_post.ts.valueOf()) #{thread.last_post.ts.toLocaleDateString()}
+                time(date-time=lp.ts.valueOf()) #{lp.ts.toLocaleDateString()}
             li.lastpost-user
-              a(href='#') #{users[thread.last_post.user].first_name}  (#{users[thread.last_post.user].login}) #{users[thread.last_post.user].last_name}
+              a(href=link_to('users.member', users[lp.user])) #{users[lp.user].login}

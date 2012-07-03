@@ -13,6 +13,7 @@ article
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
 
         - each forum in category.child_list
+          - last_thread = forum.last_thread
           li
             // Add 'unread' class & #id below, for new data
             .row
@@ -31,7 +32,7 @@ article
                     dt moderators:
                       - each moderator in forum.moderators
                         dd
-                          a(href='#') #{users[moderator].login} 
+                          a(href=link_to('users.member', users[moderator])) #{users[moderator].login} 
 
               ul.span2.fl-item-counters.hidden-phone
                 li
@@ -43,12 +44,13 @@ article
               
               ul.span3.fl-item-lastpost.hidden-phone
                 li.lastpost-title
-                  a(href='#') #{forum.last_thread.title}
+                  a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{forum.last_thread.title}
                 li.lastpost-user
                   | by 
-                  a(href='#') #{users[forum.last_thread.user].login} 
+                  - lp_user = users[last_thread.user]
+                  a(href=link_to('users.member', lp_user)) #{lp_user.login} 
                 li.lastpost-time
-                  time(date-time=forum.last_thread.ts.valueOf()) #{forum.last_thread.ts.toLocaleDateString()}
+                  time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
 
 footer
   .btn-toolbar

@@ -74,11 +74,11 @@ article
   - each post in posts
     article.forum-post.clearfix(itemscope,itemtype='http://schema.org/WebPageElement')
       footer.post-meta.clearfix
-        a.post-author.pull-left(href='#')
-          | #{users[post.user].first_name} (#{users[post.user].login}) #{users[post.user].last_name}
+        a.post-author.pull-left(href=link_to('users.member', users[post.user]))
+          | #{users[post.user].login}
         .pull-right
           time.post-time(itemprop='datePublished', date-time=post.ts.valueOf()) #{post.ts.toLocaleDateString()}
-          a.post-permalink(href='#') #
+          a.post-permalink(href=link_to('forum.thread', thread) + '#' +post.id) ##{post.id}
           input.post-check(type='checkbox')
       .post-aside
         a.post-userpic(href='#')

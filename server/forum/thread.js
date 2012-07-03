@@ -47,6 +47,7 @@ nodeca.filters.after('@', function (params, next) {
     // ToDo hb users check
     var post_count = thread.cache.real.post_count;
     env.response.data.thread = {
+      forum_id: thread.forum_id,
       id: params.id,
       title: thread.title,
       post_count: post_count

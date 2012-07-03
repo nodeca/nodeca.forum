@@ -68,6 +68,7 @@ nodeca.filters.after('forum', function (params, next) {
     User.fitchByIdList(user_id_list, function(err, user_list){
       user_list.forEach(function(user){
         users[user._id] = {
+          id          : user.id,
           login       : user.login,
           first_name  : user.first_name,
           last_name   : user.last_name,
