@@ -3,10 +3,9 @@ article
 
   header.page-head
     h1(itemprop='name')= thread.title
-    p(itemprop='description')
-      | Subject Category Beginners Section <b>Model aircraft - General</b>
-      | Hi all aviators! from a novice. This week bought a boat with Inet
-      | pusher propeller. Can sit on the water, snow, ...
+    - if (thread.seo_desc)
+      p(itemprop='description')
+        | #{thread.seo_desc}
 
   nav.btn-toolbar.controlbar
     .btn-group

@@ -10,7 +10,9 @@ var cache = {
         prefix_text     : String
       , prefix_style    : String
 
-      , tags_list       : [String]  // cache
+      , tags_list       : [String]
+      , seo_desc        : String
+
       , post_count      : { type: Number, default: 0 }
       , attach_count    : { type: Number, default: 0 }
       , views_count     : { type: Number, default: 0 }
@@ -27,10 +29,12 @@ var cache = {
       , last_ts         : Date
   }
   , hb    : {
-      prefix_text     : String
-    , prefix_style    : String
+        prefix_text     : String
+      , prefix_style    : String
 
-    , tags_list       : [String]  // cache
+      , tags_list       : [String]
+      , seo_desc        : String
+
       , post_count      : { type: Number, default: 0 }
       , attach_count    : { type: Number, default: 0 }
       , views_count     : { type: Number, default: 0 }

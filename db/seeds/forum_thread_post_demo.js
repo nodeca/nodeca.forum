@@ -116,6 +116,7 @@ Faker.Helpers.thread = function (forum){
 
     cache: {
       real: {
+        seo_desc: capitalize(Faker.Lorem.sentence(5)),
         views_count: Faker.Helpers.randomNumber(1000)
       },
     }

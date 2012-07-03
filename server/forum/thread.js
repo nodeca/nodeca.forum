@@ -48,6 +48,7 @@ nodeca.filters.after('@', function (params, next) {
     var post_count = thread.cache.real.post_count;
     env.response.data.thread = {
       forum_id: thread.forum_id,
+      seo_desc: thread.cache.real.seo_desc,
       id: params.id,
       title: thread.title,
       post_count: post_count
