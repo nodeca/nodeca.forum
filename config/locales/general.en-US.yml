@@ -1,8 +1,5 @@
 i18n:
   en-US:
-    forum:
-      index:
-        title: Welcome, stranger!
     common:
       menus:
         topnav:
