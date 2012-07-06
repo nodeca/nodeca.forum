@@ -2,7 +2,7 @@ i18n:
   en-US:
     admin:
       forum:
-        acp_box_title: Category and Forum Overview
+        title: Category and Forum Overview
         add_forum: Add forum
         add_category: Add category
         add_moderator: Add moderator to checked forum(s)
