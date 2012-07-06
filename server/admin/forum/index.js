@@ -8,7 +8,9 @@ var Section = nodeca.models.forum.Section;
 
 module.exports = function (params, next) {
 
-  var sections = _.values(nodeca.cache.get('sections', [])).map(function(section) {
+  var sections = _.values(nodeca.cache.get('sections', []));
+
+  this.response.data.sections = build_tree(sections, null, null, function(section) {
     var doc = section._doc;
     doc._id = doc._id.toString();
     if (doc.parent) {
@@ -26,7 +28,6 @@ module.exports = function (params, next) {
       parent:           doc.parent,
     };
   });
-  this.response.data.sections = build_tree(sections);
   next();
 };
 
