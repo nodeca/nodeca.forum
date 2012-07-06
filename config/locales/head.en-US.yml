@@ -1,6 +1,5 @@
 i18n:
   en-US:
-    forum:
-      head:
-        index:
-          title: Nodeca forums
+    common:
+      forum:
+        title: Nodeca forums

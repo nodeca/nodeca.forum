@@ -2,10 +2,10 @@ i18n:
   en-US:
     common:
       menus:
-        topnav:
+        navbar:
           forum: Forum
 
     admin:
       menus:
-        topnav:
+        navbar:
           forum: Forums

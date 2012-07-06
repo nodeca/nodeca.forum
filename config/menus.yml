@@ -1,10 +1,10 @@
 menus:
   common:
-    topnav:
+    navbar:
       forum:
         to: forum.index
 
   admin:
-    topnav:
+    navbar:
       forum:
         to: admin.forum.index

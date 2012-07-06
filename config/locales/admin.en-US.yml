@@ -8,3 +8,7 @@ i18n:
             forum: Add forum
             category: Add category
           add_moderator: Add moderator to checked forum(s)
+
+      menus:
+        navbar:
+          forum: Forums

@@ -86,7 +86,7 @@ nodeca.filters.after('forum', function (params, next) {
 
 // breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
-  this.response.data.head.title = this.helpers.t('forum.head.index.title');
+  this.response.data.head.title = this.helpers.t('common.forum.title');
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
   next();
 });
