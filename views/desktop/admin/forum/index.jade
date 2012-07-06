@@ -2,9 +2,9 @@ h1= t('admin.forum.acp_box_title')
 
 ul.context_menu
   li
-    a(href=link_to('admin.forum.add_category'))= t('admin.forum.add.forum')
+    a(href=link_to('admin.forum.add_category'))= t('admin.forum.add_forum')
   li
-    a(href=link_to('admin.forum.add_forum'))= t('admin.forum.add.category')
+    a(href=link_to('admin.forum.add_forum'))= t('admin.forum.add_category')
 
 .threads
   ul
@@ -24,4 +24,4 @@ ul.context_menu
       input(type="text", name='moderator')
       select(name='moderator_group')
         option(value='')
-    input(type="button", value=t('admin.forum.add.moderator'))
+    input(type="button", value=t('admin.forum.add_moderator'))

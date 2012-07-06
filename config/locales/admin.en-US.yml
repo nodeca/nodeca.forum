@@ -3,10 +3,9 @@ i18n:
     admin:
       forum:
         acp_box_title: Category and Forum Overview
-        add:
-          forum: Add forum
-          category: Add category
-          moderator: Add moderator to checked forum(s)
+        add_forum: Add forum
+        add_category: Add category
+        add_moderator: Add moderator to checked forum(s)
 
       menus:
         navbar:
