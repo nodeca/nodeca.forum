@@ -86,7 +86,7 @@ article
                 dt moderators:
                   - each moderator in sub_forum.moderators
                     dd
-                      a(href=link_to('users.member', users[moderator])) #{users[moderator].login} 
+                      a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
           ul.span2.fl-item-counters.hidden-phone
             li
@@ -101,7 +101,7 @@ article
               a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{last_thread.title}
             li.lastpost-user
               | by 
-              a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].login} 
+              a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].nickname} 
             li.lastpost-time
               time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
 a
@@ -127,7 +127,7 @@ a
                 a(href='#') 3
             .tl-meta
               a.tl-preview-ctl.icon-down(href='#') Preview
-              a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].login}
+              a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].nickname}
               time.tl-start-date(date-time=fp.ts.valueOf()) #{fp.ts.toLocaleDateString()}
 
           ul.span2.tl-item-counters.hidden-phone
@@ -139,4 +139,4 @@ a
               a(href='#')
                 time(date-time=lp.ts.valueOf()) #{lp.ts.toLocaleDateString()}
             li.lastpost-user
-              a(href=link_to('users.member', users[lp.user])) #{users[lp.user].login}
+              a(href=link_to('users.member', users[lp.user])) #{users[lp.user].nickname}

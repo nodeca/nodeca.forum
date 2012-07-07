@@ -32,7 +32,7 @@ article
                     dt moderators:
                       - each moderator in forum.moderators
                         dd
-                          a(href=link_to('users.member', users[moderator])) #{users[moderator].login} 
+                          a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
               ul.span2.fl-item-counters.hidden-phone
                 li
@@ -48,7 +48,7 @@ article
                 li.lastpost-user
                   | by 
                   - lp_user = users[last_thread.user]
-                  a(href=link_to('users.member', lp_user)) #{lp_user.login} 
+                  a(href=link_to('users.member', lp_user)) #{lp_user.nickname} 
                 li.lastpost-time
                   time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
 

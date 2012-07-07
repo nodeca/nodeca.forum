@@ -22,7 +22,7 @@ module.exports.up = function(cb) {
     
     function(callback){
       user.id = 1;
-      user.login = 'admin';
+      user.nickname = 'admin';
       user.email = 'admin@localhost';
       user.joined_ts = new Date;
       // password salt based on joined_ts value
