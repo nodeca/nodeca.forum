@@ -17,8 +17,6 @@ var prepare_section_display_info = forum_helpers.prepare_section_display_info;
 
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
-var User = nodeca.models.users.User;
-
 
 // Temporary crutch
 // added sections to cache
@@ -56,32 +54,7 @@ module.exports = function (params, next) {
 };
 
 
-// fetch and prepare users info
-// fired befor each controllers in forum/admin.forum
-// list of user id should be prepared in controller
-nodeca.filters.after('forum', function (params, next) {
-  if (this.data.users) {
-    var user_id_list = _.compact(_.uniq(this.data.users));
 
-    var users = this.response.data.users = {};
-
-    User.fitchByIdList(user_id_list, function(err, user_list){
-      user_list.forEach(function(user){
-        users[user._id] = {
-          id          : user.id,
-          login       : user.login,
-          first_name  : user.first_name,
-          last_name   : user.last_name,
-          avatar      : build_avatar_path(user.cache.avatar_version)
-        };
-      });
-      next(err);
-    });
-  }
-  else {
-    next();
-  }
-});
 
 
 // breadcrumbs and head meta
