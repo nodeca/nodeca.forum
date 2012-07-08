@@ -8,7 +8,7 @@ var Async = NLib.Vendor.Async;
 module.exports = function (schema, options) {
   schema.statics.fetchPosts = function(options, iterator, callback) {
     if (!_.isFunction(iterator)) {
-      iterator = function(doc, cb) {cb()};
+      iterator = function(doc, cb) {cb();};
     }
     var result = [];
     // ToDo get state conditions from env

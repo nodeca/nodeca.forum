@@ -8,7 +8,7 @@ var Async = NLib.Vendor.Async;
 module.exports = function (schema, options) {
   schema.statics.fetchThreads = function(options, iterator, callback) {
     if (!_.isFunction(iterator)) {
-      iterator = function(doc, cb) {cb()};
+      iterator = function(doc, cb) {cb();};
     }
     var result = [];
     // ToDo get state conditions from env
@@ -50,14 +50,15 @@ module.exports = function (schema, options) {
 
 
   schema.statics.fetchThreadShortInfo = function(thread_id, callback) {
-    this.findOne({id: thread_id}, function(err, thread) {
+    this.findOne({id: thread_id}, function(err, doc) {
       // ToDo hb users check
-      var post_count = thread.cache.real.post_count;
+      var post_count = doc.cache.real.post_count;
+
       var thread = {
-        forum_id:   thread.forum_id,
-        seo_desc:   thread.cache.real.seo_desc,
+        forum_id:   doc.forum_id,
+        seo_desc:   doc.cache.real.seo_desc,
         id:         thread_id,
-        title:      thread.title,
+        title:      doc.title,
         post_count: post_count
       };
       callback(err, thread);
