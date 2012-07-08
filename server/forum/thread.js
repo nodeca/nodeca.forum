@@ -30,17 +30,8 @@ module.exports = function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
-  Thread.fetchById(params.id, function (err, thread) {
-    env.data.thread = thread;
-    // ToDo hb users check
-    var post_count = thread.cache.real.post_count;
-    env.response.data.thread = {
-      forum_id: thread.forum_id,
-      seo_desc: thread.cache.real.seo_desc,
-      id: params.id,
-      title: thread.title,
-      post_count: post_count
-    };
+  Thread.fetchThreadShortInfo(params.id, function (err, thread) {
+    env.response.data.thread = env.data.thread = thread;
     next(err);
   });
 });
