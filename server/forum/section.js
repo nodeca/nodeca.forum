@@ -28,38 +28,13 @@ module.exports = function (params, next) {
   });
 
   // fetch and prepare threads
-  Thread.fetchThredsByForumId(params.id, function (err, threads) {
-    data.threads = threads.map(function(thread) {
-      // ToDo check permissions
-      var doc = thread._doc;
-      doc._id = doc._id.toString();
-
-      user_id_list.push(doc.cache.real.first_user);
-      user_id_list.push(doc.cache.real.last_user);
-
-      return {
-        _id:              doc._id,
-        id:               doc.id,
-        title:            doc.title,
-        prefix:           doc.prefix,
-        forum_id:         doc.forum_id,
-        post_count:       doc.cache.real.post_count,
-        views_count:      doc.cache.real.views_count,
-
-        first_post: {
-          id:  doc.cache.real.first_post_id,
-          user:     doc.cache.real.first_user,
-          ts:       doc.cache.real.first_ts
-        },
-        last_post: {
-          id:   doc.cache.real.last_post_id,
-          user:      doc.cache.real.last_user,
-          ts:        doc.cache.real.last_ts
-        }
-      };
-
-    });
-    // ToDo build users list (authors, moderators, commentators)
+  var options = {'forum_id': params.id};
+  Thread.fetchThreads(options, function(thread, callback){
+    user_id_list.push(thread.first_post.user);
+    user_id_list.push(thread.last_post.user);
+    callback();
+  }, function(err, threads) {
+    data.threads= threads;
     next();
   });
 };

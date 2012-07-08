@@ -129,6 +129,8 @@ Thread.statics.fetchThredsByForumId = function (forum_id, callback) {
   this.find({'forum_id': forum_id}, callback);
 };
 
+Thread.plugin(require('./thread/_fetch'));
+
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Thread', Thread);
 };
