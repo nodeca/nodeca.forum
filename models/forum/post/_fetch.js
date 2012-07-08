@@ -20,14 +20,14 @@ module.exports = function (schema, options) {
       Async.forEach(docs, function(doc, next) {
         doc = doc._doc;
         var post = {
-          _id:              post._id.toString(),
-          id:               post.id,
-          attach_list:      post.attach_list,
-          text:             post.text,
-          fmt:              post.fmt,
-          html:             post.html,
-          user:             post.user,
-          ts:               post.ts
+          _id:              doc._id.toString(),
+          id:               doc.id,
+          attach_list:      doc.attach_list,
+          text:             doc.text,
+          fmt:              doc.fmt,
+          html:             doc.html,
+          user:             doc.user,
+          ts:               doc.ts
         };
         result.push(post);
         iterator(post, next);
