@@ -60,9 +60,9 @@ Post.index({
   , _id: -1
 });
 
-Post.statics.fetchPostsByThread = function( thread_id, callback) {
-  this.find({thread_id:thread_id}, callback);
-};
+
+Post.plugin(require('./post/_fetch'));
+
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Post', Post);

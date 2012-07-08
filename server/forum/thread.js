@@ -15,24 +15,12 @@ module.exports = function (params, next) {
   var data = this.response.data;
 
   var user_id_list = this.data.users = [];
-  Post.fetchPostsByThread(params.id, function (err, posts) {
-    data.posts = posts.map(function(post) {
-      var doc = post._doc;
-      doc._id = doc._id.toString();
-    
-      user_id_list.push(doc.user);
-      return {
-        _id:              doc._id,
-        id:               doc.id,
-        attach_list:      doc.attach_list,
-        text:             doc.text,
-        fmt:              doc.fmt,
-        html:             doc.html,
-        user:             doc.user,
-        ts:               doc.ts
-      };
-    });
-    // ToDo build users list (authors, editors, quote authors)
+  var options = {thread_id:params.id};
+  Post.fetchPosts(options, function(doc, callback){
+    user_id_list.push(doc.user);
+    callback();
+  }, function(err, posts) {
+    data.posts = posts;
     next();
   });
 };
