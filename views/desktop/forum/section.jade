@@ -7,7 +7,7 @@ article.forum-threadlist
       | #{forum.description}
 
   //- Subforums, if exist
-  - if (sections)
+  - if (sections && sections.length)
     ul.fl-cat-list
       - each sub_forum in sections
         - last_thread = sub_forum.last_thread
@@ -48,97 +48,98 @@ article.forum-threadlist
               li.lastpost-time
                 time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
 
-  //- Toolbar wuth pagination & controls
-  nav.btn-toolbar.controlbar
-    .btn-group
-      a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
+  - if (threads && threads.length)
+    //- Toolbar with pagination & controls
+    nav.btn-toolbar.controlbar
+      .btn-group
+        a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-    .btn-group
-      ul.pagination
-        li
-          a(href='#') 1
-        li.dropdown
-          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
-          form.dropdown-menu
-            label.input Jump to:
-              .input-append
-                input.input-small(type='text', size='8', placeholder='Page number')
-                button.btn.btn-inverse(type='button') Go!
-        li
-          a(href='#') 13
-        li
-          a(href='#') 14
-        li.dropdown
-          a.current.dropdown-toggle(href='#', data-toggle='dropdown') 15
-          form.dropdown-menu
-            label.input Jump to:
-              .input-append
-                input.input-small(type='text', size='8', placeholder='Page number')
-                button.btn.btn-inverse(type='button') Go!
-        li
-          a(href='#') 16
-        li
-          a(href='#') 17
-        li.dropdown
-          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
-          form.dropdown-menu
-            label.input Jump to:
-              .input-append
-                input.input-small(type='text', size='8', placeholder='Page number')
-                button.btn.btn-inverse(type='button') Go!
-        li
-          a(href='#') 325
+      .btn-group
+        ul.pagination
+          li
+            a(href='#') 1
+          li.dropdown
+            a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+            form.dropdown-menu
+              label.input Jump to:
+                .input-append
+                  input.input-small(type='text', size='8', placeholder='Page number')
+                  button.btn.btn-inverse(type='button') Go!
+          li
+            a(href='#') 13
+          li
+            a(href='#') 14
+          li.dropdown
+            a.current.dropdown-toggle(href='#', data-toggle='dropdown') 15
+            form.dropdown-menu
+              label.input Jump to:
+                .input-append
+                  input.input-small(type='text', size='8', placeholder='Page number')
+                  button.btn.btn-inverse(type='button') Go!
+          li
+            a(href='#') 16
+          li
+            a(href='#') 17
+          li.dropdown
+            a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+            form.dropdown-menu
+              label.input Jump to:
+                .input-append
+                  input.input-small(type='text', size='8', placeholder='Page number')
+                  button.btn.btn-inverse(type='button') Go!
+          li
+            a(href='#') 325
 
-    .btn-group.pull-right
-      a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
-        span.caret
-      ul.dropdown-menu
+      .btn-group.pull-right
+        a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
+          span.caret
+        ul.dropdown-menu
+          li
+            a(href='#') Announce
+          li
+            a(href='#') Add moderator
+          li
+            a(href='#') Mass move
+          li
+            a(href='#') Mass prune
+      .btn-group.pull-right
+        a.btn.btn-small.icon-eye.tip(href='#', title='Subscribe to new topics notification') 24
+      .btn-group.pull-right
+        a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title='Mark all read')
+      .btn-group.pull-right
+        a.btn.btn-small.btn-primary.icon-doc-text(href='#') New Topic
+
+
+
+    ul.tl-thread-list
+      - each thread in threads
+        - fp = thread.first_post
+        - lp = thread.last_post
         li
-          a(href='#') Announce
-        li
-          a(href='#') Add moderator
-        li
-          a(href='#') Mass move
-        li
-          a(href='#') Mass prune
-    .btn-group.pull-right
-      a.btn.btn-small.icon-eye.tip(href='#', title='Subscribe to new topics notification') 24
-    .btn-group.pull-right
-      a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title='Mark all read')
-    .btn-group.pull-right
-      a.btn.btn-small.btn-primary.icon-doc-text(href='#') New Topic
+          .row
+            .span7.tl-item-summary
+              h2
+                a(href=link_to('forum.thread', thread))= thread.title
+              //a.mark-i-attach._tip(href="#")=thread.attach_count
+              ul.tl-pages
+                li
+                  a(href='#') 1
+                li
+                  a(href='#') 2
+                li
+                  a(href='#') 3
+              .tl-meta
+                a.tl-preview-ctl.icon-down(href='#') Preview
+                a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].nickname}
+                time.tl-start-date(date-time=fp.ts.valueOf()) #{fp.ts.toLocaleDateString()}
 
+            ul.span2.tl-item-counters.hidden-phone
+              li #{thread.post_count} replies
+              li #{thread.views_count} vews
 
-
-  ul.tl-thread-list
-    - each thread in threads
-      - fp = thread.first_post
-      - lp = thread.last_post
-      li
-        .row
-          .span7.tl-item-summary
-            h2
-              a(href=link_to('forum.thread', thread))= thread.title
-            //a.mark-i-attach._tip(href="#")=thread.attach_count
-            ul.tl-pages
-              li
-                a(href='#') 1
-              li
-                a(href='#') 2
-              li
-                a(href='#') 3
-            .tl-meta
-              a.tl-preview-ctl.icon-down(href='#') Preview
-              a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].nickname}
-              time.tl-start-date(date-time=fp.ts.valueOf()) #{fp.ts.toLocaleDateString()}
-
-          ul.span2.tl-item-counters.hidden-phone
-            li #{thread.post_count} replies
-            li #{thread.views_count} vews
-
-          ul.span3.tl-item-lastpost.hidden-phone
-            li.lastpost-time
-              a(href='#')
-                time(date-time=lp.ts.valueOf()) #{lp.ts.toLocaleDateString()}
-            li.lastpost-user
-              a(href=link_to('users.member', users[lp.user])) #{users[lp.user].nickname}
+            ul.span3.tl-item-lastpost.hidden-phone
+              li.lastpost-time
+                a(href='#')
+                  time(date-time=lp.ts.valueOf()) #{lp.ts.toLocaleDateString()}
+              li.lastpost-user
+                a(href=link_to('users.member', users[lp.user])) #{users[lp.user].nickname}
