@@ -1,4 +1,4 @@
-article
+article.forum-threadlist
   include ../widgets/breadcrumbs
 
   header.page-head
@@ -6,6 +6,49 @@ article
     p(itemprop='description')
       | #{forum.description}
 
+  //- Subforums, if exist
+  - if (sections)
+    ul.fl-cat-list
+      - each sub_forum in sections
+        - last_thread = sub_forum.last_thread
+        li
+          // Add 'unread' class & #id below, for new data
+          .row
+            .span7.fl-item-summary
+              h3
+                a(href=link_to('forum.section', sub_forum))= sub_forum.title
+
+              - if (sub_forum.child_list.length > 0)
+                ul.hlist.fl-subsections
+                  - each third_level in sub_forum.child_list
+                    li
+                      a(href=link_to('forum.section', third_level))= third_level.title
+
+              - if (sub_forum.moderators.length > 0)
+                dl.def-hlist.fl-moderators
+                  dt moderators:
+                    - each moderator in sub_forum.moderators
+                      dd
+                        a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
+
+            ul.span2.fl-item-counters.hidden-phone
+              li
+                strong #{sub_forum.thread_count}
+                |  topics
+              li 
+                strong #{sub_forum.post_count}
+                |  posts
+            
+            ul.span3.fl-item-lastpost.hidden-phone
+              li.lastpost-title
+                a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{last_thread.title}
+              li.lastpost-user
+                | by 
+                a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].nickname} 
+              li.lastpost-time
+                time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
+
+  //- Toolbar wuth pagination & controls
   nav.btn-toolbar.controlbar
     .btn-group
       a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
@@ -64,47 +107,6 @@ article
       a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title='Mark all read')
     .btn-group.pull-right
       a.btn.btn-small.btn-primary.icon-doc-text(href='#') New Topic
-
-  ul.fl-cat-list(id='cat_list_#{forum.id}', data-notify='#cat_box_#{forum.id}').collapse.in
-    - each sub_forum in sections
-      - last_thread = sub_forum.last_thread
-      li
-        // Add 'unread' class & #id below, for new data
-        .row
-          .span7.fl-item-summary
-            h3
-              a(href=link_to('forum.section', sub_forum))= sub_forum.title
-
-            - if (sub_forum.child_list.length > 0)
-              ul.hlist.fl-subsections
-                - each third_level in sub_forum.child_list
-                  li
-                    a(href=link_to('forum.section', third_level))= third_level.title
-
-            - if (sub_forum.moderators.length > 0)
-              dl.def-hlist.fl-moderators
-                dt moderators:
-                  - each moderator in sub_forum.moderators
-                    dd
-                      a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
-
-          ul.span2.fl-item-counters.hidden-phone
-            li
-              strong #{sub_forum.thread_count}
-              |  topics
-            li 
-              strong #{sub_forum.post_count}
-              |  posts
-          
-          ul.span3.fl-item-lastpost.hidden-phone
-            li.lastpost-title
-              a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{last_thread.title}
-            li.lastpost-user
-              | by 
-              a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].nickname} 
-            li.lastpost-time
-              time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
-a
 
 
 
