@@ -16,8 +16,8 @@ module.exports = function (params, next) {
 
   var user_id_list = this.data.users = [];
   var options = {thread_id:params.id};
-  Post.fetchPosts(options, function(doc, callback){
-    user_id_list.push(doc.user);
+  Post.fetchPosts(options, function(post, callback){
+    user_id_list.push(post.user);
     callback();
   }, function(err, posts) {
     data.posts = posts;

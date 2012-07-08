@@ -18,11 +18,9 @@ module.exports = function (schema, options) {
         return;
       }
       Async.forEach(docs, function(doc, next) {
-        var post = doc._doc;
-        post._id = post._id.toString();
-      
-        result.push({
-          _id:              post._id,
+        doc = doc._doc;
+        var post = {
+          _id:              post._id.toString(),
           id:               post.id,
           attach_list:      post.attach_list,
           text:             post.text,
@@ -30,8 +28,9 @@ module.exports = function (schema, options) {
           html:             post.html,
           user:             post.user,
           ts:               post.ts
-        });
-        iterator(doc, next);
+        };
+        result.push(post);
+        iterator(post, next);
       }, function() {
         callback(err, result);
       });
