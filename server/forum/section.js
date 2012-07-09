@@ -7,29 +7,20 @@ var Thread = nodeca.models.forum.Thread;
 
 var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
 
-var forum_helpers = require('../../lib/helpers/forum.js');
-var build_tree = forum_helpers.build_tree;
-var prepare_section_display_info = forum_helpers.prepare_section_display_info;
-
 
 // fetch and prepare threads and sub-forums
 // ToDo add sorting and pagination
 module.exports = function (params, next) {
-  var data = this.response.data;
-
-  var user_id_list = this.data.users = [];
-
+  var env = this;
   // prepare sub-forums
   var sections = nodeca.cache.get('sections', []);
   var root = sections[params.id]._id;
 
-  this.response.data.sections = build_tree(sections, root, 2, function(section) {
-    return prepare_section_display_info(section, user_id_list);
+  Section.build_tree(env, root, 2, function(err) {
+    // fetch and prepare threads
+    var options = {'forum_id': params.id};
+    Thread.fetchThreads(env, options, next);
   });
-
-  // fetch and prepare threads
-  var options = {'forum_id': params.id};
-  Thread.fetchThreads(this, options, next);
 };
 
 
@@ -38,7 +29,7 @@ nodeca.filters.after('@', function (params, next) {
   var sections = nodeca.cache.get('sections');
 
   // ToDo hb users check
-  var thread_count = sections[params.id].cache.real.thread_count;
+  var thread_count = sections[params.id].thread_count;
   this.response.data.forum = {
     id: params.id,
     title: sections[params.id].title,
@@ -65,3 +56,9 @@ nodeca.filters.after('@', function (params, next) {
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);
   next();
 });
+nodeca.filters.after('', 50, function (params, next) {
+  //console.dir(this.response.data.users);
+  //console.dir('------');
+  next();
+});
+

@@ -8,12 +8,6 @@ var Async = NLib.Vendor.Async;
 
 var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
 
-var build_avatar_path = require('../../lib/helpers/forum.js').build_avatar_path;
-
-var forum_helpers = require('../../lib/helpers/forum.js');
-var build_tree = forum_helpers.build_tree;
-var prepare_section_display_info = forum_helpers.prepare_section_display_info;
-
 
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
@@ -21,11 +15,12 @@ var Thread = nodeca.models.forum.Thread;
 // Temporary crutch
 // added sections to cache
 function fetch_sections(params, next) {
+  var data = this.data
   if (!nodeca.cache.has('sections')) {
-    Section.fetchSections(function (err, sections) {
+    Section.fetchSections(this, {}, function (err) {
       if (!err) {
         var cache = {};
-        sections.forEach(function(section) {
+        data.sections.forEach(function(section) {
           cache[section.id] = section;
         });
         nodeca.cache.set('sections', cache);
@@ -46,15 +41,10 @@ module.exports = function (params, next) {
 
   var user_id_list = this.data.users = [];
   var sections = nodeca.cache.get('sections', []);
+  var data = this.response.data
 
-  this.response.data.sections = build_tree(sections, null, 3, function(section) {
-    return prepare_section_display_info(section, user_id_list);
-  });
-  next();
+  Section.build_tree(this, null, 3, next);
 };
-
-
-
 
 
 // breadcrumbs and head meta
