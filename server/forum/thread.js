@@ -24,10 +24,7 @@ module.exports = function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
-  Thread.fetchThreadShortInfo(params.id, function (err, thread) {
-    env.response.data.thread = env.data.thread = thread;
-    next(err);
-  });
+  Thread.fetchThreadShortInfo(env, params.id, next);
 });
 
 

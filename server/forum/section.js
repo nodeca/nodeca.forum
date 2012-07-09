@@ -29,14 +29,7 @@ module.exports = function (params, next) {
 
   // fetch and prepare threads
   var options = {'forum_id': params.id};
-  Thread.fetchThreads(options, function(thread, callback){
-    user_id_list.push(thread.first_post.user);
-    user_id_list.push(thread.last_post.user);
-    callback();
-  }, function(err, threads) {
-    data.threads= threads;
-    next();
-  });
+  Thread.fetchThreads(this, options, next);
 };
 
 
