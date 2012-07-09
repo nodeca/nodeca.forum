@@ -6,11 +6,9 @@ var NLib = require('nlib');
 var Async = NLib.Vendor.Async;
 
 module.exports = function (schema, options) {
-  schema.statics.fetchPosts = function(options, iterator, callback) {
-    if (!_.isFunction(iterator)) {
-      iterator = function(doc, cb) {cb();};
-    }
-    var result = [];
+  schema.statics.fetchPosts = function(env, options, callback) {
+    var posts = env.response.data.posts = [];
+    var users = env.data.users ? env.data.users : [];
     // ToDo get state conditions from env
     this.find(options, function(err, docs){
       if (err) {
@@ -29,11 +27,10 @@ module.exports = function (schema, options) {
           user:             doc.user,
           ts:               doc.ts
         };
-        result.push(post);
-        iterator(post, next);
-      }, function() {
-        callback(err, result);
-      });
+        users.push(post.user);
+        posts.push(post);
+        next();
+      }, callback);
     });
   };
 };
