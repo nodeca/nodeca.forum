@@ -5,7 +5,7 @@
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 
-var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 
 // fetch and prepare threads and sub-forums
@@ -56,9 +56,3 @@ nodeca.filters.after('@', function (params, next) {
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);
   next();
 });
-nodeca.filters.after('', 50, function (params, next) {
-  //console.dir(this.response.data.users);
-  //console.dir('------');
-  next();
-});
-

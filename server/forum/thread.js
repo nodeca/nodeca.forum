@@ -6,7 +6,7 @@ var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 var Post = nodeca.models.forum.Post;
 
-var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 
 // fetch and prepare posts

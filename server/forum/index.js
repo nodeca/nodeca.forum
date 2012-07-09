@@ -6,7 +6,7 @@ var NLib = require('nlib');
 
 var Async = NLib.Vendor.Async;
 
-var forum_breadcrumbs = require('../../lib/widgets/breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 
 var Section = nodeca.models.forum.Section;
