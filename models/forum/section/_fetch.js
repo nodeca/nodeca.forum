@@ -19,7 +19,8 @@ module.exports = function (schema, options) {
       }
 
       Async.forEach(docs, function(doc, next) {
-        doc = doc._doc;
+        doc = doc.toObject();
+
         if (doc.parent) {
           doc.parent = doc.parent.toString();
         }
