@@ -7,15 +7,17 @@ var Async = NLib.Vendor.Async;
 
 module.exports = function (schema, options) {
   schema.statics.fetchSections = function(env, options, callback) {
-    
+
     var result = env.response.data.sections = [];
     var users = env.data.users = env.data.users ? env.data.users : [];
+
     // ToDo get state conditions from env
     this.find(options, function(err, docs){
       if (err) {
         callback(err);
         return;
       }
+
       Async.forEach(docs, function(doc, next) {
         doc = doc._doc;
         if (doc.parent) {

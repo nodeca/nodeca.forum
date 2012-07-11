@@ -10,7 +10,7 @@ var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 
 var Section = nodeca.models.forum.Section;
-var Thread = nodeca.models.forum.Thread;
+var Thread  = nodeca.models.forum.Thread;
 
 // Temporary crutch
 // added sections to cache
@@ -32,13 +32,16 @@ function fetch_sections(params, next) {
     next();
   }
 }
+
+
 // fetch_sections fired befor each controllers in forum/admin.forum
-['forum', 'admin.forum'].forEach(function (k) { nodeca.filters.before(k, fetch_sections); });
+['forum', 'admin.forum'].forEach(function (k) {
+  nodeca.filters.before(k, fetch_sections);
+});
 
 
 // fetch and prepare sections
 module.exports = function (params, next) {
-
   var user_id_list = this.data.users = [];
   var sections = nodeca.cache.get('sections', []);
   var data = this.response.data
@@ -48,7 +51,7 @@ module.exports = function (params, next) {
 
 
 // breadcrumbs and head meta
-nodeca.filters.after('@', function (params, next) {
+nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   this.response.data.head.title = this.helpers.t('common.forum.title');
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
   next();
