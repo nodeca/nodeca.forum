@@ -114,7 +114,7 @@ Thread.statics.fetchThredsByRealIdList = function (id_list, callback) {
     }
     var result = {};
     docs.forEach(function(item) {
-      result[item._id.toString()] = item._doc;
+      result[item._id.toString()] = item.toObject();
     });
     callback(err, result);
   });

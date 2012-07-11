@@ -16,7 +16,7 @@ module.exports = function (schema, options) {
         return;
       }
       Async.forEach(docs, function(doc, next) {
-        doc = doc._doc;
+        doc = doc.toObject();
         var thread = {
           _id:              doc._id.toString(),
           id:               doc.id,
