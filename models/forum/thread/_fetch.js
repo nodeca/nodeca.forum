@@ -28,12 +28,12 @@ module.exports = function (schema, options) {
 
           first_post: {
             id:             doc.cache.real.first_post_id,
-            user:           doc.cache.real.first_user,
+            user:           doc.cache.real.first_user.toString(),
             ts:             doc.cache.real.first_ts
           },
           last_post: {
             id:             doc.cache.real.last_post_id,
-            user:           doc.cache.real.last_user,
+            user:           doc.cache.real.last_user.toString(),
             ts:             doc.cache.real.last_ts
           }
 

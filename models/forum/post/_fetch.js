@@ -24,7 +24,7 @@ module.exports = function (schema, options) {
           text:             doc.text,
           fmt:              doc.fmt,
           html:             doc.html,
-          user:             doc.user,
+          user:             doc.user.toString(),
           ts:               doc.ts
         };
         users.push(post.user);
