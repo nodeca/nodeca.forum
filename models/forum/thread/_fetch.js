@@ -49,6 +49,8 @@ module.exports = function (schema, options) {
 
   schema.statics.fetchThreadShortInfo = function(env, thread_id, callback) {
     this.findOne({id: thread_id}, function(err, doc) {
+      doc = doc.toObject();
+
       // ToDo hb users check
       var post_count = doc.cache.real.post_count;
 
