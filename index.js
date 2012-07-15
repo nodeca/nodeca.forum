@@ -12,3 +12,10 @@ module.exports = NLib.Application.create({
     callback();
   }
 });
+
+//
+// Register filters
+//
+
+
+require('./lib/filters');
