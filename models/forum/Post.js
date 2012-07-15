@@ -5,17 +5,22 @@
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
+function idToStr(value) {
+  return !!value ? value.toString() : null;
+}
+
 var Post = module.exports.Post = new mongoose.Schema({
+  _id               : { type: Schema.ObjectId, auto: true, get: idToStr}
 
     // user-friendly id (autoincremented)
-    id              : { type: Number, required: true, min: 1, index: true }
+  ,  id             : { type: Number, required: true, min: 1, index: true }
 
-  , thread          : Schema.ObjectId
+  , thread          : {type: Schema.ObjectId, get: idToStr}
   , thread_id       : Number
-  , forum           : Schema.ObjectId
+  , forum           : {type: Schema.ObjectId, get: idToStr}
   , forum_id        : Number
 
-  , user            : Schema.ObjectId
+  , user            : {type: Schema.ObjectId, get: idToStr}
   , ts              : Date    // timestamp
 
   , ip              : String  // ip address
@@ -38,7 +43,7 @@ var Post = module.exports.Post = new mongoose.Schema({
                               // (general `state` is used for fast selects)
   , state_prev      : Number  // previous value, to rollback `delete`
 
-  , attach_list     : [Schema.ObjectId]
+  , attach_list     : [{type: Schema.ObjectId, get: idToStr}]
 }, { strict: true });
 
 // Indexes

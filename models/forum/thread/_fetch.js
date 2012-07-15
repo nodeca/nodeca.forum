@@ -45,25 +45,4 @@ module.exports = function (schema, options) {
       }, callback);
     });
   };
-
-
-  schema.statics.fetchThreadShortInfo = function(env, thread_id, callback) {
-    this.findOne({id: thread_id}, function(err, doc) {
-      doc = doc.toObject();
-
-      // ToDo hb users check
-      var post_count = doc.cache.real.post_count;
-
-      var thread = {
-        forum_id:   doc.forum_id,
-        seo_desc:   doc.cache.real.seo_desc,
-        id:         thread_id,
-        title:      doc.title,
-        post_count: post_count
-      };
-      env.response.data.thread = env.data.thread = thread;
-      callback(err);
-    });
-  };
-
 };
