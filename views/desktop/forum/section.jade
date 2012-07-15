@@ -46,7 +46,7 @@ article.forum-threadlist
                 | by 
                 a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].nickname} 
               li.lastpost-time
-                time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
+                time(date-time=date(last_thread.ts, 'iso8601')) #{date(last_thread.ts, 'date')}
 
   - if (threads && threads.length)
     //- Toolbar with pagination & controls
@@ -131,7 +131,7 @@ article.forum-threadlist
               .tl-meta
                 a.tl-preview-ctl.icon-down(href='#') Preview
                 a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].nickname}
-                time.tl-start-date(date-time=fp.ts.valueOf()) #{fp.ts.toLocaleDateString()}
+                time.tl-start-date(date-time=date(fp.ts, 'iso8601')) #{date(fp.ts, 'date')}
 
             ul.span2.tl-item-counters.hidden-phone
               li #{thread.post_count} replies
@@ -140,6 +140,6 @@ article.forum-threadlist
             ul.span3.tl-item-lastpost.hidden-phone
               li.lastpost-time
                 a(href='#')
-                  time(date-time=lp.ts.valueOf()) #{lp.ts.toLocaleDateString()}
+                  time(date-time=date(lp.ts, 'iso8601')) #{date(lp.ts, 'date')}
               li.lastpost-user
                 a(href=link_to('users.member', users[lp.user])) #{users[lp.user].nickname}
