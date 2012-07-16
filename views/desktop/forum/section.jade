@@ -35,10 +35,10 @@ article.forum-threadlist
 
             ul.span2.fl-item-counters.hidden-phone
               li
-                strong #{sub_forum.thread_count}
+                strong #{sub_forum.cache.real.thread_count}
                 |  topics
               li 
-                strong #{sub_forum.post_count}
+                strong #{sub_forum.cache.real.post_count}
                 |  posts
             
             ul.span3.fl-item-lastpost.hidden-phone
