@@ -13,7 +13,9 @@ article
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
 
         - each forum in category.child_list
-          - last_thread = forum.last_thread
+          - last_thread = forum.cache.real.last_thread_id
+          - last_user = forum.cache.real.last_user
+          - last_ts = forum.cache.real.last_ts
           li
             // Add 'unread' class & #id below, for new data
             .row
@@ -21,36 +23,36 @@ article
                 h3
                   a(href=link_to('forum.section', forum))= forum.title
 
-                - if (forum.child_list.length > 0)
+                - if (forum.child_list && forum.child_list.length > 0)
                   ul.hlist.fl-subsections
                     - each sub_forum in forum.child_list
                       li
                         a(href=link_to('forum.section', sub_forum))= sub_forum.title
 
-                - if (forum.moderators.length > 0)
+                - if (forum.moderator_list && forum.moderator_list.length > 0)
                   dl.def-hlist.fl-moderators
                     dt moderators:
-                      - each moderator in forum.moderators
+                      - each moderator in forum.moderator_list
                         dd
                           a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
               ul.span2.fl-item-counters.hidden-phone
                 li
-                  strong #{forum.thread_count}
+                  strong #{forum.cache.real.thread_count}
                   |  topics
                 li 
-                  strong #{forum.post_count}
+                  strong #{forum.cache.real.post_count}
                   |  posts
               
               ul.span3.fl-item-lastpost.hidden-phone
                 li.lastpost-title
-                  a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{forum.last_thread.title}
+                  a(href=link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
                 li.lastpost-user
                   | by 
-                  - lp_user = users[last_thread.user]
+                  - lp_user = users[last_user]
                   a(href=link_to('users.member', lp_user)) #{lp_user.nickname} 
                 li.lastpost-time
-                  time(date-time=date(last_thread.ts, 'iso8601')) #{date(last_thread.ts, 'date')}
+                  time(date-time=date(last_ts, 'iso8601')) #{date(last_ts, 'date')}
 
   footer
     .btn-toolbar

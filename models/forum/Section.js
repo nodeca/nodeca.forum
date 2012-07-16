@@ -91,7 +91,6 @@ Section.statics.fetchSections = function (options, callback) {
   });
 };
 
-Section.plugin(require('./section/_fetch'));
 Section.plugin(require('./section/_build_tree'));
 
 module.exports.__init__ = function __init__() {

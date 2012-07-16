@@ -5,10 +5,6 @@
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 
-function idToStr(value) {
-  return !!value ? value.toString() : null;
-}
-
 var cache = {
     real    : {
         prefix_text     : String
@@ -22,14 +18,14 @@ var cache = {
       , views_count     : { type: Number, default: 0 }
 
         // First post
-      , first_post      : { type: Schema.ObjectId, get: idToStr}
+      , first_post      : Schema.ObjectId
       , first_post_id   : Number
-      , first_user      : { type: Schema.ObjectId, get: idToStr}
+      , first_user      : Schema.ObjectId
       , first_ts        : Date
         // Last post
-      , last_post       : { type: Schema.ObjectId, get: idToStr}
+      , last_post       : Schema.ObjectId
       , last_post_id    : Number
-      , last_user       : { type: Schema.ObjectId, get: idToStr}
+      , last_user       : Schema.ObjectId
       , last_ts         : Date
   }
   , hb    : {
@@ -44,14 +40,14 @@ var cache = {
       , views_count     : { type: Number, default: 0 }
 
         // First post
-      , first_post      : { type: Schema.ObjectId, get: idToStr}
+      , first_post      : Schema.ObjectId
       , first_post_id   : Number
-      , first_user      : { type: Schema.ObjectId, get: idToStr}
+      , first_user      : Schema.ObjectId
       , first_ts        : Date
         // Last post
-      , last_post       : { type: Schema.ObjectId, get: idToStr}
+      , last_post       : Schema.ObjectId
       , last_post_id    : Number
-      , last_user       : { type: Schema.ObjectId, get: idToStr}
+      , last_user       : Schema.ObjectId
       , last_ts         : Date
   }
 
@@ -59,16 +55,15 @@ var cache = {
 
 
 var Thread = module.exports.Thread = new mongoose.Schema({
-  _id               : { type: Schema.ObjectId, auto: true, get: idToStr}
 
-  , title           : { type: String, required: true }
+    title           : { type: String, required: true }
     // user-friendly id (autoincremented)
   , id              : { type: Number, required: true, min: 1, index: true }
 
     // prefix id/cache
-  , prefix          : { type: Schema.ObjectId, get: idToStr}
+  , prefix          : Schema.ObjectId
 
-  , forum           : { type: Schema.ObjectId, get: idToStr}
+  , forum           : Schema.ObjectId
   , forum_id        : Number
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
@@ -82,7 +77,7 @@ var Thread = module.exports.Thread = new mongoose.Schema({
   , tags_id_list    : [Number]
 
     // "Similar" threads cache
-  , similar         : [{ type: Schema.ObjectId, get: idToStr}]
+  , similar         : [Schema.ObjectId]
 
     // SEO
   , keywords        : String
@@ -91,35 +86,6 @@ var Thread = module.exports.Thread = new mongoose.Schema({
   , cache           : cache
 
 }, { strict: true });
-
-Thread.virtual('seo_desc').get(function () {
-  return this.cache.real.seo_desc;
-});
-
-Thread.virtual('post_count').get(function () {
-  return this.cache.real.post_count;
-});
-
-Thread.virtual('views_count').get(function () {
-  return this.cache.real.views_count;
-});
-
-
-Thread.virtual('first_post').get(function() {
-  return {
-    id:     this.cache.real.first_post_id,
-    user:   this.cache.real.first_user,
-    ts:     this.cache.real.first_ts
-  };
-});
-
-Thread.virtual('last_post').get(function() {
-  return {
-    id:     this.cache.real.last_post_id,
-    user:   this.cache.real.last_user,
-    ts:     this.cache.real.last_ts
-  };
-});
 
 
 // Indexes

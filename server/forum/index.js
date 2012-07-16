@@ -2,18 +2,14 @@
 
 /*global nodeca, _*/
 
-var NLib = require('nlib');
-
-var Async = NLib.Vendor.Async;
-
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
-
 var Section = nodeca.models.forum.Section;
-var Thread  = nodeca.models.forum.Thread;
 
 
 // fetch and prepare sections
+//
+// params is empty
 module.exports = function (params, next) {
   Section.build_tree(this, null, 3, next);
 };
@@ -25,4 +21,3 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
   next();
 });
-

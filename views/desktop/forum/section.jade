@@ -10,7 +10,9 @@ article.forum-threadlist
   - if (sections && sections.length)
     ul.fl-cat-list
       - each sub_forum in sections
-        - last_thread = sub_forum.last_thread
+        - last_thread = sub_forum.cache.real.last_thread_id
+        - last_user = sub_forum.cache.real.last_user
+        - last_ts = sub_forum.cache.real.last_ts
         li
           // Add 'unread' class & #id below, for new data
           .row
@@ -18,16 +20,16 @@ article.forum-threadlist
               h3
                 a(href=link_to('forum.section', sub_forum))= sub_forum.title
 
-              - if (sub_forum.child_list.length > 0)
+              - if (sub_forum.child_list && sub_forum.child_list.length)
                 ul.hlist.fl-subsections
                   - each third_level in sub_forum.child_list
                     li
-                      a(href=link_to('forum.section', third_level))= third_level.title
+                      a(href=link_to('forum.section', third_level))= third_level.cache.real.last_thread_title
 
-              - if (sub_forum.moderators.length > 0)
+              - if (sub_forum.moderator_list && sub_forum.moderator_list.length)
                 dl.def-hlist.fl-moderators
                   dt moderators:
-                    - each moderator in sub_forum.moderators
+                    - each moderator in sub_forum.moderator_list
                       dd
                         a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
@@ -41,12 +43,12 @@ article.forum-threadlist
             
             ul.span3.fl-item-lastpost.hidden-phone
               li.lastpost-title
-                a(href=link_to('forum.thread', last_thread) +'#'+last_thread.post_id) #{last_thread.title}
+                a(href=link_to('forum.thread', {id: last_thread, forum_id: sub_forum.id}) +'#'+sub_forum.cache.real.last_post_id) #{sub_forum.cache.real.last_thread_title}
               li.lastpost-user
                 | by 
-                a(href=link_to('users.member', users[last_thread.user])) #{users[last_thread.user].nickname} 
+                a(href=link_to('users.member', users[last_user])) #{users[last_user].nickname} 
               li.lastpost-time
-                time(date-time=date(last_thread.ts, 'iso8601')) #{date(last_thread.ts, 'date')}
+                time(date-time=date(last_ts, 'iso8601')) #{date(last_ts, 'date')}
 
   - if (threads && threads.length)
     //- Toolbar with pagination & controls
@@ -113,8 +115,10 @@ article.forum-threadlist
 
     ul.tl-thread-list
       - each thread in threads
-        - fp = thread.first_post
-        - lp = thread.last_post
+        - fp_user = thread.cache.real.first_user
+        - lp_user = thread.cache.real.last_user
+        - fp_ts   = thread.cache.real.first_ts
+        - lp_ts   = thread.cache.real.last_ts
         li
           .row
             .span7.tl-item-summary
@@ -130,8 +134,8 @@ article.forum-threadlist
                   a(href='#') 3
               .tl-meta
                 a.tl-preview-ctl.icon-down(href='#') Preview
-                a.tl-starter(href=link_to('users.member', users[fp.user])) #{users[fp.user].nickname}
-                time.tl-start-date(date-time=date(fp.ts, 'iso8601')) #{date(fp.ts, 'date')}
+                a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user].nickname}
+                time.tl-start-date(date-time=date(fp_ts, 'iso8601')) #{date(fp_ts, 'date')}
 
             ul.span2.tl-item-counters.hidden-phone
               li #{thread.post_count} replies
@@ -140,6 +144,6 @@ article.forum-threadlist
             ul.span3.tl-item-lastpost.hidden-phone
               li.lastpost-time
                 a(href='#')
-                  time(date-time=date(lp.ts, 'iso8601')) #{date(lp.ts, 'date')}
+                  time(date-time=date(lp_ts, 'iso8601')) #{date(lp_ts, 'date')}
               li.lastpost-user
-                a(href=link_to('users.member', users[lp.user])) #{users[lp.user].nickname}
+                a(href=link_to('users.member', users[lp_user])) #{users[lp_user].nickname}
