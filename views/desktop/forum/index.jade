@@ -50,7 +50,7 @@ article
                   - lp_user = users[last_thread.user]
                   a(href=link_to('users.member', lp_user)) #{lp_user.nickname} 
                 li.lastpost-time
-                  time(date-time=last_thread.ts.valueOf()) #{last_thread.ts.toLocaleDateString()}
+                  time(date-time=date(last_thread.ts, 'iso8601')) #{date(last_thread.ts, 'date')}
 
   footer
     .btn-toolbar
