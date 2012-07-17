@@ -138,8 +138,8 @@ article.forum-threadlist
                 time.tl-start-date(date-time=date(fp_ts, 'iso8601')) #{date(fp_ts, 'date')}
 
             ul.span2.tl-item-counters.hidden-phone
-              li #{thread.post_count} replies
-              li #{thread.views_count} vews
+              li #{thread.cache.real.post_count} replies
+              li #{thread.cache.real.views_count} vews
 
             ul.span3.tl-item-lastpost.hidden-phone
               li.lastpost-time
