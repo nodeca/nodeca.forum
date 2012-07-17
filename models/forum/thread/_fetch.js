@@ -3,10 +3,10 @@
 /*global nodeca, _*/
 
 module.exports = function (schema, options) {
-  schema.statics.fetchThreads = function(env, options, callback) {
+  schema.statics.fetchThreads = function(env, query, callback) {
     env.response.data.threads = [];
-    if (!_.isObject(env.data.users)) {
-      env.data.users = {};
+    if (!_.isArray(env.data.users)) {
+      env.data.users = [];
     }
 
     var fields = [
@@ -16,15 +16,15 @@ module.exports = function (schema, options) {
     fields.push('cache.real');
 
     // ToDo get state conditions from env
-    this.find(options, fields, function(err, docs){
+    this.find(query).select(fields.join(' ')).setOptions({lean: true }).exec(function(err, docs){
       if (err) {
         callback(err);
         return;
       }
       env.response.data.threads = docs.map(function(doc) {
-        env.data.users[doc.cache.real.first_user.toString()] = true;
-        env.data.users[doc.cache.real.last_user.toString()] = true;
-        return doc.toObject();
+        env.data.users.push(doc.cache.real.first_user);
+        env.data.users.push(doc.cache.real.last_user);
+        return doc;
       });
       callback();
     });

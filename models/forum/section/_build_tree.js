@@ -38,9 +38,8 @@ var build_tree = module.exports.build_tree = function(source, root, deep, iterat
 module.exports = function (schema, options) {
   schema.statics.build_tree = function(env, root, deep, callback) {
     env.response.data.sections = [];
-    var sections = [];
-    if (!_.isObject(env.data.users)) {
-      env.data.users = {};
+    if (!_.isArray(env.data.users)) {
+      env.data.users = [];
     }
 
     var fields = [
@@ -51,26 +50,22 @@ module.exports = function (schema, options) {
     // ToDo real vs hb
     fields.push('cache.real');
 
-    options = {};
+    var query = {};
     // ToDo get state conditions from env
-    this.find(options, fields, function(err, docs){
+    this.find(query).select(fields.join(' ')).setOptions({lean:true}).exec(function(err, docs){
       if (err) {
         callback(err);
         return;
       }
   
-      var sections = docs.map(function(doc) {
-        return doc.toObject();
-      });
-
-      env.response.data.sections = build_tree(sections, root, deep, function(doc){
+      env.response.data.sections = build_tree(docs, root, deep, function(doc){
         if (doc.moderator_list && _.isArray(doc.moderator_list)) {
           doc.moderator_list.forEach(function(user) {
-            env.data.users[user.toString()] = true;
+            env.data.users.push(user);
           });
         }
         if (doc.cache.real.last_user) {
-          env.data.users[doc.cache.real.last_user.toString()] = true;
+          env.data.users.push(doc.cache.real.last_user);
         }
       });
       callback(err);

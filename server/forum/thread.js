@@ -13,9 +13,9 @@ nodeca.filters.before('@', function (params, next) {
   var env = this;
 
   env.data.threads = {};
-  Thread.findOne({id: params.id}, function(err, doc) {
+  Thread.findOne({id: params.id}, {lean: true }, function(err, doc) {
     // ToDo hb vs real
-    env.data.threads[params.id] = doc.toObject();
+    env.data.threads[params.id] = doc;
     next();
   });
 });
@@ -30,11 +30,11 @@ nodeca.filters.before('@', function (params, next) {
 // - `forum_id`   forum id
 module.exports = function (params, next) {
   var env = this;
-  var options = {
+  var query = {
     thread_id: params.id
   };
 
-  Post.fetchPosts(this, options, function(err) {
+  Post.fetchPosts(this, query, function(err) {
     // prepare thread info
     var thread = env.data.threads[params.id];
     env.response.data.thread = {

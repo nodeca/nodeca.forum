@@ -21,8 +21,8 @@ module.exports = function (params, next) {
   var root = this.data.sections[params.id]._id;
   Section.build_tree(env, root, 2, function(err) {
     // fetch and prepare threads
-    var options = {'forum_id': params.id};
-    Thread.fetchThreads(env, options, function(err) {
+    var query = {'forum_id': params.id};
+    Thread.fetchThreads(env, query, function(err) {
       // ToDo hb users check
       var parent = env.data.sections[params.id];
       var thread_count = parent.thread_count;
