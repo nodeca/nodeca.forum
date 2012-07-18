@@ -14,9 +14,6 @@ nodeca.filters.before('@', function (params, next) {
 
   Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
     if (!err) {
-      if (env.session.hb) {
-        doc.cache.real = doc.cache.hb;
-      }
       env.data.thread = doc;
     }
     next(err);
@@ -75,9 +72,14 @@ nodeca.filters.after('@', function (params, next) {
     forum_id:   thread.forum_id,
     seo_desc:   thread.cache.real.seo_desc,
     id:         params.id,
-    title:      thread.title,
-    post_count: thread.cache.real.post_count
+    title:      thread.title
   };
+  if (this.session.hb) {
+    this.response.data.thread[post_count] = thread.cache.hb.post_count;
+  }
+  else {
+    this.response.data.thread[post_count] = thread.cache.real.post_count;
+  }
 
   // build breadcrumbs
   forum.parent_id_list.forEach(function(parent) {
