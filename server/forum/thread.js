@@ -12,10 +12,13 @@ var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
+  env.extras.puncher.start('Thread info prefetch');
+
   Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
     if (!err) {
       env.data.thread = doc;
     }
+    env.extras.puncher.stop();
     next(err);
   });
 });
@@ -34,6 +37,8 @@ module.exports = function (params, next) {
     thread_id: params.id
   };
 
+  env.extras.puncher.start('Get posts');
+
   env.data.users = env.data.users || [];
   // ToDo get state conditions from env
   var fields = [
@@ -50,6 +55,8 @@ module.exports = function (params, next) {
       });
     }
     
+    env.extras.puncher.stop();
+
     next(err);
   });
 };
@@ -75,10 +82,10 @@ nodeca.filters.after('@', function (params, next) {
     title:      thread.title
   };
   if (this.session.hb) {
-    this.response.data.thread[post_count] = thread.cache.hb.post_count;
+    this.response.data.thread.post_count = thread.cache.hb.post_count;
   }
   else {
-    this.response.data.thread[post_count] = thread.cache.real.post_count;
+    this.response.data.thread.post_count = thread.cache.real.post_count;
   }
 
   // build breadcrumbs

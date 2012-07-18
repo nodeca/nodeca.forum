@@ -18,8 +18,13 @@ module.exports = function (params, next) {
   var env = this;
 
   // prepare sub-forums
+  env.extras.puncher.start('Get subforums');
+
   var root = this.data.sections[params.id]._id;
+
   Section.build_tree(env, root, 2, function(err) {
+    env.extras.puncher.stop();  
+
     env.data.users = env.data.users || [];
 
     // fetch and prepare threads
@@ -28,6 +33,8 @@ module.exports = function (params, next) {
     var fields = [
       '_id', 'id', 'title', 'prefix', 'forum_id', 'cache'
     ];
+
+    env.extras.puncher.start('Get threads');
 
     Thread.find(query).select(fields.join(' ')).setOptions({lean: true }).exec(function(err, docs){
       if (!err) {
@@ -40,6 +47,7 @@ module.exports = function (params, next) {
           return doc;
         });
       }
+      env.extras.puncher.stop();  
       next(err);
     });
 
@@ -50,7 +58,6 @@ module.exports = function (params, next) {
 // breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
   var sections = this.data.sections;
-
   var parents = [];
   var forum = sections[params.id];
  
@@ -76,5 +83,6 @@ nodeca.filters.after('@', function (params, next) {
   });
 
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);
+
   next();
 });

@@ -11,7 +11,14 @@ var Section = nodeca.models.forum.Section;
 //
 // params is empty
 module.exports = function (params, next) {
-  Section.build_tree(this, null, 3, next);
+  var env = this;
+
+  env.extras.puncher.start('Get forums');
+
+  Section.build_tree(this, null, 3,  function(err) {
+    env.extras.puncher.stop();
+    next(err);
+  });
 };
 
 
