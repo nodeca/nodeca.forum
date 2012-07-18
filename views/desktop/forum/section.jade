@@ -30,8 +30,9 @@ article.forum-threadlist
                 dl.def-hlist.fl-moderators
                   dt moderators:
                     - each moderator in sub_forum.moderator_list
-                      dd
-                        a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
+                      - if (users[moderator])
+                        dd
+                          a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
             ul.span2.fl-item-counters.hidden-phone
               li
@@ -44,9 +45,10 @@ article.forum-threadlist
             ul.span3.fl-item-lastpost.hidden-phone
               li.lastpost-title
                 a(href=link_to('forum.thread', {id: last_thread, forum_id: sub_forum.id}) +'#'+sub_forum.cache.real.last_post_id) #{sub_forum.cache.real.last_thread_title}
-              li.lastpost-user
-                | by 
-                a(href=link_to('users.member', users[last_user])) #{users[last_user].nickname} 
+              - if (users[last_user]) 
+                li.lastpost-user
+                  | by 
+                  a(href=link_to('users.member', users[last_user])) #{users[last_user].nickname} 
               li.lastpost-time
                 time(date-time=date(last_ts, 'iso8601')) #{date(last_ts, 'date')}
 
@@ -134,7 +136,8 @@ article.forum-threadlist
                   a(href='#') 3
               .tl-meta
                 a.tl-preview-ctl.icon-down(href='#') Preview
-                a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user].nickname}
+                - if (users[fp_user])
+                  a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user].nickname}
                 time.tl-start-date(date-time=date(fp_ts, 'iso8601')) #{date(fp_ts, 'date')}
 
             ul.span2.tl-item-counters.hidden-phone
@@ -145,5 +148,6 @@ article.forum-threadlist
               li.lastpost-time
                 a(href='#')
                   time(date-time=date(lp_ts, 'iso8601')) #{date(lp_ts, 'date')}
-              li.lastpost-user
-                a(href=link_to('users.member', users[lp_user])) #{users[lp_user].nickname}
+              - if (users[lp_user])
+                li.lastpost-user
+                  a(href=link_to('users.member', users[lp_user])) #{users[lp_user].nickname}

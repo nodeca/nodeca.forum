@@ -73,15 +73,19 @@ article
   - each post in posts
     article.forum-post.clearfix(itemscope,itemtype='http://schema.org/WebPageElement')
       footer.post-meta.clearfix
-        a.post-author.pull-left(href=link_to('users.member', users[post.user]))
-          | #{users[post.user].nickname}
+        - if (users[post.user])
+          a.post-author.pull-left(href=link_to('users.member', users[post.user]))
+            | #{users[post.user].nickname}
         .pull-right
           time.post-time(itemprop='datePublished', date-time=date(post.ts, 'iso8601')) #{date(post.ts, 'date')}
           a.post-permalink(href=link_to('forum.thread', thread) + '#' +post.id) ##{post.id}
           input.post-check(type='checkbox')
       .post-aside
-        a.post-userpic(href='#')
-          img.av-xl(src='http://lorempixel.com/150/150/sports/a' + '#{users[post.user].id}')
+        - if (users[post.user])
+          a.post-userpic(href='#')
+            img.av-xl(src='http://lorempixel.com/150/150/sports/a' + '#{users[post.user].id}')
+        - else
+          .av-xl
       .post-content
         .message= post.text
         footer.post-controls.clearfix

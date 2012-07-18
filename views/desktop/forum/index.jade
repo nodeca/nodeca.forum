@@ -33,8 +33,9 @@ article
                   dl.def-hlist.fl-moderators
                     dt moderators:
                       - each moderator in forum.moderator_list
-                        dd
-                          a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
+                        - if (users[moderator])
+                          dd
+                            a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
               ul.span2.fl-item-counters.hidden-phone
                 li
@@ -47,10 +48,11 @@ article
               ul.span3.fl-item-lastpost.hidden-phone
                 li.lastpost-title
                   a(href=link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
-                li.lastpost-user
-                  | by 
-                  - lp_user = users[last_user]
-                  a(href=link_to('users.member', lp_user)) #{lp_user.nickname} 
+                - if (users[last_user])
+                  li.lastpost-user
+                    | by 
+                    - lp_user = users[last_user]
+                    a(href=link_to('users.member', lp_user)) #{lp_user.nickname} 
                 li.lastpost-time
                   time(date-time=date(last_ts, 'iso8601')) #{date(last_ts, 'date')}
 
