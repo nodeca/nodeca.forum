@@ -60,8 +60,6 @@ Post.index({
 });
 
 
-Post.plugin(require('./post/_fetch'));
-
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Post', Post);

@@ -12,11 +12,14 @@ var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
-  env.data.threads = {};
-  Thread.findOne({id: params.id}, {lean: true }, function(err, doc) {
-    // ToDo hb vs real
-    env.data.threads[params.id] = doc;
-    next();
+  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
+    if (!err) {
+      if (env.session.hb) {
+        doc.cache.real = doc.cache.hb;
+      }
+      env.data.thread = doc;
+    }
+    next(err);
   });
 });
 
@@ -34,16 +37,22 @@ module.exports = function (params, next) {
     thread_id: params.id
   };
 
-  Post.fetchPosts(this, query, function(err) {
-    // prepare thread info
-    var thread = env.data.threads[params.id];
-    env.response.data.thread = {
-      forum_id:   thread.forum_id,
-      seo_desc:   thread.seo_desc,
-      id:         params.id,
-      title:      thread.title,
-      post_count: thread.post_count
-    };
+  env.data.users = env.data.users || [];
+  // ToDo get state conditions from env
+  var fields = [
+    '_id', 'id', 'attach_list', 'text', 'fmt', 'html', 'user', 'ts'
+  ];
+  Post.find(query).select(fields.join(' ')).setOptions({lean: true})
+      .exec(function(err, docs){
+    if (!err) {
+      env.response.data.posts = docs;
+
+      // collect users
+      docs.forEach(function(doc) {
+        env.data.users.push(doc.user);
+      });
+    }
+    
     next(err);
   });
 };
@@ -52,13 +61,25 @@ module.exports = function (params, next) {
 // breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
   var sections = this.data.sections;
+  var thread = this.data.thread;
 
   var forum_id = params.forum_id;
   var forum = sections[forum_id];
   var parents = [];
 
-  this.response.data.head.title = this.data.threads[params.id].title;
+  // prepare page title
+  this.response.data.head.title = thread.title;
 
+  // prepare thread info
+  this.response.data.thread = {
+    forum_id:   thread.forum_id,
+    seo_desc:   thread.cache.real.seo_desc,
+    id:         params.id,
+    title:      thread.title,
+    post_count: thread.cache.real.post_count
+  };
+
+  // build breadcrumbs
   forum.parent_id_list.forEach(function(parent) {
     parents.push(sections[parent]);
   });
