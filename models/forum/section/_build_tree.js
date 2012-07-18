@@ -9,18 +9,20 @@ function build_tree(source, root) {
 
   source.forEach(function(node) {
     node.child_list = [];
-    nodes[node._id] = node;
+    nodes[node._id.toString()] = node;
   });
 
   root = !!root ? root.toString() : null;
 
   source.forEach(function(node) {
-    node.parent = !!node.parent ? node.parent : null;
+    node.parent = !!node.parent ? node.parent.toString() : null;
+
+    if (node.parent == root) {
+      result.push(node);
+    }
 
     if (node.parent !== null) {
-      if (node.parent.toString() === root) {
-        result.push(node);
-      }
+
       nodes[node.parent].child_list.push(node);
     }
   });
