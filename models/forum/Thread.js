@@ -107,7 +107,6 @@ Thread.index({
   , _id: -1
 });
 
-Thread.plugin(require('./thread/_fetch'));
 
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Thread', Thread);
