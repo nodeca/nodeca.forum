@@ -15,9 +15,8 @@ module.exports = NLib.Application.create({
 
 
 //
-// Register global filters (forum && admin.forum).
-// Fetch full section list, used for permission checking,
-//   building breadcrumbs and etc
+// Register global filters.
+// - cache prefetch (on forum.*)
 //
 
 require('./lib/filters');
