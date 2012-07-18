@@ -15,7 +15,7 @@ module.exports = function (params, next) {
 
   env.extras.puncher.start('Get forums');
 
-  Section.build_tree(this, null, 3,  function(err) {
+  Section.build_tree(this, null, function(err) {
     env.extras.puncher.stop();
     next(err);
   });

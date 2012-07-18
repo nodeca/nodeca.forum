@@ -236,7 +236,7 @@ var create_thread = function(forum, callback) {
   });
 };
 
-var create_forum = function(category, sub_forum_deep, callback){
+var create_forum = function(category, display_order, sub_forum_deep, callback){
   var last_thread;
   var post_count = 0;
   var thread_count;
@@ -252,6 +252,12 @@ var create_forum = function(category, sub_forum_deep, callback){
   }
 
   var forum = new Forum(Faker.Helpers.forum(category));
+
+  display_order = display_order.toString();
+  if (display_order.length === 1) {
+    display_order = '0' + display_order;
+  }
+  forum.display_order = category.display_order + ',' + display_order;
 
   Async.series([
     function(cb){
@@ -277,7 +283,7 @@ var create_forum = function(category, sub_forum_deep, callback){
       }
       var sub_forum_count = Faker.Helpers.randomNumber(MAX_SUB_FORUM_COUNT);
       Async.forEach( _.range(sub_forum_count), function (current_forum, next_forum) {
-        create_forum(forum, sub_forum_deep-1, function(err, sub_forum){
+        create_forum(forum, current_forum, sub_forum_deep-1, function(err, sub_forum){
           sub_forum_list.push(sub_forum._id);
           sub_forum_id_list.push(sub_forum.id);
           next_forum(err);
@@ -303,15 +309,13 @@ var create_forum = function(category, sub_forum_deep, callback){
 
       forum.child_list = sub_forum_list;
       forum.child_id_list = sub_forum_id_list;
+
+
       forum.save(cb);
     }
   ], function(err) {
     callback(err, forum);
   });
-};
-
-var create_big_forum = function(category, sub_forum_deep, callback){
-  create_forum(category, THREAD_COUNT_IN_BIG_FORUM, 1, callback);
 };
 
 
@@ -322,6 +326,12 @@ var create_categories = function(callback) {
 
     var category = new Category(Faker.Helpers.category());
 
+    var display_order = (1 + current_category).toString();
+    if (display_order.length === 1){
+      display_order = '0' + display_order;
+    }
+    category.display_order = display_order;
+
     Async.series([
       function(cb){
         category.save(cb);
@@ -329,7 +339,7 @@ var create_categories = function(callback) {
       // create forums
       function(cb){
         Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
-          create_forum(category, 3, function(err, forum){
+          create_forum(category, current_forum, 3, function(err, forum){
             forum_list.push(forum._id);
             forum_id_list.push(forum.id);
             next_forum(err);

@@ -22,7 +22,7 @@ module.exports = function (params, next) {
 
   var root = this.data.sections[params.id]._id;
 
-  Section.build_tree(env, root, 2, function(err) {
+  Section.build_tree(env, root, function(err) {
     env.extras.puncher.stop();  
 
     env.data.users = env.data.users || [];
@@ -39,8 +39,12 @@ module.exports = function (params, next) {
     Thread.find(query).select(fields.join(' ')).setOptions({lean: true }).exec(function(err, docs){
       if (!err) {
         env.response.data.threads = docs.map(function(doc) {
-          env.data.users.push(doc.cache.real.first_user);
-          env.data.users.push(doc.cache.real.last_user);
+          if (doc.cache.real.first_user) {
+            env.data.users.push(doc.cache.real.first_user);
+          }
+          if (doc.cache.real.last_user) {
+            env.data.users.push(doc.cache.real.last_user);
+          }
           if (env.session.hb) {
             doc.cache.real = doc.cache.hb;
           }

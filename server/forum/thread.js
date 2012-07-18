@@ -51,7 +51,9 @@ module.exports = function (params, next) {
 
       // collect users
       docs.forEach(function(doc) {
-        env.data.users.push(doc.user);
+        if (doc.user) {
+          env.data.users.push(doc.user);
+        }
       });
     }
     

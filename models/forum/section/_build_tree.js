@@ -2,63 +2,56 @@
 
 /*global nodeca, _*/
 
-var build_tree = module.exports.build_tree = function(source, root, deep, iterator) {
-  var result = [];
-  var node;
-  var node_parent;
-  var id;
 
-  if (!_.isArray(source)) {
-    source = _.values(source);
-  }
+function build_tree(source, root) {
+  var result = [];
+  var nodes = {};
+
+  source.forEach(function(node) {
+    node.child_list = [];
+    nodes[node._id] = node;
+  });
 
   root = !!root ? root.toString() : null;
 
-  for (var key=0; key < source.length; key++) {
-    node = source[key];
-    if (node !== undefined) {
-      node_parent = !!node.parent ? node.parent.toString() : null;
-      if (node_parent === root) {
-        id = node._id.toString();
+  source.forEach(function(node) {
+    node.parent = !!node.parent ? node.parent : null;
 
-        if (deep === null || deep > 0) {
-          node.child_list = build_tree(source, id, deep-1, iterator);
-        }
-        iterator(node);
+    if (node.parent !== null) {
+      if (node.parent.toString() === root) {
         result.push(node);
-        delete(source[key]);
       }
+      nodes[node.parent].child_list.push(node);
     }
-  }
-  // ToDo sort elements by display order
+  });
   return result;
-};
+}
+
 
 
 module.exports = function (schema, options) {
-  schema.statics.build_tree = function(env, root, deep, callback) {
+  schema.statics.build_tree = function(env, root, callback) {
     env.response.data.sections = [];
     if (!_.isArray(env.data.users)) {
       env.data.users = [];
     }
 
     var fields = [
-      '_id', 'id', 'title', 'description', 'parent',
-      'parent_id_list', 'redirect', 'moderator_list', 'display_order'
+      '_id', 'id', 'title', 'description', 'parent', 'parent_list',
+      'parent_id_list', 'redirect', 'moderator_list', 'display_order', 'cache'
     ];
-
-    // ToDo real vs hb
-    fields.push('cache.real');
 
     var query = {};
     // ToDo get state conditions from env
-    this.find(query).select(fields.join(' ')).setOptions({lean:true}).exec(function(err, docs){
+    this.find(query).select(fields.join(' ')).sort('display_order').setOptions({lean:true}).exec(function(err, docs){
       if (err) {
         callback(err);
         return;
       }
-  
-      env.response.data.sections = build_tree(docs, root, deep, function(doc){
+
+      env.response.data.sections = build_tree(docs, root);
+      
+      docs.forEach(function(doc){
         if (doc.moderator_list && _.isArray(doc.moderator_list)) {
           doc.moderator_list.forEach(function(user) {
             env.data.users.push(user);

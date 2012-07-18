@@ -59,6 +59,7 @@ module.exports.up = function(cb) {
       forum.parent_list.push(category._id);
       forum.parent_id_list.push(category.id);
 
+      forum.display_order = category.display_order + ',' + '00';
       forum.save(function (err) {
         callback(err);
       });
