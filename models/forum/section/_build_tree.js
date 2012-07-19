@@ -17,7 +17,7 @@ function build_tree(source, root) {
   source.forEach(function(node) {
     node.parent = !!node.parent ? node.parent.toString() : null;
 
-    if (node.parent == root) {
+    if (node.parent === root) {
       result.push(node);
     }
 

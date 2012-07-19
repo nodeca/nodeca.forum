@@ -1,6 +1,6 @@
 "use strict";
 
-/*global nodeca*/
+/*global nodeca, _*/
 
 var Thread = nodeca.models.forum.Thread;
 var Post = nodeca.models.forum.Post;
