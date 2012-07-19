@@ -23,7 +23,7 @@ module.exports = function (params, next) {
   var root = this.data.sections[params.id]._id;
 
   Section.build_tree(env, root, function(err) {
-    env.extras.puncher.stop();  
+    env.extras.puncher.stop();
 
     env.data.users = env.data.users || [];
 
@@ -51,7 +51,7 @@ module.exports = function (params, next) {
           return doc;
         });
       }
-      env.extras.puncher.stop(_.isArray(docs) ? { count: docs.length} : null);  
+      env.extras.puncher.stop(_.isArray(docs) ? { count: docs.length} : null);
       next(err);
     });
 
@@ -64,7 +64,7 @@ nodeca.filters.after('@', function (params, next) {
   var sections = this.data.sections;
   var parents = [];
   var forum = sections[params.id];
- 
+
   // prepare page title
   this.response.data.head.title = forum.title;
 
