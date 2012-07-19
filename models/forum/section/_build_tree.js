@@ -33,6 +33,8 @@ function build_tree(source, root) {
 
 module.exports = function (schema, options) {
   schema.statics.build_tree = function(env, root, callback) {
+    env.extras.puncher.start('build tree call');
+
     env.response.data.sections = [];
     if (!_.isArray(env.data.users)) {
       env.data.users = [];
@@ -47,6 +49,7 @@ module.exports = function (schema, options) {
     // ToDo get state conditions from env
     this.find(query).select(fields.join(' ')).sort('display_order').setOptions({lean:true}).exec(function(err, docs){
       if (err) {
+        env.extras.puncher.stop();
         callback(err);
         return;
       }
@@ -63,6 +66,7 @@ module.exports = function (schema, options) {
           env.data.users.push(doc.cache.real.last_user);
         }
       });
+      env.extras.puncher.stop({ count: docs.length });
       callback(err);
     });
   };

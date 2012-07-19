@@ -51,7 +51,7 @@ module.exports = function (params, next) {
           return doc;
         });
       }
-      env.extras.puncher.stop();  
+      env.extras.puncher.stop(_.isArray(docs) ? { count: docs.length} : null);  
       next(err);
     });
 
