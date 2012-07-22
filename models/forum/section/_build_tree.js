@@ -56,7 +56,6 @@ module.exports = function (schema, options) {
     ];
 
     var query = {level: {$lte: deep}};
-    query = {};
     
     if (root !== null) {
       query['parent_list'] = root;
