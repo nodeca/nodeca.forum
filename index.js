@@ -12,11 +12,3 @@ module.exports = NLib.Application.create({
     callback();
   }
 });
-
-
-//
-// Register global filters.
-// - cache prefetch (on forum.*)
-//
-
-require('./lib/filters');
