@@ -2,25 +2,44 @@
 
 /*global nodeca, _*/
 
+var NLib = require('nlib');
+var Async = NLib.Vendor.Async;
+
+var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 var Post = nodeca.models.forum.Post;
 
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 
-// fetch thread
+// prefetch thread and parent forum
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
-  env.extras.puncher.start('Thread info prefetch');
+  Async.parallel([
+    function(callback){
+      env.extras.puncher.start('Forum(parent) info prefetch');
 
-  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
-    if (!err) {
-      env.data.thread = doc;
-    }
-    env.extras.puncher.stop();
-    next(err);
-  });
+      Section.findOne({id: params.forum_id}).setOptions({lean: true }).exec(function(err, doc) {
+        if (!err) {
+          env.data.section = doc;
+        }
+        env.extras.puncher.stop();
+        callback(err);
+      });
+    },
+    function(callback){
+      env.extras.puncher.start('Thread info prefetch');
+
+      Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
+        if (!err) {
+          env.data.thread = doc;
+        }
+        env.extras.puncher.stop();
+        callback(err);
+      });
+    },
+  ], next);
 });
 
 
@@ -66,37 +85,42 @@ module.exports = function (params, next) {
 
 // breadcrumbs and head meta
 nodeca.filters.after('@', function (params, next) {
-  var sections = this.data.sections;
+  var env = this;
+  var data = this.response.data;
+
   var thread = this.data.thread;
 
-  var forum_id = params.forum_id;
-  var forum = sections[forum_id];
-  var parents = [];
+  var forum = this.data.section;
 
   // prepare page title
-  this.response.data.head.title = thread.title;
+  data.head.title = thread.title;
 
   // prepare thread info
-  this.response.data.thread = {
+  data.thread = {
     forum_id:   thread.forum_id,
     seo_desc:   thread.cache.real.seo_desc,
     id:         params.id,
     title:      thread.title
   };
   if (this.session.hb) {
-    this.response.data.thread.post_count = thread.cache.hb.post_count;
+    data.thread.post_count = thread.cache.hb.post_count;
   }
   else {
-    this.response.data.thread.post_count = thread.cache.real.post_count;
+    data.thread.post_count = thread.cache.real.post_count;
   }
 
   // build breadcrumbs
-  forum.parent_id_list.forEach(function(parent) {
-    parents.push(sections[parent]);
+  var query = {_id: {$in: forum.parent_list}};
+  var fields = ['_id', 'id', 'title'];
+
+  env.extras.puncher.start('Build breadcrumbs');
+  Section.find(query).select(fields.join(' '))
+      .setOptions({lean:true}).exec(function(err, docs){
+    docs.push(forum);
+    data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
+
+    env.extras.puncher.stop();
+    next();
   });
-  parents.push(forum);
 
-  this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this, parents);
-
-  next();
 });
