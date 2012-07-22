@@ -65,6 +65,7 @@ Faker.Helpers.category = function (){
     title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
 
+    level: 0,
     id: Faker.Ids.next('category'),
     is_category: true
   };
@@ -93,6 +94,8 @@ Faker.Helpers.forum = function (parent){
 
     parent_id: parent.id,
     parent_id_list: parent.parent_id_list.slice().concat([parent.id]),
+
+    level:  parent.level + 1,
 
     moderator_id_list: _.uniq(moderator_id_list),
     moderator_list: _.uniq(moderator_list),

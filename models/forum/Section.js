@@ -53,6 +53,7 @@ var Section = module.exports.Section = new mongoose.Schema({
   , parent_id_list        : [Number]
   , child_list      : [Schema.ObjectId]
   , child_id_list         : [Number]
+  , level           : { type: Number, default: 0 }
 
   , moderator_id_list    : [String]
   , moderator_list   : [Schema.ObjectId]

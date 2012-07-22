@@ -14,6 +14,16 @@ function build_tree(source, root) {
 
   root = !!root ? root.toString() : null;
 
+  if (!!root) {
+    root = root.toString();
+    if (!nodes[root]) {
+      nodes[root] = {child_list: []};
+    }
+  }
+  else {
+    root = null;
+  }
+
   source.forEach(function(node) {
     node.parent = !!node.parent ? node.parent.toString() : null;
 
@@ -32,7 +42,7 @@ function build_tree(source, root) {
 
 
 module.exports = function (schema, options) {
-  schema.statics.build_tree = function(env, root, callback) {
+  schema.statics.build_tree = function(env, root, deep, callback) {
     env.extras.puncher.start('build tree call');
 
     env.response.data.sections = [];
@@ -45,9 +55,16 @@ module.exports = function (schema, options) {
       'parent_id_list', 'redirect', 'moderator_list', 'display_order', 'cache'
     ];
 
-    var query = {};
+    var query = {level: {$lte: deep}};
+    query = {};
+    
+    if (root !== null) {
+      query['parent_list'] = root;
+    }
+
     // ToDo get state conditions from env
-    this.find(query).select(fields.join(' ')).sort('display_order').setOptions({lean:true}).exec(function(err, docs){
+    this.find(query).select(fields.join(' ')).sort('display_order')
+        .setOptions({lean:true}).exec(function(err, docs){
       if (err) {
         env.extras.puncher.stop();
         callback(err);

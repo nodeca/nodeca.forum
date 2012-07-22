@@ -7,6 +7,7 @@ var Thread = nodeca.models.forum.Thread;
 
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
+var SUBFORUMS_FETCH_DEEP = 2;
 
 // fetch and prepare threads and sub-forums
 // ToDo add sorting and pagination
@@ -21,8 +22,9 @@ module.exports = function (params, next) {
   env.extras.puncher.start('Get subforums');
 
   var root = this.data.sections[params.id]._id;
+  var deep = this.data.sections[params.id].level + SUBFORUMS_FETCH_DEEP;
 
-  Section.build_tree(env, root, function(err) {
+  Section.build_tree(env, root, deep, function(err) {
     env.extras.puncher.stop();
 
     env.data.users = env.data.users || [];
