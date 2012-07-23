@@ -36,11 +36,11 @@ nodeca.filters.before('@', function (params, next) {
 module.exports = function (params, next) {
   var env = this;
 
-  // prepare sub-forums
-  env.extras.puncher.start('Get subforums');
 
-  Async.parallel([
+  Async.series([
     function(callback){
+      // prepare sub-forums
+      env.extras.puncher.start('Get subforums');
       var root = env.data.section._id;
       var deep = env.data.section.level + SUBFORUMS_FETCH_DEEP;
       Section.build_tree(env, root, deep, function(err) {

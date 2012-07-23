@@ -6,7 +6,6 @@ var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 var Section = nodeca.models.forum.Section;
 
-var SECTIONS_FETCH_DEEP = 3;
 
 // fetch and prepare sections
 //
@@ -16,7 +15,8 @@ module.exports = function (params, next) {
 
   env.extras.puncher.start('Get forums');
 
-  Section.build_tree(this, null, SECTIONS_FETCH_DEEP, function(err) {
+  // build tree from 0..2 levels, start from sections without parent
+  Section.build_tree(this, null, 2, function(err) {
     env.extras.puncher.stop();
     next(err);
   });

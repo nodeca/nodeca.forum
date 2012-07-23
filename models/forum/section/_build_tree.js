@@ -39,12 +39,24 @@ function build_tree(source, root) {
   return result;
 }
 
-
+function collect_users(env, docs) {
+  docs.forEach(function(doc){
+    if (doc.moderator_list && _.isArray(doc.moderator_list)) {
+      doc.moderator_list.forEach(function(user) {
+        env.data.users.push(user);
+      });
+    }
+    if (doc.cache.real.last_user) {
+      env.data.users.push(doc.cache.real.last_user);
+    }
+  });
+}
 
 module.exports = function (schema, options) {
   schema.statics.build_tree = function(env, root, deep, callback) {
     env.extras.puncher.start('build tree call');
 
+    env.extras.puncher.start('build tree: fetch sections');
     env.response.data.sections = [];
     if (!_.isArray(env.data.users)) {
       env.data.users = [];
@@ -66,23 +78,22 @@ module.exports = function (schema, options) {
         .setOptions({lean:true}).exec(function(err, docs){
       if (err) {
         env.extras.puncher.stop();
+        env.extras.puncher.stop();
         callback(err);
         return;
       }
 
-      env.response.data.sections = build_tree(docs, root);
-      
-      docs.forEach(function(doc){
-        if (doc.moderator_list && _.isArray(doc.moderator_list)) {
-          doc.moderator_list.forEach(function(user) {
-            env.data.users.push(user);
-          });
-        }
-        if (doc.cache.real.last_user) {
-          env.data.users.push(doc.cache.real.last_user);
-        }
-      });
       env.extras.puncher.stop({ count: docs.length });
+
+      env.extras.puncher.start('build tree: prepare tree');
+      env.response.data.sections = build_tree(docs, root);
+      env.extras.puncher.stop();
+
+      env.extras.puncher.start('build tree: collect users');
+      collect_users(env, docs);
+      env.extras.puncher.stop();
+
+      env.extras.puncher.stop();
       callback(err);
     });
   };

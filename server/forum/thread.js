@@ -16,30 +16,24 @@ var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
-  Async.parallel([
-    function(callback){
-      env.extras.puncher.start('Forum(parent) info prefetch');
+  env.extras.puncher.start('Forum(parent) info prefetch');
 
-      Section.findOne({id: params.forum_id}).setOptions({lean: true }).exec(function(err, doc) {
-        if (!err) {
-          env.data.section = doc;
-        }
-        env.extras.puncher.stop();
-        callback(err);
-      });
-    },
-    function(callback){
-      env.extras.puncher.start('Thread info prefetch');
+  Section.findOne({id: params.forum_id}).setOptions({lean: true }).exec(function(err, doc) {
 
-      Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
-        if (!err) {
-          env.data.thread = doc;
-        }
-        env.extras.puncher.stop();
-        callback(err);
-      });
-    },
-  ], next);
+    if (!err) {
+      env.data.section = doc;
+    }
+    env.extras.puncher.stop();
+    env.extras.puncher.start('Thread info prefetch');
+
+    Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
+      if (!err) {
+        env.data.thread = doc;
+      }
+      env.extras.puncher.stop();
+      next(err);
+    });
+  });
 });
 
 
