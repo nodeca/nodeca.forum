@@ -2,8 +2,21 @@
 
 /*global nodeca, _*/
 
+var fields = {
+  '_id' : 1,
+  'id' : 1,
+  'title' : 1,
+  'description' : 1,
+  'parent' : 1,
+  'parent_list' : 1,
+  'parent_id_list' : 1,
+  'redirect' : 1,
+  'moderator_list' : 1,
+  'display_order' : 1,
+  'cache' : 1
+};
 
-function build_tree(source, root) {
+function to_tree(source, root) {
   var result = [];
   var nodes = {};
 
@@ -53,7 +66,7 @@ function collect_users(env, docs) {
 }
 
 module.exports = function (schema, options) {
-  schema.statics.build_tree = function(env, root, deep, callback) {
+  schema.statics.build_tree = function(env, root, max_level, callback) {
     env.extras.puncher.start('build tree call');
 
     env.extras.puncher.start('build tree: fetch sections');
@@ -62,19 +75,14 @@ module.exports = function (schema, options) {
       env.data.users = [];
     }
 
-    var fields = [
-      '_id', 'id', 'title', 'description', 'parent', 'parent_list',
-      'parent_id_list', 'redirect', 'moderator_list', 'display_order', 'cache'
-    ];
-
-    var query = {level: {$lte: deep}};
+    var query = {level: {$lte: max_level}};
     
     if (root !== null) {
       query['parent_list'] = root;
     }
 
     // ToDo get state conditions from env
-    this.find(query).select(fields.join(' ')).sort('display_order')
+    this.find(query).select(fields).sort('display_order')
         .setOptions({lean:true}).exec(function(err, docs){
       if (err) {
         env.extras.puncher.stop();
@@ -86,7 +94,7 @@ module.exports = function (schema, options) {
       env.extras.puncher.stop({ count: docs.length });
 
       env.extras.puncher.start('build tree: prepare tree');
-      env.response.data.sections = build_tree(docs, root);
+      env.response.data.sections = to_tree(docs, root);
       env.extras.puncher.stop();
 
       env.extras.puncher.start('build tree: collect users');

@@ -10,9 +10,8 @@ var Thread = nodeca.models.forum.Thread;
 
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
-var SUBFORUMS_FETCH_DEEP = 2;
 
-// prefetch forum
+// prefetch forum to simplify permisson check
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
@@ -27,8 +26,9 @@ nodeca.filters.before('@', function (params, next) {
   });
 });
 
+
 // fetch and prepare threads and sub-forums
-// ToDo add sorting and pagination
+// ToDo pagination
 //
 // ##### params
 //
@@ -42,7 +42,7 @@ module.exports = function (params, next) {
       // prepare sub-forums
       env.extras.puncher.start('Get subforums');
       var root = env.data.section._id;
-      var deep = env.data.section.level + SUBFORUMS_FETCH_DEEP;
+      var deep = env.data.section.level + 2; // need two next levels
       Section.build_tree(env, root, deep, function(err) {
         env.extras.puncher.stop();
         callback(err);
@@ -83,7 +83,8 @@ module.exports = function (params, next) {
 };
 
 
-// breadcrumbs and head meta
+// fetch forums for breadcrumbs build
+// prepare buand head meta
 nodeca.filters.after('@', function (params, next) {
   var env = this;
   var data = this.response.data;
@@ -106,9 +107,13 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   var query = {_id: {$in: forum.parent_list}};
-  var fields = ['_id', 'id', 'title'];
+  var fields = {
+    '_id' : 1,
+    'id' : 1,
+    'title' : 1
+  };
   env.extras.puncher.start('Build breadcrumbs');
-  Section.find(query).select(fields.join(' '))
+  Section.find(query).select(fields)
       .setOptions({lean:true}).exec(function(err, docs){
     data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
 
