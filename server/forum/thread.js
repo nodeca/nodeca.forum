@@ -11,27 +11,40 @@ var Post = nodeca.models.forum.Post;
 
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
+var post_fields = {
+  '_id': 1,
+  'id': 1,
+  'attach_list': 1,
+  'text': 1,
+  'fmt': 1,
+  'html': 1,
+  'user': 1,
+  'ts': 1
+};
+
 
 // fetch thread and forum info to simplify permisson check
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
-
   env.extras.puncher.start('Thread info prefetch');
-  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
 
+  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
     if (!err) {
       env.data.thread = doc;
     }
+
     env.extras.puncher.stop();
   
     env.extras.puncher.start('Forum(parent) info prefetch');
-    Section.findOne({id: params.forum_id}).setOptions({lean: true }).exec(function(err, doc) {
 
+    Section.findOne({id: params.forum_id}).setOptions({lean: true }).exec(function(err, doc) {
       if (!err) {
         env.data.section = doc;
       }
+
       env.extras.puncher.stop();
+
       next(err);
     });
   });
@@ -55,10 +68,8 @@ module.exports = function (params, next) {
 
   env.data.users = env.data.users || [];
   // ToDo get state conditions from env
-  var fields = [
-    '_id', 'id', 'attach_list', 'text', 'fmt', 'html', 'user', 'ts'
-  ];
-  Post.find(query).select(fields.join(' ')).setOptions({lean: true})
+
+  Post.find(query).select(post_fields).setOptions({lean: true})
       .exec(function(err, docs){
     if (!err) {
       env.response.data.posts = docs;
@@ -105,11 +116,11 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   // build breadcrumbs
-  var query = {_id: {$in: forum.parent_list}};
-  var fields = ['_id', 'id', 'title'];
+  var query = {_id: { $in: forum.parent_list }};
+  var fields = { '_id':1, 'id':1, 'title':1 };
 
   env.extras.puncher.start('Build breadcrumbs');
-  Section.find(query).select(fields.join(' '))
+  Section.find(query).select(fields)
       .setOptions({lean:true}).exec(function(err, docs){
     docs.push(forum);
     data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);

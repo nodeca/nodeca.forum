@@ -10,6 +10,15 @@ var Thread = nodeca.models.forum.Thread;
 
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
+var thread_fields = {
+  '_id': 1,
+  'id': 1,
+  'title': 1,
+  'prefix': 1,
+  'forum_id': 1,
+  'cache': 1
+};
+
 
 // prefetch forum to simplify permisson check
 nodeca.filters.before('@', function (params, next) {
@@ -39,27 +48,27 @@ module.exports = function (params, next) {
 
   Async.series([
     function(callback){
-      // prepare sub-forums
-      env.extras.puncher.start('Get subforums');
+      // prepare sub-forums      
       var root = env.data.section._id;
       var deep = env.data.section.level + 2; // need two next levels
+
+      env.extras.puncher.start('Get subforums');
+
       Section.build_tree(env, root, deep, function(err) {
         env.extras.puncher.stop();
         callback(err);
       });
     },
     function (callback) {
+      // fetch and prepare threads
+ 
       env.data.users = env.data.users || [];
 
-      // fetch and prepare threads
       var query = {forum_id: params.id};
 
-      var fields = [
-        '_id', 'id', 'title', 'prefix', 'forum_id', 'cache'
-      ];
-
       env.extras.puncher.start('Get threads');
-      Thread.find(query).select(fields.join(' ')).setOptions({lean: true })
+
+      Thread.find(query).select(thread_fields).setOptions({lean: true })
           .exec(function(err, docs){
         if (!err) {
           env.response.data.threads = docs.map(function(doc) {
@@ -106,13 +115,11 @@ nodeca.filters.after('@', function (params, next) {
     data.forum['thread_count'] = forum.cache.real.thread_count;
   }
 
-  var query = {_id: {$in: forum.parent_list}};
-  var fields = {
-    '_id' : 1,
-    'id' : 1,
-    'title' : 1
-  };
+  var query = { _id: { $in: forum.parent_list } };
+  var fields = { '_id' : 1, 'id' : 1, 'title' : 1 };
+
   env.extras.puncher.start('Build breadcrumbs');
+
   Section.find(query).select(fields)
       .setOptions({lean:true}).exec(function(err, docs){
     data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
