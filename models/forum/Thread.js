@@ -7,15 +7,8 @@ var Schema = mongoose.Schema;
 
 var cache = {
     real    : {
-        prefix_text     : String
-      , prefix_style    : String
-
-      , tags_list       : [String]
-      , seo_desc        : String
-
-      , post_count      : { type: Number, default: 0 }
+        post_count      : { type: Number, default: 0 }
       , attach_count    : { type: Number, default: 0 }
-      , views_count     : { type: Number, default: 0 }
 
         // First post
       , first_post      : Schema.ObjectId
@@ -29,15 +22,8 @@ var cache = {
       , last_ts         : Date
   }
   , hb    : {
-        prefix_text     : String
-      , prefix_style    : String
-
-      , tags_list       : [String]
-      , seo_desc        : String
-
-      , post_count      : { type: Number, default: 0 }
+        post_count      : { type: Number, default: 0 }
       , attach_count    : { type: Number, default: 0 }
-      , views_count     : { type: Number, default: 0 }
 
         // First post
       , first_post      : Schema.ObjectId
@@ -85,6 +71,13 @@ var Thread = module.exports.Thread = new mongoose.Schema({
     // Cache
   , cache           : cache
 
+   
+  , _prefix_text     : String
+  , _prefix_style    : String
+
+  , _tags_list       : [String]
+  , _seo_desc        : String
+  , _views_count     : { type: Number, default: 0 }
 }, { strict: true });
 
 

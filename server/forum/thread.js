@@ -12,7 +12,7 @@ var Post = nodeca.models.forum.Post;
 var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
 
 
-// prefetch thread and parent forum
+// fetch thread
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
@@ -98,7 +98,7 @@ nodeca.filters.after('@', function (params, next) {
   // prepare thread info
   data.thread = {
     forum_id:   thread.forum_id,
-    seo_desc:   thread.cache.real.seo_desc,
+    seo_desc:   thread._seo_desc,
     id:         params.id,
     title:      thread.title
   };

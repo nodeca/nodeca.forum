@@ -117,12 +117,8 @@ Faker.Helpers.thread = function (forum){
     forum: forum._id,
     forum_id: forum.id,
 
-    cache: {
-      real: {
-        seo_desc: capitalize(Faker.Lorem.sentence(5)),
-        views_count: Faker.Helpers.randomNumber(1000)
-      },
-    }
+    _seo_desc: capitalize(Faker.Lorem.sentence(5)),
+    _views_count: Faker.Helpers.randomNumber(1000)
   };
 };
 
