@@ -51,31 +51,25 @@ var Section = module.exports.Section = new mongoose.Schema({
   , parent_id             : Number
   , parent_list     : [Schema.ObjectId]
   , parent_id_list        : [Number]
-  , child_list      : [Schema.ObjectId]
-  , child_id_list         : [Number]
+
   , level           : { type: Number, default: 0 }
 
-  , moderator_id_list    : [String]
+  , moderator_id_list    : [Number]
   , moderator_list   : [Schema.ObjectId]
 
-    // If set, section works as redirect link
-  , redirect        : String
 
     // Options
   , is_category     : { type: Boolean, default: false } // subforum or category
   , is_enabled      : { type: Boolean, default: true }  // hiden inactive
-  , is_writeble     : { type: Boolean, default: false } // read-only archive
+  , is_writeble     : { type: Boolean, default: true} // read-only archive
   , is_searcheable  : { type: Boolean, default: true }
   , is_voteable     : { type: Boolean, default: true }
   , is_counted      : { type: Boolean, default: true }  // inc user's counter, when posted here
+  , is_excludable   : { type: Boolean, default: true}
 
     // Topic prefixes
   , is_prefix_required  : { type: Boolean, default: false }
   , prefix_groups   : [Schema.ObjectId] // allowed groups of prefixes
-
-
-    // Filters
-  , excludable      : Boolean
 
     // Cache
   , cache           : cache

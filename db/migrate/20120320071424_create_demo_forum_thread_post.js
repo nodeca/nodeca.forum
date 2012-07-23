@@ -106,16 +106,6 @@ module.exports.up = function(cb) {
       });
     },
 
-    // update category dependent info
-    function(callback){
-      category.child_list.push(forum._id);
-      category.child_id_list.push(forum.id);
-
-      category.save(function (err) {
-        callback(err);
-      });
-    },
-
     // update forum dependent info
     function(callback){
       forum.cache.real.last_post = post._id;

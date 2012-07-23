@@ -310,10 +310,6 @@ var create_forum = function(category, display_order, sub_forum_deep, callback){
       forum.cache.real.thread_count = thread_count;
       _.extend(forum.cache.hb, forum.cache.real);
 
-      forum.child_list = sub_forum_list;
-      forum.child_id_list = sub_forum_id_list;
-
-
       forum.save(cb);
     }
   ], function(err) {
@@ -335,28 +331,16 @@ var create_categories = function(callback) {
     }
     category.display_order = display_order;
 
-    Async.series([
-      function(cb){
-        category.save(cb);
-      },
-      // create forums
-      function(cb){
-        Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
-          create_forum(category, current_forum, 3, function(err, forum){
-            forum_list.push(forum._id);
-            forum_id_list.push(forum.id);
-            next_forum(err);
-          });
-        }, cb);
-      },
-      // update parent category dependent info
-      function(cb){
-        category.child_list = forum_list;
-        category.child_id_list = forum_id_list;
-
-        category.save(cb);
-      }
-    ], next_category);
+    category.save(function(err) {
+    // create forums
+      Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
+        create_forum(category, current_forum, 3, function(err, forum){
+          forum_list.push(forum._id);
+          forum_id_list.push(forum.id);
+          next_forum(err);
+        });
+      }, next_category);
+    });
   }, function(err){
     callback(err);
   });
