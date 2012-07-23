@@ -88,6 +88,21 @@ Section.statics.fetchSections = function (options, callback) {
 
 Section.plugin(require('./section/_build_tree'));
 
+// build tree on index page
+Section.index({
+    level: 1
+  , display_order: 1
+  , _id: -1
+});
+
+// build tree in forum page
+Section.index({
+    level: 1
+  , parent_list: 1
+  , display_order: 1
+  , _id: -1
+});
+
 module.exports.__init__ = function __init__() {
   return mongoose.model('forum.Section', Section);
 };
