@@ -41,7 +41,7 @@ var Section = module.exports.Section = new mongoose.Schema({
 
     title           : { type: String, required: true }
   , description     : String
-  , display_order   : { type: String, default: '00' }
+  , display_order   : Number
 
     // user-friendly id (autoincremented)
   , id              : { type: Number, required: true, min: 1, index: true }

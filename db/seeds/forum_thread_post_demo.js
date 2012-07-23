@@ -26,21 +26,23 @@ var MAX_SUB_FORUM_COUNT = 10;
 
 var CATEGORY_ID_SHIFT = 3;
 var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
+var DISPLAY_ORDER_SHIFT = 2;
 var THREAD_ID_SHIFT = 2;
 var POST_ID_SHIFT = 2;
 var USER_ID_SHIFT = 2;
 
 // extend Faker
 // add numeric id generator
-Faker.Ids = {
+Faker.Incrementer = {
   category_shift: CATEGORY_ID_SHIFT,
   forum_shift: FORUM_ID_SHIFT,
+  display_order_shift: DISPLAY_ORDER_SHIFT,
   thread_shift: THREAD_ID_SHIFT,
   post_shift: POST_ID_SHIFT,
   user_shift: USER_ID_SHIFT
 };
 
-Faker.Ids.next = function(type){
+Faker.Incrementer.next = function(type){
   var last_id_prop_name = type + '_last_id';
   if (!this[last_id_prop_name]) {
     var shift_prop_name = type + '_shift';
@@ -65,8 +67,9 @@ Faker.Helpers.category = function (){
     title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
 
+    display_order: Faker.Incrementer.next('display_order'),
     level: 0,
-    id: Faker.Ids.next('category'),
+    id: Faker.Incrementer.next('category'),
     is_category: true
   };
 };
@@ -87,13 +90,15 @@ Faker.Helpers.forum = function (parent){
     title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
 
-    id: Faker.Ids.next('forum'),
+    id: Faker.Incrementer.next('forum'),
 
     parent: parent._id,
     parent_list: parent.parent_list.slice().concat([parent._id]),
 
     parent_id: parent.id,
     parent_id_list: parent.parent_id_list.slice().concat([parent.id]),
+
+    display_order: Faker.Incrementer.next('display_order'),
 
     level:  parent.level + 1,
 
@@ -110,7 +115,7 @@ Faker.Helpers.thread = function (forum){
   return {
     title: capitalize(Faker.Lorem.sentence(1)),
 
-    id: Faker.Ids.next('thread'),
+    id: Faker.Incrementer.next('thread'),
 
     // Stub. This constants should be defined globally
     state:  0,
@@ -127,7 +132,7 @@ Faker.Helpers.post = function (thread){
     text: capitalize(Faker.Lorem.paragraph()),
     fmt:  'txt',
 
-    id: Faker.Ids.next('post'),
+    id: Faker.Incrementer.next('post'),
 
     // Stub. This constants should be defined globally
     state: 0,
@@ -149,7 +154,7 @@ Faker.Helpers.post = function (thread){
 
 Faker.Helpers.user = function (){
   return {
-    id          : Faker.Ids.next('user'),
+    id          : Faker.Incrementer.next('user'),
     first_name  : Faker.Name.firstName(),
     last_name   : Faker.Name.lastName(),
     nickname       : Faker.Internet.userName(),
@@ -235,7 +240,7 @@ var create_thread = function(forum, callback) {
   });
 };
 
-var create_forum = function(category, display_order, sub_forum_deep, callback){
+var create_forum = function(category, sub_forum_deep, callback){
   var last_thread;
   var post_count = 0;
   var thread_count;
@@ -251,12 +256,6 @@ var create_forum = function(category, display_order, sub_forum_deep, callback){
   }
 
   var forum = new Forum(Faker.Helpers.forum(category));
-
-  display_order = display_order.toString();
-  if (display_order.length === 1) {
-    display_order = '0' + display_order;
-  }
-  forum.display_order = category.display_order + ',' + display_order;
 
   Async.series([
     function(cb){
@@ -282,7 +281,7 @@ var create_forum = function(category, display_order, sub_forum_deep, callback){
       }
       var sub_forum_count = Faker.Helpers.randomNumber(MAX_SUB_FORUM_COUNT);
       Async.forEach( _.range(sub_forum_count), function (current_forum, next_forum) {
-        create_forum(forum, current_forum, sub_forum_deep-1, function(err, sub_forum){
+        create_forum(forum, sub_forum_deep-1, function(err, sub_forum){
           sub_forum_list.push(sub_forum._id);
           sub_forum_id_list.push(sub_forum.id);
           next_forum(err);
@@ -321,16 +320,10 @@ var create_categories = function(callback) {
 
     var category = new Category(Faker.Helpers.category());
 
-    var display_order = (1 + current_category).toString();
-    if (display_order.length === 1){
-      display_order = '0' + display_order;
-    }
-    category.display_order = display_order;
-
     category.save(function(err) {
     // create forums
       Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
-        create_forum(category, current_forum, 3, function(err, forum){
+        create_forum(category, 3, function(err, forum){
           forum_list.push(forum._id);
           forum_id_list.push(forum.id);
           next_forum(err);

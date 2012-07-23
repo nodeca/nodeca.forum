@@ -40,6 +40,7 @@ module.exports.up = function(cb) {
 
       category.id = 1;
       category.is_category = true;
+      category.display_order = 0;
 
       category.save(function (err) {
         callback(err);
@@ -61,7 +62,7 @@ module.exports.up = function(cb) {
 
       forum.level = 1;
 
-      forum.display_order = category.display_order + ',' + '00';
+      forum.display_order = category.display_order + 1;
       forum.save(function (err) {
         callback(err);
       });
