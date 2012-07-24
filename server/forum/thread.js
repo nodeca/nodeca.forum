@@ -29,23 +29,65 @@ nodeca.filters.before('@', function (params, next) {
 
   env.extras.puncher.start('Thread info prefetch');
 
-  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
-    if (!err) {
-      env.data.thread = doc;
-    }
+  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, thread) {
 
     env.extras.puncher.stop();
+
+    if (err) {
+      next(err);
+      return;
+    }
+
+    // No thread -> "Not Found" status
+    if (!thread) {
+      next({ statusCode: 404 });
+      return;
+    }
+
+    env.data.thread = thread;
   
     env.extras.puncher.start('Forum(parent) info prefetch');
 
-    Section.findOne({id: params.forum_id}).setOptions({lean: true }).exec(function(err, doc) {
-      if (!err) {
-        env.data.section = doc;
-      }
+    // `params.forum_id` can be wrong (old link to moved thread)
+    // Use real id from fetched thread
+    Section.findOne({_id: thread.forum}).setOptions({lean: true }).exec(function(err, forum) {
 
       env.extras.puncher.stop();
 
-      next(err);
+      if (err) {
+        next(err);
+        return;
+      }
+
+      // No forum -> missed thread, return "Not Found" too
+      if (!forum) {
+        next({ statusCode: 404 });
+        return;
+      }
+
+      // If params.forum_id defined, and not correct - redirect to proper location
+      if (params.forum_id && (forum.id !== +params.forum_id)) {
+
+        // FIXME - update pagination
+        nodeca.logger.info(params.forum_id);
+        nodeca.logger.info(forum.id);
+        next({
+          statusCode: 302,
+          headers: {
+            'Location': nodeca.runtime.router.linkTo(
+                          'forums.thread.show', {
+                            thread_id: thread.id,
+                            forum_id: forum.id
+                          }
+                        )
+          }
+        })
+        return;
+      }
+
+      env.data.section = forum;
+
+      next();
     });
   });
 });
