@@ -69,14 +69,12 @@ nodeca.filters.before('@', function (params, next) {
       if (params.forum_id && (forum.id !== +params.forum_id)) {
 
         // FIXME - update pagination
-        nodeca.logger.info(params.forum_id);
-        nodeca.logger.info(forum.id);
         next({
           statusCode: 302,
           headers: {
             'Location': nodeca.runtime.router.linkTo(
-                          'forums.thread.show', {
-                            thread_id: thread.id,
+                          'forum.thread', {
+                            id: thread.id,
                             forum_id: forum.id
                           }
                         )
