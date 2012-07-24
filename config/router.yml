@@ -4,13 +4,13 @@ router:
       "/": ~
 
     forum.section:
-      "/f{id}":
-        id: /\d+/
+      "/f{forum_id}":
+        forum_id: /\d+/
 
     forum.thread:
-      "/f{forum_id}/thread{id}":
+      "/f{forum_id}/thread{thread_id}":
         forum_id: /\d+/
-        id: /\d+/
+        thread_id: /\d+/
 
     admin.forum.index:
       "/forums": ~
