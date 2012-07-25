@@ -116,7 +116,7 @@ nodeca.filters.after('@', function (params, next) {
 
   // prepare forum info
   data.forum = {
-    id: params.id,
+    id: forum.id,
     title: forum.title,
     description: forum.description,
   };
