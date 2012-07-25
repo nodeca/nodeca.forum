@@ -131,7 +131,6 @@ nodeca.filters.after('@', function (params, next) {
   var env = this;
 
   var root = this.data.section._id;
-  console.dir(_.isObject(root));
   this.response.data.sections = to_tree(this.data.sections, root);
 
   this.response.data.threads = this.data.threads;
