@@ -123,12 +123,14 @@ module.exports = function (params, next) {
       .exec(function(err, posts){
 
     if (err) {
+      env.extras.puncher.stop();
       next(err);
       return;
     }
 
     // Thread with no posts -> Something broken, return "Not Found"
     if (!posts) {
+      env.extras.puncher.stop();
       next({ statusCode: 404 });
       return;
     }
@@ -148,6 +150,7 @@ nodeca.filters.after('@', function (params, next) {
 
   var posts = this.response.data.posts = this.data.posts;
 
+  env.extras.puncher.start('Collect user ids');
   env.data.users = env.data.users || [];
 
   // collect users
@@ -156,6 +159,8 @@ nodeca.filters.after('@', function (params, next) {
       env.data.users.push(post.user);
     }
   });
+  env.extras.puncher.stop();
+
   next();
 });
 

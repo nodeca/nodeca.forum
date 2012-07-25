@@ -50,10 +50,12 @@ module.exports = function (params, next) {
 nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   var env = this;
 
+  env.extras.puncher.start('Build sections tree');
   this.response.data.sections = to_tree(this.data.sections, null);
+  env.extras.puncher.stop();
 
-  this.response.data.threads = this.data.threads;
 
+  env.extras.puncher.start('Collect user ids');
   env.data.users = env.data.users || [];
 
   // collect users from sections
@@ -67,6 +69,7 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
       env.data.users.push(doc.cache.real.last_user);
     }
   });
+  env.extras.puncher.stop();
 
   next();
 });

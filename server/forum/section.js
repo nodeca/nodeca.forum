@@ -85,15 +85,13 @@ module.exports = function (params, next) {
   Async.series([
     function(callback){
       // prepare sub-forums
-      var root = env.data.section._id;
-      var max_level = env.data.section.level + 2; // need two next levels
+      env.extras.puncher.start('Get subforums');
 
+      var max_level = env.data.section.level + 2; // need two next levels
       var query = {
         level: {$lte: max_level},
-        parent_list: root
+        parent_list: env.data.section._id
       };
-
-      env.extras.puncher.start('Get subforums');
 
       // ToDo get state conditions from env
       Section.find(query).select(subforums_in_fields).sort('display_order')
@@ -110,10 +108,9 @@ module.exports = function (params, next) {
     },
     function (callback) {
       // fetch and prepare threads
- 
-      var query = {forum_id: params.id};
-
       env.extras.puncher.start('Get threads');
+
+      var query = {forum_id: params.id};
 
       Thread.find(query).select(threads_in_fields).setOptions({lean: true })
           .exec(function(err, threads){
@@ -142,11 +139,15 @@ module.exports = function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
+  env.extras.puncher.start('Build sections tree');
   var root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
+  env.extras.puncher.stop();
 
   this.response.data.threads = this.data.threads;
 
+
+  env.extras.puncher.start('Collect user ids');
   env.data.users = env.data.users || [];
 
   // collect users from subforums
@@ -170,6 +171,7 @@ nodeca.filters.after('@', function (params, next) {
       env.data.users.push(doc.cache.real.last_user);
     }
   });
+  env.extras.puncher.stop();
   next();
 });
 
