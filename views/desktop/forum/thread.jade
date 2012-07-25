@@ -77,7 +77,7 @@ article
           a.post-author.pull-left(href=link_to('users.member', users[post.user]))
             | #{users[post.user].nickname}
         .pull-right
-          time.post-time(itemprop='datePublished', date-time=date(post.ts, 'iso8601')) #{date(post.ts, 'date')}
+          time.post-time(itemprop='datePublished', date-time=date(post.ts, 'iso')) #{date(post.ts, 'date')}
           a.post-permalink(href=link_to('forum.thread', thread) + '#' +post.id) ##{post.id}
           input.post-check(type='checkbox')
       .post-aside
