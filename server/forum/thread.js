@@ -11,7 +11,7 @@ var Post = nodeca.models.forum.Post;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
 
-var post_fields = {
+var posts_in_fields = {
   '_id': 1,
   'id': 1,
   'attach_list': 1,
@@ -29,7 +29,7 @@ nodeca.filters.before('@', function (params, next) {
 
   env.extras.puncher.start('Thread info prefetch');
 
-  Thread.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, thread) {
+  Thread.findOne({id: params.id}).setOptions({ lean: true }).exec(function(err, thread) {
 
     env.extras.puncher.stop();
 
@@ -50,7 +50,7 @@ nodeca.filters.before('@', function (params, next) {
 
     // `params.forum_id` can be wrong (old link to moved thread)
     // Use real id from fetched thread
-    Section.findOne({_id: thread.forum}).setOptions({lean: true }).exec(function(err, forum) {
+    Section.findOne({_id: thread.forum}).setOptions({ lean: true }).exec(function(err, forum) {
 
       env.extras.puncher.stop();
 
@@ -110,7 +110,7 @@ module.exports = function (params, next) {
 
   // FIXME - calculate state conditions, pagination & add deleted posts
 
-  Post.find(query).select(post_fields).setOptions({lean: true})
+  Post.find(query).select(posts_in_fields).setOptions({ lean: true })
       .exec(function(err, posts){
 
     if (err) {
@@ -124,20 +124,29 @@ module.exports = function (params, next) {
       return;
     }
 
-    env.response.data.posts = posts;
+    env.data.posts = posts;
 
-    // collect users
-    posts.forEach(function(post) {
-      if (post.user) {
-        env.data.users.push(post.user);
-      }
-    });
-    
     env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
 
     next(err);
   });
 };
+
+
+// init posts response section and collect user ids
+nodeca.filters.after('@', function (params, next) {
+  var env = this;
+
+  var posts = this.response.data.posts = this.data.posts;
+
+  // collect users
+  posts.forEach(function(post) {
+    if (post.user) {
+      env.data.users.push(post.user);
+    }
+  });
+  next();
+});
 
 
 // breadcrumbs and head meta
@@ -156,7 +165,7 @@ nodeca.filters.after('@', function (params, next) {
   data.thread = {
     forum_id:   thread.forum_id,
     seo_desc:   thread._seo_desc,
-    id:         params.id,
+    id:         thread.id,
     title:      thread.title
   };
   if (this.session.hb) {
@@ -167,19 +176,19 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   // build breadcrumbs
-  var query = {_id: { $in: forum.parent_list }};
+  var query = { _id: { $in: forum.parent_list }};
   var fields = { '_id':1, 'id':1, 'title':1 };
 
   env.extras.puncher.start('Build breadcrumbs');
 
   Section.find(query).select(fields).sort({ 'level':1 })
-      .setOptions({lean:true}).exec(function(err, docs){
+      .setOptions({lean:true}).exec(function(err, parents){
     if (err) {
       next(err);
       return;
     }
-    docs.push(forum);
-    data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
+    parents.push(forum);
+    data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
 
     env.extras.puncher.stop();
     

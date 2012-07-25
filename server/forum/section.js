@@ -10,7 +10,7 @@ var Thread = nodeca.models.forum.Thread;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
 
-var thread_fields = {
+var threads_in_fields = {
   '_id': 1,
   'id': 1,
   'title': 1,
@@ -80,28 +80,45 @@ module.exports = function (params, next) {
 
       env.extras.puncher.start('Get threads');
 
-      Thread.find(query).select(thread_fields).setOptions({lean: true })
-          .exec(function(err, docs){
-        if (!err) {
-          env.response.data.threads = docs.map(function(doc) {
-            if (doc.cache.real.first_user) {
-              env.data.users.push(doc.cache.real.first_user);
-            }
-            if (doc.cache.real.last_user) {
-              env.data.users.push(doc.cache.real.last_user);
-            }
-            if (env.session.hb) {
-              doc.cache.real = doc.cache.hb;
-            }
+      Thread.find(query).select(threads_in_fields).setOptions({lean: true })
+          .exec(function(err, threads){
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        if (env.session.hb) {
+          threads = threads.map(function(doc) {
+            doc.cache.real = doc.cache.hb;
             return doc;
           });
         }
-        env.extras.puncher.stop(_.isArray(docs) ? { count: docs.length} : null);
+        env.data.threads = threads;
+        env.extras.puncher.stop(_.isArray(threads) ? { count: threads.length} : null);
         callback(err);
       });
     }
   ], next);
 };
+
+
+// init 'posts' response section and collect user ids
+nodeca.filters.after('@', function (params, next) {
+  var env = this;
+
+  this.response.data.threads = this.data.threads;
+  
+  // collect users from threads
+  this.data.threads.forEach(function(doc) {
+    if (doc.cache.real.first_user) {
+      env.data.users.push(doc.cache.real.first_user);
+    }
+    if (doc.cache.real.last_user) {
+      env.data.users.push(doc.cache.real.last_user);
+    }
+  });
+  next();
+});
 
 
 // fetch forums for breadcrumbs build
@@ -134,13 +151,13 @@ nodeca.filters.after('@', function (params, next) {
   env.extras.puncher.start('Build breadcrumbs');
 
   Section.find(query).select(fields).sort({ 'level':1 })
-      .setOptions({lean:true}).exec(function(err, docs){
+      .setOptions({lean:true}).exec(function(err, parents){
     if (err) {
       next(err);
       return;
     }
-    docs.push(forum);
-    data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
+    parents.push(forum);
+    data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
 
     env.extras.puncher.stop();
 
