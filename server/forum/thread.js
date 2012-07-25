@@ -22,6 +22,17 @@ var posts_in_fields = {
   'ts': 1
 };
 
+var thread_info_out_fields = [
+  'id',
+  'title',
+  '_seo_desc',
+  'is_category'
+];
+
+var thread_info_cache_out_fields = [
+  'post_count'
+];
+
 
 // fetch thread and forum info to simplify permisson check
 nodeca.filters.before('@', function (params, next) {
@@ -162,18 +173,15 @@ nodeca.filters.after('@', function (params, next) {
   data.head.title = thread.title;
 
   // prepare thread info
-  data.thread = {
-    forum_id:   thread.forum_id,
-    seo_desc:   thread._seo_desc,
-    id:         thread.id,
-    title:      thread.title
-  };
+  data.thread = _.pick(thread, thread_info_out_fields);
+  var cache;
   if (this.session.hb) {
-    data.thread.post_count = thread.cache.hb.post_count;
+    cache = _.pick(thread.cache.hb, thread_info_cache_out_fields);
   }
   else {
-    data.thread.post_count = thread.cache.real.post_count;
+    cache = _.pick(thread.cache.real, thread_info_cache_out_fields);
   }
+  data.thread['cache'] = { real: cache };
 
   // build breadcrumbs
   var query = { _id: { $in: forum.parent_list }};

@@ -3,9 +3,9 @@ article
 
   header.page-head
     h1(itemprop='name')= thread.title
-    - if (thread.seo_desc)
+    - if (thread._seo_desc)
       p(itemprop='description')
-        | #{thread.seo_desc}
+        | #{thread._seo_desc}
 
   nav.btn-toolbar.controlbar
     .btn-group
