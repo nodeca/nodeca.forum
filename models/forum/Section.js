@@ -86,7 +86,6 @@ Section.statics.fetchSections = function (options, callback) {
   });
 };
 
-Section.plugin(require('./section/_build_tree'));
 
 // build tree on index page
 Section.index({

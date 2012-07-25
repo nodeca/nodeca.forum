@@ -9,6 +9,7 @@ var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
+var to_tree = require('../../lib/to_tree.js');
 
 var threads_in_fields = {
   '_id': 1,
@@ -19,6 +20,17 @@ var threads_in_fields = {
   'cache': 1
 };
 
+var subforums_in_fields = {
+  '_id' : 1,
+  'id' : 1,
+  'title' : 1,
+  'description' : 1,
+  'parent' : 1,
+  'parent_list' : 1,
+  'moderator_list' : 1,
+  'display_order' : 1,
+  'cache' : 1
+};
 
 // prefetch forum to simplify permisson check
 nodeca.filters.before('@', function (params, next) {
@@ -62,13 +74,26 @@ module.exports = function (params, next) {
     function(callback){
       // prepare sub-forums
       var root = env.data.section._id;
-      var deep = env.data.section.level + 2; // need two next levels
+      var max_level = env.data.section.level + 2; // need two next levels
+
+      var query = {
+        level: {$lte: max_level},
+        parent_list: root
+      };
 
       env.extras.puncher.start('Get subforums');
 
-      Section.build_tree(env, root, deep, function(err) {
-        env.extras.puncher.stop();
-        callback(err);
+      // ToDo get state conditions from env
+      Section.find(query).select(subforums_in_fields).sort('display_order')
+          .setOptions({lean:true}).exec(function(err, sections){
+        if (err) {
+          env.extras.puncher.stop();
+          callback(err);
+          return;
+        }
+        env.data.sections = sections;
+        env.extras.puncher.stop({ count: sections.length });
+        callback();
       });
     },
     function (callback) {
@@ -81,6 +106,7 @@ module.exports = function (params, next) {
       Thread.find(query).select(threads_in_fields).setOptions({lean: true })
           .exec(function(err, threads){
         if (err) {
+          env.extras.puncher.stop();
           callback(err);
           return;
         }
@@ -93,20 +119,37 @@ module.exports = function (params, next) {
         }
         env.data.threads = threads;
         env.extras.puncher.stop(_.isArray(threads) ? { count: threads.length} : null);
-        callback(err);
+        callback();
       });
     }
   ], next);
 };
 
 
-// init 'posts' response section and collect user ids
+// init response and collect user ids
 nodeca.filters.after('@', function (params, next) {
   var env = this;
+
+  var root = this.data.section._id;
+  console.dir(_.isObject(root));
+  this.response.data.sections = to_tree(this.data.sections, root);
 
   this.response.data.threads = this.data.threads;
 
   env.data.users = env.data.users || [];
+
+  // collect users from subforums
+  this.data.sections.forEach(function(doc){
+    if (doc.moderator_list && _.isArray(doc.moderator_list)) {
+      doc.moderator_list.forEach(function(user) {
+        env.data.users.push(user);
+      });
+    }
+    if (doc.cache.real.last_user) {
+      env.data.users.push(doc.cache.real.last_user);
+    }
+  });
+
   // collect users from threads
   this.data.threads.forEach(function(doc) {
     if (doc.cache.real.first_user) {
@@ -152,6 +195,7 @@ nodeca.filters.after('@', function (params, next) {
   Section.find(query).select(fields).sort({ 'level':1 })
       .setOptions({lean:true}).exec(function(err, parents){
     if (err) {
+      env.extras.puncher.stop();
       next(err);
       return;
     }

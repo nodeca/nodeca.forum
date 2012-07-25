@@ -3,8 +3,21 @@
 /*global nodeca, _*/
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
+var to_tree = require('../../lib/to_tree.js');
 
 var Section = nodeca.models.forum.Section;
+
+var sections_in_fields = {
+  '_id' : 1,
+  'id' : 1,
+  'title' : 1,
+  'description' : 1,
+  'parent' : 1,
+  'parent_list' : 1,
+  'moderator_list' : 1,
+  'display_order' : 1,
+  'cache' : 1
+};
 
 
 // fetch and prepare sections
@@ -16,11 +29,47 @@ module.exports = function (params, next) {
   env.extras.puncher.start('Get forums');
 
   // build tree from 0..2 levels, start from sections without parent
-  Section.build_tree(this, null, 2, function(err) {
-    env.extras.puncher.stop();
-    next(err);
+  var query = { level: {$lte: 2}, };
+
+  // ToDo get state conditions from env
+  Section.find(query).select(sections_in_fields).sort('display_order')
+      .setOptions({lean:true}).exec(function(err, sections){
+    if (err) {
+      env.extras.puncher.stop();
+      next(err);
+      return;
+    }
+    env.data.sections = sections;
+    env.extras.puncher.stop({ count: sections.length });
+    next();
   });
 };
+
+
+// init response and collect user ids
+nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
+  var env = this;
+
+  this.response.data.sections = to_tree(this.data.sections, null);
+
+  this.response.data.threads = this.data.threads;
+
+  env.data.users = env.data.users || [];
+
+  // collect users from sections
+  this.data.sections.forEach(function(doc){
+    if (doc.moderator_list && _.isArray(doc.moderator_list)) {
+      doc.moderator_list.forEach(function(user) {
+        env.data.users.push(user);
+      });
+    }
+    if (doc.cache.real.last_user) {
+      env.data.users.push(doc.cache.real.last_user);
+    }
+  });
+
+  next();
+});
 
 
 // breadcrumbs and head meta
