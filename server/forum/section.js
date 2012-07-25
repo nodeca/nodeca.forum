@@ -8,7 +8,7 @@ var Async = NLib.Vendor.Async;
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 
-var forum_breadcrumbs = require('../../lib/breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
 
 var thread_fields = {
   '_id': 1,
