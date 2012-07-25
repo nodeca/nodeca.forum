@@ -32,6 +32,18 @@ var subforums_in_fields = {
   'cache' : 1
 };
 
+var forum_info_out_fields = [
+  'id',
+  'title',
+  'description',
+  'is_category'
+];
+
+var forum_info_cache_out_fields = [
+  'thread_count'
+];
+
+
 // prefetch forum to simplify permisson check
 nodeca.filters.before('@', function (params, next) {
   var env = this;
@@ -163,7 +175,7 @@ nodeca.filters.after('@', function (params, next) {
 
 
 // fetch forums for breadcrumbs build
-// prepare buand head meta
+// prepare head meta
 nodeca.filters.after('@', function (params, next) {
   var env = this;
   var data = this.response.data;
@@ -173,18 +185,15 @@ nodeca.filters.after('@', function (params, next) {
   data.head.title = forum.title;
 
   // prepare forum info
-  data.forum = {
-    id: forum.id,
-    title: forum.title,
-    description: forum.description,
-    is_category: forum.is_category
-  };
+  data.forum = _.pick(forum, forum_info_out_fields);
+  var cache;
   if (this.session.hb) {
-    data.forum['thread_count'] = forum.cache.hb.thread_count;
+    cache = _.pick(forum.cache.hb, forum_info_cache_out_fields);
   }
   else {
-    data.forum['thread_count'] = forum.cache.real.thread_count;
+    cache = _.pick(forum.cache.real, forum_info_cache_out_fields);
   }
+  data.forum['cache'] = { real: cache };
 
   var query = { _id: { $in: forum.parent_list } };
   var fields = { '_id' : 1, 'id' : 1, 'title' : 1 };
