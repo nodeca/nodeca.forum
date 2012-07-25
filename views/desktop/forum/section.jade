@@ -52,47 +52,48 @@ article.forum-threadlist
               li.lastpost-time
                 time(date-time=date(last_ts, 'iso8601')) #{date(last_ts, 'date')}
 
-  - if (threads && threads.length)
+  - if (forum.is_category === false)
     //- Toolbar with pagination & controls
     nav.btn-toolbar.controlbar
       .btn-group
         a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-      .btn-group
-        ul.pagination
-          li
-            a(href='#') 1
-          li.dropdown
-            a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
-            form.dropdown-menu
-              label.input Jump to:
-                .input-append
-                  input.input-small(type='text', size='8', placeholder='Page number')
-                  button.btn.btn-inverse(type='button') Go!
-          li
-            a(href='#') 13
-          li
-            a(href='#') 14
-          li.dropdown
-            a.current.dropdown-toggle(href='#', data-toggle='dropdown') 15
-            form.dropdown-menu
-              label.input Jump to:
-                .input-append
-                  input.input-small(type='text', size='8', placeholder='Page number')
-                  button.btn.btn-inverse(type='button') Go!
-          li
-            a(href='#') 16
-          li
-            a(href='#') 17
-          li.dropdown
-            a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
-            form.dropdown-menu
-              label.input Jump to:
-                .input-append
-                  input.input-small(type='text', size='8', placeholder='Page number')
-                  button.btn.btn-inverse(type='button') Go!
-          li
-            a(href='#') 325
+      - if (threads && threads.length)
+        .btn-group
+          ul.pagination
+            li
+              a(href='#') 1
+            li.dropdown
+              a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+              form.dropdown-menu
+                label.input Jump to:
+                  .input-append
+                    input.input-small(type='text', size='8', placeholder='Page number')
+                    button.btn.btn-inverse(type='button') Go!
+            li
+              a(href='#') 13
+            li
+              a(href='#') 14
+            li.dropdown
+              a.current.dropdown-toggle(href='#', data-toggle='dropdown') 15
+              form.dropdown-menu
+                label.input Jump to:
+                  .input-append
+                    input.input-small(type='text', size='8', placeholder='Page number')
+                    button.btn.btn-inverse(type='button') Go!
+            li
+              a(href='#') 16
+            li
+              a(href='#') 17
+            li.dropdown
+              a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
+              form.dropdown-menu
+                label.input Jump to:
+                  .input-append
+                    input.input-small(type='text', size='8', placeholder='Page number')
+                    button.btn.btn-inverse(type='button') Go!
+            li
+              a(href='#') 325
 
       .btn-group.pull-right
         a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')

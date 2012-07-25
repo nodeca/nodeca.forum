@@ -119,6 +119,7 @@ nodeca.filters.after('@', function (params, next) {
     id: forum.id,
     title: forum.title,
     description: forum.description,
+    is_category: forum.is_category
   };
   if (this.session.hb) {
     data.forum['thread_count'] = forum.cache.hb.thread_count;
