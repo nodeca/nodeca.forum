@@ -59,7 +59,7 @@ nodeca.filters.before('@', function (params, next) {
         return;
       }
 
-      // No forum -> missed thread, return "Not Found" too
+      // No forum -> thread with missed parent, return "Not Found" too
       if (!forum) {
         next({ statusCode: 404 });
         return;
@@ -107,22 +107,33 @@ module.exports = function (params, next) {
   env.extras.puncher.start('Get posts');
 
   env.data.users = env.data.users || [];
-  // ToDo get state conditions from env
+
+  // FIXME - calculate state conditions, pagination & add deleted posts
 
   Post.find(query).select(post_fields).setOptions({lean: true})
-      .exec(function(err, docs){
-    if (!err) {
-      env.response.data.posts = docs;
+      .exec(function(err, posts){
 
-      // collect users
-      docs.forEach(function(doc) {
-        if (doc.user) {
-          env.data.users.push(doc.user);
-        }
-      });
+    if (err) {
+      next(err);
+      return
     }
+
+    // Thread with no posts -> Something broken, return "Not Found"
+    if (!posts) {
+      next({ statusCode: 404 });
+      return;
+    }
+
+    env.response.data.posts = posts;
+
+    // collect users
+    posts.forEach(function(post) {
+      if (post.user) {
+        env.data.users.push(post.user);
+      }
+    });
     
-    env.extras.puncher.stop(_.isArray(docs) ? { count: docs.length} : null);
+    env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
 
     next(err);
   });
@@ -160,12 +171,19 @@ nodeca.filters.after('@', function (params, next) {
   var fields = { '_id':1, 'id':1, 'title':1 };
 
   env.extras.puncher.start('Build breadcrumbs');
+
   Section.find(query).select(fields)
       .setOptions({lean:true}).exec(function(err, docs){
+    if (err) {
+      next(err);
+      return;
+    }
+
     docs.push(forum);
     data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
 
     env.extras.puncher.stop();
+    
     next();
   });
 

@@ -26,11 +26,23 @@ nodeca.filters.before('@', function (params, next) {
 
   env.extras.puncher.start('Forum info prefetch');
 
-  Section.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, doc) {
-    if (!err) {
-      env.data.section = doc;
+  Section.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, forum) {
+
+    if (err) {
+      next(err);
+      return
     }
+
+    // No forum -> "Not Found" status
+    if (!forum) {
+      next({ statusCode: 404 });
+      return;
+    }
+
+    env.data.section = forum;
+
     env.extras.puncher.stop();
+
     next(err);
   });
 });
@@ -122,9 +134,15 @@ nodeca.filters.after('@', function (params, next) {
 
   Section.find(query).select(fields)
       .setOptions({lean:true}).exec(function(err, docs){
+    if (err) {
+      next(err);
+      return;
+    }
+
     data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
 
     env.extras.puncher.stop();
+
     next();
   });
 });
