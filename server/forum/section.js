@@ -74,8 +74,6 @@ module.exports = function (params, next) {
     function (callback) {
       // fetch and prepare threads
  
-      env.data.users = env.data.users || [];
-
       var query = {forum_id: params.id};
 
       env.extras.puncher.start('Get threads');
@@ -107,7 +105,8 @@ nodeca.filters.after('@', function (params, next) {
   var env = this;
 
   this.response.data.threads = this.data.threads;
-  
+
+  env.data.users = env.data.users || [];
   // collect users from threads
   this.data.threads.forEach(function(doc) {
     if (doc.cache.real.first_user) {

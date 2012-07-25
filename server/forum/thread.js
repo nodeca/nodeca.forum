@@ -106,8 +106,6 @@ module.exports = function (params, next) {
 
   env.extras.puncher.start('Get posts');
 
-  env.data.users = env.data.users || [];
-
   // FIXME - calculate state conditions, pagination & add deleted posts
 
   Post.find(query).select(posts_in_fields).setOptions({ lean: true })
@@ -138,6 +136,8 @@ nodeca.filters.after('@', function (params, next) {
   var env = this;
 
   var posts = this.response.data.posts = this.data.posts;
+
+  env.data.users = env.data.users || [];
 
   // collect users
   posts.forEach(function(post) {
