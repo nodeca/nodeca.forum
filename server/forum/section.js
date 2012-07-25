@@ -132,13 +132,13 @@ nodeca.filters.after('@', function (params, next) {
 
   env.extras.puncher.start('Build breadcrumbs');
 
-  Section.find(query).select(fields)
+  Section.find(query).select(fields).sort({ 'level':1 })
       .setOptions({lean:true}).exec(function(err, docs){
     if (err) {
       next(err);
       return;
     }
-
+    docs.push(forum);
     data.widgets.breadcrumbs = forum_breadcrumbs(env, docs);
 
     env.extras.puncher.stop();
