@@ -30,7 +30,7 @@ nodeca.filters.before('@', function (params, next) {
 
     if (err) {
       next(err);
-      return
+      return;
     }
 
     // No forum -> "Not Found" status
@@ -60,7 +60,7 @@ module.exports = function (params, next) {
 
   Async.series([
     function(callback){
-      // prepare sub-forums      
+      // prepare sub-forums
       var root = env.data.section._id;
       var deep = env.data.section.level + 2; // need two next levels
 

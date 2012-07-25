@@ -79,7 +79,7 @@ nodeca.filters.before('@', function (params, next) {
                           }
                         )
           }
-        })
+        });
         return;
       }
 
@@ -115,7 +115,7 @@ module.exports = function (params, next) {
 
     if (err) {
       next(err);
-      return
+      return;
     }
 
     // Thread with no posts -> Something broken, return "Not Found"
