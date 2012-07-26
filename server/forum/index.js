@@ -31,7 +31,7 @@ module.exports = function (params, next) {
   env.extras.puncher.start('Get forums');
 
   // build tree from 0..2 levels, start from sections without parent
-  var query = { level: {$lte: 2}, };
+  var query = { level: {$lte: 2} };
 
   // FIXME add permissions check
   Section.find(query).select(sections_in_fields).sort('display_order')
@@ -70,7 +70,7 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
 
   // collect users from sections
   this.data.sections.forEach(function(doc){
-    if (doc.moderator_list && _.isArray(doc.moderator_list)) {
+    if (!!doc.moderator_list) {
       doc.moderator_list.forEach(function(user) {
         env.data.users.push(user);
       });

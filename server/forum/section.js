@@ -130,7 +130,7 @@ module.exports = function (params, next) {
 
         env.data.threads = threads;
 
-        env.extras.puncher.stop(_.isArray(threads) ? { count: threads.length} : null);
+        env.extras.puncher.stop(_.isArray(threads) ? { count: threads.length } : null);
 
         callback();
       });
@@ -170,7 +170,7 @@ nodeca.filters.after('@', function (params, next) {
 
   // collect users from subforums
   this.data.sections.forEach(function(doc){
-    if (doc.moderator_list && _.isArray(doc.moderator_list)) {
+    if (!!doc.moderator_list) {
       doc.moderator_list.forEach(function(user) {
         env.data.users.push(user);
       });
