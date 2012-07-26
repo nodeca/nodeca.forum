@@ -25,8 +25,7 @@ var posts_in_fields = {
 var thread_info_out_fields = [
   'id',
   'title',
-  '_seo_desc',
-  'is_category'
+  '_seo_desc'
 ];
 
 var thread_info_cache_out_fields = [
@@ -117,20 +116,18 @@ module.exports = function (params, next) {
 
   env.extras.puncher.start('Get posts');
 
-  // FIXME - calculate state conditions, pagination & add deleted posts
+  // FIXME - calculate permissions, pagination & add deleted posts
 
   Post.find(query).select(posts_in_fields).setOptions({ lean: true })
       .exec(function(err, posts){
 
     if (err) {
-      env.extras.puncher.stop();
       next(err);
       return;
     }
 
     // Thread with no posts -> Something broken, return "Not Found"
     if (!posts) {
-      env.extras.puncher.stop();
       next({ statusCode: 404 });
       return;
     }
@@ -144,13 +141,18 @@ module.exports = function (params, next) {
 };
 
 
-// init posts response section and collect user ids
+//
+// Build response:
+//  - posts list -> posts
+//  - collect users ids
+//
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
   var posts = this.response.data.posts = this.data.posts;
 
   env.extras.puncher.start('Collect user ids');
+ 
   env.data.users = env.data.users || [];
 
   // collect users
@@ -159,13 +161,16 @@ nodeca.filters.after('@', function (params, next) {
       env.data.users.push(post.user);
     }
   });
+
   env.extras.puncher.stop();
 
   next();
 });
 
 
-// breadcrumbs and head meta
+//
+// Fill head meta & fetch/fill breadcrumbs
+//
 nodeca.filters.after('@', function (params, next) {
   var env = this;
   var data = this.response.data;
@@ -200,6 +205,7 @@ nodeca.filters.after('@', function (params, next) {
       next(err);
       return;
     }
+
     parents.push(forum);
     data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
 

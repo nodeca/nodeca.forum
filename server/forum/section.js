@@ -44,7 +44,10 @@ var forum_info_cache_out_fields = [
 ];
 
 
-// prefetch forum to simplify permisson check
+//
+// Prefetch forum to simplify permisson check.
+// Check that forum exists.
+//
 nodeca.filters.before('@', function (params, next) {
   var env = this;
 
@@ -72,82 +75,85 @@ nodeca.filters.before('@', function (params, next) {
 });
 
 
+//
 // fetch and prepare threads and sub-forums
 // ToDo pagination
 //
 // ##### params
 //
 // - `id`   forum id
+//
 module.exports = function (params, next) {
   var env = this;
 
 
   Async.series([
+
     function(callback){
-      // prepare sub-forums
+      // fetch sub-forums
       env.extras.puncher.start('Get subforums');
 
       var max_level = env.data.section.level + 2; // need two next levels
       var query = {
-        level: {$lte: max_level},
+        level: { $lte: max_level },
         parent_list: env.data.section._id
       };
 
-      // ToDo get state conditions from env
+      // FIXME add permissions check
       Section.find(query).select(subforums_in_fields).sort('display_order')
-          .setOptions({lean:true}).exec(function(err, sections){
+          .setOptions({ lean:true }).exec(function(err, sections){
         if (err) {
-          env.extras.puncher.stop();
           callback(err);
           return;
         }
         env.data.sections = sections;
+
         env.extras.puncher.stop({ count: sections.length });
+
         callback();
       });
     },
+
     function (callback) {
       // fetch and prepare threads
       env.extras.puncher.start('Get threads');
 
-      var query = {forum_id: params.id};
+      var query = { forum_id: params.id };
 
       Thread.find(query).select(threads_in_fields).setOptions({lean: true })
           .exec(function(err, threads){
         if (err) {
-          env.extras.puncher.stop();
           callback(err);
           return;
         }
 
-        if (env.session.hb) {
-          threads = threads.map(function(doc) {
-            doc.cache.real = doc.cache.hb;
-            return doc;
-          });
-        }
         env.data.threads = threads;
+
         env.extras.puncher.stop(_.isArray(threads) ? { count: threads.length} : null);
+
         callback();
       });
     }
+
   ], next);
+
 };
 
 
-// init response and collect user ids
+//
+// Build response:
+//  - forums list -> filtered tree
+//  - collect users ids (last posters / moderators / threads authors + last)
+//  - threads
+//
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
-  env.extras.puncher.start('Build sections tree');
+  env.extras.puncher.start('Post-process forums/threads/users');
+
   var root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
-  env.extras.puncher.stop();
 
-  this.response.data.threads = this.data.threads;
-
-
-  env.extras.puncher.start('Collect user ids');
   env.data.users = env.data.users || [];
 
   // collect users from subforums
@@ -162,6 +168,19 @@ nodeca.filters.after('@', function (params, next) {
     }
   });
 
+  //
+  // Process threads
+  //
+
+  if (env.session.hb) {
+    this.data.threads = this.data.threads.map(function(doc) {
+      doc.cache.real = doc.cache.hb;
+      return doc;
+    });
+  }
+
+  this.response.data.threads = this.data.threads;
+
   // collect users from threads
   this.data.threads.forEach(function(doc) {
     if (doc.cache.real.first_user) {
@@ -171,13 +190,16 @@ nodeca.filters.after('@', function (params, next) {
       env.data.users.push(doc.cache.real.last_user);
     }
   });
+
   env.extras.puncher.stop();
+
   next();
 });
 
 
-// fetch forums for breadcrumbs build
-// prepare head meta
+//
+// Fill head meta & fetch/fill breadcrumbs
+//
 nodeca.filters.after('@', function (params, next) {
   var env = this;
   var data = this.response.data;
@@ -186,8 +208,10 @@ nodeca.filters.after('@', function (params, next) {
   // prepare page title
   data.head.title = forum.title;
 
+
   // prepare forum info
   data.forum = _.pick(forum, forum_info_out_fields);
+
   var cache;
   if (this.session.hb) {
     cache = _.pick(forum.cache.hb, forum_info_cache_out_fields);
@@ -197,6 +221,7 @@ nodeca.filters.after('@', function (params, next) {
   }
   data.forum['cache'] = { real: cache };
 
+  // fetch breadcrumbs data
   var query = { _id: { $in: forum.parent_list } };
   var fields = { '_id' : 1, 'id' : 1, 'title' : 1 };
 
@@ -205,10 +230,10 @@ nodeca.filters.after('@', function (params, next) {
   Section.find(query).select(fields).sort({ 'level':1 })
       .setOptions({lean:true}).exec(function(err, parents){
     if (err) {
-      env.extras.puncher.stop();
       next(err);
       return;
     }
+
     parents.push(forum);
     data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
 

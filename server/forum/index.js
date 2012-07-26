@@ -20,9 +20,11 @@ var sections_in_fields = {
 };
 
 
+//
 // fetch and prepare sections
 //
-// params is empty
+// params - empty
+//
 module.exports = function (params, next) {
   var env = this;
 
@@ -31,11 +33,10 @@ module.exports = function (params, next) {
   // build tree from 0..2 levels, start from sections without parent
   var query = { level: {$lte: 2}, };
 
-  // ToDo get state conditions from env
+  // FIXME add permissions check
   Section.find(query).select(sections_in_fields).sort('display_order')
       .setOptions({lean:true}).exec(function(err, sections){
     if (err) {
-      env.extras.puncher.stop();
       next(err);
       return;
     }
@@ -46,16 +47,23 @@ module.exports = function (params, next) {
 };
 
 
-// init response and collect user ids
+//
+// Build response:
+//  - forums list -> filtered tree
+//  - collect users ids (last posters & moderators)
+//
 nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   var env = this;
 
   env.extras.puncher.start('Build sections tree');
+
   this.response.data.sections = to_tree(this.data.sections, null);
+
   env.extras.puncher.stop();
 
 
   env.extras.puncher.start('Collect user ids');
+
   env.data.users = env.data.users || [];
 
   // collect users from sections
@@ -75,7 +83,9 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
 });
 
 
-// breadcrumbs and head meta
+//
+// Fill breadcrumbs and head meta
+//
 nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   this.response.data.head.title = this.helpers.t('common.forum.title');
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
