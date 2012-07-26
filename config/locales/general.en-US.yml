@@ -4,6 +4,9 @@ i18n:
       menus:
         navbar:
           forum: Forum
+    forum:
+      messages:
+        no_threads: No threads yet.
 
     admin:
       menus:

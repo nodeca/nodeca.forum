@@ -85,39 +85,43 @@ article.forum-threadlist
 
 
 
-    ul.tl-thread-list
-      - each thread in threads
-        - fp_user = thread.cache.real.first_user
-        - lp_user = thread.cache.real.last_user
-        - fp_ts   = thread.cache.real.first_ts
-        - lp_ts   = thread.cache.real.last_ts
-        li
-          .row
-            .span7.tl-item-summary
-              h2
-                a(href=link_to('forum.thread', thread))= thread.title
-              //a.mark-i-attach._tip(href="#")=thread.attach_count
-              ul.tl-pages
-                li
-                  a(href='#') 1
-                li
-                  a(href='#') 2
-                li
-                  a(href='#') 3
-              .tl-meta
-                a.tl-preview-ctl.icon-down(href='#') Preview
-                - if (users[fp_user])
-                  a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user].nickname}
-                time.tl-start-date(datetime=date(fp_ts, 'iso')) #{date(fp_ts, 'date')}
+    - if (threads && threads.length)
+      ul.tl-thread-list
+        - each thread in threads
+          - fp_user = thread.cache.real.first_user
+          - lp_user = thread.cache.real.last_user
+          - fp_ts   = thread.cache.real.first_ts
+          - lp_ts   = thread.cache.real.last_ts
+          li
+            .row
+              .span7.tl-item-summary
+                h2
+                  a(href=link_to('forum.thread', thread))= thread.title
+                //a.mark-i-attach._tip(href="#")=thread.attach_count
+                ul.tl-pages
+                  li
+                    a(href='#') 1
+                  li
+                    a(href='#') 2
+                  li
+                    a(href='#') 3
+                .tl-meta
+                  a.tl-preview-ctl.icon-down(href='#') Preview
+                  - if (users[fp_user])
+                    a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user].nickname}
+                  time.tl-start-date(datetime=date(fp_ts, 'iso')) #{date(fp_ts, 'date')}
 
-            ul.span2.tl-item-counters.hidden-phone
-              li #{thread.cache.real.post_count} replies
-              li #{thread.cache._views_count} vews
+              ul.span2.tl-item-counters.hidden-phone
+                li #{thread.cache.real.post_count} replies
+                li #{thread.cache._views_count} vews
 
-            ul.span3.tl-item-lastpost.hidden-phone
-              li.lastpost-time
-                a(href='#')
-                  time(datetime=date(lp_ts, 'iso')) #{date(lp_ts, 'date')}
-              - if (users[lp_user])
-                li.lastpost-user
-                  a(href=link_to('users.member', users[lp_user])) #{users[lp_user].nickname}
+              ul.span3.tl-item-lastpost.hidden-phone
+                li.lastpost-time
+                  a(href='#')
+                    time(datetime=date(lp_ts, 'iso')) #{date(lp_ts, 'date')}
+                - if (users[lp_user])
+                  li.lastpost-user
+                    a(href=link_to('users.member', users[lp_user])) #{users[lp_user].nickname}
+    - else
+      .message
+        h1= t('forum.messages.no_threads')
