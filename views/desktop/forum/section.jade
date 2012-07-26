@@ -12,9 +12,9 @@ article.forum-threadlist
   - if (sections && sections.length)
     ul.fl-cat-list
       - each sub_forum in sections
-        - last_thread = sub_forum.cache.real.last_thread_id
-        - last_user = sub_forum.cache.real.last_user
-        - last_ts = sub_forum.cache.real.last_ts
+        - last_thread = sub_forum.cache.real.last_thread_id || null
+        - last_user = sub_forum.cache.real.last_user || null
+        - last_ts = sub_forum.cache.real.last_ts || null
         li
           // Add 'unread' class & #id below, for new data
           .row
@@ -51,8 +51,9 @@ article.forum-threadlist
                 li.lastpost-user
                   | by 
                   a(href=link_to('users.member', users[last_user])) #{users[last_user].nick} 
-              li.lastpost-time
-                time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
+              - if (last_ts)
+                li.lastpost-time
+                  time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
 
   - if (forum.is_category === false)
     //- Toolbar with pagination & controls

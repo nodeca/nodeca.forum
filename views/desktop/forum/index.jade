@@ -13,9 +13,9 @@ article
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
 
         - each forum in category.child_list
-          - last_thread = forum.cache.real.last_thread_id
-          - last_user = forum.cache.real.last_user
-          - last_ts = forum.cache.real.last_ts
+          - last_thread = forum.cache.real.last_thread_id || null
+          - last_user = forum.cache.real.last_user || null
+          - last_ts = forum.cache.real.last_ts || null
           li
             // Add 'unread' class & #id below, for new data
             .row
@@ -52,9 +52,10 @@ article
                   li.lastpost-user
                     | by 
                     - lp_user = users[last_user]
-                    a(href=link_to('users.member', lp_user)) #{lp_user.nick} 
-                li.lastpost-time
-                  time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
+                    a(href=link_to('users.member', lp_user)) #{lp_user.nick}
+                - if (last_ts)
+                  li.lastpost-time
+                    time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
 
   footer
     .btn-toolbar
