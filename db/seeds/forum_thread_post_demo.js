@@ -5,6 +5,7 @@
 /*
  * This seed create data for demo forum:
  *   3 category, each category contain 10 forums
+ *   last forum in 3rd category is empty
  *   first forum contain 200 threads, all others only one
  *   first thread in first thread contain 100 post, all others only one
  *
@@ -314,24 +315,26 @@ var create_forum = function(category, sub_forum_deep, callback){
 
 
 var create_categories = function(callback) {
+  var category;
   Async.forEachSeries(_.range(CATEGORY_COUNT), function(current_category, next_category) {
-    var forum_list = [];
-    var forum_id_list = [];
-
-    var category = new Category(Faker.Helpers.category());
+    category = new Category(Faker.Helpers.category());
 
     category.save(function(err) {
     // create forums
       Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
         create_forum(category, 3, function(err, forum){
-          forum_list.push(forum._id);
-          forum_id_list.push(forum.id);
           next_forum(err);
         });
       }, next_category);
     });
   }, function(err){
-    callback(err);
+    if (err) {
+      callback(err);
+      return;
+    }
+    // Added empty forum to last category
+    var forum = new Forum(Faker.Helpers.forum(category));
+    forum.save(callback);
   });
 };
 
