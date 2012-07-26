@@ -157,7 +157,7 @@ Faker.Helpers.user = function (){
     id          : Faker.Incrementer.next('user'),
     first_name  : Faker.Name.firstName(),
     last_name   : Faker.Name.lastName(),
-    nickname       : Faker.Internet.userName(),
+    nick        : Faker.Internet.userName(),
 
     email       : Faker.Internet.email(),
     

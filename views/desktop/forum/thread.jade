@@ -44,7 +44,7 @@ article
       footer.post-meta.clearfix
         - if (users[post.user])
           a.post-author.pull-left(href=link_to('users.member', users[post.user]))
-            | #{users[post.user].nickname}
+            | #{users[post.user].nick}
         .pull-right
           time.post-time(itemprop='datePublished', datetime=date(post.ts, 'iso')) #{date(post.ts, 'date')}
           - var _post_anchor = link_to('forum.thread', thread) + 'post' + post.id;
@@ -53,7 +53,7 @@ article
       .post-aside
         - if (users[post.user])
           a.post-userpic(href='#')
-            img.av-xl(alt='#{users[post.user].nickname}',src='http://lorempixel.com/150/150/sports/a' + '#{users[post.user].id}')
+            img.av-xl(alt='#{users[post.user].nick}',src='http://lorempixel.com/150/150/sports/a' + '#{users[post.user].id}')
         - else
           .av-xl
       .post-content
