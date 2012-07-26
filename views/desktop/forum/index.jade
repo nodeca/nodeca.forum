@@ -5,9 +5,9 @@ article
 
   - each category in sections
     article.fl-category(id='cat_box_#{category.id}')
-      header
+      header(id='cat#{category.id}')
         h2
-          a(href='##{category.id}', name=category.id, data-toggle='collapse', data-target='#cat_list_#{category.id}')= category.title
+          a(href='#cat#{category.id}', data-toggle='collapse', data-target='#cat_list_#{category.id}')= category.title
         a._collapser(href='#')
 
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
