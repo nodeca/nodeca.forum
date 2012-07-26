@@ -2,7 +2,7 @@
 
 /*global nodeca, _*/
 
-var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');
 
 var Section = nodeca.models.forum.Section;

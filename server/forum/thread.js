@@ -9,7 +9,7 @@ var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 var Post = nodeca.models.forum.Post;
 
-var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js').forum;
+var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 
 var posts_in_fields = {
   '_id': 1,
