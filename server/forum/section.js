@@ -53,7 +53,8 @@ nodeca.filters.before('@', function (params, next) {
 
   env.extras.puncher.start('Forum info prefetch');
 
-  Section.findOne({id: params.id}).setOptions({lean: true }).exec(function(err, forum) {
+  Section.findOne({id: params.id}).setOptions({ lean: true })
+      .exec(function(err, forum) {
 
     if (err) {
       next(err);
@@ -101,7 +102,7 @@ module.exports = function (params, next) {
 
       // FIXME add permissions check
       Section.find(query).select(subforums_in_fields).sort('display_order')
-          .setOptions({ lean:true }).exec(function(err, sections){
+          .setOptions({ lean: true }).exec(function(err, sections){
         if (err) {
           callback(err);
           return;
@@ -120,7 +121,7 @@ module.exports = function (params, next) {
 
       var query = { forum_id: params.id };
 
-      Thread.find(query).select(threads_in_fields).setOptions({lean: true })
+      Thread.find(query).select(threads_in_fields).setOptions({ lean: true })
           .exec(function(err, threads){
         if (err) {
           callback(err);
@@ -234,11 +235,11 @@ nodeca.filters.after('@', function (params, next) {
 
   // fetch breadcrumbs data
   var query = { _id: { $in: forum.parent_list } };
-  var fields = { '_id' : 1, 'id' : 1, 'title' : 1 };
+  var fields = { '_id': 1, 'id': 1, 'title': 1 };
 
   env.extras.puncher.start('Build breadcrumbs');
 
-  Section.find(query).select(fields).sort({ 'level':1 })
+  Section.find(query).select(fields).sort({ 'level': 1 })
       .setOptions({lean:true}).exec(function(err, parents){
     if (err) {
       next(err);

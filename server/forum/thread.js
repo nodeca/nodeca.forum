@@ -39,7 +39,8 @@ nodeca.filters.before('@', function (params, next) {
 
   env.extras.puncher.start('Thread info prefetch');
 
-  Thread.findOne({id: params.id}).setOptions({ lean: true }).exec(function(err, thread) {
+  Thread.findOne({ id: params.id }).setOptions({ lean: true })
+      .exec(function(err, thread) {
 
     env.extras.puncher.stop();
 
@@ -60,7 +61,8 @@ nodeca.filters.before('@', function (params, next) {
 
     // `params.forum_id` can be wrong (old link to moved thread)
     // Use real id from fetched thread
-    Section.findOne({_id: thread.forum}).setOptions({ lean: true }).exec(function(err, forum) {
+    Section.findOne({ _id: thread.forum }).setOptions({ lean: true })
+        .exec(function(err, forum) {
 
       env.extras.puncher.stop();
 
@@ -110,11 +112,13 @@ nodeca.filters.before('@', function (params, next) {
 // - `forum_id`   forum id
 module.exports = function (params, next) {
   var env = this;
+
+  env.extras.puncher.start('Get posts');
+
+
   var query = {
     thread_id: params.id
   };
-
-  env.extras.puncher.start('Get posts');
 
   // FIXME - calculate permissions, pagination & add deleted posts
 
@@ -149,10 +153,10 @@ module.exports = function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
+  env.extras.puncher.start('Post-process posts/users');
+
   var posts = this.response.data.posts = this.data.posts;
 
-  env.extras.puncher.start('Collect user ids');
- 
   env.data.users = env.data.users || [];
 
   // collect users
@@ -195,11 +199,11 @@ nodeca.filters.after('@', function (params, next) {
 
   // build breadcrumbs
   var query = { _id: { $in: forum.parent_list }};
-  var fields = { '_id':1, 'id':1, 'title':1 };
+  var fields = { '_id': 1, 'id': 1, 'title': 1 };
 
   env.extras.puncher.start('Build breadcrumbs');
 
-  Section.find(query).select(fields).sort({ 'level':1 })
+  Section.find(query).select(fields).sort({ 'level': 1 })
       .setOptions({lean:true}).exec(function(err, parents){
     if (err) {
       next(err);
