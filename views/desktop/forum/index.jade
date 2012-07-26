@@ -4,10 +4,10 @@ article
   //h1= t('forum.index.title')
 
   - each category in sections
-    article.fl-category(id='cat_box_#{category.id}', name=category.id)
+    article.fl-category(id='cat_box_#{category.id}')
       header
-        h2(name=category.title)
-          a(href='##{category.id}', data-toggle='collapse', data-target='#cat_list_#{category.id}')= category.title
+        h2
+          a(href='##{category.id}', name=category.id, data-toggle='collapse', data-target='#cat_list_#{category.id}')= category.title
         a._collapser(href='#')
 
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
@@ -54,7 +54,7 @@ article
                     - lp_user = users[last_user]
                     a(href=link_to('users.member', lp_user)) #{lp_user.nickname} 
                 li.lastpost-time
-                  time(date-time=date(last_ts, 'iso')) #{date(last_ts, 'date')}
+                  time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
 
   footer
     .btn-toolbar
