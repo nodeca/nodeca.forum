@@ -29,10 +29,10 @@ article.forum-threadlist
               - if (sub_forum.moderator_list && sub_forum.moderator_list.length)
                 dl.def-hlist.fl-moderators
                   dt moderators:
-                    - each moderator in sub_forum.moderator_list
-                      - if (users[moderator])
-                        dd
-                          a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
+                  - each moderator in sub_forum.moderator_list
+                    - if (users[moderator])
+                      dd
+                        a(href=link_to('users.member', users[moderator])) #{users[moderator].nickname} 
 
             ul.span2.fl-item-counters.hidden-phone
               li
