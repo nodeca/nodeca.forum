@@ -1,3 +1,5 @@
+include ../widgets/pagination
+
 article
   include ../widgets/breadcrumbs
 
@@ -12,40 +14,7 @@ article
       a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
     .btn-group
-      ul.pagination
-        li
-          a(href='#') 1
-        li.dropdown
-          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
-          form.dropdown-menu
-            label.input Jump to:
-              .input-append
-                input.input-small(type='text', size='8', placeholder='Page number')
-                button.btn.btn-inverse(type='button') Go!
-        li
-          a(href='#') 5
-        li
-          a(href='#') 6
-        li.dropdown
-          a.current.dropdown-toggle(href='#', data-toggle='dropdown') 7
-          form.dropdown-menu
-            label.input Jump to:
-              .input-append
-                input.input-small(type='text', size='8', placeholder='Page number')
-                button.btn.btn-inverse(type='button') Go!
-        li
-          a(href='#') 8
-        li
-          a(href='#') 9
-        li.dropdown
-          a.more.dropdown-toggle(href='#', data-toggle='dropdown') ...
-          form.dropdown-menu
-            label.input Jump to:
-              .input-append
-                input.input-small(type='text', size='8', placeholder='Page number')
-                button.btn.btn-inverse(type='button') Go!
-        li
-          a(href='#') 129
+      mixin pagination()
 
     .btn-group.pull-right
       a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
