@@ -76,16 +76,6 @@ var Section = module.exports.Section = new mongoose.Schema({
 
 }, { strict: true });
 
-Section.statics.fetchSections = function (options, callback) {
-  if (callback === undefined){
-    callback = options;
-    options = {};
-  }
-  this.find(options, function(err, result){
-    callback(err, result);
-  });
-};
-
 
 // build tree on index page
 Section.index({
