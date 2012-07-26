@@ -151,6 +151,17 @@ nodeca.filters.after('@', function (params, next) {
 
   env.extras.puncher.start('Post-process forums/threads/users');
 
+  //
+  // Process sections
+  //
+
+  if (env.session.hb) {
+    this.data.sections = this.data.sections.map(function(doc) {
+      doc.cache.real = doc.cache.hb;
+      return doc;
+    });
+  }
+
   var root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
 

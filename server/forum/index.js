@@ -55,14 +55,16 @@ module.exports = function (params, next) {
 nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   var env = this;
 
-  env.extras.puncher.start('Build sections tree');
+  env.extras.puncher.start('Post-process forums/users');
 
+  if (env.session.hb) {
+    this.data.sections = this.data.sections.map(function(doc) {
+      doc.cache.real = doc.cache.hb;
+      return doc;
+    });
+  }
   this.response.data.sections = to_tree(this.data.sections, null);
 
-  env.extras.puncher.stop();
-
-
-  env.extras.puncher.start('Collect user ids');
 
   env.data.users = env.data.users || [];
 
