@@ -1,0 +1,11 @@
+setting_schemas:
+  global:
+    max_threads_per_page:
+      type: number
+      group: forum
+      default: 10
+
+    max_posts_per_page:
+      type: number
+      group: thread
+      default: 10
