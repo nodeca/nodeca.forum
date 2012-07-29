@@ -4,8 +4,12 @@ router:
       "/": ~
 
     forum.section:
-      "/f{id}":
+      "/f{id}(-{page})":
         id: /\d+/
+        page:
+          match: /[2-9]|[1-9]\d+/
+          default: 1
+
 
     forum.thread:
       "/f{forum_id}/thread{id}":
