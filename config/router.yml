@@ -4,6 +4,10 @@ router:
       "/": ~
 
     forum.section:
+      # FIXME cruch used before fixed optional route parmaters
+      "/f{id}":
+        id: /\d+/
+        page: 1
       "/f{id}(-{page})":
         id: /\d+/
         page:
