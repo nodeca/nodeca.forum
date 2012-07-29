@@ -129,11 +129,14 @@ Faker.Helpers.thread = function (forum){
 };
 
 Faker.Helpers.post = function (thread){
+  var id = Faker.Incrementer.next('post');
+
+  var ts =  new Date(2010, 0, id);
   return {
     text: capitalize(Faker.Lorem.paragraph()),
     fmt:  'txt',
 
-    id: Faker.Incrementer.next('post'),
+    id: id,
 
     // Stub. This constants should be defined globally
     state: 0,
@@ -147,7 +150,7 @@ Faker.Helpers.post = function (thread){
 
     user: Faker.users[Faker.Helpers.randomNumber(USER_COUNT)],
 
-    ts: new Date()
+    ts: ts
     // ToDo user
   };
 };
