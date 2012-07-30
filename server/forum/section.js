@@ -279,6 +279,9 @@ nodeca.filters.after('@', function (params, next) {
   }
   // prepare page title
   data.head.title = forum.title;
+  if (params.page > 1) {
+    data.head.title += ' - ' + env.helpers.t('forum.head.page') + ' ' + params.page;
+  }
 
   // prepare forum info
   data.forum = _.pick(forum, forum_info_out_fields);

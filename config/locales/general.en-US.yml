@@ -7,6 +7,9 @@ i18n:
     forum:
       messages:
         no_threads: No threads yet.
+      head:
+        page:
+          page
 
     admin:
       menus:

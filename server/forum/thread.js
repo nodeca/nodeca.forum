@@ -228,6 +228,9 @@ nodeca.filters.after('@', function (params, next) {
 
   // prepare page title
   data.head.title = thread.title;
+  if (params.page > 1) {
+    data.head.title += ' - ' + env.helpers.t('forum.head.page') + ' ' + params.page;
+  }
 
   // prepare thread info
   data.thread = _.pick(thread, thread_info_out_fields);
