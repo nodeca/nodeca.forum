@@ -196,7 +196,9 @@ var create_post = function(thread, callback) {
       return;
     }
     var update = { $inc: { _post_count: 1 }};
-    User.update({ _id: post.user }, update, callback);
+    User.update({ _id: post.user }, update, function(err){
+      callback(err, post);
+    });
   });
 };
 
