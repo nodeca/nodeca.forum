@@ -28,9 +28,6 @@ var thread_info_out_fields = [
   '_seo_desc'
 ];
 
-var thread_info_cache_out_fields = [
-  'post_count'
-];
 
 
 // fetch thread and forum info to simplify permisson check
@@ -191,7 +188,6 @@ module.exports = function (params, next) {
 };
 
 
-//
 // Build response:
 //  - posts list -> posts
 //  - collect users ids
@@ -218,30 +214,20 @@ nodeca.filters.after('@', function (params, next) {
 });
 
 
-//
 // Fill head meta & fetch/fill breadcrumbs
 //
 nodeca.filters.after('@', function (params, next) {
   var env = this;
   var data = this.response.data;
-
   var thread = this.data.thread;
-
   var forum = this.data.section;
+
+  if (this.session.hb) {
+    thread.cache.real = thread.cache.hb;
+  }
 
   // prepare page title
   data.head.title = thread.title;
-
-  // prepare thread info
-  data.thread = _.pick(thread, thread_info_out_fields);
-  var cache;
-  if (this.session.hb) {
-    cache = _.pick(thread.cache.hb, thread_info_cache_out_fields);
-  }
-  else {
-    cache = _.pick(thread.cache.real, thread_info_cache_out_fields);
-  }
-  data.thread['cache'] = { real: cache };
 
   // prepare pagination data
   var max_posts = nodeca.settings.global.get('max_posts_per_page');

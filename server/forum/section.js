@@ -39,12 +39,7 @@ var forum_info_out_fields = [
   'is_category'
 ];
 
-var forum_info_cache_out_fields = [
-  'thread_count'
-];
 
-
-//
 // Prefetch forum to simplify permisson check.
 // Check that forum exists.
 //
@@ -86,7 +81,7 @@ nodeca.filters.before('@', function (params, next) {
 //
 module.exports = function (params, next) {
   var env = this;
-  var start, end, paginate_by;
+  var paginate_by;
   var sort = {};
   var ts_from = null;
   var ts_to = null;
@@ -96,8 +91,8 @@ module.exports = function (params, next) {
   
   var max_threads = nodeca.settings.global.get('max_threads_per_page');
 
-  start = (params.page - 1) * max_threads;
-  end   = params.page * max_threads;
+  var start = (params.page - 1) * max_threads;
+  var end   = params.page * max_threads;
 
   if (env.session.hb) {
     paginate_by = 'cache.hb.last_ts';
@@ -199,7 +194,6 @@ module.exports = function (params, next) {
 };
 
 
-//
 // Build response:
 //  - forums list -> filtered tree
 //  - collect users ids (last posters / moderators / threads authors + last)
@@ -267,7 +261,6 @@ nodeca.filters.after('@', function (params, next) {
 });
 
 
-//
 // Fill head meta & fetch/fill breadcrumbs
 //
 nodeca.filters.after('@', function (params, next) {
@@ -275,21 +268,14 @@ nodeca.filters.after('@', function (params, next) {
   var data = this.response.data;
   var forum = this.data.section;
 
+  if (this.session.hb) {
+    forum.cache.real = forum.cache.hb;
+  }
   // prepare page title
   data.head.title = forum.title;
 
-
   // prepare forum info
   data.forum = _.pick(forum, forum_info_out_fields);
-
-  var cache;
-  if (this.session.hb) {
-    cache = _.pick(forum.cache.hb, forum_info_cache_out_fields);
-  }
-  else {
-    cache = _.pick(forum.cache.real, forum_info_cache_out_fields);
-  }
-  data.forum['cache'] = { real: cache };
 
   // prepare pagination data
   var max_threads = nodeca.settings.global.get('max_threads_per_page');
