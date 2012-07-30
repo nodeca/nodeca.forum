@@ -73,7 +73,6 @@ nodeca.filters.before('@', function (params, next) {
 
 //
 // fetch and prepare threads and sub-forums(only on first page)
-// ToDo pagination
 //
 // ##### params
 //

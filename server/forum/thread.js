@@ -125,7 +125,7 @@ module.exports = function (params, next) {
     thread_id: params.id
   };
 
-  // FIXME - calculate permissions, pagination & add deleted posts
+  // FIXME - calculate permissions, add deleted posts
   //
   Async.series([
     // get start bourder
