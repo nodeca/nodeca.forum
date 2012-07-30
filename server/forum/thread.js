@@ -112,36 +112,82 @@ nodeca.filters.before('@', function (params, next) {
 // - `forum_id`   forum id
 module.exports = function (params, next) {
   var env = this;
+  var ts_from = null;
+  var ts_to = null;
 
   env.extras.puncher.start('Get posts');
 
+  var max_posts = nodeca.settings.global.get('max_posts_per_page');
 
+  var start = (params.page - 1) * max_posts;
+  var end   = params.page * max_posts;
+
+
+  // FIXME add state condition only visible posts
   var query = {
     thread_id: params.id
   };
 
   // FIXME - calculate permissions, pagination & add deleted posts
+  //
+  Async.series([
+    // get start bourder
+    function(callback){
+      Post.find(query).select('ts').sort('ts').skip(start)
+          .limit(1).setOptions({ lean: true }).exec(function(err, docs) {
 
-  Post.find(query).select(posts_in_fields).setOptions({ lean: true })
-      .exec(function(err, posts){
+        // No page -> "Not Found" status
+        if (!docs.length) {
+          next({ statusCode: 404 });
+          return;
+        }
 
-    if (err) {
-      next(err);
-      return;
+        ts_from = docs[0].ts;
+        callback();
+      });
+    },
+    // get end bourder
+    function(callback){
+      Post.find(query).select('ts').sort('ts').skip(end)
+          .limit(1).setOptions({ lean: true }).exec(function(err, docs) {
+        if (docs.length) {
+          ts_to = docs[0].ts;
+        }
+        callback();
+      });
+    },
+    // fetch posts
+    function(callback){
+      // FIXME modify state condition (deleted and etc) if user has permission
+      if (!!ts_to) {
+        query['ts'] = { $gte: ts_from, $lt: ts_to };
+      }
+      else {
+        query['ts'] = { $gte: ts_from };
+      }
+
+      Post.find(query).select(posts_in_fields).setOptions({ lean: true })
+          .exec(function(err, posts){
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        // Thread with no posts -> Something broken, return "Not Found"
+        if (!posts) {
+          next({ statusCode: 404 });
+          return;
+        }
+
+        env.data.posts = posts;
+
+        env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
+
+        callback();
+      });
     }
-
-    // Thread with no posts -> Something broken, return "Not Found"
-    if (!posts) {
-      next({ statusCode: 404 });
-      return;
-    }
-
-    env.data.posts = posts;
-
-    env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
-
-    next(err);
-  });
+  ], next);
 };
 
 
@@ -196,6 +242,10 @@ nodeca.filters.after('@', function (params, next) {
     cache = _.pick(thread.cache.real, thread_info_cache_out_fields);
   }
   data.thread['cache'] = { real: cache };
+
+  // prepare pagination data
+  var max_posts = nodeca.settings.global.get('max_posts_per_page');
+  data.max_page = Math.ceil(thread.cache.real.post_count / max_posts);
 
   // build breadcrumbs
   var query = { _id: { $in: forum.parent_list }};

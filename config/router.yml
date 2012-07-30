@@ -4,7 +4,7 @@ router:
       "/": ~
 
     forum.section:
-      # FIXME cruch used before fixed optional route parmaters
+      # FIXME crutch, used until will not fix optional route parameters
       "/f{id}":
         id: /\d+/
         page: 1
@@ -16,9 +16,17 @@ router:
 
 
     forum.thread:
+      # FIXME crutch, used until will not fix optional route parameters
       "/f{forum_id}/thread{id}":
         forum_id: /\d+/
         id: /\d+/
+        page: 1
+      "/f{forum_id}/thread{id}(-{page})":
+        forum_id: /\d+/
+        id: /\d+/
+        page:
+          match: /[2-9]|[1-9]\d+/
+          default: 1
 
     admin.forum.index:
       "/forums": ~
