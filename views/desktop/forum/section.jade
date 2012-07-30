@@ -34,7 +34,7 @@ article.forum-threadlist
                   - each moderator in sub_forum.moderator_list
                     - if (users[moderator])
                       dd
-                        a(href=link_to('users.member', users[moderator])) #{users[moderator].nick} 
+                        a(href=link_to('users.member', users[moderator])) #{users[moderator]._uname} 
 
             ul.span2.fl-item-counters.hidden-phone
               li
@@ -50,7 +50,7 @@ article.forum-threadlist
               - if (users[last_user]) 
                 li.lastpost-user
                   | by 
-                  a(href=link_to('users.member', users[last_user])) #{users[last_user].nick} 
+                  a(href=link_to('users.member', users[last_user])) #{users[last_user]._uname} 
               - if (last_ts)
                 li.lastpost-time
                   time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
@@ -109,7 +109,7 @@ article.forum-threadlist
                 .tl-meta
                   a.tl-preview-ctl.icon-down(href='#') Preview
                   - if (users[fp_user])
-                    a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user].nick}
+                    a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user]._uname}
                   time.tl-start-date(datetime=date(fp_ts, 'iso')) #{date(fp_ts, 'date')}
 
               ul.span2.tl-item-counters.hidden-phone
@@ -122,7 +122,7 @@ article.forum-threadlist
                     time(datetime=date(lp_ts, 'iso')) #{date(lp_ts, 'date')}
                 - if (users[lp_user])
                   li.lastpost-user
-                    a(href=link_to('users.member', users[lp_user])) #{users[lp_user].nick}
+                    a(href=link_to('users.member', users[lp_user])) #{users[lp_user]._uname}
     - else
       .message
         h1= t('forum.messages.no_threads')
