@@ -157,20 +157,22 @@ Faker.Helpers.post = function (thread){
 
 
 Faker.Helpers.user = function (){
+  var nick = Faker.Internet.userName();
+  var first_name = Faker.Name.firstName();
+  var last_name = Faker.Name.lastName();
   return {
     id          : Faker.Incrementer.next('user'),
-    first_name  : Faker.Name.firstName(),
-    last_name   : Faker.Name.lastName(),
-    nick        : Faker.Internet.userName(),
+    first_name  : first_name,
+    last_name   : last_name,
+    nick        : nick,
+
+    _uname      : first_name + ' (' + nick + ') ' + last_name,
+    _uname_short: nick,
 
     email       : Faker.Internet.email(),
     
     joined_ts   : new Date(),
-    
-    cache       : {
-      userpic_version   : Faker.Helpers.randomNumber(15),
-      avatar_version    : Faker.Helpers.randomNumber(15)
-    }
+
     // ToDo add groups
   };
 };
