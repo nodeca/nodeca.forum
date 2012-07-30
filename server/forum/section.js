@@ -72,7 +72,7 @@ nodeca.filters.before('@', function (params, next) {
 
 
 //
-// fetch and prepare threads and sub-forums
+// fetch and prepare threads and sub-forums(only on first page)
 // ToDo pagination
 //
 // ##### params
@@ -167,6 +167,12 @@ module.exports = function (params, next) {
     },
     // fetch sub-forums
     function(callback){
+      env.data.sections = [];
+      // subforums fetched only on first page
+      if (params.page > 1) {
+        callback();
+        return;
+      }
       env.extras.puncher.start('Get subforums');
 
       var max_level = env.data.section.level + 2; // need two next levels
