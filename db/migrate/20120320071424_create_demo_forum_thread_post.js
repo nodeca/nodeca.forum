@@ -26,8 +26,12 @@ module.exports.up = function(cb) {
       user._uname_short = user._uname = user.nick;
       user.email = 'admin@localhost';
       user.joined_ts = new Date;
+      user._post_count = 1;
+
       // password salt based on joined_ts value
       user.setPass('admin');
+
+
       // ToDo add to admin group
       user.save(function (err) {
         callback(err);

@@ -190,7 +190,14 @@ var is_big_forum = true;
 var create_post = function(thread, callback) {
   var post = new Post(Faker.Helpers.post(thread));
 
-  post.save(callback);
+  post.save(function(err, post) {
+    if (err) {
+      callback(err);
+      return;
+    }
+    var update = { $inc: { _post_count: 1 }};
+    User.update({ _id: post.user }, update, callback);
+  });
 };
 
 var create_thread = function(forum, callback) {
