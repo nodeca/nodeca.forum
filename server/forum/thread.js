@@ -177,10 +177,7 @@ module.exports = function (params, next) {
           return;
         }
 
-        env.data.posts = posts;  if (!this.origin.http) {
-    next();
-    return;
-  }
+        env.data.posts = posts;
 
         env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
 
@@ -221,6 +218,7 @@ nodeca.filters.after('@', function (params, next) {
 //
 nodeca.filters.after('@', function (params, next) {
   // http only
+  console.dir(this.origin);
   if (!this.origin.http) {
     next();
     return;
