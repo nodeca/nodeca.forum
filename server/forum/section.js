@@ -110,7 +110,6 @@ module.exports = function (params, next) {
   // FIXME add state condition only visible thread
   var query = { forum_id: params.id };
 
-  console.dir(sort);
   Async.series([
     // get start bourder
     function(callback){
