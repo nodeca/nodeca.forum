@@ -229,6 +229,9 @@ nodeca.filters.after('@', function (params, next) {
   // prepare page title
   data.head.title = thread.title;
 
+  // prepare thread info
+  data.thread = _.pick(thread, thread_info_out_fields);
+
   // prepare pagination data
   var max_posts = nodeca.settings.global.get('max_posts_per_page');
   data.max_page = Math.ceil(thread.cache.real.post_count / max_posts);
