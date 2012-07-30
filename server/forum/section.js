@@ -267,9 +267,15 @@ nodeca.filters.after('@', function (params, next) {
 });
 
 
-// Fill head meta & fetch/fill breadcrumbs
+// Fill head meta & fetch/fill breadcrumbs (http only)
 //
 nodeca.filters.after('@', function (params, next) {
+  // http only
+  if (!this.origin.http) {
+    next();
+    return;
+  }
+
   var env = this;
   var data = this.response.data;
   var forum = this.data.section;

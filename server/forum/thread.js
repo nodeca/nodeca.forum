@@ -101,13 +101,13 @@ nodeca.filters.before('@', function (params, next) {
 
 
 // fetch and prepare posts
-// ToDo add sorting and pagination
 //
 // ##### params
 //
 // - `id`         thread id
 // - `forum_id`   forum id
 module.exports = function (params, next) {
+
   var env = this;
   var ts_from = null;
   var ts_to = null;
@@ -177,7 +177,10 @@ module.exports = function (params, next) {
           return;
         }
 
-        env.data.posts = posts;
+        env.data.posts = posts;  if (!this.origin.http) {
+    next();
+    return;
+  }
 
         env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
 
@@ -214,9 +217,14 @@ nodeca.filters.after('@', function (params, next) {
 });
 
 
-// Fill head meta & fetch/fill breadcrumbs
+// Fill head meta & fetch/fill breadcrumbs (http only)
 //
 nodeca.filters.after('@', function (params, next) {
+  // http only
+  if (!this.origin.http) {
+    next();
+    return;
+  }
   var env = this;
   var data = this.response.data;
   var thread = this.data.thread;
