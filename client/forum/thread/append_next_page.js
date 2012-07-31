@@ -6,8 +6,6 @@ module.exports = function ($el, event) {
       max     = ~~$el.data('max-page'),
       params  = {};
 
-  event.preventDefault();
-
   params.page     = current + 1;
   params.id       = $el.data('thread-id');
   params.forum_id = $el.data('forum-id');
