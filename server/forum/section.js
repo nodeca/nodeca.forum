@@ -101,9 +101,20 @@ module.exports = function (params, next) {
   Thread.find(conditions).select('_id').sort(sort).skip(start)
       .limit(max_threads + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
-    // No page -> "Not Found" status
     if (!docs.length) {
-      next({ statusCode: 404 });
+      // No page -> "Not Found" status
+      if (params.page > 1) {
+        next({ statusCode: 404 });
+      }
+      // category or forum without threads
+      else {
+        env.extras.puncher.stop();
+        env.extras.puncher.stop();
+
+        env.data.threads = [];
+
+        next();
+      }
       return;
     }
 
