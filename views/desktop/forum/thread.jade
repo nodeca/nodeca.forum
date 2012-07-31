@@ -77,6 +77,8 @@ article
               span.vote-count +47
               a.vote-down(href='#')
 
-    - if (page.max > 1)
-      .btn-group
+    .btn-group
+      - if (page.max > 1)
         a.btn(data-action="forum.thread.pager", data-current-page=page.current, data-max-page=page.max) Next Page
+      - else
+        a.btn.disabled(data-action="forum.thread.pager", data-current-page=page.current, data-max-page=page.max) Next Page
