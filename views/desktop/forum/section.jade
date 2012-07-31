@@ -128,7 +128,7 @@ article.forum-threadlist
         h1= t('forum.messages.no_threads')
 
     .btn-group
-      - params = page.base_params; params.page = page.current + 1;
+      - params = page.base_params; params.page = ~~page.current + 1;
       - if (page.max > 1)
         a.btn(href=link_to(head.apiPath, params), data-action="forum.section.pager", data-current-page=page.current, data-max-page=page.max) Next Page
       - else
