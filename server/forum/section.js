@@ -72,7 +72,7 @@ nodeca.filters.before('@', function (params, next) {
 
 
 //
-// fetch and prepare threads and sub-forums(only on first page)
+// fetch and prepare threads
 //
 // ##### params
 //
@@ -165,39 +165,41 @@ module.exports = function (params, next) {
       });
     },
     // fetch sub-forums
-    function(callback){
-      env.data.sections = [];
-      // subforums fetched only on first page
-      if (params.page > 1) {
-        callback();
-        return;
-      }
-      env.extras.puncher.start('Get subforums');
-
-      var max_level = env.data.section.level + 2; // need two next levels
-      var query = {
-        level: { $lte: max_level },
-        parent_list: env.data.section._id
-      };
-
-      // FIXME add permissions check
-      Section.find(query).select(subforums_in_fields).sort('display_order')
-          .setOptions({ lean: true }).exec(function(err, sections){
-        if (err) {
-          callback(err);
-          return;
-        }
-        env.data.sections = sections;
-
-        env.extras.puncher.stop({ count: sections.length });
-
-        callback();
-      });
-    },
   ], next);
 
 };
 
+
+// fetch sub-forums (only on first page)
+nodeca.filters.after('@', function (params, next) {
+  var env = this;
+  env.data.sections = [];
+  // subforums fetched only on first page
+  if (params.page > 1) {
+    next();
+    return;
+  }
+  env.extras.puncher.start('Get subforums');
+
+  var max_level = env.data.section.level + 2; // need two next levels
+  var query = {
+    level: { $lte: max_level },
+    parent_list: env.data.section._id
+  };
+
+  // FIXME add permissions check
+  Section.find(query).select(subforums_in_fields).sort('display_order')
+      .setOptions({ lean: true }).exec(function(err, sections){
+    if (err) {
+      next(err);
+      return;
+    }
+    env.data.sections = sections;
+
+    env.extras.puncher.stop({ count: sections.length });
+    next();
+  });
+});
 
 // Build response:
 //  - forums list -> filtered tree
