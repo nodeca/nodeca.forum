@@ -123,13 +123,13 @@ article.forum-threadlist
                 - if (users[lp_user])
                   li.lastpost-user
                     a(href=link_to('users.member', users[lp_user])) #{users[lp_user]._uname}
+      
+      //- Button "More Threads"
+      .btn-group
+        - var params = page.base_params; params.page = ~~page.current + 1;
+        - var btn_more_state = (page.max > 1) ? "" : "disabled"
+        a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, params), data-action="forum.section.pager", data-current-page=page.current, data-max-page=page.max)= t('forum.more_threads')
+    
     - else
       .message
-        h1= t('forum.messages.no_threads')
-
-    .btn-group
-      - params = page.base_params; params.page = page.current + 1;
-      - if (page.max > 1)
-        a.btn(href=link_to(head.apiPath, params), data-action="forum.section.pager", data-current-page=page.current, data-max-page=page.max) Next Page
-      - else
-        a.btn.disabled(href=link_to(head.apiPath, params), data-action="forum.section.pager", data-current-page=page.current, data-max-page=page.max) Next Page
+        h1= t('forum.no_threads')

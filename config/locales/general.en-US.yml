@@ -5,6 +5,8 @@ i18n:
         navbar:
           forum: Forum
     forum:
+      more_threads: More threads
+      more_posts: More posts
       messages:
         no_threads: No threads yet.
       head:
