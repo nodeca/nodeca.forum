@@ -94,9 +94,10 @@ module.exports = function (params, next) {
   var start;
   var max_threads = nodeca.settings.global.get('max_threads_per_page');
 
+  env.response.data.show_page_number = false;
+
   env.extras.puncher.start('Get threads');
   env.extras.puncher.start('Thread ids prefetch');
-  
 
   if (env.session.hb) {
     sort['cache.hb.last_ts'] = -1;

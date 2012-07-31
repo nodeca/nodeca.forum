@@ -11,21 +11,23 @@ module.exports = function ($el, event) {
   params.page = current + 1;
   params.id   = $el.data('forum-id');
 
-  if (params.page < max) {
+  if (params.page <= max) {
     // set current page to the one that was loaded
-    nodeca.server.forum.section(params, function (err, data) {
+    nodeca.server.forum.section(params, function (err, payload) {
       if (err) {
         nodeca.logger.error(err);
         return;
       }
 
       $el.data('current-page', params.page);
+      payload.data.show_page_number = params.page;
 
       if (params.page === max) {
         $el.addClass('disabled');
       }
 
-      nodeca.logger.info('Not finished yet', data);
+      var html = nodeca.client.common.render('forum.section_threads', '', payload.data);
+      $('ul.tl-thread-list:last').after(html);
     });
   }
 

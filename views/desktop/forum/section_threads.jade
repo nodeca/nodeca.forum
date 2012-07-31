@@ -1,3 +1,6 @@
+- if (show_page_number)
+  .separator page #{show_page_number}
+
 ul.tl-thread-list
   - each thread in threads
     - fp_user = thread.cache.real.first_user
