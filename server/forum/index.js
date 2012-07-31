@@ -19,6 +19,15 @@ var sections_in_fields = {
   'cache' : 1
 };
 
+var sections_out_fields = [
+  '_id',
+  'id',
+  'title',
+  'description',
+  'moderator_list',
+  'child_list',
+  'cache'
+];
 
 //
 // fetch and prepare sections
@@ -63,8 +72,18 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
       return doc;
     });
   }
-  this.response.data.sections = to_tree(this.data.sections, null);
 
+  this.response.data.sections = to_tree(this.data.sections, null);
+  // all sections set by links, so we can clean fields in source array
+  this.data.sections.forEach(function(doc) {
+    for (var attr in doc) {
+      if (doc.hasOwnProperty(attr) &&
+          sections_out_fields.indexOf(attr) === -1) {
+        delete(doc[attr]);
+      }
+    }
+    delete (doc.cache.hb);
+  });
 
   env.data.users = env.data.users || [];
 
