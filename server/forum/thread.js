@@ -211,9 +211,11 @@ nodeca.filters.after('@', function (params, next) {
 
   // prepare pagination data
   var max_posts = nodeca.settings.global.get('max_posts_per_page');
-  data.max_page = Math.ceil(thread.cache.real.post_count / max_posts);
-  data.current_page = params.page;
-  data.base_params = { id: params.id, forum_id: params.forum_id };
+  data.page = {
+    max:  Math.ceil(thread.cache.real.post_count / max_posts),
+    current: params.page,
+    base_params: { id: params.id, forum_id: params.forum_id }
+  };
 
   // build breadcrumbs
   var query = { _id: { $in: forum.parent_list }};

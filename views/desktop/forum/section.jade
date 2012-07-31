@@ -61,9 +61,9 @@ article.forum-threadlist
       .btn-group
         a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-      - if (threads && threads.length && max_page > 1)
+      - if (threads && threads.length && page.max > 1)
         .btn-group
-          mixin pagination(head.apiPath, base_params, current_page, max_page)
+          mixin pagination(head.apiPath, page.base_params, page.current, page.max)
 
       .btn-group.pull-right
         a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
