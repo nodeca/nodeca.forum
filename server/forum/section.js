@@ -149,6 +149,7 @@ module.exports = function (params, next) {
 
 
 // fetch sub-forums (only on first page)
+//
 nodeca.filters.after('@', function (params, next) {
   var env = this;
   env.data.sections = [];
@@ -257,9 +258,12 @@ nodeca.filters.after('@', function (params, next) {
     forum.cache.real = forum.cache.hb;
   }
   // prepare page title
-  data.head.title = forum.title;
   if (params.page > 1) {
-    data.head.title += ' - ' + env.helpers.t('forum.head.page') + ' ' + params.page;
+    var t_params = { title: forum.title, page: params.page };
+    data.head.title = env.helpers.t('forum.head.page', t_params);
+  }
+  else {
+    data.head.title = forum.title;
   }
 
   // prepare forum info

@@ -9,7 +9,7 @@ i18n:
         no_threads: No threads yet.
       head:
         page:
-          page
+          "#{title} - #{page} page"
 
     admin:
       menus:
