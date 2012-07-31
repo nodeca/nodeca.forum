@@ -80,93 +80,56 @@ nodeca.filters.before('@', function (params, next) {
 //
 module.exports = function (params, next) {
   var env = this;
-  var paginate_by;
   var sort = {};
-  var ts_from = null;
-  var ts_to = null;
+  var start;
+  var max_threads = nodeca.settings.global.get('max_threads_per_page');
 
   // fetch and prepare threads
   env.extras.puncher.start('Get threads');
   
-  var max_threads = nodeca.settings.global.get('max_threads_per_page');
-
-  var start = (params.page - 1) * max_threads;
-  var end   = params.page * max_threads;
 
   if (env.session.hb) {
-    paginate_by = 'cache.hb.last_ts';
+    sort['cache.hb.last_ts'] = -1;
   }
   else {
-    paginate_by = 'cache.real.last_ts';
+    sort['cache.real.last_ts'] = -1;
   }
-  sort[paginate_by] = -1;
 
   // FIXME add state condition only visible thread
-  var query = { forum_id: params.id };
+  var conditions = {forum_id: params.id};
+  start = (params.page - 1) * max_threads;
+  Thread.find(conditions).select('_id').sort(sort).skip(start)
+      .limit(max_threads + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
-  Async.series([
-    // get start bourder
-    function(callback){
-      Thread.find(query).select('cache').sort(sort).skip(start)
-          .limit(1).setOptions({ lean: true }).exec(function(err, docs) {
+    // No page -> "Not Found" status
+    if (!docs.length) {
+      next({ statusCode: 404 });
+      return;
+    }
 
-        // No page -> "Not Found" status
-        if (!docs.length) {
-          next({ statusCode: 404 });
-          return;
-        }
+    var query = Thread.find(conditions).where('_id').lte(_.first(docs)._id);
+    if (docs.length <= max_threads) {
+      query.gte(_.last(docs)._id);
+    }
+    else {
+      query.gt(_.last(docs)._id);
+    }
 
-        if (env.session.hb) {
-          ts_from = docs[0].cache.hb.last_ts;
-        }
-        else {
-          ts_from = docs[0].cache.real.last_ts;
-        }
-        callback();
-      });
-    },
-    // get end bourder
-    function(callback){
-      Thread.find(query).select('cache').sort(sort).skip(end)
-          .limit(1).setOptions({ lean: true }).exec(function(err, docs) {
-        if (docs.length) {
-          if (env.session.hb) {
-            ts_to = docs[0].cache.hb.last_ts;
-          }
-          else {
-            ts_to = docs[0].cache.real.last_ts;
-          }
-        }
-        callback();
-      });
-    },
-    // fetch threads
-    function(callback) {
-      // FIXME modify state condition (deleted and etc) if user has permission
-      if (!!ts_to) {
-        query[paginate_by] = { $lt: ts_from, $gte: ts_to };
-      }
-      else {
-        query[paginate_by] = { $lt: ts_from };
+    // FIXME modify state condition (deleted and etc) if user has permission
+    query.select(threads_in_fields).sort(sort)
+        .setOptions({ lean: true }).exec(function(err, threads){
+      if (err) {
+        next(err);
+        return;
       }
 
-      Thread.find(query).select(threads_in_fields).sort(sort)
-          .setOptions({ lean: true }).exec(function(err, threads){
-        if (err) {
-          callback(err);
-          return;
-        }
+      env.data.threads = threads;
 
-        env.data.threads = threads;
+      env.extras.puncher.stop({ count: threads.length });
 
-        env.extras.puncher.stop(_.isArray(threads) ? { count: threads.length } : null);
-
-        callback();
-      });
-    },
-    // fetch sub-forums
-  ], next);
-
+      next();
+    });
+  });
 };
 
 
