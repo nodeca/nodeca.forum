@@ -1,3 +1,6 @@
+- if (show_page_number)
+  .separator page #{show_page_number}
+
 - each post in posts
   article.forum-post.clearfix(id='post#{post.id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.post-meta.clearfix

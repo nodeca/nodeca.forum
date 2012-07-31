@@ -111,6 +111,8 @@ module.exports = function (params, next) {
   var start;
   var max_posts = nodeca.settings.global.get('max_posts_per_page');
 
+  env.response.data.show_page_number = false;
+
   env.extras.puncher.start('Get posts');
   env.extras.puncher.start('Post ids prefetch');
 

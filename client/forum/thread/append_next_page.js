@@ -12,19 +12,21 @@ module.exports = function ($el, event) {
 
   if (params.page < max) {
     // set current page to the one that was loaded
-    nodeca.server.forum.thread(params, function (err, data) {
+    nodeca.server.forum.thread(params, function (err, payload) {
       if (err) {
         nodeca.logger.error(err);
         return;
       }
 
       $el.data('current-page', params.page);
+      payload.data.show_page_number = params.page;
 
       if (params.page === max) {
         $el.addClass('disabled');
       }
 
-      nodeca.logger.info('Not finished yet', data);
+      var html = nodeca.client.common.render('forum.thread_posts', '', payload.data);
+      $('article.forum-post:last').after(html);
     });
   }
 
