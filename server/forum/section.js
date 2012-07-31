@@ -32,6 +32,16 @@ var subforums_in_fields = {
   'cache' : 1
 };
 
+var subforums_out_fields = [
+  '_id',
+  'id',
+  'title',
+  'description',
+  'moderator_list',
+  'child_list',
+  'cache'
+];
+
 var forum_info_out_fields = [
   'id',
   'title',
@@ -203,6 +213,16 @@ nodeca.filters.after('@', function (params, next) {
 
   var root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
+  // all sections set by links, so we can clean fields in source array
+  this.data.sections.forEach(function(doc) {
+    for (var attr in doc) {
+      if (doc.hasOwnProperty(attr) &&
+          subforums_out_fields.indexOf(attr) === -1) {
+        delete(doc[attr]);
+      }
+    }
+    delete (doc.cache.hb);
+  });
 
   env.data.users = env.data.users || [];
 

@@ -78,7 +78,7 @@ article
               a.vote-down(href='#')
 
   //- Button "More Threads"
-  .btn-group
+  div
     - var params = page.base_params; params.page = ~~page.current + 1;
     - var btn_more_state = (page.max > 1) ? "" : "disabled"
     a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, params), data-action="forum.thread.pager", data-current-page=page.current, data-max-page=page.max)= t('forum.more_posts')
