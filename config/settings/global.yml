@@ -3,9 +3,9 @@ setting_schemas:
     max_threads_per_page:
       type: number
       group: forum
-      default: 10
+      default: 30
 
     max_posts_per_page:
       type: number
       group: thread
-      default: 10
+      default: 25
