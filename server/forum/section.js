@@ -84,8 +84,8 @@ module.exports = function (params, next) {
   var start;
   var max_threads = nodeca.settings.global.get('max_threads_per_page');
 
-  // fetch and prepare threads
   env.extras.puncher.start('Get threads');
+  env.extras.puncher.start('Thread ids prefetch');
   
 
   if (env.session.hb) {
@@ -107,6 +107,9 @@ module.exports = function (params, next) {
       return;
     }
 
+    env.extras.puncher.stop({ count: docs.length });
+    env.extras.puncher.start('Get threads by _id list');
+
     var query = Thread.find(conditions).where('_id').lte(_.first(docs)._id);
     if (docs.length <= max_threads) {
       query.gte(_.last(docs)._id);
@@ -126,6 +129,7 @@ module.exports = function (params, next) {
       env.data.threads = threads;
 
       env.extras.puncher.stop({ count: threads.length });
+      env.extras.puncher.stop();
 
       next();
     });
