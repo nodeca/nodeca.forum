@@ -13,8 +13,9 @@ article
     .btn-group
       a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-    .btn-group
-      mixin pagination(head.apiPath, base_params, current_page, max_page)
+    - if (max_page > 1)
+      .btn-group
+        mixin pagination(head.apiPath, base_params, current_page, max_page)
 
     .btn-group.pull-right
       a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')

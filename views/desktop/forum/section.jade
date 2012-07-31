@@ -61,7 +61,7 @@ article.forum-threadlist
       .btn-group
         a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-      - if (threads && threads.length)
+      - if (threads && threads.length && max_page > 1)
         .btn-group
           mixin pagination(head.apiPath, base_params, current_page, max_page)
 
