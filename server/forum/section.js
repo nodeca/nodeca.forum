@@ -268,6 +268,8 @@ nodeca.filters.after('@', function (params, next) {
   // prepare pagination data
   var max_threads = nodeca.settings.global.get('max_threads_per_page');
   data.max_page = Math.ceil(forum.cache.real.thread_count / max_threads);
+  data.current_page = params.page;
+  data.base_params = { id: params.id };
 
   // fetch breadcrumbs data
   var query = { _id: { $in: forum.parent_list } };
