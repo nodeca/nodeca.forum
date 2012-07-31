@@ -107,84 +107,58 @@ nodeca.filters.before('@', function (params, next) {
 // - `id`         thread id
 // - `forum_id`   forum id
 module.exports = function (params, next) {
-
   var env = this;
-  var ts_from = null;
-  var ts_to = null;
-
-  env.extras.puncher.start('Get posts');
-
+  var start;
   var max_posts = nodeca.settings.global.get('max_posts_per_page');
 
-  var start = (params.page - 1) * max_posts;
-  var end   = params.page * max_posts;
+  env.extras.puncher.start('Get posts');
+  env.extras.puncher.start('Post ids prefetch');
 
 
   // FIXME add state condition only visible posts
-  var query = {
-    thread_id: params.id
-  };
+  var conditions = { thread_id: params.id };
 
-  // FIXME - calculate permissions, add deleted posts
-  //
-  Async.series([
-    // get start bourder
-    function(callback){
-      Post.find(query).select('ts').sort('ts').skip(start)
-          .limit(1).setOptions({ lean: true }).exec(function(err, docs) {
+  start = (params.page - 1) * max_posts;
 
-        // No page -> "Not Found" status
-        if (!docs.length) {
-          next({ statusCode: 404 });
-          return;
-        }
+  Post.find(conditions).select('_ts').sort('ts').skip(start)
+      .limit(max_posts + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
-        ts_from = docs[0].ts;
-        callback();
-      });
-    },
-    // get end bourder
-    function(callback){
-      Post.find(query).select('ts').sort('ts').skip(end)
-          .limit(1).setOptions({ lean: true }).exec(function(err, docs) {
-        if (docs.length) {
-          ts_to = docs[0].ts;
-        }
-        callback();
-      });
-    },
-    // fetch posts
-    function(callback){
-      // FIXME modify state condition (deleted and etc) if user has permission
-      if (!!ts_to) {
-        query['ts'] = { $gte: ts_from, $lt: ts_to };
-      }
-      else {
-        query['ts'] = { $gte: ts_from };
-      }
-
-      Post.find(query).select(posts_in_fields).setOptions({ lean: true })
-          .exec(function(err, posts){
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        // Thread with no posts -> Something broken, return "Not Found"
-        if (!posts) {
-          next({ statusCode: 404 });
-          return;
-        }
-
-        env.data.posts = posts;
-
-        env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
-
-        callback();
-      });
+    // No page -> "Not Found" status
+    if (!docs.length) {
+      next({ statusCode: 404 });
+      return;
     }
-  ], next);
+
+    env.extras.puncher.stop(!!docs ? {count: docs.length } : null);
+    env.extras.puncher.start('Get posts by _id list');
+
+    var query = Post.find(conditions).where('_id').gte(_.first(docs)._id);
+    if (docs.length <= max_posts) {
+      query.lte(_.last(docs)._id);
+    }
+    else {
+      query.lt(_.last(docs)._id);
+    }
+
+    // FIXME - calculate permissions, add deleted posts
+    //
+    query.select(posts_in_fields).setOptions({ lean: true })
+        .exec(function(err, posts){
+
+      if (err) {
+        next(err);
+        return;
+      }
+
+      env.data.posts = posts;
+
+      env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
+      env.extras.puncher.stop();
+
+      next();
+    });
+  });
+
 };
 
 
