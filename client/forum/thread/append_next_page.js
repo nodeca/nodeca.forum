@@ -25,8 +25,9 @@ module.exports = function ($el, event) {
         $el.addClass('disabled');
       }
 
-      var html = nodeca.client.common.render('forum.thread_posts', '', payload.data);
-      $('article.forum-post:last').after(html);
+      var $html = $(nodeca.client.common.render('forum.thread_posts', '', payload.data));
+      $('article.forum-post:last').after($html.hide());
+      $html.fadeIn();
     });
   }
 
