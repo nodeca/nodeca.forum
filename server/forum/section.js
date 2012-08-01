@@ -11,26 +11,26 @@ var Thread = nodeca.models.forum.Thread;
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');
 
-var threads_in_fields = {
-  '_id': 1,
-  'id': 1,
-  'title': 1,
-  'prefix': 1,
-  'forum_id': 1,
-  'cache': 1
-};
+var threads_in_fields = [
+  '_id',
+  'id',
+  'title',
+  'prefix',
+  'forum_id',
+  'cache'
+];
 
-var subforums_in_fields = {
-  '_id' : 1,
-  'id' : 1,
-  'title' : 1,
-  'description' : 1,
-  'parent' : 1,
-  'parent_list' : 1,
-  'moderator_list' : 1,
-  'display_order' : 1,
-  'cache' : 1
-};
+var subforums_in_fields = [
+  '_id',
+  'id',
+  'title',
+  'description',
+  'parent',
+  'parent_list',
+  'moderator_list',
+  'display_order',
+  'cache'
+];
 
 var subforums_out_fields = [
   '_id',
@@ -141,7 +141,7 @@ module.exports = function (params, next) {
     }
 
     // FIXME modify state condition (deleted and etc) if user has permission
-    query.select(threads_in_fields).sort(sort)
+    query.select(threads_in_fields.join(' ')).sort(sort)
         .setOptions({ lean: true }).exec(function(err, threads){
       if (err) {
         next(err);
@@ -178,8 +178,9 @@ nodeca.filters.after('@', function (params, next) {
   };
 
   // FIXME add permissions check
-  Section.find(query).select(subforums_in_fields).sort('display_order')
-      .setOptions({ lean: true }).exec(function(err, sections){
+  Section.find(query).sort('display_order').setOptions({ lean: true })
+      .select(subforums_in_fields.join(' '))
+      .exec(function(err, sections){
     if (err) {
       next(err);
       return;

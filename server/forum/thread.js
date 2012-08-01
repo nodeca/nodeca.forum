@@ -11,16 +11,16 @@ var Post = nodeca.models.forum.Post;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 
-var posts_in_fields = {
-  '_id': 1,
-  'id': 1,
-  'attach_list': 1,
-  'text': 1,
-  'fmt': 1,
-  'html': 1,
-  'user': 1,
-  'ts': 1
-};
+var posts_in_fields = [
+  '_id',
+  'id',
+  'attach_list',
+  'text',
+  'fmt',
+  'html',
+  'user',
+  'ts'
+];
 
 var thread_info_out_fields = [
   'id',
@@ -144,7 +144,7 @@ module.exports = function (params, next) {
 
     // FIXME - calculate permissions, add deleted posts
     //
-    query.select(posts_in_fields).setOptions({ lean: true })
+    query.select(posts_in_fields.join(' ')).setOptions({ lean: true })
         .exec(function(err, posts){
 
       if (err) {

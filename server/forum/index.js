@@ -7,17 +7,17 @@ var to_tree = require('../../lib/to_tree.js');
 
 var Section = nodeca.models.forum.Section;
 
-var sections_in_fields = {
-  '_id' : 1,
-  'id' : 1,
-  'title' : 1,
-  'description' : 1,
-  'parent' : 1,
-  'parent_list' : 1,
-  'moderator_list' : 1,
-  'display_order' : 1,
-  'cache' : 1
-};
+var sections_in_fields = [
+  '_id',
+  'id',
+  'title',
+  'description',
+  'parent',
+  'parent_list',
+  'moderator_list',
+  'display_order',
+  'cache'
+];
 
 var sections_out_fields = [
   '_id',
@@ -29,7 +29,7 @@ var sections_out_fields = [
   'cache'
 ];
 
-//
+
 // fetch and prepare sections
 //
 // params - empty
@@ -43,8 +43,8 @@ module.exports = function (params, next) {
   var query = { level: {$lte: 2} };
 
   // FIXME add permissions check
-  Section.find(query).select(sections_in_fields).sort('display_order')
-      .setOptions({lean:true}).exec(function(err, sections){
+  Section.find(query).sort('display_order').setOptions({lean:true})
+      .select(sections_in_fields.join(' ')).exec(function(err, sections){
     if (err) {
       next(err);
       return;
