@@ -14,9 +14,9 @@ article
       a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
     - if (page.max > 1)
-      - base_params = { id: thread.id, forum_id: thread.forum_id }
+      - var link_params = { id: thread.id, forum_id: thread.forum_id }
       .btn-group
-        mixin pagination(head.apiPath, base_params, page.current, page.max)
+        mixin pagination(head.apiPath, link_params, page.current, page.max)
 
     .btn-group.pull-right
       a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
@@ -44,8 +44,7 @@ article
   include ./thread_posts
 
   //- Button "More Threads"
-  - var params = { id: thread.id, forum_id: thread.forum_id };
-  - params.page = ~~page.current + 1;
+  - var link_params = { id: thread.id, forum_id: thread.forum_id, page: ~~page.current + 1 };
   - var btn_more_state = (page.max > 1 && page.max > page.current) ? "" : "hidden"
   div(class=btn_more_state)
-    a.btn.wide.icon-down(href=link_to(head.apiPath, params), data-action="forum.thread.append_next_page", data-forum-id=thread.forum_id, data-thread-id=thread.id, data-current-page=page.current, data-max-page=page.max)= t('forum.more_posts')
+    a.btn.wide.icon-down(href=link_to(head.apiPath, link_params), data-action="forum.thread.append_next_page", data-forum-id=thread.forum_id, data-thread-id=thread.id, data-current-page=page.current, data-max-page=page.max)= t('forum.more_posts')

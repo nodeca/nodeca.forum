@@ -10,8 +10,7 @@ i18n:
       more_posts: More posts
       no_threads: No threads yet.
       page_separator: "page #{page}" 
-      title_with_page:
-        "#{title} - #{page} page"
+      title_with_page: "#{title} - #{page} page"
 
     admin:
       menus:
