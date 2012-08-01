@@ -106,19 +106,23 @@ module.exports = function (params, next) {
     sort['cache.real.last_ts'] = -1;
   }
 
-  // FIXME add state condition only visible thread
-  var conditions = {forum_id: params.id};
+  // FIXME add state condition to select only visible threads
   start = (params.page - 1) * max_threads;
-  Thread.find(conditions).select('_id').sort(sort).skip(start)
+
+  // Fetch IDs of "visible" threads interval (use coverage index)
+  Thread.find({ forum_id: params.id }).select('_id').sort(sort).skip(start)
       .limit(max_threads + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
     if (!docs.length) {
-      // No page -> "Not Found" status
       if (params.page > 1) {
+
+        // FIXME Redirect to last page if possible
+
+        // No page -> "Not Found" status
         next({ statusCode: 404 });
       }
-      // category or forum without threads
       else {
+        // category or forum without threads
         env.extras.puncher.stop();
         env.extras.puncher.stop();
 
@@ -132,7 +136,10 @@ module.exports = function (params, next) {
     env.extras.puncher.stop({ count: docs.length });
     env.extras.puncher.start('Get threads by _id list');
 
-    var query = Thread.find(conditions).where('_id').lte(_.first(docs)._id);
+    // FIXME modify state condition (deleted and etc) if user has permission
+    // If no hidden threads - no conditions needed, just select by IDs
+
+    var query = Thread.find({ forum_id: params.id }).where('_id').lte(_.first(docs)._id);
     if (docs.length <= max_threads) {
       query.gte(_.last(docs)._id);
     }
@@ -140,7 +147,8 @@ module.exports = function (params, next) {
       query.gt(_.last(docs)._id);
     }
 
-    // FIXME modify state condition (deleted and etc) if user has permission
+    // Select all allowed threads in calculated
+    // interval: visible + deleted and others (if allowed by permissions)
     query.select(threads_in_fields.join(' ')).sort(sort)
         .setOptions({ lean: true }).exec(function(err, threads){
       if (err) {
@@ -180,7 +188,7 @@ nodeca.filters.after('@', function (params, next) {
   // FIXME add permissions check
   Section.find(query).sort('display_order').setOptions({ lean: true })
       .select(subforums_in_fields.join(' '))
-      .exec(function(err, sections){
+      .exec(function(err, sections) {
     if (err) {
       next(err);
       return;
@@ -215,7 +223,10 @@ nodeca.filters.after('@', function (params, next) {
 
   var root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
-  // all sections set by links, so we can clean fields in source array
+
+  // Cleanup output tree - delete attributes, that are not white list.
+  // Since tree points to the same objects, that are in flat list,
+  // we use flat array for iteration.
   this.data.sections.forEach(function(doc) {
     for (var attr in doc) {
       if (doc.hasOwnProperty(attr) &&
@@ -285,6 +296,7 @@ nodeca.filters.after('@', function (params, next) {
   if (this.session.hb) {
     forum.cache.real = forum.cache.hb;
   }
+
   // prepare page title
   if (params.page > 1) {
     var t_params = { title: forum.title, page: params.page };

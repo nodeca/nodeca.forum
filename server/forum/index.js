@@ -74,7 +74,10 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
   }
 
   this.response.data.sections = to_tree(this.data.sections, null);
-  // all sections set by links, so we can clean fields in source array
+
+  // Cleanup output tree - delete attributes, that are not white list.
+  // Since tree points to the same objects, that are in flat list,
+  // we use flat array for iteration.
   this.data.sections.forEach(function(doc) {
     for (var attr in doc) {
       if (doc.hasOwnProperty(attr) &&

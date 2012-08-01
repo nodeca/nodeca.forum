@@ -48,6 +48,9 @@ nodeca.filters.before('@', function (params, next) {
 
     // No thread -> "Not Found" status
     if (!thread) {
+
+      // FIXME Redirect to last page if possible
+
       next({ statusCode: 404 });
       return;
     }
@@ -117,12 +120,11 @@ module.exports = function (params, next) {
   env.extras.puncher.start('Post ids prefetch');
 
 
-  // FIXME add state condition only visible posts
-  var conditions = { thread_id: params.id };
+  // FIXME add state condition to select only visible posts
 
   start = (params.page - 1) * max_posts;
 
-  Post.find(conditions).select('_ts').sort('ts').skip(start)
+  Post.find({ thread_id: params.id }).select('_id').sort('ts').skip(start)
       .limit(max_posts + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
     // No page -> "Not Found" status
@@ -134,7 +136,10 @@ module.exports = function (params, next) {
     env.extras.puncher.stop(!!docs ? {count: docs.length } : null);
     env.extras.puncher.start('Get posts by _id list');
 
-    var query = Post.find(conditions).where('_id').gte(_.first(docs)._id);
+    // FIXME modify state condition (deleted and etc) if user has permission
+    // If no hidden posts - no conditions needed, just select by IDs
+
+    var query = Post.find({ thread_id: params.id }).where('_id').gte(_.first(docs)._id);
     if (docs.length <= max_posts) {
       query.lte(_.last(docs)._id);
     }
@@ -142,8 +147,6 @@ module.exports = function (params, next) {
       query.lt(_.last(docs)._id);
     }
 
-    // FIXME - calculate permissions, add deleted posts
-    //
     query.select(posts_in_fields.join(' ')).setOptions({ lean: true })
         .exec(function(err, posts){
 
