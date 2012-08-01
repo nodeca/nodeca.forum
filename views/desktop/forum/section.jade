@@ -90,9 +90,9 @@ article.forum-threadlist
       include ./section_threads
 
       //- Button "More Threads"
-      div
-        - var params = page.base_params; params.page = ~~page.current + 1;
-        - var btn_more_state = (page.max > 1) ? "" : "disabled"
+      - var params = page.base_params; params.page = ~~page.current + 1;
+      - var btn_more_state = (page.max > 1) ? "" : "hidden"
+      div(class=btn_more_state)
         a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, params), data-action="forum.section.append_next_page", data-forum-id=forum.id, data-current-page=page.current, data-max-page=page.max)= t('forum.more_threads')
 
     - else

@@ -43,7 +43,7 @@ article
   include ./thread_posts
 
   //- Button "More Threads"
-  div
-    - var params = page.base_params; params.page = ~~page.current + 1;
-    - var btn_more_state = (page.max > 1) ? "" : "disabled"
-    a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, params), data-action="forum.thread.append_next_page", data-forum-id=thread.forum_id, data-thread-id=thread.id, data-current-page=page.current, data-max-page=page.max)= t('forum.more_posts')
+  - var params = page.base_params; params.page = ~~page.current + 1;
+  - var btn_more_state = (page.max > 1) ? "" : "hidden"
+  div(class=btn_more_state)
+    a.btn.wide.icon-down(href=link_to(head.apiPath, params), data-action="forum.thread.append_next_page", data-forum-id=thread.forum_id, data-thread-id=thread.id, data-current-page=page.current, data-max-page=page.max)= t('forum.more_posts')
