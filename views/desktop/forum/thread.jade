@@ -13,6 +13,33 @@ article
     .btn-group
       a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
+    - if (page.max > 1)
+      .btn-group
+        mixin pagination(head.apiPath, page.base_params, page.current, page.max)
+
+    .btn-group.pull-right
+      a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
+        span.caret
+      ul.dropdown-menu
+        li
+          a(href='#') Delete
+        li
+          a(href='#') Close
+        li.divider
+        li
+          a(href='#') Pin
+        li
+          a(href='#') History
+        li
+          a(href='#') Approve
+        li
+          a(href='#') Merge
+    .btn-group.pull-right
+      a.btn.btn-small.icon-eye.tip(href='#', title='Subscribe to new posts notification') 24
+    .btn-group.pull-right
+      a.btn.btn-small.btn-primary(href='#') Add Reply
+
+
   include ./thread_posts
 
   //- Button "More Threads"
