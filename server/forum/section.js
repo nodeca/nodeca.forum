@@ -17,6 +17,7 @@ var threads_in_fields = [
   'title',
   'prefix',
   'forum_id',
+  '_views_count',
   'cache'
 ];
 
@@ -81,7 +82,6 @@ nodeca.filters.before('@', function (params, next) {
 });
 
 
-//
 // fetch and prepare threads
 //
 // ##### params

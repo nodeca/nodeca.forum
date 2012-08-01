@@ -1,3 +1,6 @@
+//- This template is used for:
+//- - the whole page generation
+//- - appending next page posts via autoload or "more" button
 ul.tl-thread-list
   - if (show_page_number)
     li.tl-head= t('forum.page_separator', { page: show_page_number })
@@ -30,7 +33,7 @@ ul.tl-thread-list
 
         ul.span2.tl-item-counters.hidden-phone
           li #{thread.cache.real.post_count} replies
-          li #{thread.cache._views_count} vews
+          li #{thread._views_count} views
 
         ul.span3.tl-item-lastpost.hidden-phone
           li.lastpost-time
