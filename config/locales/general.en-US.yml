@@ -4,10 +4,12 @@ i18n:
       menus:
         navbar:
           forum: Forum
+
     forum:
       more_threads: More threads
       more_posts: More posts
       no_threads: No threads yet.
+      page_separator: "page #{page}" 
       head:
         page:
           "#{title} - #{page} page"

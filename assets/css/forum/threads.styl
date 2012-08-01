@@ -14,10 +14,18 @@
     &:last-child
       border 0
 
+
+// Threads block header (with page number)
 //
+.tl-thread-list .tl-head
+  border-bottom 1px solid grayLighter
+  font-size 10px
+  font-weight bold
+  padding 0
+
+
 // Thread name/meta
 //
-
 .tl-item-summary
   padding-left 5px
   box-sizing border-box
@@ -89,10 +97,9 @@
   &:hover > .tl-meta > a.tl-preview-ctl
     opacity 1
 
-//
+
 // topics/posts counters
 //
-
 .tl-item-counters
   list-style none
   color gray
@@ -100,10 +107,9 @@
   > li
     line-height 1.2em
 
-//
+
 // last post info
 //
-
 .tl-item-lastpost
   list-style none
   font-size 11px
@@ -117,11 +123,9 @@
   > .lastpost-user > a
     color gray
 
-//
+
 // Markers
 //
-////////////////////////////////////////////////
-
 .unread > .tl-item-summary
   padding-left 20px
   > h2

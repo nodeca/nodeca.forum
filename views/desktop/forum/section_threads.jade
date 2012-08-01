@@ -1,7 +1,7 @@
-- if (show_page_number)
-  .separator page #{show_page_number}
-
 ul.tl-thread-list
+  - if (show_page_number)
+    li.tl-head= t('forum.page_separator', { page: show_page_number })
+
   - each thread in threads
     - fp_user = thread.cache.real.first_user
     - lp_user = thread.cache.real.last_user
