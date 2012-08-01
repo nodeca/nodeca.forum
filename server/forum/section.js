@@ -312,7 +312,6 @@ nodeca.filters.after('@', function (params, next) {
   data.page = {
     max: Math.ceil(forum.cache.real.thread_count / threads_per_page),
     current: params.page,
-    base_params: { id: params.id }
   };
 
   // fetch breadcrumbs data

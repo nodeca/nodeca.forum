@@ -24,6 +24,7 @@ var posts_in_fields = [
 
 var thread_info_out_fields = [
   'id',
+  'forum_id',
   'title',
   '_seo_desc'
 ];
@@ -220,7 +221,6 @@ nodeca.filters.after('@', function (params, next) {
   data.page = {
     max:  Math.ceil(thread.cache.real.post_count / posts_per_page),
     current: params.page,
-    base_params: { id: params.id, forum_id: params.forum_id }
   };
 
   // build breadcrumbs
