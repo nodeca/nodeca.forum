@@ -21,11 +21,12 @@ module.exports = function ($el, event) {
       payload.data.show_page_number = params.page;
 
       if (params.page === max) {
-        $el.addClass('disabled');
+        $el.addClass('hidden');
       }
 
-      var html = nodeca.client.common.render('forum.section_threads', '', payload.data);
-      $('ul.tl-thread-list:last').after(html);
+      var $html = $(nodeca.client.common.render('forum.section_threads', '', payload.data));
+      $('ul.tl-thread-list:last').after($html.hide());
+      $html.fadeIn();
     });
   }
 

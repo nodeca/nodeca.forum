@@ -10,7 +10,7 @@ module.exports = function ($el, event) {
   params.id       = $el.data('thread-id');
   params.forum_id = $el.data('forum-id');
 
-  if (params.page < max) {
+  if (params.page <= max) {
     // set current page to the one that was loaded
     nodeca.server.forum.thread(params, function (err, payload) {
       if (err) {
@@ -22,11 +22,12 @@ module.exports = function ($el, event) {
       payload.data.show_page_number = params.page;
 
       if (params.page === max) {
-        $el.addClass('disabled');
+        $el.addClass('hidden');
       }
 
-      var html = nodeca.client.common.render('forum.thread_posts', '', payload.data);
-      $('article.forum-post:last').after(html);
+      var $html = $(nodeca.client.common.render('forum.thread_posts', '', payload.data));
+      $('article.forum-post:last').after($html.hide());
+      $html.fadeIn();
     });
   }
 

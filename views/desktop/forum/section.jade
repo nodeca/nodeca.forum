@@ -91,7 +91,7 @@ article.forum-threadlist
 
       //- Button "More Threads"
       - var params = page.base_params; params.page = ~~page.current + 1;
-      - var btn_more_state = (page.max > 1) ? "" : "hidden"
+      - var btn_more_state = (page.max > 1 && page.max > page.current) ? "" : "hidden"
       div(class=btn_more_state)
         a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, params), data-action="forum.section.append_next_page", data-forum-id=forum.id, data-current-page=page.current, data-max-page=page.max)= t('forum.more_threads')
 
