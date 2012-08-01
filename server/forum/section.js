@@ -298,12 +298,10 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   // prepare page title
+  data.head.title = forum.title;
   if (params.page > 1) {
     var t_params = { title: forum.title, page: params.page };
-    data.head.title = env.helpers.t('forum.head.page', t_params);
-  }
-  else {
-    data.head.title = forum.title;
+    data.head.title = env.helpers.t('forum.title_with_page', t_params);
   }
 
   // prepare forum info
