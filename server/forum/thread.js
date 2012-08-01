@@ -112,7 +112,7 @@ nodeca.filters.before('@', function (params, next) {
 module.exports = function (params, next) {
   var env = this;
   var start;
-  var max_posts = nodeca.settings.global.get('max_posts_per_page');
+  var posts_per_page = nodeca.settings.global.get('posts_per_page');
 
   env.response.data.show_page_number = false;
 
@@ -122,10 +122,10 @@ module.exports = function (params, next) {
 
   // FIXME add state condition to select only visible posts
 
-  start = (params.page - 1) * max_posts;
+  start = (params.page - 1) * posts_per_page;
 
   Post.find({ thread_id: params.id }).select('_id').sort('ts').skip(start)
-      .limit(max_posts + 1).setOptions({ lean: true }).exec(function(err, docs) {
+      .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
     // No page -> "Not Found" status
     if (!docs.length) {
@@ -140,7 +140,7 @@ module.exports = function (params, next) {
     // If no hidden posts - no conditions needed, just select by IDs
 
     var query = Post.find({ thread_id: params.id }).where('_id').gte(_.first(docs)._id);
-    if (docs.length <= max_posts) {
+    if (docs.length <= posts_per_page) {
       query.lte(_.last(docs)._id);
     }
     else {
@@ -215,9 +215,9 @@ nodeca.filters.after('@', function (params, next) {
   data.thread = _.pick(thread, thread_info_out_fields);
 
   // prepare pagination data
-  var max_posts = nodeca.settings.global.get('max_posts_per_page');
+  var posts_per_page = nodeca.settings.global.get('posts_per_page');
   data.page = {
-    max:  Math.ceil(thread.cache.real.post_count / max_posts),
+    max:  Math.ceil(thread.cache.real.post_count / posts_per_page),
     current: params.page,
     base_params: { id: params.id, forum_id: params.forum_id }
   };

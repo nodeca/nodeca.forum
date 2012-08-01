@@ -92,7 +92,7 @@ module.exports = function (params, next) {
   var env = this;
   var sort = {};
   var start;
-  var max_threads = nodeca.settings.global.get('max_threads_per_page');
+  var threads_per_page = nodeca.settings.global.get('threads_per_page');
 
   env.response.data.show_page_number = false;
 
@@ -107,11 +107,11 @@ module.exports = function (params, next) {
   }
 
   // FIXME add state condition to select only visible threads
-  start = (params.page - 1) * max_threads;
+  start = (params.page - 1) * threads_per_page;
 
   // Fetch IDs of "visible" threads interval (use coverage index)
   Thread.find({ forum_id: params.id }).select('_id').sort(sort).skip(start)
-      .limit(max_threads + 1).setOptions({ lean: true }).exec(function(err, docs) {
+      .limit(threads_per_page + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
     if (!docs.length) {
       if (params.page > 1) {
@@ -140,7 +140,7 @@ module.exports = function (params, next) {
     // If no hidden threads - no conditions needed, just select by IDs
 
     var query = Thread.find({ forum_id: params.id }).where('_id').lte(_.first(docs)._id);
-    if (docs.length <= max_threads) {
+    if (docs.length <= threads_per_page) {
       query.gte(_.last(docs)._id);
     }
     else {
@@ -263,9 +263,9 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   // calculate pages number
-  var max_posts = nodeca.settings.global.get('max_posts_per_page');
+  var posts_per_page = nodeca.settings.global.get('posts_per_page');
   this.data.threads.forEach(function(doc) {
-    doc.cache._page_number = Math.floor(doc.cache.real.post_count / max_posts);
+    doc.cache._page_number = Math.floor(doc.cache.real.post_count / posts_per_page);
   });
 
   this.response.data.threads = this.data.threads;
@@ -310,9 +310,9 @@ nodeca.filters.after('@', function (params, next) {
   data.forum = _.pick(forum, forum_info_out_fields);
 
   // prepare pagination data
-  var max_threads = nodeca.settings.global.get('max_threads_per_page');
+  var threads_per_page = nodeca.settings.global.get('threads_per_page');
   data.page = {
-    max: Math.ceil(forum.cache.real.thread_count / max_threads),
+    max: Math.ceil(forum.cache.real.thread_count / threads_per_page),
     current: params.page,
     base_params: { id: params.id }
   };
