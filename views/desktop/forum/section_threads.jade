@@ -13,13 +13,15 @@ ul.tl-thread-list
           h2
             a(href=link_to('forum.thread', thread))= thread.title
           //a.mark-i-attach._tip(href="#")=thread.attach_count
-          ul.tl-pages
-            li
-              a(href='#') 1
-            li
-              a(href='#') 2
-            li
-              a(href='#') 3
+          - if (thread.cache._page_number > 1)
+            ul.tl-pages
+              li
+                a(href=link_to('forum.thread', thread)) 1
+              - for (var i=2; i <= thread.cache._page_number; i++) {
+                - thread.page = i;
+                li
+                  a(href=link_to('forum.thread', thread)) #{i}
+              - }
           .tl-meta
             a.tl-preview-ctl.icon-down(href='#') Preview
             - if (users[fp_user])

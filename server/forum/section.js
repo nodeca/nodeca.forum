@@ -251,6 +251,12 @@ nodeca.filters.after('@', function (params, next) {
     });
   }
 
+  // calculate pages number
+  var max_posts = nodeca.settings.global.get('max_posts_per_page');
+  this.data.threads.forEach(function(doc) {
+    doc.cache._page_number = Math.floor(doc.cache.real.post_count / max_posts);
+  });
+
   this.response.data.threads = this.data.threads;
 
   // collect users from threads
