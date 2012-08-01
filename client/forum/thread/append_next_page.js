@@ -10,7 +10,7 @@ module.exports = function ($el, event) {
   params.id       = $el.data('thread-id');
   params.forum_id = $el.data('forum-id');
 
-  if (params.page < max) {
+  if (params.page <= max) {
     // set current page to the one that was loaded
     nodeca.server.forum.thread(params, function (err, payload) {
       if (err) {
