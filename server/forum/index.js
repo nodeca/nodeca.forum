@@ -36,14 +36,15 @@ var sections_out_fields = [
 //
 module.exports = function (params, next) {
   var env = this;
+  var query;
 
   env.extras.puncher.start('Get forums');
 
   // build tree from 0..2 levels, start from sections without parent
-  var query = { level: {$lte: 2} };
+  query = { level: {$lte: 2} };
 
   // FIXME add permissions check
-  Section.find(query).sort('display_order').setOptions({lean:true})
+  Section.find(query).sort('display_order').setOptions({ lean: true })
       .select(sections_in_fields.join(' ')).exec(function(err, sections){
     if (err) {
       next(err);

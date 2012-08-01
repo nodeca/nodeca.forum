@@ -58,7 +58,7 @@ nodeca.filters.before('@', function (params, next) {
 
   env.extras.puncher.start('Forum info prefetch');
 
-  Section.findOne({id: params.id}).setOptions({ lean: true })
+  Section.findOne({ id: params.id }).setOptions({ lean: true })
       .exec(function(err, forum) {
 
     if (err) {
@@ -90,8 +90,11 @@ nodeca.filters.before('@', function (params, next) {
 //
 module.exports = function (params, next) {
   var env = this;
+
   var sort = {};
   var start;
+  var query;
+
   var threads_per_page = nodeca.settings.global.get('threads_per_page');
 
   env.response.data.show_page_number = false;
@@ -139,7 +142,7 @@ module.exports = function (params, next) {
     // FIXME modify state condition (deleted and etc) if user has permission
     // If no hidden threads - no conditions needed, just select by IDs
 
-    var query = Thread.find({ forum_id: params.id }).where('_id').lte(_.first(docs)._id);
+    query = Thread.find({ forum_id: params.id }).where('_id').lte(_.first(docs)._id);
     if (docs.length <= threads_per_page) {
       query.gte(_.last(docs)._id);
     }
@@ -171,6 +174,10 @@ module.exports = function (params, next) {
 //
 nodeca.filters.after('@', function (params, next) {
   var env = this;
+
+  var max_level;
+  var query;
+
   env.data.sections = [];
   // subforums fetched only on first page
   if (params.page > 1) {
@@ -179,8 +186,8 @@ nodeca.filters.after('@', function (params, next) {
   }
   env.extras.puncher.start('Get subforums');
 
-  var max_level = env.data.section.level + 2; // need two next levels
-  var query = {
+  max_level = env.data.section.level + 2; // need two next levels
+  query = {
     level: { $lte: max_level },
     parent_list: env.data.section._id
   };
@@ -208,6 +215,8 @@ nodeca.filters.after('@', function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
+  var root;
+
   env.extras.puncher.start('Post-process forums/threads/users');
 
   //
@@ -221,7 +230,7 @@ nodeca.filters.after('@', function (params, next) {
     });
   }
 
-  var root = this.data.section._id;
+  root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
 
   // Cleanup output tree - delete attributes, that are not white list.
@@ -290,6 +299,12 @@ nodeca.filters.after('@', function (params, next) {
 //
 nodeca.filters.after('@', function (params, next) {
   var env = this;
+
+  var threads_per_page;
+  var query;
+  var fields;
+  var t_params;
+
   var data = this.response.data;
   var forum = this.data.section;
 
@@ -300,7 +315,7 @@ nodeca.filters.after('@', function (params, next) {
   // prepare page title
   data.head.title = forum.title;
   if (params.page > 1) {
-    var t_params = { title: forum.title, page: params.page };
+    t_params = { title: forum.title, page: params.page };
     data.head.title = env.helpers.t('forum.title_with_page', t_params);
   }
 
@@ -308,20 +323,20 @@ nodeca.filters.after('@', function (params, next) {
   data.forum = _.pick(forum, forum_info_out_fields);
 
   // prepare pagination data
-  var threads_per_page = nodeca.settings.global.get('threads_per_page');
+  threads_per_page = nodeca.settings.global.get('threads_per_page');
   data.page = {
     max: Math.ceil(forum.cache.real.thread_count / threads_per_page),
     current: params.page,
   };
 
   // fetch breadcrumbs data
-  var query = { _id: { $in: forum.parent_list } };
-  var fields = { '_id': 1, 'id': 1, 'title': 1 };
+  query = { _id: { $in: forum.parent_list } };
+  fields = { '_id': 1, 'id': 1, 'title': 1 };
 
   env.extras.puncher.start('Build breadcrumbs');
 
   Section.find(query).select(fields).sort({ 'level': 1 })
-      .setOptions({lean:true}).exec(function(err, parents){
+      .setOptions({ lean: true }).exec(function(err, parents){
     if (err) {
       next(err);
       return;
