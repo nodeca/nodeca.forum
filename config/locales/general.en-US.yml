@@ -11,6 +11,27 @@ i18n:
       no_threads: No threads yet.
       page_separator: "page #{page}" 
       title_with_page: "#{title} - #{page} page"
+      # author prefix
+      topic_by: "by "
+
+      moderators: "%{moderator|moderators}:count"
+
+      action:
+        mark_all_read: Mark all read
+        exclude: "Exclude forums (now #{count})"
+        thread_create: New topic
+
+      counter:
+        forum_topics: " %{topic|topics}:count"
+        forum_posts: " %{post|posts}:count"
+        total_active:
+          all: "#{count} active %{user|users}:count in the past #{interval} %{minute|minutes}:interval"
+          members: "#{count} %{member|members}:count"
+          guests: "#{count} %{guest|guests}:count"
+          anonymous: "#{count} anonymous %{member|members}:count"
+        total_topics: "%{Topic|Topics}:count: "
+        total_posts: "%{Post|Posts}:count: "
+        total_members: "%{Member|Members}:count: "
 
     admin:
       menus:

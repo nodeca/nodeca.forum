@@ -17,7 +17,7 @@ article
           - last_user = forum.cache.real.last_user || null
           - last_ts = forum.cache.real.last_ts || null
           li
-            // Add 'unread' class & #id below, for new data
+            //- Add 'unread' class & #id below, for new data
             .row
               .span7.fl-item-summary
                 h3
@@ -31,7 +31,7 @@ article
 
                 - if (forum.moderator_list && forum.moderator_list.length > 0)
                   dl.def-hlist.fl-moderators
-                    dt moderators:
+                    dt= t('forum.moderators', { count: forum.moderator_list.length })
                     - each moderator in forum.moderator_list
                       - if (users[moderator])
                         dd
@@ -40,17 +40,17 @@ article
               ul.span2.fl-item-counters.hidden-phone
                 li
                   strong #{forum.cache.real.thread_count}
-                  |  topics
+                  = t('forum.counter.forum_topics', { count: forum.cache.real.thread_count })
                 li 
                   strong #{forum.cache.real.post_count}
-                  |  posts
+                  = t('forum.counter.forum_posts', { count: forum.cache.real.post_count })
               
               ul.span3.fl-item-lastpost.hidden-phone
                 li.lastpost-title
                   a(href=link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
                 - if (users[last_user])
                   li.lastpost-user
-                    | by 
+                    = t('forum.topic_by') 
                     - lp_user = users[last_user]
                     a(href=link_to('users.member', lp_user)) #{lp_user._uname}
                 - if (last_ts)
@@ -59,13 +59,18 @@ article
 
   footer
     .btn-toolbar
-      a.btn.btn-small.icon-ok(href='#') Mark all read
+      a.btn.btn-small.icon-ok(href='#')= t('forum.action.mark_all_read')
       | 
-      a.btn.btn-small(href='#') Exclude forums (5 now)
+      a.btn.btn-small(href='#')= t('forum.action.exclude', { count: 5 })
     
     dl.page-summary
-      dt 710 active users in the past 30 minutes
-      dd.small 128 members, 576 guests, 6 anonymous users:
+      dt= t('forum.counter.total_active.all', { count: 710, interval: 30})
+      dd.small
+        = t('forum.counter.total_active.members', { count: 128 })
+        | , 
+        = t('forum.counter.total_active.guests', { count: 567 })
+        | , 
+        = t('forum.counter.total_active.anonymous', { count: 6 })
       dd
         ul.hlist
           li
@@ -92,11 +97,11 @@ article
       dd
         ul.hlist
           li
-            | Topics: 
+            = t('forum.counter.total_topics', { count: 25 })
             strong 35 836
           li
-            | Posts: 
+            = t('forum.counter.total_posts', { count: 3 })
             strong 456 949
           li
-            | Members: 
+            = t('forum.counter.total_members', { count: 3 })
             strong 269 270
