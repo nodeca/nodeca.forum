@@ -21,8 +21,13 @@ module.exports = function ($el, event) {
     $el.data('current-page', payload.data.page.current);
     payload.data.show_page_number = payload.data.page.current;
 
-    if (~~payload.data.page.current === ~~payload.data.page.max) {
+    if (payload.data.page.current === payload.data.page.max) {
       $el.addClass('hidden');
+    } else {
+      $el.attr('href', nodeca.runtime.router.linkTo(payload.data.head.apiPath, {
+        id:   payload.data.forum.id,
+        page: payload.data.page.current + 1
+      }));
     }
 
     var $html = $(nodeca.client.common.render('forum.section_threads', '', payload.data));
