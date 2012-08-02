@@ -27,7 +27,7 @@ module.exports = function ($el, event) {
     }
 
     var $html = $(nodeca.client.common.render('forum.thread_posts', '', payload.data));
-    $('article.forum-post:last').after($html.hide());
+    $('.forum-post:last').after($html.hide());
     $html.fadeIn();
   });
 
