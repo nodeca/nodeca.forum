@@ -6,8 +6,6 @@ i18n:
           forum: Forum
 
     forum:
-      more_threads: More threads
-      more_posts: More posts
       no_threads: No threads yet.
       page_separator: "page #{page}" 
       title_with_page: "#{title} - #{page} page"
@@ -17,13 +15,29 @@ i18n:
       moderators: "%{moderator|moderators}:count"
 
       action:
+        # index
         mark_all_read: Mark all read
         exclude: "Exclude forums (now #{count})"
-        thread_create: New topic
+
+        # section (threads list)
+        thread_create: New thread
+        thread_preview: Preview
+        more_threads: More threads
+
+        section_announce: Announce
+        section_add_moderator: Add moderator
+        section_mass_move: Mass move
+        section_mass_prune: Mass prune
+
+        # thread (posts list)
+        more_posts: More posts
 
       counter:
         forum_topics: " %{topic|topics}:count"
         forum_posts: " %{post|posts}:count"
+        thread_replies: " %{reply|replies}:count"
+        thread_views: " %{view|views}:count"
+
         total_active:
           all: "#{count} active %{user|users}:count in the past #{interval} %{minute|minutes}:interval"
           members: "#{count} %{member|members}:count"

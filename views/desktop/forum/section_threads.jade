@@ -2,6 +2,7 @@
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
 ul.tl-thread-list
+  - var replies, views;
   - if (show_page_number)
     li.tl-head= t('forum.page_separator', { page: show_page_number })
 
@@ -26,14 +27,20 @@ ul.tl-thread-list
                   a(href=link_to('forum.thread', thread)) #{i}
               - }
           .tl-meta
-            a.tl-preview-ctl.icon-down(href='#') Preview
+            a.tl-preview-ctl.icon-down(href='#')= t('forum.action.thread_preview')
             - if (users[fp_user])
               a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user]._uname}
             time.tl-start-date(datetime=date(fp_ts, 'iso')) #{date(fp_ts, 'date')}
 
         ul.span2.tl-item-counters.hidden-phone
-          li #{thread.cache.real.post_count} replies
-          li #{thread._views_count} views
+          - replies = thread.cache.real.post_count - 1;
+          - views = thread._views_count;
+          li
+            | #{replies}
+            = t('forum.counter.thread_replies', { count: replies })
+          li
+            | #{views}
+            = t('forum.counter.thread_views', { count: views })
 
         ul.span3.tl-item-lastpost.hidden-phone
           li.lastpost-time

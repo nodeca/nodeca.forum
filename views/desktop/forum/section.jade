@@ -71,19 +71,19 @@ article.forum-threadlist
           span.caret
         ul.dropdown-menu
           li
-            a(href='#') Announce
+            a(href='#')= t('forum.action.section_announce')
           li
-            a(href='#') Add moderator
+            a(href='#')= t('forum.action.section_add_moderator')
           li
-            a(href='#') Mass move
+            a(href='#')= t('forum.action.section_mass_move')
           li
-            a(href='#') Mass prune
+            a(href='#')= t('forum.action.section_mass_prune')
       .btn-group.pull-right
         a.btn.btn-small.icon-eye.tip(href='#', title='Subscribe to new topics notification') 24
       .btn-group.pull-right
         a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title='Mark all read')
       .btn-group.pull-right
-        a.btn.btn-small.btn-primary.icon-doc-text(href='#') New Topic
+        a.btn.btn-small.btn-primary.icon-doc-text(href='#')= t('forum.action.thread_create')
 
 
 
@@ -93,7 +93,7 @@ article.forum-threadlist
       //- Button "More Threads"
       - var link_params = { id: forum.id, page: page.current + 1 };
       - var btn_more_state = (page.max === 1 || page.max === page.current) ? "hidden" : ""
-      a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=forum.id, data-current-page=page.current)= t('forum.more_threads')
+      a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=forum.id, data-current-page=page.current)= t('forum.action.more_threads')
 
     - else
       p
