@@ -1,35 +1,35 @@
 'use strict';
 
 
+/*global window, nodeca, $*/
+
+
 module.exports = function ($el, event) {
   var current = ~~$el.data('current-page'),
-      max     = ~~$el.data('max-page'),
       params  = {};
 
   params.page     = current + 1;
   params.id       = $el.data('thread-id');
   params.forum_id = $el.data('forum-id');
 
-  if (params.page <= max) {
+  nodeca.server.forum.thread(params, function (err, payload) {
+    if (err) {
+      nodeca.logger.error(err);
+      return;
+    }
+
     // set current page to the one that was loaded
-    nodeca.server.forum.thread(params, function (err, payload) {
-      if (err) {
-        nodeca.logger.error(err);
-        return;
-      }
+    $el.data('current-page', payload.data.page.current);
+    payload.data.show_page_number = payload.data.page.current;
 
-      $el.data('current-page', params.page);
-      payload.data.show_page_number = params.page;
+    if (payload.data.page.current === payload.data.page.max) {
+      $el.addClass('hidden');
+    }
 
-      if (params.page === max) {
-        $el.addClass('hidden');
-      }
-
-      var $html = $(nodeca.client.common.render('forum.thread_posts', '', payload.data));
-      $('article.forum-post:last').after($html.hide());
-      $html.fadeIn();
-    });
-  }
+    var $html = $(nodeca.client.common.render('forum.thread_posts', '', payload.data));
+    $('article.forum-post:last').after($html.hide());
+    $html.fadeIn();
+  });
 
   return false;
 };
