@@ -214,7 +214,7 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   // prepare page title
-  data.head.title = forum.title;
+  data.head.title = thread.title;
   if (params.page > 1) {
     t_params = { title: thread.title, page: params.page };
     data.head.title = env.helpers.t('forum.title_with_page', t_params);

@@ -8,7 +8,7 @@ i18n:
     forum:
       no_threads: No threads yet.
       page_separator: "page #{page}" 
-      title_with_page: "#{title} - #{page} page"
+      title_with_page: "#{title} - page #{page}"
       # author prefix
       topic_by: "by "
 
