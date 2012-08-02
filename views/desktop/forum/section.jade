@@ -96,5 +96,5 @@ article.forum-threadlist
       a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=forum.id, data-current-page=page.current)= t('forum.more_threads')
 
     - else
-      .message
-        h1= t('forum.no_threads')
+      p
+        strong= t('forum.no_threads')
