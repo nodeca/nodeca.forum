@@ -44,7 +44,6 @@ article
   include ./thread_posts
 
   //- Button "More Threads"
-  - var link_params = { id: thread.id, forum_id: thread.forum_id, page: ~~page.current + 1 };
+  - var link_params = { id: thread.id, forum_id: thread.forum_id, page: page.current + 1 };
   - var btn_more_state = (page.max === 1 || page.max === page.current) ? "hidden" : ""
-  div(class=btn_more_state)
-    a.btn.wide.icon-down(href=link_to(head.apiPath, link_params), data-action="forum.thread.append_next_page", data-forum-id=thread.forum_id, data-thread-id=thread.id, data-current-page=page.current)= t('forum.more_posts')
+  a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, link_params), data-action="forum.thread.append_next_page", data-forum-id=thread.forum_id, data-thread-id=thread.id, data-current-page=page.current)= t('forum.more_posts')

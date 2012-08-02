@@ -326,7 +326,7 @@ nodeca.filters.after('@', function (params, next) {
   threads_per_page = nodeca.settings.global.get('threads_per_page');
   data.page = {
     max: Math.ceil(forum.cache.real.thread_count / threads_per_page),
-    current: params.page,
+    current: ~~params.page,
   };
 
   // fetch breadcrumbs data
