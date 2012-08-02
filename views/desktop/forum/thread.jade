@@ -41,7 +41,7 @@ article
       a.btn.btn-small.btn-primary(href='#')= t('forum.action.post_add')
 
 
-  include ./thread_posts
+  include ./partials/posts_list
 
   //- Button "More Threads"
   - var link_params = { id: thread.id, forum_id: thread.forum_id, page: page.current + 1 };

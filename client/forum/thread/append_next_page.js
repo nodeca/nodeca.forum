@@ -32,7 +32,7 @@ module.exports = function ($el, event) {
       }));
     }
 
-    var $html = $(nodeca.client.common.render('forum.thread_posts', '', payload.data));
+    var $html = $(nodeca.client.common.render('forum.partials.posts_list', '', payload.data));
     $('.forum-post:last').after($html.hide());
     $html.fadeIn();
   });

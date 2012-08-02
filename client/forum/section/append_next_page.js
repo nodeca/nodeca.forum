@@ -30,7 +30,7 @@ module.exports = function ($el, event) {
       }));
     }
 
-    var $html = $(nodeca.client.common.render('forum.section_threads', '', payload.data));
+    var $html = $(nodeca.client.common.render('forum.partials.threads_list', '', payload.data));
     $('.tl-thread-list:last').after($html.hide());
     $html.fadeIn();
   });

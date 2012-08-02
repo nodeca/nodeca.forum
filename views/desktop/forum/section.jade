@@ -88,7 +88,7 @@ article.forum-threadlist
 
 
     - if (threads && threads.length)
-      include ./section_threads
+      include ./partials/threads_list
 
       //- Button "More Threads"
       - var link_params = { id: forum.id, page: page.current + 1 };
