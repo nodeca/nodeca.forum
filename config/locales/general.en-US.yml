@@ -14,23 +14,44 @@ i18n:
 
       moderators: "%{moderator|moderators}:count"
 
+      # general controls (buttons, menus)
       action:
         # index
         mark_all_read: Mark all read
         exclude: "Exclude forums (now #{count})"
 
         # section (threads list)
-        thread_create: New thread
+        thread_create: New topic
         thread_preview: Preview
         more_threads: More threads
-
+        section_mark_read_tip: Mark all read
+        section_subscribe: Subscribe to new topics notification
+        # dropdown
         section_announce: Announce
         section_add_moderator: Add moderator
         section_mass_move: Mass move
         section_mass_prune: Mass prune
 
         # thread (posts list)
+        post_add: Add reply
         more_posts: More posts
+        thread_subscribe: Subscribe to new posts notification
+        # dropdown
+        thread_delete: Delete
+        thread_close: Close
+        thread_pin: Pin
+        thread_unpin: Unpin
+        thread_history: History
+        thread_approve: Approve
+        thread_merge: Merge
+
+      # Post controls
+      post:
+        report: Report
+        ip_show: IP
+        reply: Reply
+        delete: Delete
+        edit: Edit
 
       counter:
         forum_topics: " %{topic|topics}:count"
