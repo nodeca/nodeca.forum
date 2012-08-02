@@ -57,33 +57,36 @@ article.forum-threadlist
 
   - if (forum.is_category === false)
     //- Toolbar with pagination & controls
-    nav.btn-toolbar.controlbar
-      .btn-group
-        a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
+    nav.controlbar-keeper
+      #floatbar
+        .container
+          .btn-toolbar.controlbar
+            .btn-group
+              a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-      - if (threads && threads.length && page.max > 1)
-        - var link_params = { id: forum.id }
-        .btn-group
-          mixin pagination(head.apiPath, link_params, page.current, page.max)
+            - if (threads && threads.length && page.max > 1)
+              - var link_params = { id: forum.id }
+              .btn-group
+                mixin pagination(head.apiPath, link_params, page.current, page.max)
 
-      .btn-group.pull-right
-        a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
-          span.caret
-        ul.dropdown-menu
-          li
-            a(href='#')= t('forum.action.section_announce')
-          li
-            a(href='#')= t('forum.action.section_add_moderator')
-          li
-            a(href='#')= t('forum.action.section_mass_move')
-          li
-            a(href='#')= t('forum.action.section_mass_prune')
-      .btn-group.pull-right
-        a.btn.btn-small.icon-eye.tip(href='#', title=t('forum.action.section_subscribe')) 24
-      .btn-group.pull-right
-        a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title=t('forum.action.section_mark_read_tip'))
-      .btn-group.pull-right
-        a.btn.btn-small.btn-primary.icon-doc-text(href='#')= t('forum.action.thread_create')
+            .btn-group.pull-right
+              a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
+                span.caret
+              ul.dropdown-menu
+                li
+                  a(href='#')= t('forum.action.section_announce')
+                li
+                  a(href='#')= t('forum.action.section_add_moderator')
+                li
+                  a(href='#')= t('forum.action.section_mass_move')
+                li
+                  a(href='#')= t('forum.action.section_mass_prune')
+            .btn-group.pull-right
+              a.btn.btn-small.icon-eye.tip(href='#', title=t('forum.action.section_subscribe')) 24
+            .btn-group.pull-right
+              a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title=t('forum.action.section_mark_read_tip'))
+            .btn-group.pull-right
+              a.btn.btn-small.btn-primary.icon-doc-text(href='#')= t('forum.action.thread_create')
 
 
 

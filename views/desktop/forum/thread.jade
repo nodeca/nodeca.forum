@@ -9,36 +9,39 @@ article
       p(itemprop='description')
         | #{thread._seo_desc}
 
-  nav.btn-toolbar.controlbar
-    .btn-group
-      a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
+  nav.controlbar-keeper
+    #floatbar
+      .container
+        .btn-toolbar.controlbar
+          .btn-group
+            a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-    - if (page.max > 1)
-      - var link_params = { id: thread.id, forum_id: thread.forum_id }
-      .btn-group
-        mixin pagination(head.apiPath, link_params, page.current, page.max)
+          - if (page.max > 1)
+            - var link_params = { id: thread.id, forum_id: thread.forum_id }
+            .btn-group
+              mixin pagination(head.apiPath, link_params, page.current, page.max)
 
-    .btn-group.pull-right
-      a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
-        span.caret
-      ul.dropdown-menu
-        li
-          a(href='#')= t('forum.action.thread_delete')
-        li
-          a(href='#')= t('forum.action.thread_close')
-        li.divider
-        li
-          a(href='#')= t('forum.action.thread_pin')
-        li
-          a(href='#')= t('forum.action.thread_history')
-        li
-          a(href='#')= t('forum.action.thread_approve')
-        li
-          a(href='#')= t('forum.action.thread_merge')
-    .btn-group.pull-right
-      a.btn.btn-small.icon-eye.tip(href='#', title=t('forum.action.thread_subscribe')) 24
-    .btn-group.pull-right
-      a.btn.btn-small.btn-primary(href='#')= t('forum.action.post_add')
+          .btn-group.pull-right
+            a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
+              span.caret
+            ul.dropdown-menu
+              li
+                a(href='#')= t('forum.action.thread_delete')
+              li
+                a(href='#')= t('forum.action.thread_close')
+              li.divider
+              li
+                a(href='#')= t('forum.action.thread_pin')
+              li
+                a(href='#')= t('forum.action.thread_history')
+              li
+                a(href='#')= t('forum.action.thread_approve')
+              li
+                a(href='#')= t('forum.action.thread_merge')
+          .btn-group.pull-right
+            a.btn.btn-small.icon-eye.tip(href='#', title=t('forum.action.thread_subscribe')) 24
+          .btn-group.pull-right
+            a.btn.btn-small.btn-primary(href='#')= t('forum.action.post_add')
 
 
   include ./partials/posts_list
