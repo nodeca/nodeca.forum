@@ -67,6 +67,9 @@
 .fl-item-summary
   padding-left 2em
   box-sizing border-box
+  // IE7 hack - no :before & box-sizing
+  *padding-left 0
+
   > h3
     position relative
     font-weight normal

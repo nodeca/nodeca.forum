@@ -29,6 +29,9 @@
 .tl-item-summary
   padding-left 5px
   box-sizing border-box
+  // IE7 hack
+  *padding-left 0
+
   > h2
     position relative
     font-size 16px
@@ -128,6 +131,9 @@
 //
 .unread > .tl-item-summary
   padding-left 20px
+  // IE7 hack
+  *padding-left 0
+
   > h2
     font-weight bold
     &:before
