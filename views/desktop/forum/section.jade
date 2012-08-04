@@ -60,13 +60,13 @@ article.forum-threadlist
     nav.controlbar-keeper
       #floatbar
         .container
-          .btn-toolbar.controlbar
-            .btn-group
+          .btn-toolbar.controlbar.clearfix
+            .btn-group.pull-left
               a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
             - if (threads && threads.length && page.max > 1)
               - var link_params = { id: forum.id }
-              .btn-group
+              .btn-group.pull-left
                 mixin pagination(head.apiPath, link_params, page.current, page.max)
 
             .btn-group.pull-right
@@ -88,6 +88,7 @@ article.forum-threadlist
             .btn-group.pull-right
               a.btn.btn-small.btn-primary.icon-doc-text(href='#')= t('forum.action.thread_create')
 
+          //- left part, no `float left` to avoid deals with container height
 
 
     - if (threads && threads.length)
