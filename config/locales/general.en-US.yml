@@ -12,7 +12,7 @@ i18n:
       # author prefix
       topic_by: "by "
 
-      moderators: "%{moderator|moderators}:count"
+      moderators: "%{moderator|moderators}"
 
       # general controls (buttons, menus)
       action:
@@ -54,19 +54,19 @@ i18n:
         edit: Edit
 
       counter:
-        forum_topics: " %{topic|topics}:count"
-        forum_posts: " %{post|posts}:count"
-        thread_replies: " %{reply|replies}:count"
-        thread_views: " %{view|views}:count"
+        forum_topics: " %{topic|topics}"
+        forum_posts: " %{post|posts}"
+        thread_replies: " %{reply|replies}"
+        thread_views: " %{view|views}"
 
         total_active:
-          all: "#{count} active %{user|users}:count in the past #{interval} %{minute|minutes}:interval"
-          members: "#{count} %{member|members}:count"
-          guests: "#{count} %{guest|guests}:count"
-          anonymous: "#{count} anonymous %{member|members}:count"
-        total_topics: "%{Topic|Topics}:count: "
-        total_posts: "%{Post|Posts}:count: "
-        total_members: "%{Member|Members}:count: "
+          all: "#{count} active %{user|users} in the past #{interval} %{minute|minutes}:interval"
+          members: "#{count} %{member|members}"
+          guests: "#{count} %{guest|guests}"
+          anonymous: "#{count} anonymous %{member|members}"
+        total_topics: "%{Topic|Topics}: "
+        total_posts: "%{Post|Posts}: "
+        total_members: "%{Member|Members}: "
 
     admin:
       menus:
