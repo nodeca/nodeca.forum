@@ -30,6 +30,7 @@ var subforums_in_fields = [
   'parent_list',
   'moderator_list',
   'display_order',
+  'level',
   'cache'
 ];
 
@@ -215,7 +216,7 @@ nodeca.filters.after('@', function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
-  var root;
+  var root, max_subforum_level;
 
   env.extras.puncher.start('Post-process forums/threads/users');
 
@@ -229,6 +230,24 @@ nodeca.filters.after('@', function (params, next) {
       return doc;
     });
   }
+
+
+  env.data.users = env.data.users || [];
+  max_subforum_level = env.data.section.level + 2;
+
+  // collect users from subforums
+  this.data.sections.forEach(function(doc) {
+    // queue moderators only for first 2 levels (those are not displayed on level 3)
+    if (!!doc.moderator_list && doc.level < max_subforum_level) {
+      doc.moderator_list.forEach(function(user) {
+        env.data.users.push(user);
+      });
+    }
+    if (doc.cache.real.last_user) {
+      env.data.users.push(doc.cache.real.last_user);
+    }
+  });
+
 
   root = this.data.section._id;
   this.response.data.sections = to_tree(this.data.sections, root);
@@ -246,19 +265,6 @@ nodeca.filters.after('@', function (params, next) {
     delete (doc.cache.hb);
   });
 
-  env.data.users = env.data.users || [];
-
-  // collect users from subforums
-  this.data.sections.forEach(function(doc){
-    if (!!doc.moderator_list) {
-      doc.moderator_list.forEach(function(user) {
-        env.data.users.push(user);
-      });
-    }
-    if (doc.cache.real.last_user) {
-      env.data.users.push(doc.cache.real.last_user);
-    }
-  });
 
   //
   // Process threads

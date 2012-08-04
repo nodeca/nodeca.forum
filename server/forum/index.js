@@ -16,6 +16,7 @@ var sections_in_fields = [
   'parent_list',
   'moderator_list',
   'display_order',
+  'level',
   'cache'
 ];
 
@@ -74,6 +75,23 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
     });
   }
 
+
+  env.data.users = env.data.users || [];
+
+  // collect users from sections
+  this.data.sections.forEach(function(doc){
+    // queue moderators only for first 2 levels (those are not displayed on level 3)
+    if (!!doc.moderator_list && doc.level < 2) {
+      doc.moderator_list.forEach(function(user) {
+        env.data.users.push(user);
+      });
+    }
+    if (doc.cache.real.last_user) {
+      env.data.users.push(doc.cache.real.last_user);
+    }
+  });
+
+
   this.response.data.sections = to_tree(this.data.sections, null);
 
   // Cleanup output tree - delete attributes, that are not white list.
@@ -89,19 +107,6 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
     delete (doc.cache.hb);
   });
 
-  env.data.users = env.data.users || [];
-
-  // collect users from sections
-  this.data.sections.forEach(function(doc){
-    if (!!doc.moderator_list) {
-      doc.moderator_list.forEach(function(user) {
-        env.data.users.push(user);
-      });
-    }
-    if (doc.cache.real.last_user) {
-      env.data.users.push(doc.cache.real.last_user);
-    }
-  });
   env.extras.puncher.stop();
 
   next();
