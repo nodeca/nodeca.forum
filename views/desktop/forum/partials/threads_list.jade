@@ -4,7 +4,7 @@
 ul.tl-thread-list
   - var replies, views;
   - if (self.show_page_number)
-    li.tl-head= t('forum.page_separator', { page: self.show_page_number })
+    li.tl-head= self.t('forum.page_separator', { page: self.show_page_number })
 
   - each thread in self.threads
     - fp_user = thread.cache.real.first_user
