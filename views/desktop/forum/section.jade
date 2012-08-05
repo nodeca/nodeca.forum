@@ -1,3 +1,4 @@
+include ./partials/_subsections_list
 include ../widgets/pagination
 
 article.forum-threadlist
@@ -12,48 +13,7 @@ article.forum-threadlist
   - if (self.sections && self.sections.length)
     ul.fl-cat-list
       - each sub_forum in self.sections
-        - last_thread = sub_forum.cache.real.last_thread_id || null
-        - last_user = sub_forum.cache.real.last_user || null
-        - last_ts = sub_forum.cache.real.last_ts || null
-        li
-          // Add 'unread' class & #id below, for new data
-          .row
-            .span7.fl-item-summary
-              h3
-                a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
-
-              - if (sub_forum.child_list && sub_forum.child_list.length)
-                ul.hlist.fl-subsections
-                  - each third_level in sub_forum.child_list
-                    li
-                      a(href=self.link_to('forum.section', third_level))= third_level.cache.real.last_thread_title
-
-              - if (sub_forum.moderator_list && sub_forum.moderator_list.length)
-                dl.def-hlist.fl-moderators
-                  dt moderators:
-                  - each moderator in sub_forum.moderator_list
-                    - if (self.users[moderator])
-                      dd
-                        a(href=self.link_to('users.member', self.users[moderator])) #{self.users[moderator]._uname} 
-
-            ul.span2.fl-item-counters.hidden-phone
-              li
-                strong #{sub_forum.cache.real.thread_count}
-                |  topics
-              li 
-                strong #{sub_forum.cache.real.post_count}
-                |  posts
-            
-            ul.span3.fl-item-lastpost.hidden-phone
-              li.lastpost-title
-                a(href=self.link_to('forum.thread', {id: last_thread, forum_id: sub_forum.id}) +'#'+sub_forum.cache.real.last_post_id) #{sub_forum.cache.real.last_thread_title}
-              - if (self.users[last_user]) 
-                li.lastpost-user
-                  | by 
-                  a(href=self.link_to('users.member', self.users[last_user])) #{self.users[last_user]._uname} 
-              - if (last_ts)
-                li.lastpost-time
-                  time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
+        mixin forum_child_list(sub_forum)
 
   - if (self.forum.is_category === false)
     //- Toolbar with pagination & controls
