@@ -3,10 +3,10 @@
 //- - appending next page posts via autoload or "more" button
 ul.tl-thread-list
   - var replies, views;
-  - if (show_page_number)
-    li.tl-head= t('forum.page_separator', { page: show_page_number })
+  - if (self.show_page_number)
+    li.tl-head= t('forum.page_separator', { page: self.show_page_number })
 
-  - each thread in threads
+  - each thread in self.threads
     - fp_user = thread.cache.real.first_user
     - lp_user = thread.cache.real.last_user
     - fp_ts   = thread.cache.real.first_ts
@@ -15,37 +15,37 @@ ul.tl-thread-list
       .row
         .span7.tl-item-summary
           h2
-            a(href=link_to('forum.thread', thread))= thread.title
+            a(href=self.link_to('forum.thread', thread))= thread.title
           //a.mark-i-attach._tip(href="#")=thread.attach_count
           - if (thread.cache._page_number > 1)
             ul.tl-pages
               li
-                a(href=link_to('forum.thread', thread)) 1
+                a(href=self.link_to('forum.thread', thread)) 1
               - for (var i=2; i <= thread.cache._page_number; i++) {
                 - thread.page = i;
                 li
-                  a(href=link_to('forum.thread', thread)) #{i}
+                  a(href=self.link_to('forum.thread', thread)) #{i}
               - }
           .tl-meta
-            a.tl-preview-ctl.icon-down(href='#')= t('forum.action.thread_preview')
-            - if (users[fp_user])
-              a.tl-starter(href=link_to('users.member', users[fp_user])) #{users[fp_user]._uname}
-            time.tl-start-date(datetime=date(fp_ts, 'iso')) #{date(fp_ts, 'date')}
+            a.tl-preview-ctl.icon-down(href='#')= self.t('forum.action.thread_preview')
+            - if (self.users[fp_user])
+              a.tl-starter(href=self.link_to('users.member', self.users[fp_user])) #{self.users[fp_user]._uname}
+            time.tl-start-date(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
         ul.span2.tl-item-counters.hidden-phone
           - replies = thread.cache.real.post_count - 1;
           - views = thread._views_count;
           li
             | #{replies}
-            = t('forum.counter.thread_replies', { count: replies })
+            = self.t('forum.counter.thread_replies', { count: replies })
           li
             | #{views}
-            = t('forum.counter.thread_views', { count: views })
+            = self.t('forum.counter.thread_views', { count: views })
 
         ul.span3.tl-item-lastpost.hidden-phone
           li.lastpost-time
             a(href='#')
-              time(datetime=date(lp_ts, 'iso')) #{date(lp_ts, 'date')}
-          - if (users[lp_user])
+              time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}
+          - if (self.users[lp_user])
             li.lastpost-user
-              a(href=link_to('users.member', users[lp_user])) #{users[lp_user]._uname}
+              a(href=self.link_to('users.member', self.users[lp_user])) #{self.users[lp_user]._uname}

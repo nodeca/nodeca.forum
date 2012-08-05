@@ -4,14 +4,14 @@ article.forum-threadlist
   include ../widgets/breadcrumbs
 
   header.page-head
-    h1(itemprop='name')= forum.title
+    h1(itemprop='name')= self.forum.title
     p(itemprop='description')
-      | #{forum.description}
+      | #{self.forum.description}
 
   //- Subforums, if exist
-  - if (sections && sections.length)
+  - if (self.sections && self.sections.length)
     ul.fl-cat-list
-      - each sub_forum in sections
+      - each sub_forum in self.sections
         - last_thread = sub_forum.cache.real.last_thread_id || null
         - last_user = sub_forum.cache.real.last_user || null
         - last_ts = sub_forum.cache.real.last_ts || null
@@ -20,21 +20,21 @@ article.forum-threadlist
           .row
             .span7.fl-item-summary
               h3
-                a(href=link_to('forum.section', sub_forum))= sub_forum.title
+                a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
 
               - if (sub_forum.child_list && sub_forum.child_list.length)
                 ul.hlist.fl-subsections
                   - each third_level in sub_forum.child_list
                     li
-                      a(href=link_to('forum.section', third_level))= third_level.cache.real.last_thread_title
+                      a(href=self.link_to('forum.section', third_level))= third_level.cache.real.last_thread_title
 
               - if (sub_forum.moderator_list && sub_forum.moderator_list.length)
                 dl.def-hlist.fl-moderators
                   dt moderators:
                   - each moderator in sub_forum.moderator_list
-                    - if (users[moderator])
+                    - if (self.users[moderator])
                       dd
-                        a(href=link_to('users.member', users[moderator])) #{users[moderator]._uname} 
+                        a(href=self.link_to('users.member', self.users[moderator])) #{self.users[moderator]._uname} 
 
             ul.span2.fl-item-counters.hidden-phone
               li
@@ -46,16 +46,16 @@ article.forum-threadlist
             
             ul.span3.fl-item-lastpost.hidden-phone
               li.lastpost-title
-                a(href=link_to('forum.thread', {id: last_thread, forum_id: sub_forum.id}) +'#'+sub_forum.cache.real.last_post_id) #{sub_forum.cache.real.last_thread_title}
-              - if (users[last_user]) 
+                a(href=self.link_to('forum.thread', {id: last_thread, forum_id: sub_forum.id}) +'#'+sub_forum.cache.real.last_post_id) #{sub_forum.cache.real.last_thread_title}
+              - if (self.users[last_user]) 
                 li.lastpost-user
                   | by 
-                  a(href=link_to('users.member', users[last_user])) #{users[last_user]._uname} 
+                  a(href=self.link_to('users.member', self.users[last_user])) #{self.users[last_user]._uname} 
               - if (last_ts)
                 li.lastpost-time
-                  time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
+                  time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
 
-  - if (forum.is_category === false)
+  - if (self.forum.is_category === false)
     //- Toolbar with pagination & controls
     nav.controlbar-keeper
       #floatbar
@@ -64,41 +64,41 @@ article.forum-threadlist
             .btn-group.pull-left
               a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
 
-            - if (threads && threads.length && page.max > 1)
-              - var link_params = { id: forum.id }
+            - if (self.threads && self.threads.length && self.page.max > 1)
+              - var link_params = { id: self.forum.id }
               .btn-group.pull-left
-                mixin pagination(head.apiPath, link_params, page.current, page.max)
+                mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
 
             .btn-group.pull-right
               a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
                 li
-                  a(href='#')= t('forum.action.section_announce')
+                  a(href='#')= self.t('forum.action.section_announce')
                 li
-                  a(href='#')= t('forum.action.section_add_moderator')
+                  a(href='#')= self.t('forum.action.section_add_moderator')
                 li
-                  a(href='#')= t('forum.action.section_mass_move')
+                  a(href='#')= self.t('forum.action.section_mass_move')
                 li
-                  a(href='#')= t('forum.action.section_mass_prune')
+                  a(href='#')= self.t('forum.action.section_mass_prune')
             .btn-group.pull-right
-              a.btn.btn-small.icon-eye.tip(href='#', title=t('forum.action.section_subscribe')) 24
+              a.btn.btn-small.icon-eye.tip(href='#', title=self.t('forum.action.section_subscribe')) 24
             .btn-group.pull-right
-              a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title=t('forum.action.section_mark_read_tip'))
+              a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title=self.t('forum.action.section_mark_read_tip'))
             .btn-group.pull-right
-              a.btn.btn-small.btn-primary.icon-doc-text(href='#')= t('forum.action.thread_create')
+              a.btn.btn-small.btn-primary.icon-doc-text(href='#')= self.t('forum.action.thread_create')
 
           //- left part, no `float left` to avoid deals with container height
 
 
-    - if (threads && threads.length)
+    - if (self.threads && self.threads.length)
       include ./partials/threads_list
 
       //- Button "More Threads"
-      - var link_params = { id: forum.id, page: page.current + 1 };
-      - var btn_more_state = (page.max === 1 || page.max === page.current) ? "hidden" : ""
-      a.btn.wide.icon-down(class=btn_more_state, href=link_to(head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=forum.id, data-current-page=page.current)= t('forum.action.more_threads')
+      - var link_params = { id: self.forum.id, page: self.page.current + 1 };
+      - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
+      a.btn.wide.icon-down(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=self.forum.id, data-current-page=self.page.current)= self.t('forum.action.more_threads')
 
     - else
       p
-        strong= t('forum.no_threads')
+        strong= self.t('forum.no_threads')

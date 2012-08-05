@@ -1,21 +1,21 @@
-- if (show_page_number)
-  .pl-head= t('forum.page_separator', { page: show_page_number })
+- if (self.show_page_number)
+  .pl-head= self.t('forum.page_separator', { page: self.show_page_number })
 
-- each post in posts
+- each post in self.posts
   article.forum-post.clearfix(id='post#{post.id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.post-meta.clearfix
-      - if (users[post.user])
-        a.post-author.pull-left(href=link_to('users.member', users[post.user]))
-          | #{users[post.user]._uname}
+      - if (self.users[post.user])
+        a.post-author.pull-left(href=self.link_to('users.member', self.users[post.user]))
+          | #{self.users[post.user]._uname}
       .pull-right
-        time.post-time(itemprop='datePublished', datetime=date(post.ts, 'iso')) #{date(post.ts, 'date')}
-        - var _post_anchor = link_to('forum.thread', thread) + 'post' + post.id;
+        time.post-time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
+        - var _post_anchor = self.link_to('forum.thread', self.thread) + 'post' + post.id;
         a.post-permalink(href=_post_anchor) #
         input.post-check(type='checkbox')
     .post-aside
-      - if (users[post.user])
+      - if (self.users[post.user])
         a.post-userpic(href='#')
-          img.av-xl(alt='#{users[post.user]._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{users[post.user].id}')
+          img.av-xl(alt='#{self.users[post.user]._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{self.users[post.user].id}')
       - else
         .av-xl
     .post-content
@@ -23,16 +23,16 @@
       footer.post-controls.clearfix
         ul.pull-left
           li
-            a.post-action(href='#')= t('forum.post.report')
+            a.post-action(href='#')= self.t('forum.post.report')
           li
-            a.post-action(href='#')= t('forum.post.ip_show')
+            a.post-action(href='#')= self.t('forum.post.ip_show')
         ul.pull-right
           li
-            a.post-action.icon-reply(href='#')= t('forum.post.reply')
+            a.post-action.icon-reply(href='#')= self.t('forum.post.reply')
           li
-            a.post-action(href='#')= t('forum.post.edit')
+            a.post-action(href='#')= self.t('forum.post.edit')
           li
-            a.post-action(href='#')= t('forum.post.delete')
+            a.post-action(href='#')= self.t('forum.post.delete')
           li
             a.vote-up(href='#')
             span.vote-count +47

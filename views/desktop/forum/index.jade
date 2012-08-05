@@ -3,7 +3,7 @@ article
 
   //h1= t('forum.index.title')
 
-  - each category in sections
+  - each category in self.sections
     article.fl-category(id='cat_box_#{category.id}')
       header(id='cat#{category.id}')
         h2
@@ -15,18 +15,18 @@ article
 
   footer
     .btn-toolbar
-      a.btn.btn-small.icon-ok(href='#')= t('forum.action.mark_all_read')
+      a.btn.btn-small.icon-ok(href='#')= self.t('forum.action.mark_all_read')
       | 
-      a.btn.btn-small(href='#')= t('forum.action.exclude', { count: 5 })
+      a.btn.btn-small(href='#')= self.t('forum.action.exclude', { count: 5 })
     
     dl.page-summary
-      dt= t('forum.counter.total_active.all', { count: 710, interval: 30})
+      dt= self.t('forum.counter.total_active.all', { count: 710, interval: 30})
       dd.small
-        = t('forum.counter.total_active.members', { count: 128 })
+        = self.t('forum.counter.total_active.members', { count: 128 })
         | , 
-        = t('forum.counter.total_active.guests', { count: 567 })
+        = self.t('forum.counter.total_active.guests', { count: 567 })
         | , 
-        = t('forum.counter.total_active.anonymous', { count: 6 })
+        = self.t('forum.counter.total_active.anonymous', { count: 6 })
       dd
         ul.hlist
           li
@@ -53,11 +53,11 @@ article
       dd
         ul.hlist
           li
-            = t('forum.counter.total_topics', { count: 25 })
+            = self.t('forum.counter.total_topics', { count: 25 })
             strong 35 836
           li
-            = t('forum.counter.total_posts', { count: 3 })
+            = self.t('forum.counter.total_posts', { count: 3 })
             strong 456 949
           li
-            = t('forum.counter.total_members', { count: 3 })
+            = self.t('forum.counter.total_members', { count: 3 })
             strong 269 270

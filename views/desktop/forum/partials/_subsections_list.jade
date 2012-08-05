@@ -9,38 +9,38 @@
     .row
       .span7.fl-item-summary
         h3
-          a(href=link_to('forum.section', forum))= forum.title
+          a(href=self.link_to('forum.section', forum))= forum.title
 
         - if (forum.child_list && forum.child_list.length > 0)
           ul.hlist.fl-subsections
             - each sub_forum in forum.child_list
               li
-                a(href=link_to('forum.section', sub_forum))= sub_forum.title
+                a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
 
         - if (forum.moderator_list && forum.moderator_list.length > 0)
           dl.def-hlist.fl-moderators
-            dt= t('forum.moderators', { count: forum.moderator_list.length })
+            dt= self.t('forum.moderators', { count: forum.moderator_list.length })
             - each moderator in forum.moderator_list
-              - if (users[moderator])
+              - if (self.users[moderator])
                 dd
-                  a(href=link_to('users.member', users[moderator])) #{users[moderator]._uname}
+                  a(href=self.link_to('users.member', self.users[moderator])) #{self.users[moderator]._uname}
 
       ul.span2.fl-item-counters.hidden-phone
         li
           strong #{forum.cache.real.thread_count}
-          = t('forum.counter.forum_topics', { count: forum.cache.real.thread_count })
+          = self.t('forum.counter.forum_topics', { count: forum.cache.real.thread_count })
         li 
           strong #{forum.cache.real.post_count}
-          = t('forum.counter.forum_posts', { count: forum.cache.real.post_count })
+          = self.t('forum.counter.forum_posts', { count: forum.cache.real.post_count })
       
       ul.span3.fl-item-lastpost.hidden-phone
         li.lastpost-title
-          a(href=link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
-        - if (users[last_user])
+          a(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
+        - if (self.users[last_user])
           li.lastpost-user
-            = t('forum.topic_by') 
-            - lp_user = users[last_user]
-            a(href=link_to('users.member', lp_user)) #{lp_user._uname}
+            = self.t('forum.topic_by') 
+            - lp_user = self.users[last_user]
+            a(href=self.link_to('users.member', lp_user)) #{lp_user._uname}
         - if (last_ts)
           li.lastpost-time
-            time(datetime=date(last_ts, 'iso')) #{date(last_ts, 'date')}
+            time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
