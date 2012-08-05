@@ -18,14 +18,25 @@ ul.tl-thread-list
             a(href=self.link_to('forum.thread', thread))= thread.title
           //a.mark-i-attach._tip(href="#")=thread.attach_count
           - if (thread.cache._page_number > 1)
+            //- micro-pagination
             ul.tl-pages
               li
                 a(href=self.link_to('forum.thread', thread)) 1
-              - for (var i=2; i <= thread.cache._page_number; i++) {
-                - thread.page = i;
+              - thread.page = 2;
+              li
+                a(href=self.link_to('forum.thread', thread)) 2
+              //- elipsis displayed, if pages count > 2 first + 2 last 
+              - if (thread.cache._page_number > 4)
                 li
-                  a(href=self.link_to('forum.thread', thread)) #{i}
-              - }
+                  ...
+              - if (thread.cache._page_number > 3)
+                - thread.page = thread.cache._page_number - 1;
+                li
+                  a(href=self.link_to('forum.thread', thread)) #{thread.page}
+              - if (thread.cache._page_number > 2)
+                - thread.page = thread.cache._page_number;
+                li
+                  a(href=self.link_to('forum.thread', thread)) #{thread.page}
           .tl-meta
             a.tl-preview-ctl.icon-down(href='#')= self.t('forum.action.thread_preview')
             - if (self.users[fp_user])
