@@ -80,14 +80,16 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
 
   // collect users from sections
   this.data.sections.forEach(function(doc){
-    // queue moderators only for first 2 levels (those are not displayed on level 3)
-    if (!!doc.moderator_list && doc.level < 2) {
-      doc.moderator_list.forEach(function(user) {
-        env.data.users.push(user);
-      });
-    }
-    if (doc.cache.real.last_user) {
-      env.data.users.push(doc.cache.real.last_user);
+    // queue users only for first 2 levels (those are not displayed on level 3)
+    if (doc.level < 2) {
+      if (!!doc.moderator_list) {
+        doc.moderator_list.forEach(function(user) {
+          env.data.users.push(user);
+        });
+      }
+      if (doc.cache.real.last_user) {
+        env.data.users.push(doc.cache.real.last_user);
+      }
     }
   });
 

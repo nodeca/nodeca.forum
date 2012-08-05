@@ -237,14 +237,16 @@ nodeca.filters.after('@', function (params, next) {
 
   // collect users from subforums
   this.data.sections.forEach(function(doc) {
-    // queue moderators only for first 2 levels (those are not displayed on level 3)
-    if (!!doc.moderator_list && doc.level < max_subforum_level) {
-      doc.moderator_list.forEach(function(user) {
-        env.data.users.push(user);
-      });
-    }
-    if (doc.cache.real.last_user) {
-      env.data.users.push(doc.cache.real.last_user);
+    // queue users only for first 2 levels (those are not displayed on level 3)
+    if (doc.level < max_subforum_level) {
+      if (!!doc.moderator_list) {
+        doc.moderator_list.forEach(function(user) {
+          env.data.users.push(user);
+        });
+      }
+      if (doc.cache.real.last_user) {
+        env.data.users.push(doc.cache.real.last_user);
+      }
     }
   });
 
