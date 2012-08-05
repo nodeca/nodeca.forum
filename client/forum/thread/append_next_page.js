@@ -5,7 +5,7 @@
 
 
 module.exports = function ($el, event) {
-  var current = ~~$el.data('current-page'),
+  var current = parseInt($el.data('current-page'), 10),
       params  = {};
 
   params.page     = current + 1;

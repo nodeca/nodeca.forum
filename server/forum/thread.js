@@ -227,7 +227,7 @@ nodeca.filters.after('@', function (params, next) {
   posts_per_page = nodeca.settings.global.get('posts_per_page');
   data.page = {
     max:  Math.ceil(thread.cache.real.post_count / posts_per_page),
-    current: ~~params.page,
+    current: parseInt(params.page, 10),
   };
 
   // build breadcrumbs
