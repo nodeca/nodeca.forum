@@ -1,0 +1,26 @@
+mixin pagination_micro(thread)
+  - var i;
+  ul.tl-pages
+    li
+      a(href=self.link_to('forum.thread', thread)) 1
+    - if (thread.cache._page_number > 4)
+      - thread.page = 2;
+      li
+        a(href=self.link_to('forum.thread', thread)) #{thread.page}
+
+      li …
+
+      - thread.page = thread.cache._page_number - 1;
+      li
+        a(href=self.link_to('forum.thread', thread)) #{thread.page}
+
+      - thread.page = thread.cache._page_number;
+      li
+        a(href=self.link_to('forum.thread', thread)) #{thread.page}
+
+    - else
+      - for (i = 2; i <= thread.cache._page_number; i++) {
+        - thread.page = i;
+        li
+          a(href=self.link_to('forum.thread', thread)) #{thread.page}
+      - }

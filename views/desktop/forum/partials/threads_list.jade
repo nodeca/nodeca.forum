@@ -1,3 +1,5 @@
+include ./_pagination_micro
+
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
@@ -19,24 +21,9 @@ ul.tl-thread-list
           //a.mark-i-attach._tip(href="#")=thread.attach_count
           - if (thread.cache._page_number > 1)
             //- micro-pagination
-            ul.tl-pages
-              li
-                a(href=self.link_to('forum.thread', thread)) 1
-              - thread.page = 2;
-              li
-                a(href=self.link_to('forum.thread', thread)) 2
-              //- elipsis displayed, if pages count > 2 first + 2 last 
-              - if (thread.cache._page_number > 4)
-                li
-                  ...
-              - if (thread.cache._page_number > 3)
-                - thread.page = thread.cache._page_number - 1;
-                li
-                  a(href=self.link_to('forum.thread', thread)) #{thread.page}
-              - if (thread.cache._page_number > 2)
-                - thread.page = thread.cache._page_number;
-                li
-                  a(href=self.link_to('forum.thread', thread)) #{thread.page}
+            mixin pagination_micro(thread)
+
+
           .tl-meta
             a.tl-preview-ctl.icon-down(href='#')= self.t('forum.action.thread_preview')
             - if (self.users[fp_user])
