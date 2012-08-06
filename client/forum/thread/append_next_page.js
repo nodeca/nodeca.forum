@@ -35,10 +35,24 @@ module.exports = function ($el, event) {
     var $html = $(nodeca.client.common.render('forum.partials.posts_list', '', payload.data));
     $('.forum-post:last').after($html.hide());
 
+    // update pager
+    $('.pagination').replaceWith(
+      nodeca.client.common.render('widgets.partials.pagination', '', {
+        route:    'forum.thread',
+        params:   {
+          id:       payload.data.thread.id,
+          forum_id: payload.data.thread.forum_id
+        },
+        current:  payload.data.page.current,
+        max:      payload.data.page.max
+      })
+    );
+
+    // show content
+    $html.fadeIn();
+
     // inject debug stats if needed/possible
     nodeca.client.common.stats.inject(payload.data);
-
-    $html.fadeIn();
   });
 
   return false;

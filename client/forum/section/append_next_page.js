@@ -33,10 +33,21 @@ module.exports = function ($el, event) {
     var $html = $(nodeca.client.common.render('forum.partials.threads_list', '', payload.data));
     $('.tl-thread-list:last').after($html.hide());
 
+    // update pager
+    $('.pagination').replaceWith(
+      nodeca.client.common.render('widgets.partials.pagination', '', {
+        route:    'forum.section',
+        params:   { id: payload.data.forum.id },
+        current:  payload.data.page.current,
+        max:      payload.data.page.max
+      })
+    );
+
+    // show content
+    $html.fadeIn();
+
     // inject debug stats if needed/possible
     nodeca.client.common.stats.inject(payload.data);
-
-    $html.fadeIn();
   });
 
   return false;
