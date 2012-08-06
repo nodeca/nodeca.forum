@@ -282,7 +282,7 @@ nodeca.filters.after('@', function (params, next) {
   // calculate pages number
   var posts_per_page = nodeca.settings.global.get('posts_per_page');
   this.data.threads.forEach(function(doc) {
-    doc.cache._page_number = Math.ceil(doc.cache.real.post_count / posts_per_page);
+    doc._pages_count = Math.ceil(doc.cache.real.post_count / posts_per_page);
   });
 
   this.response.data.threads = this.data.threads;

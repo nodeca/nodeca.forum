@@ -1,26 +1,28 @@
-mixin pagination_micro(thread)
+mixin pagination_micro(route, params, max_page)
   - var i;
   ul.tl-pages
-    li
-      a(href=self.link_to('forum.thread', thread)) 1
-    - if (thread.cache._page_number > 4)
-      - thread.page = 2;
+
+    - if (max_page > 4)
       li
-        a(href=self.link_to('forum.thread', thread)) #{thread.page}
+        a(href=self.link_to(route, params)) 1
+
+      - params.page = 2;
+      li
+        a(href=self.link_to(route, params)) #{params.page}
 
       li …
 
-      - thread.page = thread.cache._page_number - 1;
+      - params.page = max_page - 1;
       li
-        a(href=self.link_to('forum.thread', thread)) #{thread.page}
+        a(href=self.link_to(route, params)) #{params.page}
 
-      - thread.page = thread.cache._page_number;
+      - params.page = max_page;
       li
-        a(href=self.link_to('forum.thread', thread)) #{thread.page}
+        a(href=self.link_to(route, params)) #{params.page}
 
     - else
-      - for (i = 2; i <= thread.cache._page_number; i++) {
-        - thread.page = i;
+      - for (i = 1; i <= max_page; i++) {
+        - params.page = i;
         li
-          a(href=self.link_to('forum.thread', thread)) #{thread.page}
+          a(href=self.link_to(route, params)) #{params.page}
       - }

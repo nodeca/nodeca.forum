@@ -19,9 +19,10 @@ ul.tl-thread-list
           h2
             a(href=self.link_to('forum.thread', thread))= thread.title
           //a.mark-i-attach._tip(href="#")=thread.attach_count
-          - if (thread.cache._page_number > 1)
+          - if (thread._pages_count > 1)
             //- micro-pagination
-            mixin pagination_micro(thread)
+            - var route_params = { id: thread.id, forum_id: thread.forum_id }
+            mixin pagination_micro('forum.thread', route_params, thread._pages_count)
 
 
           .tl-meta
