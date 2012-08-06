@@ -34,6 +34,10 @@ module.exports = function ($el, event) {
 
     var $html = $(nodeca.client.common.render('forum.partials.posts_list', '', payload.data));
     $('.forum-post:last').after($html.hide());
+
+    // inject puncher stats if needed/possible
+    nodeca.client.common.stats.injectPuncher(payload.data);
+
     $html.fadeIn();
   });
 

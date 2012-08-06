@@ -32,6 +32,10 @@ module.exports = function ($el, event) {
 
     var $html = $(nodeca.client.common.render('forum.partials.threads_list', '', payload.data));
     $('.tl-thread-list:last').after($html.hide());
+
+    // inject puncher stats if needed/possible
+    nodeca.client.common.stats.injectPuncher(payload.data);
+
     $html.fadeIn();
   });
 
