@@ -51,6 +51,25 @@ var forum_info_out_fields = [
   'is_category'
 ];
 
+// Validate input parameters
+//
+var params_schema = {
+  properties: {
+    section: {
+      type: "integer",
+      minimum: 1,
+      required: true
+    },
+    page: {
+      type: "integer",
+      minimum: 1,
+      default: 1
+    }
+  },
+  additionalProperties: false
+}
+nodeca.validate(params_schema);
+
 
 // Prefetch forum to simplify permisson check.
 // Check that forum exists.
