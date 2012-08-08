@@ -14,6 +14,15 @@ nodeca.validate(params_schema);
 
 
 module.exports = function (params, next) {
-  Section.build_tree(this, null, null, next);
+  var env = this;
+
+  Section.find().sort('display_order').exec(function(err, sections) {
+    if (err) {
+      next(err);
+      return;
+    }
+    env.data.sections = sections;
+    next();
+  });
 };
 

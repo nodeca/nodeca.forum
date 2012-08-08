@@ -1,14 +1,15 @@
-h1= t('admin.forum.title')
+h1= self.t('admin.forum.title')
 
 ul.context_menu
   li
-    a(href=link_to('admin.forum.add_category'))= t('admin.forum.add_forum')
+    a(href=self.link_to('admin.forum.add_category'))= self.t('admin.forum.add_forum')
   li
-    a(href=link_to('admin.forum.add_forum'))= t('admin.forum.add_category')
+    a(href=self.link_to('admin.forum.add_forum'))= self.t('admin.forum.add_category')
 
 .threads
+//-
   ul
-    - each category in sections
+    - each category in self.sections
       li
         p= category.title
         .controls
@@ -24,4 +25,4 @@ ul.context_menu
       input(type="text", name='moderator')
       select(name='moderator_group')
         option(value='')
-    input(type="button", value=t('admin.forum.add_moderator'))
+    input(type="button", value=self.t('admin.forum.add_moderator'))
