@@ -31,6 +31,13 @@ var sections_out_fields = [
 ];
 
 
+// Validate input parameters
+//
+var params_schema = {
+}
+nodeca.validate(params_schema);
+
+
 // fetch and prepare sections
 //
 // params - empty

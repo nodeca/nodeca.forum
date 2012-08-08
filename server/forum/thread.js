@@ -30,6 +30,28 @@ var thread_info_out_fields = [
 ];
 
 
+// Validate input parameters
+//
+var params_schema = {
+  // thread id
+  id: {
+    type: "integer",
+    minimum: 1,
+    required: true
+  },
+  forum_id: {
+    type: "integer",
+    minimum: 1,
+    required: true
+  },
+  page: {
+    type: "integer",
+    minimum: 1,
+    default: 1
+  }
+}
+nodeca.validate(params_schema);
+
 
 // fetch thread and forum info to simplify permisson check
 nodeca.filters.before('@', function (params, next) {

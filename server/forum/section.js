@@ -54,19 +54,17 @@ var forum_info_out_fields = [
 // Validate input parameters
 //
 var params_schema = {
-  properties: {
-    id: {
-      type: "integer",
-      minimum: 1,
-      required: true
-    },
-    page: {
-      type: "integer",
-      minimum: 1,
-      default: 1
-    }
+  // forum id
+  id: {
+    type: "integer",
+    minimum: 1,
+    required: true
   },
-  additionalProperties: false
+  page: {
+    type: "integer",
+    minimum: 1,
+    default: 1
+  }
 }
 nodeca.validate(params_schema);
 
