@@ -55,7 +55,7 @@ var forum_info_out_fields = [
 //
 var params_schema = {
   properties: {
-    section: {
+    id: {
       type: "integer",
       minimum: 1,
       required: true
