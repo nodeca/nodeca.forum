@@ -152,6 +152,11 @@ module.exports = function (params, next) {
   Post.find({ thread_id: params.id }).select('_id').sort('ts').skip(start)
       .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
+    if (err) {
+      next(err);
+      return;
+    }
+
     // No page -> "Not Found" status
     if (!docs.length) {
       next({ statusCode: 404 });

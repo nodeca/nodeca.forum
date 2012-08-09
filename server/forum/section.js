@@ -134,6 +134,11 @@ module.exports = function (params, next) {
   Thread.find({ forum_id: params.id }).select('_id').sort(sort).skip(start)
       .limit(threads_per_page + 1).setOptions({ lean: true }).exec(function(err, docs) {
 
+    if (err) {
+      next(err);
+      return;
+    }
+
     if (!docs.length) {
       if (params.page > 1) {
 

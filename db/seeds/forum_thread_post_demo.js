@@ -224,9 +224,15 @@ var create_thread = function(forum, callback) {
     function(cb){
       Async.forEach(_.range(post_count), function (current_post, next_post) {
         create_post(thread, function(err, post){
+          if (err) {
+            next_post(err);
+            return;
+          }
+
           if (!first_post){
             first_post = post;
           }
+
           last_post = post;
           next_post();
         });
@@ -280,7 +286,11 @@ var create_forum = function(category, sub_forum_deep, callback){
     // create threads
     function(cb){
       Async.forEach(_.range(thread_count), function (current_thread, next_thread) {
-        create_thread(forum, function(err, thread){
+        create_thread(forum, function(err, thread){ 
+          if (err) {
+            next_thread(err);
+            return;
+          }
           last_thread = thread;
           post_count += thread.cache.real.post_count;
           next_thread();
@@ -334,7 +344,12 @@ var create_categories = function(callback) {
     category = new Category(Faker.Helpers.category());
 
     category.save(function(err) {
-    // create forums
+      if (err) {
+        next_category(err);
+        return;
+      }
+
+      // create forums
       Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
         create_forum(category, 3, function(err, forum){
           next_forum(err);
@@ -361,6 +376,10 @@ module.exports = function(callback) {
     // add user to store
     Faker.users.push(user);
   }, function(err){
+    if (err) {
+      callback(err);
+      return;
+    }
     create_categories(callback);
   });
 };
