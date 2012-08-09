@@ -65,7 +65,7 @@ var params_schema = {
     minimum: 1,
     default: 1
   }
-}
+};
 nodeca.validate(params_schema);
 
 

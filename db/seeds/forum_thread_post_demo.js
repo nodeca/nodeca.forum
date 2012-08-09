@@ -285,8 +285,8 @@ var create_forum = function(category, sub_forum_deep, callback){
 
     // create threads
     function(cb){
-      Async.forEach(_.range(thread_count), function (current_thread, next_thread) {
-        create_thread(forum, function(err, thread){ 
+      Async.forEach(_.range(thread_count), function(current_thread, next_thread) {
+        create_thread(forum, function(err, thread){
           if (err) {
             next_thread(err);
             return;
