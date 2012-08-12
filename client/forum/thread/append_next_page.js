@@ -37,7 +37,7 @@ module.exports = function ($el, event) {
 
     // update pager
     $('.pagination').replaceWith(
-      nodeca.client.common.render('widgets.partials.pagination', '', {
+      nodeca.client.common.render('common.widgets.partials.pagination', '', {
         route:    'forum.thread',
         params:   {
           id:       payload.data.thread.id,
