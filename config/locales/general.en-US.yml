@@ -7,18 +7,18 @@ i18n:
 
     forum:
       no_threads: No threads yet.
-      page_separator: "page #(page)" 
-      title_with_page: "#(title) - page #(page)"
+      page_separator: "page #{page}"
+      title_with_page: "#{title} - page #{page}"
       # author prefix
       topic_by: "by "
 
-      moderators: "{{moderator|moderators}}"
+      moderators: "((moderator|moderators))"
 
       # general controls (buttons, menus)
       action:
         # index
         mark_all_read: Mark all read
-        exclude: "Exclude forums (now #(count))"
+        exclude: "Exclude forums (now #{count})"
 
         # section (threads list)
         thread_create: New topic
@@ -54,19 +54,19 @@ i18n:
         edit: Edit
 
       counter:
-        forum_topics: " {{topic|topics}}"
-        forum_posts: " {{post|posts}}"
-        thread_replies: " {{reply|replies}}"
-        thread_views: " {{view|views}}"
+        forum_topics: " ((topic|topics))"
+        forum_posts: " ((post|posts))"
+        thread_replies: " ((reply|replies))"
+        thread_views: " ((view|views))"
 
         total_active:
-          all: "#(count) active {{user|users}} in the past #(interval) {{minute|minutes}}:interval"
-          members: "#(count) {{member|members}}"
-          guests: "#(count) {{guest|guests}}"
-          anonymous: "#(count) anonymous {{member|members}}"
-        total_topics: "{{Topic|Topics}}: "
-        total_posts: "{{Post|Posts}}: "
-        total_members: "{{Member|Members}}: "
+          all: "#{count} active ((user|users)) in the past #{interval} ((minute|minutes)):interval"
+          members: "#{count} ((member|members))"
+          guests: "#{count} ((guest|guests))"
+          anonymous: "#{count} anonymous ((member|members))"
+        total_topics: "((Topic|Topics)): "
+        total_posts: "((Post|Posts)): "
+        total_members: "((Member|Members)): "
 
     admin:
       menus:
