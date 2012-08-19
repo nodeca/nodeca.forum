@@ -22,7 +22,8 @@ article.forum-threadlist
         .container
           .btn-toolbar.controlbar.clearfix
             .btn-group.pull-left
-              a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
+              a.btn.btn-small.btn-icon-only.icon-left-bold(href=self.link_to('forum.section', { id: self.forum.parent_id }))
+
 
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }

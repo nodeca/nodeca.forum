@@ -14,7 +14,7 @@ article
       .container
         .btn-toolbar.controlbar.clearfix
           .btn-group.pull-left
-            a.btn.btn-small.btn-icon-only.icon-left-bold(href='#')
+            a.btn.btn-small.btn-icon-only.icon-left-bold(href=self.link_to('forum.section', { id: self.thread.forum_id }))
 
           - if (self.page.max > 1)
             - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id }

@@ -48,6 +48,7 @@ var forum_info_out_fields = [
   'id',
   'title',
   'description',
+  'parent_id',
   'is_category'
 ];
 
