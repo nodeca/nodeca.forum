@@ -1,10 +1,8 @@
 h1= self.t('admin.forum.title')
 
 ul.context_menu
-  li
-    a(href=self.link_to('admin.forum.add_category'))= self.t('admin.forum.add_forum')
-  li
-    a(href=self.link_to('admin.forum.add_forum'))= self.t('admin.forum.add_category')
+  li: a(href=self.link_to('admin.forum.add_category'))= self.t('admin.forum.add_forum')
+  li: a(href=self.link_to('admin.forum.add_forum'))= self.t('admin.forum.add_category')
 
 .threads
 //-

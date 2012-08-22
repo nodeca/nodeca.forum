@@ -25,21 +25,17 @@ article
             a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
-              li
-                a(href='#')= self.t('forum.action.thread_delete')
-              li
-                a(href='#')= self.t('forum.action.thread_close')
+              li: a(href='#')= self.t('forum.action.thread_delete')
+              li: a(href='#')= self.t('forum.action.thread_close')
               li.divider
-              li
-                a(href='#')= self.t('forum.action.thread_pin')
-              li
-                a(href='#')= self.t('forum.action.thread_history')
-              li
-                a(href='#')= self.t('forum.action.thread_approve')
-              li
-                a(href='#')= self.t('forum.action.thread_merge')
+              li: a(href='#')= self.t('forum.action.thread_pin')
+              li: a(href='#')= self.t('forum.action.thread_history')
+              li: a(href='#')= self.t('forum.action.thread_approve')
+              li: a(href='#')= self.t('forum.action.thread_merge')
+
           .btn-group.pull-right
             a.btn.btn-small.icon-eye.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
+
           .btn-group.pull-right
             a.btn.btn-small.btn-primary(href='#')= self.t('forum.action.post_add')
 

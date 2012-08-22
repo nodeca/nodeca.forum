@@ -14,16 +14,14 @@ mixin forum_child_list(forum)
         - if (forum.child_list && forum.child_list.length > 0)
           ul.hlist.fl-subsections
             - each sub_forum in forum.child_list
-              li
-                a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
+              li: a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
 
         - if (forum.moderator_list && forum.moderator_list.length > 0)
           dl.def-hlist.fl-moderators
             dt= self.t('forum.moderators', { count: forum.moderator_list.length })
             - each moderator in forum.moderator_list
               - if (self.users[moderator])
-                dd
-                  a(href=self.link_to('users.member', self.users[moderator])) #{self.users[moderator]._uname}
+                dd: a(href=self.link_to('users.member', self.users[moderator])) #{self.users[moderator]._uname}
 
       ul.span2.fl-item-counters.hidden-phone
         li

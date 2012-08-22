@@ -34,18 +34,17 @@ article.forum-threadlist
               a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
-                li
-                  a(href='#')= self.t('forum.action.section_announce')
-                li
-                  a(href='#')= self.t('forum.action.section_add_moderator')
-                li
-                  a(href='#')= self.t('forum.action.section_mass_move')
-                li
-                  a(href='#')= self.t('forum.action.section_mass_prune')
+                li: a(href='#')= self.t('forum.action.section_announce')
+                li: a(href='#')= self.t('forum.action.section_add_moderator')
+                li: a(href='#')= self.t('forum.action.section_mass_move')
+                li: a(href='#')= self.t('forum.action.section_mass_prune')
+
             .btn-group.pull-right
               a.btn.btn-small.icon-eye.tip(href='#', title=self.t('forum.action.section_subscribe')) 24
+
             .btn-group.pull-right
               a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title=self.t('forum.action.section_mark_read_tip'))
+
             .btn-group.pull-right
               a.btn.btn-small.btn-primary.icon-doc-text(href='#')= self.t('forum.action.thread_create')
 

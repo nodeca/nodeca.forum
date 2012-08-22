@@ -22,17 +22,12 @@
       .message= post.text
       footer.post-controls.clearfix
         ul.pull-left
-          li
-            a.post-action(href='#')= self.t('forum.post.report')
-          li
-            a.post-action(href='#')= self.t('forum.post.ip_show')
+          li: a.post-action(href='#')= self.t('forum.post.report')
+          li: a.post-action(href='#')= self.t('forum.post.ip_show')
         ul.pull-right
-          li
-            a.post-action.icon-reply(href='#')= self.t('forum.post.reply')
-          li
-            a.post-action(href='#')= self.t('forum.post.edit')
-          li
-            a.post-action(href='#')= self.t('forum.post.delete')
+          li: a.post-action.icon-reply(href='#')= self.t('forum.post.reply')
+          li: a.post-action(href='#')= self.t('forum.post.edit')
+          li: a.post-action(href='#')= self.t('forum.post.delete')
           li
             a.vote-up(href='#')
             span.vote-count +47
