@@ -22,7 +22,7 @@ article.forum-threadlist
         .container
           .btn-toolbar.controlbar.clearfix
             .btn-group.pull-left
-              a.btn.btn-small.btn-icon-only.icon-left-bold(href=self.link_to('forum.section', { id: self.forum.parent_id }))
+              a.btn.btn-small.btn-icon-only.icon-back(href=self.link_to('forum.section', { id: self.forum.parent_id }))
 
 
             - if (self.threads && self.threads.length && self.page.max > 1)
@@ -31,7 +31,7 @@ article.forum-threadlist
                 mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
 
             .btn-group.pull-right
-              a.btn.btn-small.icon-cog.dropdown-toggle(href='#', data-toggle='dropdown')
+              a.btn.btn-small.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
                 li: a(href='#')= self.t('forum.action.section_announce')
@@ -40,13 +40,13 @@ article.forum-threadlist
                 li: a(href='#')= self.t('forum.action.section_mass_prune')
 
             .btn-group.pull-right
-              a.btn.btn-small.icon-eye.tip(href='#', title=self.t('forum.action.section_subscribe')) 24
+              a.btn.btn-small.icon-track.tip(href='#', title=self.t('forum.action.section_subscribe')) 24
 
             .btn-group.pull-right
-              a.btn.btn-small.btn-icon-only.icon-ok.tip(href='#', title=self.t('forum.action.section_mark_read_tip'))
+              a.btn.btn-small.btn-icon-only.icon-check.tip(href='#', title=self.t('forum.action.section_mark_read_tip'))
 
             .btn-group.pull-right
-              a.btn.btn-small.btn-primary.icon-doc-text(href='#')= self.t('forum.action.thread_create')
+              a.btn.btn-small.btn-primary.icon-new(href='#')= self.t('forum.action.thread_create')
 
           //- left part, no `float left` to avoid deals with container height
 
@@ -57,7 +57,7 @@ article.forum-threadlist
       //- Button "More Threads"
       - var link_params = { id: self.forum.id, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-      a.btn.wide.icon-down(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=self.forum.id, data-current-page=self.page.current)= self.t('forum.action.more_threads')
+      a.btn.wide.icon-more(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=self.forum.id, data-current-page=self.page.current)= self.t('forum.action.more_threads')
 
     - else
       p

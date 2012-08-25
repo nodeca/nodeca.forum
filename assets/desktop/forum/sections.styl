@@ -19,23 +19,20 @@
 //
 
 .fl-category > header
-  > h2:after
-    font-family 'nodeca'
-    font-style normal
-    content '\e75f'
-    speak none
-    margin-left .4em
-  &:not(:hover) > h2:after
+  > h2 > .icon-collapse
+    margin-left .3em
+    &:before
+      font-size 100%
+
+  &:not(:hover) > h2 > .icon-collapse
     opacity 0
-    transition opacity .3s ease
+    transition opacity .3s ease-in-out
 
 .fl-category.collapsed > header
   transition opacity .3s ease
   opacity .2
   &:hover
     opacity .7
-  > h2:after
-    content '\e75c'
 
 
 //

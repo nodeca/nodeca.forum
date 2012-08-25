@@ -26,7 +26,7 @@ ul.tl-thread-list
 
 
           .tl-meta
-            a.tl-preview-ctl.icon-down(href='#')= self.t('forum.action.thread_preview')
+            a.tl-preview-ctl.icon-more(href='#')= self.t('forum.action.thread_preview')
             - if (self.users[fp_user])
               a.tl-starter(href=self.link_to('users.member', self.users[fp_user])) #{self.users[fp_user]._uname}
             time.tl-start-date(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
