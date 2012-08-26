@@ -14,7 +14,7 @@ article
       .container
         .btn-toolbar.controlbar.clearfix
           .btn-group.pull-left
-            a.btn.btn-small.btn-icon-only.icon-back(href=self.link_to('forum.section', { id: self.thread.forum_id }))
+            a.btn.btn-icon-only.icon-back(href=self.link_to('forum.section', { id: self.thread.forum_id }))
 
           - if (self.page.max > 1)
             - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id }
@@ -22,7 +22,7 @@ article
               mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
 
           .btn-group.pull-right
-            a.btn.btn-small.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
+            a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
               li: a(href='#')= self.t('forum.action.thread_delete')
@@ -34,10 +34,10 @@ article
               li: a(href='#')= self.t('forum.action.thread_merge')
 
           .btn-group.pull-right
-            a.btn.btn-small.icon-track.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
+            a.btn.icon-track.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
 
           .btn-group.pull-right
-            a.btn.btn-small.btn-primary(href='#')= self.t('forum.action.post_add')
+            a.btn.btn-primary(href='#')= self.t('forum.action.post_add')
 
 
   include ./partials/posts_list
@@ -45,4 +45,4 @@ article
   //- Button "More Threads"
   - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-  a.btn.wide.icon-more(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.thread.append_next_page", data-forum-id=self.thread.forum_id, data-thread-id=self.thread.id, data-current-page=self.page.current)= self.t('forum.action.more_posts')
+  a.btn.btn-block.icon-more(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.thread.append_next_page", data-forum-id=self.thread.forum_id, data-thread-id=self.thread.id, data-current-page=self.page.current)= self.t('forum.action.more_posts')

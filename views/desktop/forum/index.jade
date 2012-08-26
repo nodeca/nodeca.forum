@@ -19,9 +19,9 @@ article
 
   footer
     .btn-toolbar
-      a.btn.btn-small.icon-check(href='#')= self.t('forum.action.mark_all_read')
+      a.btn.icon-check(href='#')= self.t('forum.action.mark_all_read')
       | 
-      a.btn.btn-small(href='#')= self.t('forum.action.exclude', { count: 5 })
+      a.btn(href='#')= self.t('forum.action.exclude', { count: 5 })
     
     dl.page-summary
       dt= self.t('forum.counter.total_active.all', { count: 710, interval: 30})

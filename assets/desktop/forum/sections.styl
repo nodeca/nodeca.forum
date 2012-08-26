@@ -10,6 +10,7 @@
       font-weight normal
       font-style italic
       color grayLight
+      margin 0
       > a
         color grayLight
         text-decoration none
@@ -69,13 +70,14 @@
   > h3
     position relative
     font-weight normal
-    line-height 1.1em
+    margin-top 0
+    margin-bottom (baseLineHeight/4)
     &:before
       content ''
       position absolute
       left -20px
       top 0
-      height 1.1em
+      height baseLineHeight
       width 4px
       background-color grayLighter
     > a
@@ -103,11 +105,11 @@
   position relative
   font-size 12px
   margin-left 1.5em
-  margin-top .1em
   color grayLight
-  line-height 1.4em
+  line-height 1.2em
+  margin-bottom (baseLineHeight/4)
   > li
-    line-height 1.4em
+    line-height 1.2em
     > a
       font-weight: bold
       color grayLight
