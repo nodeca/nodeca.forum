@@ -21,7 +21,9 @@ mixin forum_child_list(forum)
             dt= self.t('forum.moderators', { count: forum.moderator_list.length })
             - each moderator in forum.moderator_list
               - if (self.users[moderator])
-                dd: a(href=self.link_to('users.member', self.users[moderator])) #{self.users[moderator]._uname}
+                dd
+                  - var _id = String(moderator).replace(/"/g, '');
+                  a(href=self.link_to('users.member', self.users[moderator]), data-user-id=_id) #{self.users[moderator]._uname}
 
       ul.span2.fl-item-counters.hidden-phone
         li
