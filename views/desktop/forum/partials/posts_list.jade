@@ -5,8 +5,9 @@
   article.forum-post.clearfix(id='post#{post.id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.post-meta.clearfix
       - if (self.users[post.user])
-        a.post-author.pull-left(href=self.link_to('users.member', self.users[post.user]))
-          | #{self.users[post.user]._uname}
+        a.usercard-popover.post-author.pull-left(
+          href=self.link_to('users.member', self.users[post.user]),
+          data-user-id=String(post.user)) #{self.users[post.user]._uname}
       .pull-right
         time.post-time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
         - var _post_anchor = self.link_to('forum.thread', self.thread) + 'post' + post.id;

@@ -22,8 +22,9 @@ mixin forum_child_list(forum)
             - each moderator in forum.moderator_list
               - if (self.users[moderator])
                 dd
-                  - var _id = String(moderator).replace(/"/g, '');
-                  a(href=self.link_to('users.member', self.users[moderator]), data-user-id=_id) #{self.users[moderator]._uname}
+                  a.usercard-popover(
+                    href=self.link_to('users.member', self.users[moderator]),
+                    data-user-id=String(moderator)) #{self.users[moderator]._uname}
 
       ul.span2.fl-item-counters.hidden-phone
         li
@@ -40,7 +41,9 @@ mixin forum_child_list(forum)
           li.lastpost-user
             = self.t('forum.topic_by') 
             - lp_user = self.users[last_user]
-            a(href=self.link_to('users.member', lp_user)) #{lp_user._uname}
+            a.usercard-popover(
+              href=self.link_to('users.member', lp_user),
+              data-user-id=String(lp_user._id)) #{lp_user._uname}
         - if (last_ts)
           li.lastpost-time
             time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
