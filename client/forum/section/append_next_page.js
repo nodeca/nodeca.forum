@@ -21,6 +21,9 @@ module.exports = function ($el, event) {
     $el.data('current-page', payload.data.page.current);
     payload.data.show_page_number = payload.data.page.current;
 
+    // Update current state in the history
+    nodeca.client.common.history.updateStateURL($el.attr('href'));
+
     if (payload.data.page.current === payload.data.page.max) {
       $el.addClass('hidden');
     } else {
