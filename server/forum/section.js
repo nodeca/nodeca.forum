@@ -168,25 +168,15 @@ module.exports = function (params, next) {
     }
 
     if (!docs.length) {
-      env.extras.puncher.stop();
-      env.extras.puncher.stop();
-
       if (params.page > 1) {
         // Page is within (2..MAX) range, but no documents were found
-        // When page is bigger than MAX - we redirect user before actually
-        // trying to get threads, so THIS SHOULD NEVER HAPPEN
-
-        next("No threads found " + JSON.stringify({
-          forum_id:     params.id,
-          current_page: params.page,
-          max_page:     env.data.max
-        }));
-      } else {
-        // category or forum without threads
-        env.data.threads = [];
-        next();
+        next({ statusCode: 404 });
+        return;
       }
 
+      // category or forum without threads
+      env.data.threads = [];
+      next();
       return;
     }
 

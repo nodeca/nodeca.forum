@@ -181,16 +181,7 @@ module.exports = function (params, next) {
 
     // No page -> "Not Found" status
     if (!docs.length) {
-      env.extras.puncher.stop();
-      env.extras.puncher.stop();
-
-      next("No posts found " + JSON.stringify({
-        forum_id:     params.forum_id,
-        thread_id:    params.id,
-        current_page: params.page,
-        max_page:     env.data.max
-      }));
-
+      next({ statusCode: 404 });
       return;
     }
 
