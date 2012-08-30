@@ -170,7 +170,7 @@ module.exports = function (params, next) {
       env.extras.puncher.stop();
 
       if (params.page > 1) {
-        // Page is within (1..MAX) range, but no documents were found
+        // Page is within (2..MAX) range, but no documents were found
         // When page is bigger than MAX - we redirect user before actually
         // trying to get threads, so THIS SHOULD NEVER HAPPEN
 
@@ -184,6 +184,7 @@ module.exports = function (params, next) {
         env.data.threads = [];
         next();
       }
+
       return;
     }
 
