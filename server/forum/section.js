@@ -101,6 +101,31 @@ nodeca.filters.before('@', function (params, next) {
 });
 
 
+nodeca.filters.before('@', function setPageInfo(params, next) {
+  var per_page = nodeca.settings.global.get('threads_per_page'),
+      max      = Math.ceil(this.data.section.cache.real.thread_count / per_page),
+      current  = parseInt(params.page, 10);
+
+  if (current > max) {
+    // Requested page is BIGGER than maximum - redirect to the last one
+    next({
+      statusCode: 302,
+      headers:    {
+        "Location": nodeca.runtime.router.linkTo(this.request.method, {
+          id:   params.id,
+          page: max
+        })
+      }
+    });
+    return;
+  }
+
+  // requested page is OK. set info for the pager and continue.
+  this.data.page = { max: max, current: current };
+  next();
+});
+
+
 // fetch and prepare threads
 //
 // ##### params
@@ -141,20 +166,22 @@ module.exports = function (params, next) {
     }
 
     if (!docs.length) {
+      env.extras.puncher.stop();
+      env.extras.puncher.stop();
+
       if (params.page > 1) {
+        // Page is within (1..MAX) range, but no documents were found
+        // When page is bigger than MAX - we redirect user before actually
+        // trying to get threads, so THIS SHOULD NEVER HAPPEN
 
-        // FIXME Redirect to last page if possible
-
-        // No page -> "Not Found" status
-        next({ statusCode: 404 });
-      }
-      else {
+        next("No threads found " + JSON.stringify({
+          forum_id:     params.id,
+          current_page: params.page,
+          max_page:     env.data.max
+        }));
+      } else {
         // category or forum without threads
-        env.extras.puncher.stop();
-        env.extras.puncher.stop();
-
         env.data.threads = [];
-
         next();
       }
       return;
@@ -331,7 +358,6 @@ nodeca.filters.after('@', function (params, next) {
 nodeca.filters.after('@', function (params, next) {
   var env = this;
 
-  var threads_per_page;
   var query;
   var fields;
   var t_params;
@@ -351,14 +377,10 @@ nodeca.filters.after('@', function (params, next) {
   }
 
   // prepare forum info
-  data.forum = _.pick(forum, forum_info_out_fields);
+  data.forum  = _.pick(forum, forum_info_out_fields);
 
-  // prepare pagination data
-  threads_per_page = nodeca.settings.global.get('threads_per_page');
-  data.page = {
-    max: Math.ceil(forum.cache.real.thread_count / threads_per_page),
-    current: parseInt(params.page, 10),
-  };
+  // propose data for pagination
+  data.page   = this.data.page;
 
   // fetch breadcrumbs data
   query = { _id: { $in: forum.parent_list } };
