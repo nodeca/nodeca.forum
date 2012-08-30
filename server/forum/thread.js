@@ -106,24 +106,46 @@ nodeca.filters.before('@', function (params, next) {
         // FIXME - update pagination
         next({
           statusCode: 302,
-          headers: {
-            'Location': nodeca.runtime.router.linkTo(
-                          'forum.thread',
-                          {
-                            id: thread.id,
-                            forum_id: forum.id
-                          }
-                        )
+          headers:    {
+            'Location': nodeca.runtime.router.linkTo(this.request.method, {
+              id:       thread.id,
+              forum_id: forum.id
+            })
           }
         });
         return;
       }
 
       env.data.section = forum;
-
       next();
     });
   });
+});
+
+
+nodeca.filters.before('@', function setPageInfo(params, next) {
+  var per_page = nodeca.settings.global.get('posts_per_page'),
+      max      = Math.ceil(this.data.thread.cache.real.post_count / per_page),
+      current  = parseInt(params.page, 10);
+
+  if (current > max) {
+    // Requested page is BIGGER than maximum - redirect to the last one
+    next({
+      statusCode: 302,
+      headers:    {
+        "Location": nodeca.runtime.router.linkTo(this.request.method, {
+          forum_id: params.forum_id,
+          id:       params.id,
+          page:     max
+        })
+      }
+    });
+    return;
+  }
+
+  // requested page is OK. set info for the pager and continue.
+  this.data.page = { max: max, current: current };
+  next();
 });
 
 
@@ -159,7 +181,20 @@ module.exports = function (params, next) {
 
     // No page -> "Not Found" status
     if (!docs.length) {
-      next({ statusCode: 404 });
+      env.extras.puncher.stop();
+      env.extras.puncher.stop();
+
+      // Page is within (1..MAX) range, but no documents were found
+      // When page is bigger than MAX - we redirect user before actually
+      // trying to get threads, so THIS SHOULD NEVER HAPPEN
+
+      next("No posts found " + JSON.stringify({
+        forum_id:     params.forum_id,
+        thread_id:    params.id,
+        current_page: params.page,
+        max_page:     env.data.max
+      }));
+
       return;
     }
 
@@ -250,12 +285,8 @@ nodeca.filters.after('@', function (params, next) {
   // prepare thread info
   data.thread = _.pick(thread, thread_info_out_fields);
 
-  // prepare pagination data
-  posts_per_page = nodeca.settings.global.get('posts_per_page');
-  data.page = {
-    max:  Math.ceil(thread.cache.real.post_count / posts_per_page),
-    current: parseInt(params.page, 10),
-  };
+  // propose data for pagination
+  data.page   = this.data.page;
 
   // build breadcrumbs
   query = { _id: { $in: forum.parent_list }};
