@@ -122,8 +122,8 @@ nodeca.filters.before('@', function setPageInfo(params, next) {
     return;
   }
 
-  // requested page is OK. set info for the pager and continue.
-  this.data.page = { max: max, current: current };
+  // requested page is OK. propose data for pagination
+  this.response.data.page = { max: max, current: current };
   next();
 });
 
@@ -371,9 +371,6 @@ nodeca.filters.after('@', function (params, next) {
 
   // prepare forum info
   data.forum  = _.pick(forum, forum_info_out_fields);
-
-  // propose data for pagination
-  data.page   = this.data.page;
 
   // fetch breadcrumbs data
   query = { _id: { $in: forum.parent_list } };
