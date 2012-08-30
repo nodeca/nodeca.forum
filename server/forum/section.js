@@ -106,7 +106,9 @@ nodeca.filters.before('@', function setPageInfo(params, next) {
       max      = Math.ceil(this.data.section.cache.real.thread_count / per_page),
       current  = parseInt(params.page, 10);
 
-  if (current > max) {
+  // forum might have only subforums and no threads,
+  // so check requested page vlidity only when max >= 1
+  if (max && current > max) {
     // Requested page is BIGGER than maximum - redirect to the last one
     next({
       statusCode: 302,
