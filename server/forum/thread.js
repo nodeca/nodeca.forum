@@ -107,7 +107,7 @@ nodeca.filters.before('@', function (params, next) {
         next({
           statusCode: 302,
           headers:    {
-            'Location': nodeca.runtime.router.linkTo(this.request.method, {
+            'Location': nodeca.runtime.router.linkTo('forum.section', {
               id:       thread.id,
               forum_id: forum.id
             })
@@ -133,7 +133,7 @@ nodeca.filters.before('@', function setPageInfo(params, next) {
     next({
       statusCode: 302,
       headers:    {
-        "Location": nodeca.runtime.router.linkTo(this.request.method, {
+        "Location": nodeca.runtime.router.linkTo('forum.thread', {
           forum_id: params.forum_id,
           id:       params.id,
           page:     max
@@ -183,10 +183,6 @@ module.exports = function (params, next) {
     if (!docs.length) {
       env.extras.puncher.stop();
       env.extras.puncher.stop();
-
-      // Page is within (1..MAX) range, but no documents were found
-      // When page is bigger than MAX - we redirect user before actually
-      // trying to get threads, so THIS SHOULD NEVER HAPPEN
 
       next("No posts found " + JSON.stringify({
         forum_id:     params.forum_id,
