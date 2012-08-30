@@ -122,7 +122,9 @@ nodeca.filters.before('@', function (params, next) {
 });
 
 
-nodeca.filters.before('@', function setPageInfo(params, next) {
+// presets pagination data and redirects to the last page if
+// requested page is bigger than max available
+nodeca.filters.before('@', function checkAndSetPageInfo(params, next) {
   var per_page = nodeca.settings.global.get('posts_per_page'),
       max      = Math.ceil(this.data.thread.cache.real.post_count / per_page),
       current  = parseInt(params.page, 10);
