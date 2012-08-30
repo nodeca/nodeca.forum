@@ -102,14 +102,13 @@ nodeca.filters.before('@', function (params, next) {
 
       // If params.forum_id defined, and not correct - redirect to proper location
       if (params.forum_id && (forum.id !== +params.forum_id)) {
-
-        // FIXME - update pagination
         next({
           statusCode: 302,
           headers:    {
             'Location': nodeca.runtime.router.linkTo('forum.section', {
               id:       thread.id,
-              forum_id: forum.id
+              forum_id: forum.id,
+              page:     params.page || 1
             })
           }
         });
