@@ -171,7 +171,11 @@ module.exports = function (params, next) {
 
     if (!docs.length) {
       if (params.page > 1) {
-        // Page is within (2..MAX) range, but no documents were found
+        // When user requests page that is out of possible range we redirect
+        // them during before filter (see above).
+        //
+        // But very rarely, cached threads counter can be out of sync.
+        // In this case return 404 for empty result.
         next({ statusCode: 404 });
         return;
       }

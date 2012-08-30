@@ -182,6 +182,11 @@ module.exports = function (params, next) {
 
     // No page -> "Not Found" status
     if (!docs.length) {
+      // When user requests page that is out of possible range we redirect
+      // them during before filter (see above).
+      //
+      // But very rarely, cached posts counter can be out of sync.
+      // In this case return 404 for empty result.
       next({ statusCode: 404 });
       return;
     }
