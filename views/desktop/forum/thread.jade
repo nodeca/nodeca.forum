@@ -14,7 +14,8 @@ article
       .container
         .btn-toolbar.controlbar.clearfix
           .btn-group.pull-left
-            a.btn.btn-icon-only.icon-back(href=self.link_to('forum.section', { id: self.thread.forum_id }))
+            a.btn.btn-icon-only.icon-back(
+              href=self.link_to('forum.section', { id: self.thread.forum_id }))
 
           - if (self.page.max > 1)
             - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id }
@@ -45,4 +46,10 @@ article
   //- Button "More Threads"
   - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-  a.btn.btn-block.icon-more(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.thread.append_next_page", data-forum-id=self.thread.forum_id, data-thread-id=self.thread.id, data-current-page=self.page.current)= self.t('forum.action.more_posts')
+  a.btn.btn-block.icon-more(
+    class=btn_more_state,
+    href=self.link_to(self.head.apiPath, link_params),
+    data-on-click="forum.thread.append_next_page",
+    data-forum-id=self.thread.forum_id,
+    data-thread-id=self.thread.id,
+    data-current-page=self.page.current)= self.t('forum.action.more_posts')

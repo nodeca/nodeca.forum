@@ -22,8 +22,8 @@ article.forum-threadlist
         .container
           .btn-toolbar.controlbar.clearfix
             .btn-group.pull-left
-              a.btn.btn-icon-only.icon-back(href=self.link_to('forum.section', { id: self.forum.parent_id }))
-
+              a.btn.btn-icon-only.icon-back(
+                href=self.link_to('forum.section', { id: self.forum.parent_id }))
 
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }
@@ -40,10 +40,12 @@ article.forum-threadlist
                 li: a(href='#')= self.t('forum.action.section_mass_prune')
 
             .btn-group.pull-right
-              a.btn.icon-track.tip(href='#', title=self.t('forum.action.section_subscribe')) 24
+              a.btn.icon-track.tip(
+                href='#', title=self.t('forum.action.section_subscribe')) 24
 
             .btn-group.pull-right
-              a.btn.btn-icon-only.icon-check.tip(href='#', title=self.t('forum.action.section_mark_read_tip'))
+              a.btn.btn-icon-only.icon-check.tip(
+                href='#', title=self.t('forum.action.section_mark_read_tip'))
 
             .btn-group.pull-right
               a.btn.btn-primary.icon-new(href='#')= self.t('forum.action.thread_create')
@@ -57,7 +59,12 @@ article.forum-threadlist
       //- Button "More Threads"
       - var link_params = { id: self.forum.id, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-      a.btn.btn-block.icon-more(class=btn_more_state, href=self.link_to(self.head.apiPath, link_params), data-action="forum.section.append_next_page", data-forum-id=self.forum.id, data-current-page=self.page.current)= self.t('forum.action.more_threads')
+      a.btn.btn-block.icon-more(
+        class=btn_more_state,
+        href=self.link_to(self.head.apiPath, link_params),
+        data-on-click="forum.section.append_next_page",
+        data-forum-id=self.forum.id,
+        data-current-page=self.page.current)= self.t('forum.action.more_threads')
 
     - else
       p
