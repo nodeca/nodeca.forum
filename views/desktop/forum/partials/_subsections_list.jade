@@ -17,7 +17,7 @@ mixin forum_child_list(forum)
               li: a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
 
         - if (forum.moderator_list && forum.moderator_list.length > 0)
-          dl.def-hlist.fl-moderators
+          dl.def-hlist.fl-moderators.hidden-phone
             dt= self.t('forum.moderators', { count: forum.moderator_list.length })
             - each moderator in forum.moderator_list
               - if (self.users[moderator])
