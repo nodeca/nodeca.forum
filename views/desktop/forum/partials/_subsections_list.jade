@@ -12,7 +12,7 @@ mixin forum_child_list(forum)
           a(href=self.link_to('forum.section', forum))= forum.title
 
         - if (forum.child_list && forum.child_list.length > 0)
-          ul.hlist.fl-subsections
+          ul.hlist.fl-subsections.hidden-phone
             - each sub_forum in forum.child_list
               li: a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
 
