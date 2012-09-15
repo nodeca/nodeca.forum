@@ -19,7 +19,7 @@ article
 
           - if (self.page.max > 1)
             - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id }
-            .btn-group.pull-left
+            .btn-group.pull-left.hidden-phone-vert
               mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
 
           .btn-group.pull-right

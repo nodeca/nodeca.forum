@@ -27,7 +27,7 @@ article.forum-threadlist
 
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }
-              .btn-group.pull-left
+              .btn-group.pull-left.hidden-phone-vert
                 mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
 
             .btn-group.pull-right
@@ -47,8 +47,11 @@ article.forum-threadlist
               a.btn.btn-icon-only.icon-check.tip(
                 href='#', title=self.t('forum.action.section_mark_read_tip'))
 
-            .btn-group.pull-right
+            .btn-group.pull-right.hidden-phone
               a.btn.btn-primary.icon-new(href='#')= self.t('forum.action.thread_create')
+            .btn-group.pull-right.visible-phone
+              a.btn.btn-primary.icon-new.btn-icon-only(
+                href='#', title=self.t('forum.action.thread_create'))
 
           //- left part, no `float left` to avoid deals with container height
 
