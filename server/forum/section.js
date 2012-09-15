@@ -169,6 +169,8 @@ module.exports = function (params, next) {
       return;
     }
 
+    env.extras.puncher.stop({ count: docs.length });
+
     if (!docs.length) {
       if (params.page > 1) {
         // When user requests page that is out of possible range we redirect
@@ -182,11 +184,14 @@ module.exports = function (params, next) {
 
       // category or forum without threads
       env.data.threads = [];
+
+      // properly close puncher scope on early interrupt
+      env.extras.puncher.stop();
+
       next();
       return;
     }
 
-    env.extras.puncher.stop({ count: docs.length });
     env.extras.puncher.start('Get threads by _id list');
 
     // FIXME modify state condition (deleted and etc) if user has permission
