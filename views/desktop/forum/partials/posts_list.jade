@@ -10,7 +10,7 @@
           data-user-id=String(post.user)) #{self.users[post.user]._uname}
       .pull-right
         time.post-time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
-        - var _post_anchor = self.link_to('forum.thread', self.thread) + 'post' + post.id;
+        - var _post_anchor = self.link_to('forum.thread', self.thread) + '#post' + post.id;
         a.post-permalink(href=_post_anchor) #
         input.post-check(type='checkbox')
     .post-aside
