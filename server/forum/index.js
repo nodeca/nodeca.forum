@@ -70,7 +70,7 @@ module.exports = function (params, next) {
 //  - forums list -> filtered tree
 //  - collect users ids (last posters & moderators)
 //
-nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
+nodeca.filters.after('@', function fill_forums_tree_and_users(params, next) {
   var env = this;
 
   env.extras.puncher.start('Post-process forums/users');
@@ -125,7 +125,7 @@ nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
 //
 // Fill breadcrumbs and head meta
 //
-nodeca.filters.after('@', function forum_index_breadcrumbs(params, next) {
+nodeca.filters.after('@', function set_forum_index_breadcrumbs(params, next) {
   this.response.data.head.title = this.helpers.t('common.forum.title');
   this.response.data.widgets.breadcrumbs = forum_breadcrumbs(this);
   next();

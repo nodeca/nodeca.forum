@@ -73,7 +73,7 @@ nodeca.validate(params_schema);
 // Prefetch forum to simplify permisson check.
 // Check that forum exists.
 //
-nodeca.filters.before('@', function (params, next) {
+nodeca.filters.before('@', function prefetch_forum(params, next) {
   var env = this;
 
   env.extras.puncher.start('Forum info prefetch');
@@ -103,7 +103,7 @@ nodeca.filters.before('@', function (params, next) {
 
 // presets pagination data and redirects to the last page if
 // requested page is bigger than max available
-nodeca.filters.before('@', function checkAndSetPageInfo(params, next) {
+nodeca.filters.before('@', function check_and_set_page_info(params, next) {
   var per_page = nodeca.settings.global.get('threads_per_page'),
       max      = Math.ceil(this.data.section.cache.real.thread_count / per_page),
       current  = parseInt(params.page, 10);
@@ -227,7 +227,7 @@ module.exports = function (params, next) {
 
 // fetch sub-forums (only on first page)
 //
-nodeca.filters.after('@', function (params, next) {
+nodeca.filters.after('@', function fetch_sub_forums(params, next) {
   var env = this;
 
   var max_level;
@@ -267,7 +267,7 @@ nodeca.filters.after('@', function (params, next) {
 //  - collect users ids (last posters / moderators / threads authors + last)
 //  - threads
 //
-nodeca.filters.after('@', function (params, next) {
+nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, next) {
   var env = this;
 
   var root, max_subforum_level;
@@ -359,7 +359,7 @@ nodeca.filters.after('@', function (params, next) {
 
 // Fill head meta & fetch/fill breadcrumbs
 //
-nodeca.filters.after('@', function (params, next) {
+nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   var env = this;
 
   var query;

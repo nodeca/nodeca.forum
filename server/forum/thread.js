@@ -54,7 +54,7 @@ nodeca.validate(params_schema);
 
 
 // fetch thread and forum info to simplify permisson check
-nodeca.filters.before('@', function (params, next) {
+nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
   var env = this;
 
   env.extras.puncher.start('Thread info prefetch');
@@ -124,7 +124,7 @@ nodeca.filters.before('@', function (params, next) {
 
 // presets pagination data and redirects to the last page if
 // requested page is bigger than max available
-nodeca.filters.before('@', function checkAndSetPageInfo(params, next) {
+nodeca.filters.before('@', function check_and_set_page_info(params, next) {
   var per_page = nodeca.settings.global.get('posts_per_page'),
       max      = Math.ceil(this.data.thread.cache.real.post_count / per_page),
       current  = parseInt(params.page, 10);
@@ -229,7 +229,7 @@ module.exports = function (params, next) {
 //  - posts list -> posts
 //  - collect users ids
 //
-nodeca.filters.after('@', function (params, next) {
+nodeca.filters.after('@', function build_posts_list_and_users(params, next) {
   var env = this;
   var posts;
 
@@ -254,7 +254,7 @@ nodeca.filters.after('@', function (params, next) {
 
 // Fill head meta & fetch/fill breadcrumbs
 //
-nodeca.filters.after('@', function (params, next) {
+nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   var env = this;
   var t_params;
   var posts_per_page;
