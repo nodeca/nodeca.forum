@@ -264,7 +264,7 @@ nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   var thread = this.data.thread;
   var forum = this.data.section;
 
-  if (this.session.hb) {
+  if (env.session && env.session.hb) {
     thread.cache.real = thread.cache.hb;
   }
 

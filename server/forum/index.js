@@ -75,7 +75,7 @@ nodeca.filters.after('@', function fill_forums_tree_and_users(params, next) {
 
   env.extras.puncher.start('Post-process forums/users');
 
-  if (env.session.hb) {
+  if (env.session && env.session.hb) {
     this.data.sections = this.data.sections.map(function(doc) {
       doc.cache.real = doc.cache.hb;
       return doc;

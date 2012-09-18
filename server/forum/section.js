@@ -150,10 +150,9 @@ module.exports = function (params, next) {
   env.extras.puncher.start('Get threads');
   env.extras.puncher.start('Thread ids prefetch');
 
-  if (env.session.hb) {
+  if (env.session && env.session.hb) {
     sort['cache.hb.last_ts'] = -1;
-  }
-  else {
+  } else {
     sort['cache.real.last_ts'] = -1;
   }
 
@@ -278,7 +277,7 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   // Process sections
   //
 
-  if (env.session.hb) {
+  if (env.session && env.session.hb) {
     this.data.sections = this.data.sections.map(function(doc) {
       doc.cache.real = doc.cache.hb;
       return doc;
@@ -326,7 +325,7 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   // Process threads
   //
 
-  if (env.session.hb) {
+  if (env.session && env.session.hb) {
     this.data.threads = this.data.threads.map(function(doc) {
       doc.cache.real = doc.cache.hb;
       return doc;
@@ -369,7 +368,7 @@ nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   var data = this.response.data;
   var forum = this.data.section;
 
-  if (this.session.hb) {
+  if (env.session && env.session.hb) {
     forum.cache.real = forum.cache.hb;
   }
 
