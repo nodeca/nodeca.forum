@@ -34,16 +34,17 @@ mixin forum_child_list(forum)
           strong #{forum.cache.real.post_count}
           = self.t('forum.counter.forum_posts', { count: forum.cache.real.post_count })
       
-      ul.span3.fl-item-lastpost.hidden-phone
-        li.lastpost-title
-          a(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
-        - if (self.users[last_user])
-          li.lastpost-user
-            = self.t('forum.topic_by') 
-            - lp_user = self.users[last_user]
-            a.usercard-popover(
-              href=self.link_to('users.member', lp_user),
-              data-user-id=String(lp_user._id)) #{lp_user._uname}
-        - if (last_ts)
-          li.lastpost-time
-            time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
+      - if (last_thread)
+        ul.span3.fl-item-lastpost.hidden-phone
+          li.lastpost-title
+            a(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
+          - if (self.users[last_user])
+            li.lastpost-user
+              = self.t('forum.topic_by') 
+              - lp_user = self.users[last_user]
+              a.usercard-popover(
+                href=self.link_to('users.member', lp_user),
+                data-user-id=String(lp_user._id)) #{lp_user._uname}
+          - if (last_ts)
+            li.lastpost-time
+              time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
