@@ -370,7 +370,6 @@ var create_categories = function(callback) {
 module.exports = function(callback) {
   Async.forEachSeries(_.range(USER_COUNT), function(current_user, next_user) {
     var user = new User(Faker.Helpers.user());
-    user.setPass(Faker.Lorem.words(1)[0]);
     user.save(next_user);
 
     // add user to store

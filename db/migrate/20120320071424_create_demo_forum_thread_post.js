@@ -28,14 +28,8 @@ module.exports.up = function(cb) {
       user.joined_ts = new Date;
       user._post_count = 1;
 
-      // password salt based on joined_ts value
-      user.setPass('admin');
-
-
       // ToDo add to admin group
-      user.save(function (err) {
-        callback(err);
-      });
+      user.save(callback);
     },
    
     // create basic category record
@@ -47,9 +41,7 @@ module.exports.up = function(cb) {
       category.is_category = true;
       category.display_order = 0;
 
-      category.save(function (err) {
-        callback(err);
-      });
+      category.save(callback);
     },
 
     // create basic forum record
@@ -68,9 +60,7 @@ module.exports.up = function(cb) {
       forum.level = 1;
 
       forum.display_order = category.display_order + 1;
-      forum.save(function (err) {
-        callback(err);
-      });
+      forum.save(callback);
     },
 
     // create basic thread record
@@ -84,9 +74,7 @@ module.exports.up = function(cb) {
       thread.forum_id = forum.id;
       thread.forum = forum._id;
 
-      thread.save(function (err) {
-        callback(err);
-      });
+      thread.save(callback);
     },
 
     // create basic post record
@@ -107,9 +95,7 @@ module.exports.up = function(cb) {
 
       post.user = user;
 
-      post.save(function (err) {
-        callback(err);
-      });
+      post.save(callback);
     },
 
     // update forum dependent info
@@ -127,9 +113,7 @@ module.exports.up = function(cb) {
       forum.cache.real.post_count = 1;
 
       _.extend(forum.cache.hb, forum.cache.real);
-      forum.save(function (err) {
-        callback(err);
-      });
+      forum.save(callback);
     },
 
     // update thread dependent info
@@ -149,12 +133,7 @@ module.exports.up = function(cb) {
       thread.cache.real.last_ts = post.ts;
 
       _.extend(thread.cache.hb, thread.cache.real);
-      thread.save(function (err) {
-        callback(err);
-      });
+      thread.save(callback);
     }
-  ], function (err){
-    cb(err);
-  });
-
+  ], cb);
 };
