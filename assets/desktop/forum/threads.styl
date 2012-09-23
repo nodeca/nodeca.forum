@@ -8,7 +8,7 @@
   margin 0
   list-style none
   > li
-    padding 15px 0
+    padding 10px 0
     border-bottom 1px solid grayLightest
     //min-height 40px
     &:last-child
@@ -36,7 +36,7 @@
     position relative
     font-size 16px
     font-weight normal
-    line-height 1.1em
+    line-height (baseLineHeight*5/4)
     display inline-block
     margin 0 .7em 0 0
     > a
@@ -46,18 +46,6 @@
   > .tl-pages
     display inline-block
 
-/*
-.unread .row .tl-item-summary
-
-    &:before
-      content ''
-      position absolute
-      left -20px
-      top 0
-      height 1.1em
-      width 4px
-      background-color grayLighter
-*/
 
 // inline pagination
 .tl-pages
@@ -82,7 +70,7 @@
   color grayLight
   margin-left 10px
   font-size 11px
-  line-height 1.1em
+  line-height (baseLineHeight*3/4)
   > a
     color grayLight
     &:hover
@@ -108,7 +96,7 @@
   color gray
   font-size 13px
   > li
-    line-height 1.2em
+    line-height baseLineHeight
 
 
 // last post info
@@ -117,7 +105,7 @@
   list-style none
   font-size 11px
   > li
-    line-height 15px
+    line-height (baseLineHeight*3/4)
     white-space nowrap
     overflow hidden
     text-overflow ellipsis
@@ -140,7 +128,7 @@
       content ''
       position absolute
       left -15px
-      top 0
-      height 1.1em
+      top 3px
+      height 19px
       background-color colorUnread
       width 7px
