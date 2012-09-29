@@ -35,12 +35,12 @@ module.exports = function ($el, event) {
       }));
     }
 
-    var $html = $(nodeca.client.common.render('forum.partials.posts_list', payload.data));
+    var $html = $(nodeca.client.common.render.template('forum.partials.posts_list', payload.data));
     $('.forum-post:last').after($html.hide());
 
     // update pager
     $('.pagination').replaceWith(
-      nodeca.client.common.render('common.widgets.partials.pagination', {
+      nodeca.client.common.render.template('common.widgets.partials.pagination', {
         route:    'forum.thread',
         params:   {
           id:       payload.data.thread.id,
