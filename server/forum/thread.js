@@ -74,7 +74,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 
       // FIXME Redirect to last page if possible
 
-      next({ statusCode: 404 });
+      next({ statusCode: nodeca.io.NOT_FOUND });
       return;
     }
 
@@ -96,14 +96,14 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 
       // No forum -> thread with missed parent, return "Not Found" too
       if (!forum) {
-        next({ statusCode: 404 });
+        next({ statusCode: nodeca.io.NOT_FOUND });
         return;
       }
 
       // If params.forum_id defined, and not correct - redirect to proper location
       if (params.forum_id && (forum.id !== +params.forum_id)) {
         next({
-          statusCode: 302,
+          statusCode: nodeca.io.FOUND,
           headers:    {
             'Location': nodeca.runtime.router.linkTo('forum.section', {
               id:       thread.id,
@@ -132,7 +132,7 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
   if (current > max) {
     // Requested page is BIGGER than maximum - redirect to the last one
     next({
-      statusCode: 302,
+      statusCode: nodeca.io.FOUND,
       headers:    {
         "Location": nodeca.runtime.router.linkTo('forum.thread', {
           forum_id: params.forum_id,
@@ -187,7 +187,7 @@ module.exports = function (params, next) {
       //
       // But very rarely, cached posts counter can be out of sync.
       // In this case return 404 for empty result.
-      next({ statusCode: 404 });
+      next({ statusCode: nodeca.io.NOT_FOUND });
       return;
     }
 
