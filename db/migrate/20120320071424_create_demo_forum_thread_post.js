@@ -17,13 +17,12 @@ module.exports.up = function(cb) {
 
   var user     = new models.users.User();
 
-  Async.waterfall([
+  Async.series([
     // create admin user
     
     function(callback){
       user.id = 1;
       user.nick = 'admin';
-      user._uname_short = user._uname = user.nick;
       user.email = 'admin@localhost';
       user.joined_ts = new Date;
       user._post_count = 1;
