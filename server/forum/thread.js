@@ -103,7 +103,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
       // If params.forum_id defined, and not correct - redirect to proper location
       if (params.forum_id && (forum.id !== +params.forum_id)) {
         next({
-          statusCode: nodeca.io.FOUND,
+          statusCode: nodeca.io.REDIRECT,
           headers:    {
             'Location': nodeca.runtime.router.linkTo('forum.section', {
               id:       thread.id,
@@ -132,7 +132,7 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
   if (current > max) {
     // Requested page is BIGGER than maximum - redirect to the last one
     next({
-      statusCode: nodeca.io.FOUND,
+      statusCode: nodeca.io.REDIRECT,
       headers:    {
         "Location": nodeca.runtime.router.linkTo('forum.thread', {
           forum_id: params.forum_id,

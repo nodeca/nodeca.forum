@@ -113,7 +113,7 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
   if (max && current > max) {
     // Requested page is BIGGER than maximum - redirect to the last one
     next({
-      statusCode: nodeca.io.FOUND,
+      statusCode: nodeca.io.REDIRECT,
       headers:    {
         "Location": nodeca.runtime.router.linkTo(this.request.method, {
           id:   params.id,
