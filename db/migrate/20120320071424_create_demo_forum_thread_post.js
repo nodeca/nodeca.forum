@@ -25,7 +25,7 @@ module.exports.up = function(cb) {
       user.nick = 'admin';
       user.email = 'admin@localhost';
       user.joined_ts = new Date;
-      user._post_count = 1;
+      user.post_count = 1;
 
       // ToDo add to admin group
       user.save(callback);

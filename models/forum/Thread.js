@@ -65,19 +65,12 @@ var Thread = module.exports.Thread = new mongoose.Schema({
     // "Similar" threads cache
   , similar         : [Schema.ObjectId]
 
-    // SEO
-  , keywords        : String
-
     // Cache
   , cache           : cache
 
    
-  , _prefix_text     : String
-  , _prefix_style    : String
-
-  , _tags_list       : [String]
-  , _seo_desc        : String
-  , _views_count     : { type: Number, default: 0 }
+  , tags            : [String]
+  , views_count     : { type: Number, default: 0 }
 }, { strict: true });
 
 

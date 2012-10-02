@@ -44,9 +44,9 @@ var Section = module.exports.Section = new mongoose.Schema({
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
-  , parent_id             : Number
+  , parent_id       : Number
   , parent_list     : [Schema.ObjectId]
-  , parent_id_list        : [Number]
+  , parent_id_list  : [Number]
 
   , level           : { type: Number, default: 0 }
 
