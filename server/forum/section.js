@@ -2,9 +2,6 @@
 
 /*global nodeca, _*/
 
-var NLib = require('nlib');
-var Async = NLib.Vendor.Async;
-
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 

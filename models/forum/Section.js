@@ -2,10 +2,6 @@
 
 /*global nodeca*/
 
-var NLib = require('nlib');
-
-var _ = NLib.Vendor.Underscore;
-
 var mongoose = nodeca.runtime.mongoose;
 var Schema = mongoose.Schema;
 

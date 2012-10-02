@@ -351,7 +351,7 @@ var create_categories = function(callback) {
 
       // create forums
       Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
-        create_forum(category, 3, function(err, forum){
+        create_forum(category, 3, function(err/*, forum*/){
           next_forum(err);
         });
       }, next_category);

@@ -2,9 +2,6 @@
 
 /*global nodeca, _*/
 
-var NLib = require('nlib');
-var Async = NLib.Vendor.Async;
-
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 var Post = nodeca.models.forum.Post;
@@ -257,7 +254,6 @@ nodeca.filters.after('@', function build_posts_list_and_users(params, next) {
 nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   var env = this;
   var t_params;
-  var posts_per_page;
   var query;
   var fields;
   var data = this.response.data;

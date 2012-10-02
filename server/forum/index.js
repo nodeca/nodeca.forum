@@ -1,6 +1,6 @@
 "use strict";
 
-/*global nodeca, _*/
+/*global nodeca*/
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');

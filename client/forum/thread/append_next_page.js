@@ -1,10 +1,10 @@
 'use strict';
 
 
-/*global window, nodeca, $*/
+/*global nodeca, $*/
 
 
-module.exports = function ($el, event) {
+module.exports = function ($el/*, event*/) {
   var current = parseInt($el.data('current-page'), 10),
       params  = {};
 
