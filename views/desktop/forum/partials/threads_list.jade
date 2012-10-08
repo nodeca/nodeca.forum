@@ -35,7 +35,7 @@ ul.tl-thread-list
 
         ul.span2.tl-item-counters.hidden-phone
           - replies = thread.cache.real.post_count - 1;
-          - views = thread._views_count;
+          - views   = thread.views_count;
           li
             | #{replies}
             = self.t('forum.counter.thread_replies', { count: replies })
