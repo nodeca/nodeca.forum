@@ -4,7 +4,7 @@
 /*global nodeca, $*/
 
 
-module.exports = function ($el, event) {
+module.exports = function ($el) {
   var current = parseInt($el.data('current-page'), 10),
       params  = {};
 
