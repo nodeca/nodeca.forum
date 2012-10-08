@@ -14,7 +14,7 @@ var threads_in_fields = [
   'title',
   'prefix',
   'forum_id',
-  '_views_count',
+  'views_count',
   'cache'
 ];
 
