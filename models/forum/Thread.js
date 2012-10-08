@@ -6,37 +6,38 @@ var mongoose = nodeca.components.mongoose;
 var Schema = mongoose.Schema;
 
 var cache = {
-    real    : {
-        post_count      : { type: Number, default: 0 }
-      , attach_count    : { type: Number, default: 0 }
 
-        // First post
-      , first_post      : Schema.ObjectId
-      , first_post_id   : Number
-      , first_user      : Schema.ObjectId
-      , first_ts        : Date
-        // Last post
-      , last_post       : Schema.ObjectId
-      , last_post_id    : Number
-      , last_user       : Schema.ObjectId
-      , last_ts         : Date
-  }
-  , hb    : {
-        post_count      : { type: Number, default: 0 }
-      , attach_count    : { type: Number, default: 0 }
+  real: {
+    post_count      : { type: Number, default: 0 }
+  , attach_count    : { type: Number, default: 0 }
 
-        // First post
-      , first_post      : Schema.ObjectId
-      , first_post_id   : Number
-      , first_user      : Schema.ObjectId
-      , first_ts        : Date
-        // Last post
-      , last_post       : Schema.ObjectId
-      , last_post_id    : Number
-      , last_user       : Schema.ObjectId
-      , last_ts         : Date
+    // First post
+  , first_post      : Schema.ObjectId
+  , first_post_id   : Number
+  , first_user      : Schema.ObjectId
+  , first_ts        : Date
+    // Last post
+  , last_post       : Schema.ObjectId
+  , last_post_id    : Number
+  , last_user       : Schema.ObjectId
+  , last_ts         : Date
   }
 
+, hb: {
+    post_count      : { type: Number, default: 0 }
+  , attach_count    : { type: Number, default: 0 }
+
+    // First post
+  , first_post      : Schema.ObjectId
+  , first_post_id   : Number
+  , first_user      : Schema.ObjectId
+  , first_ts        : Date
+    // Last post
+  , last_post       : Schema.ObjectId
+  , last_post_id    : Number
+  , last_user       : Schema.ObjectId
+  , last_ts         : Date
+  }
 };
 
 
@@ -71,7 +72,8 @@ var Thread = module.exports.Thread = new mongoose.Schema({
    
   , tags            : [String]
   , views_count     : { type: Number, default: 0 }
-}, { strict: true });
+
+  }, { strict: true });
 
 
 // Indexes
@@ -79,18 +81,18 @@ var Thread = module.exports.Thread = new mongoose.Schema({
 
 // Main one, used for threads list
 Thread.index({
-    forum: 1
-  , state: 1
-  , prefix: 1     // remove, if no prefixes needed
-  , _id: -1
+  forum: 1
+, state: 1
+, prefix: 1     // remove, if no prefixes needed
+, _id: -1
 });
 
 // Get user threads, with restriction by status & forums list
 Thread.index({
-    first_user: 1
-  , state: 1
-  , forum: 1
-  , _id: -1
+  first_user: 1
+, state: 1
+, forum: 1
+, _id: -1
 });
 
 

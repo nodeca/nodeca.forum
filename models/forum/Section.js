@@ -5,32 +5,31 @@
 var mongoose = nodeca.components.mongoose;
 var Schema = mongoose.Schema;
 
-var cache =  {
-    real                  : {
-        thread_count      : { type: Number, default: 0 }
-      , post_count        : { type: Number, default: 0 }
+var cache = {
+  real: {
+    thread_count      : { type: Number, default: 0 }
+  , post_count        : { type: Number, default: 0 }
 
-      , last_post         : Schema.ObjectId
-      , last_post_id      : Number
-      , last_thread       : Schema.ObjectId
-      , last_thread_id    : Number
-      , last_thread_title : String
-      , last_user         : Schema.ObjectId
-      , last_ts           : Date
+  , last_post         : Schema.ObjectId
+  , last_post_id      : Number
+  , last_thread       : Schema.ObjectId
+  , last_thread_id    : Number
+  , last_thread_title : String
+  , last_user         : Schema.ObjectId
+  , last_ts           : Date
   }
-  , hb                    : {
-        thread_count      : { type: Number, default: 0 }
-      , post_count        : { type: Number, default: 0 }
+, hb: {
+    thread_count      : { type: Number, default: 0 }
+  , post_count        : { type: Number, default: 0 }
 
-      , last_post         : Schema.ObjectId
-      , last_post_id      : Number
-      , last_thread       : Schema.ObjectId
-      , last_thread_id    : Number
-      , last_thread_title : String
-      , last_user         : Schema.ObjectId
-      , last_ts           : Date
+  , last_post         : Schema.ObjectId
+  , last_post_id      : Number
+  , last_thread       : Schema.ObjectId
+  , last_thread_id    : Number
+  , last_thread_title : String
+  , last_user         : Schema.ObjectId
+  , last_ts           : Date
   }
-
 };
 
 var Section = module.exports.Section = new mongoose.Schema({
@@ -70,22 +69,22 @@ var Section = module.exports.Section = new mongoose.Schema({
     // Cache
   , cache           : cache
 
-}, { strict: true });
+  }, { strict: true });
 
 
 // build tree on index page
 Section.index({
-    level: 1
-  , display_order: 1
-  , _id: -1
+  level: 1
+, display_order: 1
+, _id: -1
 });
 
 // build tree in forum page
 Section.index({
-    level: 1
-  , parent_list: 1
-  , display_order: 1
-  , _id: -1
+  level: 1
+, parent_list: 1
+, display_order: 1
+, _id: -1
 });
 
 module.exports.__init__ = function __init__() {

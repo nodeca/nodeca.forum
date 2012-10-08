@@ -76,7 +76,7 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
   env.extras.puncher.start('Forum info prefetch');
 
   Section.findOne({ id: params.id }).setOptions({ lean: true })
-      .exec(function(err, forum) {
+      .exec(function (err, forum) {
 
     if (err) {
       next(err);
@@ -158,7 +158,7 @@ module.exports = function (params, next) {
 
   // Fetch IDs of "visible" threads interval (use coverage index)
   Thread.find({ forum_id: params.id }).select('_id').sort(sort).skip(start)
-      .limit(threads_per_page + 1).setOptions({ lean: true }).exec(function(err, docs) {
+      .limit(threads_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
 
     if (err) {
       next(err);
@@ -204,7 +204,7 @@ module.exports = function (params, next) {
     // Select all allowed threads in calculated
     // interval: visible + deleted and others (if allowed by permissions)
     query.select(threads_in_fields.join(' ')).sort(sort)
-        .setOptions({ lean: true }).exec(function(err, threads){
+        .setOptions({ lean: true }).exec(function (err, threads) {
       if (err) {
         next(err);
         return;
@@ -246,7 +246,7 @@ nodeca.filters.after('@', function fetch_sub_forums(params, next) {
   // FIXME add permissions check
   Section.find(query).sort('display_order').setOptions({ lean: true })
       .select(subforums_in_fields.join(' '))
-      .exec(function(err, sections) {
+      .exec(function (err, sections) {
     if (err) {
       next(err);
       return;
@@ -275,7 +275,7 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   //
 
   if (env.session && env.session.hb) {
-    this.data.sections = this.data.sections.map(function(doc) {
+    this.data.sections = this.data.sections.map(function (doc) {
       doc.cache.real = doc.cache.hb;
       return doc;
     });
@@ -286,11 +286,11 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   max_subforum_level = env.data.section.level + 2;
 
   // collect users from subforums
-  this.data.sections.forEach(function(doc) {
+  this.data.sections.forEach(function (doc) {
     // queue users only for first 2 levels (those are not displayed on level 3)
     if (doc.level < max_subforum_level) {
       if (!!doc.moderator_list) {
-        doc.moderator_list.forEach(function(user) {
+        doc.moderator_list.forEach(function (user) {
           env.data.users.push(user);
         });
       }
@@ -307,7 +307,7 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   // Cleanup output tree - delete attributes, that are not white list.
   // Since tree points to the same objects, that are in flat list,
   // we use flat array for iteration.
-  this.data.sections.forEach(function(doc) {
+  this.data.sections.forEach(function (doc) {
     for (var attr in doc) {
       if (doc.hasOwnProperty(attr) &&
           subforums_out_fields.indexOf(attr) === -1) {
@@ -323,7 +323,7 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   //
 
   if (env.session && env.session.hb) {
-    this.data.threads = this.data.threads.map(function(doc) {
+    this.data.threads = this.data.threads.map(function (doc) {
       doc.cache.real = doc.cache.hb;
       return doc;
     });
@@ -331,14 +331,14 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
 
   // calculate pages number
   var posts_per_page = nodeca.settings.global.get('posts_per_page');
-  this.data.threads.forEach(function(doc) {
+  this.data.threads.forEach(function (doc) {
     doc._pages_count = Math.ceil(doc.cache.real.post_count / posts_per_page);
   });
 
   this.response.data.threads = this.data.threads;
 
   // collect users from threads
-  this.data.threads.forEach(function(doc) {
+  this.data.threads.forEach(function (doc) {
     if (doc.cache.real.first_user) {
       env.data.users.push(doc.cache.real.first_user);
     }
@@ -386,7 +386,7 @@ nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   env.extras.puncher.start('Build breadcrumbs');
 
   Section.find(query).select(fields).sort({ 'level': 1 })
-      .setOptions({ lean: true }).exec(function(err, parents){
+      .setOptions({ lean: true }).exec(function (err, parents) {
     if (err) {
       next(err);
       return;

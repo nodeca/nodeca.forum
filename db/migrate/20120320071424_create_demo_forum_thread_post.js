@@ -8,7 +8,7 @@ var Async = NLib.Vendor.Async;
 
 var models = nodeca.models;
 
-module.exports.up = function(cb) {
+module.exports.up = function (cb) {
 
   var category = new models.forum.Section();
   var forum    = new models.forum.Section();
@@ -20,7 +20,7 @@ module.exports.up = function(cb) {
   Async.series([
     // create admin user
     
-    function(callback){
+    function (callback) {
       user.id = 1;
       user.nick = 'admin';
       user.email = 'admin@localhost';
@@ -32,7 +32,7 @@ module.exports.up = function(cb) {
     },
    
     // create basic category record
-    function(callback){
+    function (callback) {
       category.title = 'Demo category';
       category.description = 'Description of demo category';
 
@@ -44,7 +44,7 @@ module.exports.up = function(cb) {
     },
 
     // create basic forum record
-    function(callback){
+    function (callback) {
       forum.title = 'Demo forum';
       forum.description = 'Description for demo forum';
 
@@ -63,7 +63,7 @@ module.exports.up = function(cb) {
     },
 
     // create basic thread record
-    function(callback){
+    function (callback) {
       thread.title = 'Demo post';
       thread.id = 1;
 
@@ -77,7 +77,7 @@ module.exports.up = function(cb) {
     },
 
     // create basic post record
-    function(callback){
+    function (callback) {
       post.text = 'Welcome to nodeca forum';
       post.fmt =  'txt';
       post.id = 1;
@@ -98,7 +98,7 @@ module.exports.up = function(cb) {
     },
 
     // update forum dependent info
-    function(callback){
+    function (callback) {
       forum.cache.real.last_post = post._id;
       forum.cache.real.last_post_id = post.id;
       forum.cache.real.last_user = user;
@@ -116,7 +116,7 @@ module.exports.up = function(cb) {
     },
 
     // update thread dependent info
-    function(callback){
+    function (callback) {
       thread.cache.real.post_count = 1;
 
       thread.cache.real.first_post = post._id;

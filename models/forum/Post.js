@@ -7,7 +7,7 @@ var Schema = mongoose.Schema;
 
 var Post = module.exports.Post = new mongoose.Schema({
     // user-friendly id (autoincremented)
-     id             : { type: Number, required: true, min: 1, index: true }
+    id             : { type: Number, required: true, min: 1, index: true }
 
   , thread          : Schema.ObjectId
   , thread_id       : Number
@@ -38,7 +38,7 @@ var Post = module.exports.Post = new mongoose.Schema({
   , state_prev      : Number  // previous value, to rollback `delete`
 
   , attach_list     : [Schema.ObjectId]
-}, { strict: true });
+  }, { strict: true });
 
 // Indexes
 ////////////////////////////////////////////////////////////////////////////////
@@ -46,17 +46,17 @@ var Post = module.exports.Post = new mongoose.Schema({
 // Get posts with restriction by status & pagination
 // !!! Use _id instead of ts
 Post.index({
-    thread: 1
-  , state: 1
-  , _id: 1
+  thread: 1
+, state: 1
+, _id: 1
 });
 
 // Get user posts, with restriction by status & forums list
 Post.index({
-    user: 1
-  , state: 1
-  , forum: 1
-  , _id: -1
+  user: 1
+, state: 1
+, forum: 1
+, _id: -1
 });
 
 

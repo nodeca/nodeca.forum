@@ -29,7 +29,7 @@ module.exports = function ($el, event) {
     } else {
       $el.attr('href', nodeca.runtime.router.linkTo(payload.data.head.apiPath, {
         id:   payload.data.forum.id,
-        page: payload.data.page.current+ 1
+        page: payload.data.page.current + 1
       }));
     }
 

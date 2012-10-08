@@ -57,7 +57,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
   env.extras.puncher.start('Thread info prefetch');
 
   Thread.findOne({ id: params.id }).setOptions({ lean: true })
-      .exec(function(err, thread) {
+      .exec(function (err, thread) {
 
     env.extras.puncher.stop();
 
@@ -82,7 +82,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
     // `params.forum_id` can be wrong (old link to moved thread)
     // Use real id from fetched thread
     Section.findOne({ _id: thread.forum }).setOptions({ lean: true })
-        .exec(function(err, forum) {
+        .exec(function (err, forum) {
 
       env.extras.puncher.stop();
 
@@ -170,7 +170,7 @@ module.exports = function (params, next) {
   start = (params.page - 1) * posts_per_page;
 
   Post.find({ thread_id: params.id }).select('_id').sort('ts').skip(start)
-      .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function(err, docs) {
+      .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
 
     if (err) {
       next(err);
@@ -203,7 +203,7 @@ module.exports = function (params, next) {
     }
 
     query.select(posts_in_fields.join(' ')).setOptions({ lean: true })
-        .exec(function(err, posts){
+        .exec(function (err, posts) {
 
       if (err) {
         next(err);
@@ -237,7 +237,7 @@ nodeca.filters.after('@', function build_posts_list_and_users(params, next) {
   env.data.users = env.data.users || [];
 
   // collect users
-  posts.forEach(function(post) {
+  posts.forEach(function (post) {
     if (post.user) {
       env.data.users.push(post.user);
     }
@@ -281,7 +281,7 @@ nodeca.filters.after('@', function fill_head_and_breadcrumbs(params, next) {
   env.extras.puncher.start('Build breadcrumbs');
 
   Section.find(query).select(fields).sort({ 'level': 1 })
-      .setOptions({ lean: true }).exec(function(err, parents){
+      .setOptions({ lean: true }).exec(function (err, parents) {
     if (err) {
       next(err);
       return;

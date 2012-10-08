@@ -53,7 +53,7 @@ module.exports = function (params, next) {
 
   // FIXME add permissions check
   Section.find(query).sort('display_order').setOptions({ lean: true })
-      .select(sections_in_fields.join(' ')).exec(function(err, sections){
+      .select(sections_in_fields.join(' ')).exec(function (err, sections) {
     if (err) {
       next(err);
       return;
@@ -76,7 +76,7 @@ nodeca.filters.after('@', function fill_forums_tree_and_users(params, next) {
   env.extras.puncher.start('Post-process forums/users');
 
   if (env.session && env.session.hb) {
-    this.data.sections = this.data.sections.map(function(doc) {
+    this.data.sections = this.data.sections.map(function (doc) {
       doc.cache.real = doc.cache.hb;
       return doc;
     });
@@ -86,11 +86,11 @@ nodeca.filters.after('@', function fill_forums_tree_and_users(params, next) {
   env.data.users = env.data.users || [];
 
   // collect users from sections
-  this.data.sections.forEach(function(doc){
+  this.data.sections.forEach(function (doc) {
     // queue users only for first 2 levels (those are not displayed on level 3)
     if (doc.level < 2) {
       if (!!doc.moderator_list) {
-        doc.moderator_list.forEach(function(user) {
+        doc.moderator_list.forEach(function (user) {
           env.data.users.push(user);
         });
       }
@@ -106,7 +106,7 @@ nodeca.filters.after('@', function fill_forums_tree_and_users(params, next) {
   // Cleanup output tree - delete attributes, that are not white list.
   // Since tree points to the same objects, that are in flat list,
   // we use flat array for iteration.
-  this.data.sections.forEach(function(doc) {
+  this.data.sections.forEach(function (doc) {
     for (var attr in doc) {
       if (doc.hasOwnProperty(attr) &&
           sections_out_fields.indexOf(attr) === -1) {

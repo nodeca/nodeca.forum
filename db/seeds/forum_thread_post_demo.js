@@ -43,7 +43,7 @@ Faker.Incrementer = {
   user_shift: USER_ID_SHIFT
 };
 
-Faker.Incrementer.next = function(type){
+Faker.Incrementer.next = function (type) {
   var last_id_prop_name = type + '_last_id';
   if (!this[last_id_prop_name]) {
     var shift_prop_name = type + '_shift';
@@ -63,7 +63,7 @@ function capitalize(str) {
 }
 
 // add helpers for categorys,forums, threads and posts
-Faker.Helpers.category = function (){
+Faker.Helpers.category = function () {
   return {
     title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
@@ -75,13 +75,13 @@ Faker.Helpers.category = function (){
   };
 };
 
-Faker.Helpers.forum = function (parent){
+Faker.Helpers.forum = function (parent) {
   var moderator_id_list = [];
   var moderator_list = [];
   var moderator;
 
-  var moderator_count = Faker.Helpers.randomNumber(MAX_MODERATOR_COUNT+1);
-  for (var i=0; i < moderator_count; i++) {
+  var moderator_count = Faker.Helpers.randomNumber(MAX_MODERATOR_COUNT + 1);
+  for (var i = 0; i < moderator_count; i++) {
     moderator = Faker.users[Faker.Helpers.randomNumber(USER_COUNT)];
     moderator_list.push(moderator);
     moderator_id_list.push(moderator.id);
@@ -112,7 +112,7 @@ Faker.Helpers.forum = function (parent){
   };
 };
 
-Faker.Helpers.thread = function (forum){
+Faker.Helpers.thread = function (forum) {
   return {
     title: capitalize(Faker.Lorem.sentence(1)),
 
@@ -128,7 +128,7 @@ Faker.Helpers.thread = function (forum){
   };
 };
 
-Faker.Helpers.post = function (thread){
+Faker.Helpers.post = function (thread) {
   var id = Faker.Incrementer.next('post');
 
   var ts =  new Date(2010, 0, id);
@@ -156,7 +156,7 @@ Faker.Helpers.post = function (thread){
 };
 
 
-Faker.Helpers.user = function (){
+Faker.Helpers.user = function () {
   var nick = Faker.Internet.userName();
   var first_name = Faker.Name.firstName();
   var last_name = Faker.Name.lastName();
@@ -187,22 +187,22 @@ var is_big_thread = true;
 var is_big_forum = true;
 
 
-var create_post = function(thread, callback) {
+var create_post = function (thread, callback) {
   var post = new Post(Faker.Helpers.post(thread));
 
-  post.save(function(err, post) {
+  post.save(function (err, post) {
     if (err) {
       callback(err);
       return;
     }
     var update = { $inc: { post_count: 1 }};
-    User.update({ _id: post.user }, update, function(err){
+    User.update({ _id: post.user }, update, function (err) {
       callback(err, post);
     });
   });
 };
 
-var create_thread = function(forum, callback) {
+var create_thread = function (forum, callback) {
   var first_post;
   var last_post;
   var post_count;
@@ -210,26 +210,26 @@ var create_thread = function(forum, callback) {
   if (is_big_thread) {
     is_big_thread = false;
     post_count = POST_COUNT_IN_BIG_THREAD;
-  } else{
+  } else {
     post_count = 1;
   }
 
   var thread = new Thread(Faker.Helpers.thread(forum));
 
   Async.series([
-    function(cb){
+    function (cb) {
       thread.save(cb);
     },
     // create posts
-    function(cb){
+    function (cb) {
       Async.forEach(_.range(post_count), function (current_post, next_post) {
-        create_post(thread, function(err, post){
+        create_post(thread, function (err, post) {
           if (err) {
             next_post(err);
             return;
           }
 
-          if (!first_post){
+          if (!first_post) {
             first_post = post;
           }
 
@@ -239,7 +239,7 @@ var create_thread = function(forum, callback) {
       }, cb);
     },
     // update thread
-    function(cb){
+    function (cb) {
       thread.cache.real.post_count = post_count;
 
       thread.cache.real.first_post = first_post._id;
@@ -256,12 +256,12 @@ var create_thread = function(forum, callback) {
 
       thread.save(cb);
     }
-  ], function(err) {
+  ], function (err) {
     callback(err, thread);
   });
 };
 
-var create_forum = function(category, sub_forum_deep, callback){
+var create_forum = function (category, sub_forum_deep, callback) {
   var last_thread;
   var post_count = 0;
   var thread_count;
@@ -272,21 +272,21 @@ var create_forum = function(category, sub_forum_deep, callback){
   if (is_big_forum) {
     is_big_forum = false;
     thread_count = THREAD_COUNT_IN_BIG_FORUM;
-  } else{
+  } else {
     thread_count = 1;
   }
 
   var forum = new Forum(Faker.Helpers.forum(category));
 
   Async.series([
-    function(cb){
+    function (cb) {
       forum.save(cb);
     },
 
     // create threads
-    function(cb){
-      Async.forEach(_.range(thread_count), function(current_thread, next_thread) {
-        create_thread(forum, function(err, thread){
+    function (cb) {
+      Async.forEach(_.range(thread_count), function (current_thread, next_thread) {
+        create_thread(forum, function (err, thread) {
           if (err) {
             next_thread(err);
             return;
@@ -299,14 +299,14 @@ var create_forum = function(category, sub_forum_deep, callback){
     },
 
     // add sub-forums
-    function(cb) {
+    function (cb) {
       if (!sub_forum_deep || Faker.Helpers.randomNumber(3) === 2) {
         cb();
         return;
       }
       var sub_forum_count = Faker.Helpers.randomNumber(MAX_SUB_FORUM_COUNT);
-      Async.forEach( _.range(sub_forum_count), function (current_forum, next_forum) {
-        create_forum(forum, sub_forum_deep-1, function(err, sub_forum){
+      Async.forEach(_.range(sub_forum_count), function (current_forum, next_forum) {
+        create_forum(forum, sub_forum_deep - 1, function (err, sub_forum) {
           sub_forum_list.push(sub_forum._id);
           sub_forum_id_list.push(sub_forum.id);
           next_forum(err);
@@ -315,7 +315,7 @@ var create_forum = function(category, sub_forum_deep, callback){
     },
 
     // update forum dependent info
-    function(cb){
+    function (cb) {
       forum.cache.real.last_thread = last_thread._id;
       forum.cache.real.last_thread_id = last_thread.id;
       forum.cache.real.last_thread_title = last_thread.title;
@@ -332,31 +332,31 @@ var create_forum = function(category, sub_forum_deep, callback){
 
       forum.save(cb);
     }
-  ], function(err) {
+  ], function (err) {
     callback(err, forum);
   });
 };
 
 
-var create_categories = function(callback) {
+var create_categories = function (callback) {
   var category;
-  Async.forEachSeries(_.range(CATEGORY_COUNT), function(current_category, next_category) {
+  Async.forEachSeries(_.range(CATEGORY_COUNT), function (current_category, next_category) {
     category = new Category(Faker.Helpers.category());
 
-    category.save(function(err) {
+    category.save(function (err) {
       if (err) {
         next_category(err);
         return;
       }
 
       // create forums
-      Async.forEach( _.range(FORUM_COUNT), function (current_forum, next_forum) {
-        create_forum(category, 3, function(err, forum){
+      Async.forEach(_.range(FORUM_COUNT), function (current_forum, next_forum) {
+        create_forum(category, 3, function (err, forum) {
           next_forum(err);
         });
       }, next_category);
     });
-  }, function(err){
+  }, function (err) {
     if (err) {
       callback(err);
       return;
@@ -367,14 +367,14 @@ var create_categories = function(callback) {
   });
 };
 
-module.exports = function(callback) {
-  Async.forEachSeries(_.range(USER_COUNT), function(current_user, next_user) {
+module.exports = function (callback) {
+  Async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
     var user = new User(Faker.Helpers.user());
     user.save(next_user);
 
     // add user to store
     Faker.users.push(user);
-  }, function(err){
+  }, function (err) {
     if (err) {
       callback(err);
       return;
