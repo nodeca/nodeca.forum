@@ -19,6 +19,7 @@ var Faker = NLib.Vendor.Faker;
 
 var CATEGORY_COUNT = 3;
 var FORUM_COUNT  = 10;
+var SUB_FORUM_DEEP = 3;
 var THREAD_COUNT_IN_BIG_FORUM  = 200;
 var POST_COUNT_IN_BIG_THREAD  = 100;
 var USER_COUNT = 200;
@@ -221,7 +222,7 @@ var create_thread = function (forum, callback) {
     },
     // create posts
     function (cb) {
-      Async.forEach(_.range(post_count), function (current_post, next_post) {
+      Async.forEachSeries(_.range(post_count), function (current_post, next_post) {
         create_post(thread, function (err, post) {
           if (err) {
             next_post(err);
@@ -284,7 +285,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
     // create threads
     function (cb) {
-      Async.forEach(_.range(thread_count), function (current_thread, next_thread) {
+      Async.forEachSeries(_.range(thread_count), function (current_thread, next_thread) {
         create_thread(forum, function (err, thread) {
           if (err) {
             next_thread(err);
@@ -350,7 +351,7 @@ var create_categories = function (callback) {
 
       // create forums
       Async.forEach(_.range(FORUM_COUNT), function (current_forum, next_forum) {
-        create_forum(category, 3, function (err/*, forum */) {
+        create_forum(category, SUB_FORUM_DEEP, function (err/*, forum */) {
           next_forum(err);
         });
       }, next_category);
