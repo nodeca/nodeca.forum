@@ -350,7 +350,7 @@ var create_categories = function (callback) {
       }
 
       // create forums
-      Async.forEach(_.range(FORUM_COUNT), function (current_forum, next_forum) {
+      Async.forEachSeries(_.range(FORUM_COUNT), function (current_forum, next_forum) {
         create_forum(category, SUB_FORUM_DEEP, function (err/*, forum */) {
           next_forum(err);
         });
