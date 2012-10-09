@@ -85,7 +85,7 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
 
     // No forum -> "Not Found" status
     if (!forum) {
-      next({ statusCode: nodeca.io.NOT_FOUND });
+      next(nodeca.io.NOT_FOUND);
       return;
     }
 
@@ -110,8 +110,8 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
   if (max && current > max) {
     // Requested page is BIGGER than maximum - redirect to the last one
     next({
-      statusCode: nodeca.io.REDIRECT,
-      headers:    {
+      code: nodeca.io.REDIRECT,
+      head: {
         "Location": nodeca.runtime.router.linkTo(this.request.method, {
           id:   params.id,
           page: max
@@ -174,7 +174,7 @@ module.exports = function (params, next) {
         //
         // But very rarely, cached threads counter can be out of sync.
         // In this case return 404 for empty result.
-        next({ statusCode: nodeca.io.NOT_FOUND });
+        next(nodeca.io.NOT_FOUND);
         return;
       }
 
