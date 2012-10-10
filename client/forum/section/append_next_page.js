@@ -4,6 +4,18 @@
 /*global nodeca, $*/
 
 
+function updatePager(params, page) {
+  $('.pagination').replaceWith(
+    nodeca.client.common.render.template('common.pagination', {
+      route:    'forum.thread',
+      params:   { id: params.id },
+      current:  page.current,
+      max:      page.max
+    })
+  );
+}
+
+
 module.exports = function ($el) {
   var current = parseInt($el.data('current-page'), 10),
       params  = {};
@@ -14,6 +26,14 @@ module.exports = function ($el) {
   nodeca.server.forum.section(params, function (err, payload) {
     if (err) {
       nodeca.logger.error(err);
+
+      if (nodeca.io.REDIRECT === err.code) {
+        // redirect can cause only one case - last page was removed
+        // between requests (last and current one)
+        updatePager(params, { current: current, max: current });
+        $el.addClass('hidden');
+      }
+
       return;
     }
 
@@ -37,14 +57,7 @@ module.exports = function ($el) {
     $('.tl-thread-list:last').after($html.hide());
 
     // update pager
-    $('.pagination').replaceWith(
-      nodeca.client.common.render.template('common.pagination', {
-        route:    'forum.section',
-        params:   { id: payload.data.forum.id },
-        current:  payload.data.page.current,
-        max:      payload.data.page.max
-      })
-    );
+    updatePager(payload.data.forum, payload.data.page);
 
     // show content
     $html.fadeIn();
