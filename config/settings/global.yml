@@ -2,10 +2,10 @@ setting_schemas:
   global:
     threads_per_page:
       type: number
-      group: forum
+      category: forum
       default: 30
 
     posts_per_page:
       type: number
-      group: thread
+      category: thread
       default: 25
