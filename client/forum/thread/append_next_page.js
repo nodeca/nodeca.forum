@@ -14,6 +14,9 @@ module.exports = function ($el) {
 
   nodeca.server.forum.thread(params, function (err, payload) {
     if (err) {
+      // common case:
+      // - amount of pages reduced (some posts were removed)
+      // - thread was moved or deleted
       window.location = $el.attr('href');
       return;
     }

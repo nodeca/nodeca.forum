@@ -13,6 +13,8 @@ module.exports = function ($el) {
 
   nodeca.server.forum.section(params, function (err, payload) {
     if (err) {
+      // common case:
+      // - amount of pages reduced (some threads were moved or deleted)
       window.location = $el.attr('href');
       return;
     }
