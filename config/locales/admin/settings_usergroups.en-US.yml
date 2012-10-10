@@ -1,0 +1,47 @@
+i18n:
+  en-US:
+    admin:
+      setting:
+        category:
+          forum: Forum
+          forum_write: Forum Write
+        # Forum group
+        # Read Permissions
+
+        forum_can_list_threads: Can user see list of threads
+        forum_can_list_threads_help: "Boolean flag, true if can"
+
+        forum_can_read_posts: Can user read posts
+        forum_can_read_posts_help: "Boolean flag, true if can"
+
+        forum_can_view_deleted: Can user see deleted posts
+        forum_can_view_deleted_help: "Boolean flag, true if can"
+
+        # Write Permissions
+
+        forum_can_create_threads: Can user create new threads
+        forum_can_create_threads_help: "Boolean flag, true if can"
+
+        forum_can_reply_own_threads: Can user reply in his own threads
+        forum_can_reply_own_threads_help: "Boolean flag, true if can"
+
+        forum_can_reply_foreign_threads: Can user reply in foreign threads
+        forum_can_reply_foreign_threads_help: "Boolean flag, true if can"
+
+        forum_can_delete_own: Can user delete, his own threads
+        forum_can_delete_own_help: "Boolean flag, true if can. Only if no replies + in grace period"
+
+        forum_can_edit_own: Can user edit, his own threads
+        forum_can_edit_own_help: "Boolean flag, true if can. Only in grace period"
+
+        forum_can_close_and_open: Can user close and open threads
+        forum_can_close_and_open_help: "Boolean flag, true if can"
+
+        forum_can_tag_own: Can user manage tags in his own thread
+        forum_can_tag_own_help: "Boolean flag, true if can"
+
+        forum_can_tag_foreign: Can user manage tags in foreign thread
+        forum_can_tag_foreign_help: "Boolean flag, true if can"
+
+        forum_can_vote_posts: Can user vote
+        forum_can_vote_posts_help: "Boolean flag, true if can"

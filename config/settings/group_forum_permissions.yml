@@ -6,19 +6,19 @@ setting_schemas:
     forum_can_list_threads:
       type: boolean
       default: true
-      category: Forum
+      category: forum
       priority: 0
 
     forum_can_read_posts:
       type: boolean
       default: true
-      category: Forum
+      category: forum
       priority: 0
 
     forum_can_view_deleted:
       type: boolean
       default: false
-      category: Forum
+      category: forum
       priority: 0
 
     # Write Permissions
@@ -26,55 +26,55 @@ setting_schemas:
     forum_can_create_threads:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     forum_can_reply_own_threads:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     forum_can_reply_foreign_threads:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     # only if no replies + in grace period
     forum_can_delete_own:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     # in grace period
     forum_can_edit_own:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     forum_can_close_and_open:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     forum_can_tag_own:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     forum_can_tag_foreign:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0
 
     forum_can_vote_posts:
       type: boolean
       default: false
-      category: Forum Write
+      category: forum_write
       priority: 0

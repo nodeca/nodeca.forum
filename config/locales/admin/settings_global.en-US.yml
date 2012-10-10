@@ -1,0 +1,13 @@
+i18n:
+  en-US:
+    admin:
+      setting:
+        category:
+          forum: Forum
+          thread: Thread
+
+        threads_per_page: Threads per page
+        threads_per_page_help: Default number of displayed thread 
+
+        posts_per_page: Posts per page
+        posts_per_page_help: Default number of displayed posts
