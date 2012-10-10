@@ -2,6 +2,8 @@
 
 /*global nodeca, _*/
 
+var Async = require('nlib').Vendor.Async;
+
 var Section = nodeca.models.forum.Section;
 var Thread = nodeca.models.forum.Thread;
 
@@ -134,11 +136,16 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
 // - `id`   forum id
 //
 module.exports = function (params, next) {
+  // FIXME replace state hardcode
+  var VISIBLE_STATE = 0;
+  var DELETED_STATE = 1;
+
   var env = this;
 
   var sort = {};
   var start;
   var query;
+  var ids = [];
 
   var threads_per_page = nodeca.settings.global.get('threads_per_page');
 
@@ -153,71 +160,108 @@ module.exports = function (params, next) {
     sort['cache.real.last_ts'] = -1;
   }
 
-  // FIXME add state condition to select only visible threads
-  start = (params.page - 1) * threads_per_page;
+  Async.series([
+    function(callback) {
+      // FIXME add state condition to select only visible threads
+      start = (params.page - 1) * threads_per_page;
 
-  // Fetch IDs of "visible" threads interval (use coverage index)
-  Thread.find({ forum_id: params.id }).select('_id').sort(sort).skip(start)
-      .limit(threads_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
+      // Fetch IDs of "visible" threads interval
+      Thread.find({ forum_id: params.id })
+          .where('state').equals(VISIBLE_STATE)
+          .select('_id cache.real.last_ts').sort(sort).skip(start)
+          .limit(threads_per_page + 1).setOptions({ lean: true })
+          .exec(function (err, visible_threads) {
 
-    if (err) {
-      next(err);
-      return;
-    }
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    env.extras.puncher.stop({ count: docs.length });
+        env.extras.puncher.stop({ count: visible_threads.length });
 
-    if (!docs.length) {
-      if (params.page > 1) {
-        // When user requests page that is out of possible range we redirect
-        // them during before filter (see above).
-        //
-        // But very rarely, cached threads counter can be out of sync.
-        // In this case return 404 for empty result.
-        next(nodeca.io.NOT_FOUND);
+        if (!visible_threads.length) {
+          if (params.page > 1) {
+            // When user requests page that is out of possible range we redirect
+            // them during before filter (see above).
+            //
+            // But very rarely, cached threads counter can be out of sync.
+            // In this case return 404 for empty result.
+            next(nodeca.io.NOT_FOUND);
+            return;
+          }
+
+          // category or forum without threads
+          env.data.threads = [];
+
+          // properly close puncher scope on early interrupt
+          env.extras.puncher.stop();
+
+          callback();
+          return;
+        }
+
+        // collect ids
+        ids = visible_threads.map(function(thread) {
+          return thread._id;
+        });
+
+        // FIXME need real check permission
+        if (false) {
+          callback();
+          return;
+        }
+
+        // Fetch IDs of "delete" threads from (use coverage index)
+        Thread.find({ forum_id: params.id })
+            .where('state').equals(DELETED_STATE)
+            .where('cache.real.last_ts')
+              .lt(_.first(visible_threads).cache.real.last_ts)
+              .gt(_.last(visible_threads).cache.real.last_ts)
+            .select('_id').sort(sort)
+            .setOptions({ lean: true })
+            .exec(function (err, deleted_threads) {
+
+          if (err) {
+            callback(err);
+            return;
+          }
+          // append ids of deleted threads
+          deleted_threads.forEach(function(thread) {
+            ids.push(thread._id);
+          });
+          callback();
+        });
+      });
+    },
+    function (callback) {
+      if (_.isEmpty(ids)) {
+        callback();
         return;
       }
+      env.extras.puncher.start('Get threads by _id list');
 
-      // category or forum without threads
-      env.data.threads = [];
+      // FIXME modify state condition (deleted and etc) if user has permission
+      // If no hidden threads - no conditions needed, just select by IDs
+      query = Thread.find().where('_id').in(ids).sort(sort);
 
-      // properly close puncher scope on early interrupt
-      env.extras.puncher.stop();
+      // Select all allowed threads in calculated
+      // interval: visible + deleted and others (if allowed by permissions)
+      query.select(threads_in_fields.join(' ')).sort(sort)
+          .setOptions({ lean: true }).exec(function (err, threads) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      next();
-      return;
+        env.data.threads = threads;
+
+        env.extras.puncher.stop({ count: threads.length });
+        env.extras.puncher.stop();
+
+        callback();
+      });
     }
-
-    env.extras.puncher.start('Get threads by _id list');
-
-    // FIXME modify state condition (deleted and etc) if user has permission
-    // If no hidden threads - no conditions needed, just select by IDs
-
-    query = Thread.find({ forum_id: params.id }).where('_id').lte(_.first(docs)._id);
-    if (docs.length <= threads_per_page) {
-      query.gte(_.last(docs)._id);
-    }
-    else {
-      query.gt(_.last(docs)._id);
-    }
-
-    // Select all allowed threads in calculated
-    // interval: visible + deleted and others (if allowed by permissions)
-    query.select(threads_in_fields.join(' ')).sort(sort)
-        .setOptions({ lean: true }).exec(function (err, threads) {
-      if (err) {
-        next(err);
-        return;
-      }
-
-      env.data.threads = threads;
-
-      env.extras.puncher.stop({ count: threads.length });
-      env.extras.puncher.stop();
-
-      next();
-    });
-  });
+  ], next);
 };
 
 
