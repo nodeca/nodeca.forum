@@ -10,6 +10,7 @@ var Thread = nodeca.models.forum.Thread;
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');
 
+
 var threads_in_fields = [
   '_id',
   'id',
@@ -19,6 +20,7 @@ var threads_in_fields = [
   'views_count',
   'cache'
 ];
+
 
 var subforums_in_fields = [
   '_id',
@@ -33,6 +35,7 @@ var subforums_in_fields = [
   'cache'
 ];
 
+
 var subforums_out_fields = [
   '_id',
   'id',
@@ -43,6 +46,7 @@ var subforums_out_fields = [
   'cache'
 ];
 
+
 var forum_info_out_fields = [
   'id',
   'title',
@@ -50,6 +54,7 @@ var forum_info_out_fields = [
   'parent_id',
   'is_category'
 ];
+
 
 // Validate input parameters
 //
@@ -66,6 +71,8 @@ var params_schema = {
     default: 1
   }
 };
+
+
 nodeca.validate(params_schema);
 
 
@@ -161,7 +168,7 @@ module.exports = function (params, next) {
   }
 
   Async.series([
-    function(callback) {
+    function (callback) {
       // FIXME add state condition to select only visible threads
       start = (params.page - 1) * threads_per_page;
 
@@ -201,7 +208,7 @@ module.exports = function (params, next) {
         }
 
         // collect ids
-        ids = visible_threads.map(function(thread) {
+        ids = visible_threads.map(function (thread) {
           return thread._id;
         });
 
@@ -226,7 +233,7 @@ module.exports = function (params, next) {
             return;
           }
           // append ids of deleted threads
-          deleted_threads.forEach(function(thread) {
+          deleted_threads.forEach(function (thread) {
             ids.push(thread._id);
           });
           callback();
