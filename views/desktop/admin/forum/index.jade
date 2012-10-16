@@ -5,28 +5,3 @@ ul.breadcrumbs
   li: a(href='#') Here
 
 h1= self.t('admin.forum.title')
-
-ul.context_menu
-  li: a(href=self.link_to('admin.forum.add_category'))= self.t('admin.forum.add_forum')
-  li: a(href=self.link_to('admin.forum.add_forum'))= self.t('admin.forum.add_category')
-
-.threads
-//-
-  ul
-    - each category in self.sections
-      li
-        p= category.title
-        .controls
-          // Category controls should be here
-        - each forum in category.child_list
-          ul
-            li
-              p= forum.title
-              .controls
-                // Forum controls should be here
-  .permissions
-    form
-      input(type="text", name='moderator')
-      select(name='moderator_group')
-        option(value='')
-    input(type="button", value=self.t('admin.forum.add_moderator'))

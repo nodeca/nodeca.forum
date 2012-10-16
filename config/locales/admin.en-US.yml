@@ -3,9 +3,6 @@ i18n:
     admin:
       forum:
         title: Category and Forum Overview
-        add_forum: Add forum
-        add_category: Add category
-        add_moderator: Add moderator to checked forum(s)
 
       menus:
         navbar:
