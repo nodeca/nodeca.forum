@@ -98,6 +98,8 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
       return;
     }
 
+    env.permissions_param('forum_id', forum.id);
+
     env.data.section = forum;
 
     env.extras.puncher.stop();
@@ -136,6 +138,9 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
 });
 
 
+nodeca.permissions.shouldFetch('@', [ 'can_read_forum' ]);
+
+
 // fetch and prepare threads
 //
 // ##### params
@@ -153,6 +158,11 @@ module.exports = function (params, next) {
   var start;
   var query;
   var ids = [];
+
+  if (!this.permission('can_read_forum')) {
+    next(nodeca.io.NOT_AUTHORIZED);
+    return;
+  }
 
   var threads_per_page = nodeca.settings.global.get('threads_per_page');
 
