@@ -91,15 +91,17 @@
   margin-left .7em
   margin-top (baseLineHeight/4)
   color grayLight
-  line-height 1.2em
+  line-height 15px
   > dt, dd
-    line-height 1.2em
+    line-height 15px
   > dt:after
     content ':'
-  > dd > a
-    color grayLight
-    &:hover
-      color linkColorHover
+  > dd
+    margin-left 5px
+    > a
+      color grayLight
+      &:hover
+        color linkColorHover
 
 // Subsections list
 .fl-subsections
@@ -112,7 +114,7 @@
   > li
     line-height (baseLineHeight*3/4)
     > a
-      font-weight: bold
+      // font-weight: bold
       color grayLight
       &:hover
         color linkColorHover
