@@ -98,13 +98,20 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
       return;
     }
 
-    env.permissions_param('forum_id', forum.id);
-
     env.data.section = forum;
-
     env.extras.puncher.stop();
 
-    next(err);
+    nodeca.permissions.fetch('can_read_forum', {
+      usergrop_ids: env.current_user.usergroups,
+      forum_id:     forum.id
+    }, function (err, result) {
+      if (!err && !result) {
+        next(nodeca.io.NOT_AUTHORIZED);
+        return;
+      }
+
+      next(err);
+    });
   });
 });
 
@@ -138,9 +145,6 @@ nodeca.filters.before('@', function check_and_set_page_info(params, next) {
 });
 
 
-nodeca.permissions.shouldFetch('@', [ 'can_read_forum' ]);
-
-
 // fetch and prepare threads
 //
 // ##### params
@@ -158,11 +162,6 @@ module.exports = function (params, next) {
   var start;
   var query;
   var ids = [];
-
-  if (!this.permission('can_read_forum')) {
-    next(nodeca.io.NOT_AUTHORIZED);
-    return;
-  }
 
   var threads_per_page = nodeca.settings.global.get('threads_per_page');
 
