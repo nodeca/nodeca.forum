@@ -76,6 +76,15 @@ var params_schema = {
 nodeca.validate(params_schema);
 
 
+nodeca.filters.before('@', function get_settings(params, next) {
+  var env = this;
+  env.settings.fetch(['posts_per_page', 'threads_per_page'], function (err, settings) {
+    env.data.settings = settings;
+    next(err);
+  });
+});
+
+
 // Prefetch forum to simplify permisson check.
 // Check that forum exists.
 //
@@ -101,10 +110,10 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
     env.data.section = forum;
     env.extras.puncher.stop();
 
-    nodeca.permissions.fetch('can_read_forum', {
-      usergrop_ids: env.current_user.usergroups,
-      forum_id:     forum.id
-    }, function (err, result) {
+    env.settings.params.usergrop_ids = (env.current_user || {}).usergroups || [];
+    env.settings.params.forum_id = forum.id;
+
+    env.settings.fetch('can_read_forum', function (err, result) {
       if (!err && !result) {
         next(nodeca.io.NOT_AUTHORIZED);
         return;
@@ -119,7 +128,7 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
 // presets pagination data and redirects to the last page if
 // requested page is bigger than max available
 nodeca.filters.before('@', function check_and_set_page_info(params, next) {
-  var per_page = nodeca.settings.global.get('threads_per_page'),
+  var per_page = this.data.settings.threads_per_page,
       max      = Math.ceil(this.data.section.cache.real.thread_count / per_page),
       current  = parseInt(params.page, 10);
 
@@ -163,7 +172,7 @@ module.exports = function (params, next) {
   var query;
   var ids = [];
 
-  var threads_per_page = nodeca.settings.global.get('threads_per_page');
+  var threads_per_page = env.data.settings.threads_per_page;
 
   env.response.data.show_page_number = false;
 
@@ -390,7 +399,7 @@ nodeca.filters.after('@', function fill_forums_tree_users_and_threads(params, ne
   }
 
   // calculate pages number
-  var posts_per_page = nodeca.settings.global.get('posts_per_page');
+  var posts_per_page = this.data.settings.posts_per_page;
   this.data.threads.forEach(function (doc) {
     doc._pages_count = Math.ceil(doc.cache.real.post_count / posts_per_page);
   });

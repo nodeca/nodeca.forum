@@ -114,10 +114,10 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 
       env.data.section = forum;
 
-      nodeca.permissions.fetch('can_read_forum', {
-        usergrop_ids: env.current_user.usergroups,
-        forum_id:     forum.id
-      }, function (err, result) {
+      env.settings.params.usergrop_ids = (env.current_user || {}).usergroups || [];
+      env.settings.params.forum_id = forum.id;
+
+      env.settings.fetch('can_read_forum', function (err, result) {
         if (!err && !result) {
           next(nodeca.io.NOT_AUTHORIZED);
           return;
@@ -130,10 +130,19 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 });
 
 
+nodeca.filters.before('@', function get_settings(params, next) {
+  var env = this;
+  env.settings.fetch(['posts_per_page'], function (err, settings) {
+    env.data.settings = settings;
+    next(err);
+  });
+});
+
+
 // presets pagination data and redirects to the last page if
 // requested page is bigger than max available
 nodeca.filters.before('@', function check_and_set_page_info(params, next) {
-  var per_page = nodeca.settings.global.get('posts_per_page'),
+  var per_page = this.data.settings.posts_per_page,
       max      = Math.ceil(this.data.thread.cache.real.post_count / per_page),
       current  = parseInt(params.page, 10);
 
@@ -169,7 +178,7 @@ module.exports = function (params, next) {
   var start;
   var query;
 
-  var posts_per_page = nodeca.settings.global.get('posts_per_page');
+  var posts_per_page = this.data.settings.posts_per_page;
 
   env.response.data.show_page_number = false;
 
