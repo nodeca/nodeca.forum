@@ -117,7 +117,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
       env.settings.params.usergrop_ids = (env.current_user || {}).usergroups || [];
       env.settings.params.forum_id = forum.id;
 
-      env.settings.fetch('can_read_forum', function (err, result) {
+      env.settings.fetch('forum_can_list_threads', function (err, result) {
         if (!err && !result) {
           next(nodeca.io.NOT_AUTHORIZED);
           return;
