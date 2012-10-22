@@ -37,8 +37,9 @@ article
           .btn-group.pull-right
             a.btn.icon-track.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
 
-          .btn-group.pull-right
-            a.btn.btn-primary(href='#')= self.t('forum.action.post_add')
+          - if (self.settings.forum_can_reply_threads)
+            .btn-group.pull-right
+              a.btn.btn-primary(href='#')= self.t('forum.action.post_add')
 
 
   include ./partials/posts_list
