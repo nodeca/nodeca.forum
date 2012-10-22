@@ -113,18 +113,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
       }
 
       env.data.section = forum;
-
-      env.settings.params.usergrop_ids = (env.current_user || {}).usergroups || [];
-      env.settings.params.forum_id = forum.id;
-
-      env.settings.fetch('forum_can_list_threads', function (err, result) {
-        if (!err && !result) {
-          next(nodeca.io.NOT_AUTHORIZED);
-          return;
-        }
-
-        next(err);
-      });
+      next();
     });
   });
 });
@@ -132,8 +121,27 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 
 nodeca.filters.before('@', function get_settings(params, next) {
   var env = this;
-  env.settings.fetch(['posts_per_page'], function (err, settings) {
-    env.data.settings = settings;
+
+  env.settings.params.usergrop_ids  = (env.current_user || {}).usergroups || [];
+  env.settings.params.forum_id      = params.forum_id;
+
+  env.settings.fetch([
+    // global
+    'posts_per_page',
+    // forum
+    'forum_can_list_threads', 'forum_can_read_threads',
+    'forum_can_reply_threads', 'forum_can_create_threads'
+  ], function (err, settings) {
+    // propose settings to data and response.data
+    env.data.settings           =
+    env.response.data.settings  = settings;
+
+    // do not do anything if user has no rights to list threads
+    if (!err && (!settings.forum_can_list_threads || !settings.forum_can_read_threads)) {
+      next(nodeca.io.NOT_AUTHORIZED);
+      return;
+    }
+
     next(err);
   });
 });
