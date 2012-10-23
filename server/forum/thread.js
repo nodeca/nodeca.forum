@@ -150,10 +150,7 @@ nodeca.filters.before('@', function thread_get_settings(params, next) {
     env.data.settings = settings;
 
     // propose requirested settings for views to response.data
-    env.response.data.settings = {};
-    settings_expose.forEach(function (key) {
-      env.response.data.settings[key] = settings[key];
-    });
+    env.response.data.settings = _.pick(settings, settings_expose);
 
     next();
   });
