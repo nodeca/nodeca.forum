@@ -385,8 +385,8 @@ nodeca.filters.after('@', function clean_sub_forums(params, next) {
       return;
     }
 
-    env.data.sections = filtered_sections;
     env.extras.puncher.stop({ count: filtered_sections.length });
+    env.data.sections = filtered_sections;
 
     next();
   });

@@ -40,29 +40,6 @@ var params_schema = {
 nodeca.validate(params_schema);
 
 
-// removes sections for which user has no rights to access:
-//
-//  - forum_show
-//
-function clean_sections(env, sections, callback) {
-  var filtered_sections = [];
-
-  Async.forEach(sections, function (section, cb) {
-    var s_params = _.defaults({ forum_id: section.id }, env.settings.params);
-
-    nodeca.settings.get('forum_show', s_params, function (err, val) {
-      if (val) {
-        filtered_sections.push(section);
-      }
-
-      cb(err);
-    });
-  }, function (err) {
-    callback(err, filtered_sections);
-  });
-}
-
-
 // fetch and prepare sections
 //
 // params - empty
@@ -85,21 +62,45 @@ module.exports = function (params, next) {
     }
 
     env.extras.puncher.stop({ count: sections.length });
-    env.extras.puncher.start('Filter sections');
+    env.data.sections = sections;
 
-    filter_sections(env, sections, function (err, clean) {
-      if (err) {
-        next(err);
-        return;
-      }
-
-      env.data.sections = clean;
-      env.extras.puncher.stop({ count: clean.length });
-
-      next();
-    });
+    next();
   });
 };
+
+
+// removes sections for which user has no rights to access:
+//
+//  - forum_show
+//
+nodeca.filters.after('@', function clean_sections(params, next) {
+  var env = this;
+  var filtered_sections = [];
+
+  env.extras.puncher.start('Filter subforums');
+
+  Async.forEach(env.data.sections, function (section, cb) {
+    var s_params = _.defaults({ forum_id: section._id }, env.settings.params);
+
+    nodeca.settings.get('forum_show', s_params, function (err, val) {
+      if (val) {
+        filtered_sections.push(section);
+      }
+
+      cb(err);
+    });
+  }, function (err) {
+    if (err) {
+      next(err);
+      return;
+    }
+
+    env.extras.puncher.stop({ count: filtered_sections.length });
+    env.data.sections = filtered_sections;
+
+    next();
+  });
+});
 
 
 //
