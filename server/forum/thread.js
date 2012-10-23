@@ -27,16 +27,19 @@ var thread_info_out_fields = [
 ];
 
 
-var thread_settings_to_fetch = [
-  // global
+// settings that needs to be fetched
+var settings_fetch = [
   'posts_per_page',
-  // forum
-  'forum_show', 'forum_read_topics', 'forum_reply_topics'
+  'forum_show',
+  'forum_read_topics',
+  'forum_reply_topics'
 ];
 
 
-var thread_settings_for_view = [
-  'forum_read_topics', 'forum_reply_topics'
+// settings that would be "exposed" into views
+var settings_expose = [
+  'forum_read_topics',
+  'forum_reply_topics'
 ];
 
 
@@ -132,13 +135,12 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 });
 
 
-nodeca.filters.before('@', function get_settings(params, next) {
+nodeca.filters.before('@', function thread_get_settings(params, next) {
   var env = this;
 
-  env.settings.params.usergrop_ids  = (env.current_user || {}).usergroups || [];
-  env.settings.params.forum_id      = params.forum_id;
+  env.settings.params.forum_id = params.forum_id;
 
-  env.settings.fetch(thread_settings_to_fetch, function (err, settings) {
+  env.settings.fetch(settings_fetch, function (err, settings) {
     if (err) {
       next(err);
       return;
@@ -149,20 +151,22 @@ nodeca.filters.before('@', function get_settings(params, next) {
 
     // propose requirested settings for views to response.data
     env.response.data.settings = {};
-    thread_settings_for_view.forEach(function (key) {
+    settings_expose.forEach(function (key) {
       env.response.data.settings[key] = settings[key];
     });
-
-    env.data.settings           =
-    env.response.data.settings  = settings;
 
     next();
   });
 });
 
 
-nodeca.filters.before('@', function check_permissions(params, next) {
-  if (!this.data.settings.forum_show || !this.data.settings.forum_read_topics) {
+nodeca.filters.before('@', function thread_check_settings(params, next) {
+  if (!this.data.settings.forum_show) {
+    next(nodeca.io.NOT_AUTHORIZED);
+    return;
+  }
+
+  if (!this.data.settings.forum_read_topics) {
     next(nodeca.io.NOT_AUTHORIZED);
     return;
   }

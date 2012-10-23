@@ -56,16 +56,22 @@ var forum_info_out_fields = [
 ];
 
 
-var forum_settings_to_fetch = [
-  // global
-  'posts_per_page', 'threads_per_page',
-  // forum
-  'forum_show', 'forum_read_topics', 'forum_reply_topics', 'forum_start_topics'
+// settings that needs to be fetched
+var settings_fetch = [
+  'posts_per_page',
+  'threads_per_page',
+  'forum_show',
+  'forum_read_topics',
+  'forum_reply_topics',
+  'forum_start_topics'
 ];
 
 
-var forum_settings_for_view = [
-  'forum_read_topics', 'forum_reply_topics', 'forum_start_topics'
+// settings that would be "exposed" into views
+var settings_expose = [
+  'forum_read_topics',
+  'forum_reply_topics',
+  'forum_start_topics'
 ];
 
 
@@ -89,13 +95,12 @@ var params_schema = {
 nodeca.validate(params_schema);
 
 
-nodeca.filters.before('@', function get_settings(params, next) {
+nodeca.filters.before('@', function section_get_settings(params, next) {
   var env = this;
 
-  env.settings.params.usergrop_ids  = (env.current_user || {}).usergroups || [];
-  env.settings.params.forum_id      = params.id;
+  env.settings.params.forum_id = params.id;
 
-  env.settings.fetch(forum_settings_to_fetch, function (err, settings) {
+  env.settings.fetch(settings_fetch, function (err, settings) {
     if (err) {
       next(err);
       return;
@@ -106,19 +111,16 @@ nodeca.filters.before('@', function get_settings(params, next) {
 
     // propose requirested settings for views to response.data
     env.response.data.settings = {};
-    forum_settings_for_view.forEach(function (key) {
+    settings_expose.forEach(function (key) {
       env.response.data.settings[key] = settings[key];
     });
-
-    env.data.settings           =
-    env.response.data.settings  = settings;
 
     next();
   });
 });
 
 
-nodeca.filters.before('@', function check_permissions(params, next) {
+nodeca.filters.before('@', function section_check_settings(params, next) {
   if (!this.data.settings.forum_show) {
     next(nodeca.io.NOT_AUTHORIZED);
     return;
