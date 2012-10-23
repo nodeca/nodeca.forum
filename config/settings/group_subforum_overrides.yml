@@ -1,14 +1,14 @@
 setting_schemas:
   forumgroups:
 
-    forum_can_list_threads:
+    forum_show:
       extends: true
 
-    forum_can_read_threads:
+    forum_read_topics:
       extends: true
 
-    forum_can_reply_threads:
+    forum_reply_topics:
       extends: true
 
-    forum_can_create_threads:
+    forum_start_topics:
       extends: true

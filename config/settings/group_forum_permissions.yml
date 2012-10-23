@@ -1,25 +1,25 @@
 setting_schemas:
   usergroup:
 
-    forum_can_list_threads:
+    forum_show:
       type: boolean
       default: true
       category: forum
       priority: 0
 
-    forum_can_read_threads:
+    forum_read_topics:
       type: boolean
       default: true
       category: forum
       priority: 0
 
-    forum_can_reply_threads:
+    forum_reply_topics:
       type: boolean
       default: true
       category: forum
       priority: 0
 
-    forum_can_create_threads:
+    forum_start_topics:
       type: boolean
       default: true
       category: forum

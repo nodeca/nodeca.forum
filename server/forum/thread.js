@@ -27,6 +27,19 @@ var thread_info_out_fields = [
 ];
 
 
+var thread_settings_to_fetch = [
+  // global
+  'posts_per_page',
+  // forum
+  'forum_show', 'forum_read_topics', 'forum_reply_topics'
+];
+
+
+var thread_settings_for_view = [
+  'forum_read_topics', 'forum_reply_topics'
+];
+
+
 // Validate input parameters
 //
 var params_schema = {
@@ -125,25 +138,36 @@ nodeca.filters.before('@', function get_settings(params, next) {
   env.settings.params.usergrop_ids  = (env.current_user || {}).usergroups || [];
   env.settings.params.forum_id      = params.forum_id;
 
-  env.settings.fetch([
-    // global
-    'posts_per_page',
-    // forum
-    'forum_can_list_threads', 'forum_can_read_threads',
-    'forum_can_reply_threads', 'forum_can_create_threads'
-  ], function (err, settings) {
-    // propose settings to data and response.data
-    env.data.settings           =
-    env.response.data.settings  = settings;
-
-    // do not do anything if user has no rights to list threads
-    if (!err && (!settings.forum_can_list_threads || !settings.forum_can_read_threads)) {
-      next(nodeca.io.NOT_AUTHORIZED);
+  env.settings.fetch(thread_settings_to_fetch, function (err, settings) {
+    if (err) {
+      next(err);
       return;
     }
 
-    next(err);
+    // propose all settings to data
+    env.data.settings = settings;
+
+    // propose requirested settings for views to response.data
+    env.response.data.settings = {};
+    thread_settings_for_view.forEach(function (key) {
+      env.response.data.settings[key] = settings[key];
+    });
+
+    env.data.settings           =
+    env.response.data.settings  = settings;
+
+    next();
   });
+});
+
+
+nodeca.filters.before('@', function check_permissions(params, next) {
+  if (!this.data.settings.forum_show || !this.data.settings.forum_read_topics) {
+    next(nodeca.io.NOT_AUTHORIZED);
+    return;
+  }
+
+  next();
 });
 
 

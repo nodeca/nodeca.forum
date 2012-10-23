@@ -47,7 +47,7 @@ article.forum-threadlist
               a.btn.btn-icon-only.icon-check.tip(
                 href='#', title=self.t('forum.action.section_mark_read_tip'))
 
-            - if (self.settings.forum_can_create_threads)
+            - if (self.settings.forum_start_topics)
               .btn-group.pull-right.hidden-phone
                 a.btn.btn-primary.icon-new(href='#')= self.t('forum.action.thread_create')
               .btn-group.pull-right.visible-phone
