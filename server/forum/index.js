@@ -1,6 +1,8 @@
 "use strict";
 
-/*global nodeca*/
+/*global nodeca, _*/
+
+var Async = require('nlib').Vendor.Async;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');
@@ -38,6 +40,27 @@ var params_schema = {
 nodeca.validate(params_schema);
 
 
+function filter_sections(env, sections, callback) {
+  var clean = [], s_params_defaults = {};
+
+  s_params_defaults.usergrop_ids = (env.current_user || {}).usergroups || [];
+
+  Async.forEach(sections, function (section, nextSection) {
+    var s_params = _.defaults({ forum_id: section.id }, s_params_defaults);
+
+    nodeca.settings.get('forum_show', s_params, function (err, val) {
+      if (val) {
+        clean.push(section);
+      }
+
+      nextSection(err);
+    });
+  }, function (err) {
+    callback(err, clean);
+  });
+}
+
+
 // fetch and prepare sections
 //
 // params - empty
@@ -58,9 +81,21 @@ module.exports = function (params, next) {
       next(err);
       return;
     }
-    env.data.sections = sections;
+
     env.extras.puncher.stop({ count: sections.length });
-    next();
+    env.extras.puncher.start('Filter sections');
+
+    filter_sections(env, sections, function (err, clean) {
+      if (err) {
+        next(err);
+        return;
+      }
+
+      env.data.sections = clean;
+      env.extras.puncher.stop({ count: clean.length });
+
+      next();
+    });
   });
 };
 

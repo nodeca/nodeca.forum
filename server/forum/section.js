@@ -352,9 +352,38 @@ nodeca.filters.after('@', function fetch_sub_forums(params, next) {
       next(err);
       return;
     }
-    env.data.sections = sections;
 
+    env.data.sections = sections;
     env.extras.puncher.stop({ count: sections.length });
+
+    next();
+  });
+});
+
+
+nodeca.filters.after('@', function filter_sections(params, next) {
+  var env = this, clean = [];
+
+  env.extras.puncher.start('Filter subforums');
+
+  Async.forEach(env.data.sections, function (section, nextSection) {
+    var s_params = _.defaults({ forum_id: section.id }, this.settings.params);
+    nodeca.settings.get('forum_show', s_params, function (err, val) {
+      if (val) {
+        clean.push(section);
+      }
+
+      nextSection(err);
+    });
+  }, function (err) {
+    if (err) {
+      next(err);
+      return;
+    }
+
+    env.data.sections = clean;
+    env.extras.puncher.stop({ count: clean.length });
+
     next();
   });
 });
