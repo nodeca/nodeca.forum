@@ -4,7 +4,7 @@ i18n:
       setting:
         category:
           forum: Forum
-        forum_can_list_threads: Show Forum
-        forum_can_read_threads: Read Topics
-        forum_can_reply_threads: Reply Topics
-        forum_can_create_threads: Start Topics
+        forum_show: Show Forum
+        forum_read_topics: Read Topics
+        forum_reply_topics: Reply Topics
+        forum_start_topics: Start Topics
