@@ -40,23 +40,25 @@ var params_schema = {
 nodeca.validate(params_schema);
 
 
-function filter_sections(env, sections, callback) {
-  var clean = [], s_params_defaults = {};
+// removes sections for which user has no rights to access:
+//
+//  - forum_show
+//
+function clean_sections(env, sections, callback) {
+  var filtered_sections = [];
 
-  s_params_defaults.usergrop_ids = (env.current_user || {}).usergroups || [];
-
-  Async.forEach(sections, function (section, nextSection) {
-    var s_params = _.defaults({ forum_id: section.id }, s_params_defaults);
+  Async.forEach(sections, function (section, cb) {
+    var s_params = _.defaults({ forum_id: section.id }, env.settings.params);
 
     nodeca.settings.get('forum_show', s_params, function (err, val) {
       if (val) {
-        clean.push(section);
+        filtered_sections.push(section);
       }
 
-      nextSection(err);
+      cb(err);
     });
   }, function (err) {
-    callback(err, clean);
+    callback(err, filtered_sections);
   });
 }
 
