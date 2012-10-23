@@ -138,7 +138,7 @@ nodeca.filters.before('@', function section_get_settings(params, next) {
     // propose all settings to data
     env.data.settings = settings;
 
-    // propose requirested settings for views to response.data
+    // propose settings for views to response.data
     env.response.data.settings = _.pick(settings, settings_expose);
 
     next();
@@ -146,13 +146,15 @@ nodeca.filters.before('@', function section_get_settings(params, next) {
 });
 
 
-nodeca.filters.before('@', function section_check_settings(params, next) {
+nodeca.filters.before('@', function section_check_permissions(params, next) {
+
   if (!this.data.settings.forum_show) {
     next(nodeca.io.NOT_AUTHORIZED);
     return;
   }
 
   next();
+
 });
 
 
