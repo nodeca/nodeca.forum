@@ -33,6 +33,9 @@ var THREAD_ID_SHIFT = 2;
 var POST_ID_SHIFT = 2;
 var USER_ID_SHIFT = 2;
 
+// cache usergroups ids
+var usergroups_cache = {};
+
 // extend Faker
 // add numeric id generator
 Faker.Incrementer = {
@@ -177,11 +180,12 @@ Faker.Helpers.user = function () {
   };
 };
 
-var Category = nodeca.models.forum.Section;
-var Forum    = nodeca.models.forum.Section;
-var Thread   = nodeca.models.forum.Thread;
-var Post     = nodeca.models.forum.Post;
-var User     = nodeca.models.users.User;
+var Category  = nodeca.models.forum.Section;
+var Forum     = nodeca.models.forum.Section;
+var Thread    = nodeca.models.forum.Thread;
+var Post      = nodeca.models.forum.Post;
+var User      = nodeca.models.users.User;
+var UserGroup = nodeca.models.users.UserGroup;
 
 var is_big_thread = true;
 var is_big_forum = true;
@@ -368,17 +372,25 @@ var create_categories = function (callback) {
 };
 
 module.exports = function (callback) {
-  Async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
-    var user = new User(Faker.Helpers.user());
-    user.save(next_user);
+  UserGroup.find().select('_id short_name').exec(function(err, groups) {
+    // collect usergroups
+    groups.forEach(function(group) {
+      usergroups_cache[group.short_name] = group;
+    });
 
-    // add user to store
-    Faker.users.push(user);
-  }, function (err) {
-    if (err) {
-      callback(err);
-      return;
-    }
-    create_categories(callback);
+    Async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
+      var user = new User(Faker.Helpers.user());
+      user.usergroups = usergroups_cache['members'];
+      user.save(next_user);
+
+      // add user to store
+      Faker.users.push(user);
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+      create_categories(callback);
+    });
   });
 };
