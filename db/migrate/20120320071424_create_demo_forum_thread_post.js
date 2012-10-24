@@ -21,14 +21,22 @@ module.exports.up = function (cb) {
     // create admin user
     
     function (callback) {
-      user.id = 1;
-      user.nick = 'admin';
-      user.email = 'admin@localhost';
-      user.joined_ts = new Date;
-      user.post_count = 1;
+      // get administrators group Id
+      models.users.UserGroup.findOne({ short_name: 'administrators' })
+          .exec(function(err, group) {
+        if (err) {
+          callback(err);
+          return;
+        }
+        user.id = 1;
+        user.nick = 'admin';
+        user.email = 'admin@localhost';
+        user.joined_ts = new Date;
+        user.post_count = 1;
+        user.usergroups = [group];
 
-      // ToDo add to admin group
-      user.save(callback);
+        user.save(callback);
+      });
     },
    
     // create basic category record
