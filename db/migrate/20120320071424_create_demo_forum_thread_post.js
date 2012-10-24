@@ -16,10 +16,10 @@ module.exports.up = function (cb) {
   var post     = new models.forum.Post();
 
   var user     = new models.users.User();
+  var auth     = new models.users.AuthLink();
 
   Async.series([
     // create admin user
-    
     function (callback) {
       // get administrators group Id
       models.users.UserGroup.findOne({ short_name: 'administrators' })
@@ -37,6 +37,21 @@ module.exports.up = function (cb) {
 
         user.save(callback);
       });
+    },
+
+    // create auth link
+    function (callback) {
+      var provider = auth.providers.create({
+        'type': 'plain',
+        'email': 'admin@example.com'
+      });
+
+      provider.setPass('admin');
+
+      auth.user_id = user._id;
+      auth.providers.push(provider);
+
+      auth.save(callback);
     },
    
     // create basic category record
