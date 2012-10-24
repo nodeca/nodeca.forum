@@ -39,13 +39,14 @@ article.forum-threadlist
                 li: a(href='#')= self.t('forum.action.section_mass_move')
                 li: a(href='#')= self.t('forum.action.section_mass_prune')
 
-            .btn-group.pull-right
-              a.btn.icon-track.tip(
-                href='#', title=self.t('forum.action.section_subscribe')) 24
+            - if (self.runtime.is_member)
+              .btn-group.pull-right
+                a.btn.icon-track.tip(
+                  href='#', title=self.t('forum.action.section_subscribe')) 24
 
-            .btn-group.pull-right
-              a.btn.btn-icon-only.icon-check.tip(
-                href='#', title=self.t('forum.action.section_mark_read_tip'))
+              .btn-group.pull-right
+                a.btn.btn-icon-only.icon-check.tip(
+                  href='#', title=self.t('forum.action.section_mark_read_tip'))
 
             - if (self.settings.forum_start_topics)
               .btn-group.pull-right.hidden-phone

@@ -34,8 +34,9 @@ article
               li: a(href='#')= self.t('forum.action.thread_approve')
               li: a(href='#')= self.t('forum.action.thread_merge')
 
-          .btn-group.pull-right
-            a.btn.icon-track.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
+          - if (self.runtime.is_member)
+            .btn-group.pull-right
+              a.btn.icon-track.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
 
           - if (self.settings.forum_reply_topics)
             .btn-group.pull-right
