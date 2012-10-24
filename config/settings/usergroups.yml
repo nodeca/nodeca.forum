@@ -9,7 +9,7 @@ setting_schemas:
 
     forum_read_topics:
       type: boolean
-      default: false
+      default: true
       category: forum
       priority: 0
 
