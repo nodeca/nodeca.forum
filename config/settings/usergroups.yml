@@ -3,7 +3,7 @@ setting_schemas:
 
     forum_show:
       type: boolean
-      default: false
+      default: true
       category: forum
       priority: 0
 
