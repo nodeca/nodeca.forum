@@ -95,41 +95,6 @@ var params_schema = {
 nodeca.validate(params_schema);
 
 
-nodeca.filters.before('@', function section_get_settings(params, next) {
-  var env = this;
-
-  env.settings.params.forum_id = params.id;
-
-  env.settings.fetch(settings_fetch, function (err, settings) {
-    if (err) {
-      next(err);
-      return;
-    }
-
-    // propose all settings to data
-    env.data.settings = settings;
-
-    // propose requirested settings for views to response.data
-    env.response.data.settings = {};
-    settings_expose.forEach(function (key) {
-      env.response.data.settings[key] = settings[key];
-    });
-
-    next();
-  });
-});
-
-
-nodeca.filters.before('@', function section_check_settings(params, next) {
-  if (!this.data.settings.forum_show) {
-    next(nodeca.io.NOT_AUTHORIZED);
-    return;
-  }
-
-  next();
-});
-
-
 // Prefetch forum to simplify permisson check.
 // Check that forum exists.
 //
@@ -156,6 +121,40 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
     env.extras.puncher.stop();
     next();
   });
+});
+
+
+nodeca.filters.before('@', function section_get_settings(params, next) {
+  var env = this;
+
+  env.settings.params.forum_id = env.data.section._id;
+
+  env.settings.fetch(settings_fetch, function (err, settings) {
+    if (err) {
+      next(err);
+      return;
+    }
+
+    // propose all settings to data
+    env.data.settings = settings;
+
+    // propose settings for views to response.data
+    env.response.data.settings = _.pick(settings, settings_expose);
+
+    next();
+  });
+});
+
+
+nodeca.filters.before('@', function section_check_permissions(params, next) {
+
+  if (!this.data.settings.forum_show) {
+    next(nodeca.io.NOT_AUTHORIZED);
+    return;
+  }
+
+  next();
+
 });
 
 
@@ -346,7 +345,6 @@ nodeca.filters.after('@', function fetch_sub_forums(params, next) {
     parent_list: env.data.section._id
   };
 
-  // FIXME add permissions check
   Section.find(query).sort('display_order').setOptions({ lean: true })
       .select(subforums_in_fields.join(' '))
       .exec(function (err, sections) {
@@ -363,19 +361,25 @@ nodeca.filters.after('@', function fetch_sub_forums(params, next) {
 });
 
 
-nodeca.filters.after('@', function filter_sections(params, next) {
-  var env = this, clean = [];
+// removes sub-forums for which user has no rights to access:
+//
+//  - forum_show
+//
+nodeca.filters.after('@', function clean_sub_forums(params, next) {
+  var env = this;
+  var filtered_sections = [];
 
   env.extras.puncher.start('Filter subforums');
 
-  Async.forEach(env.data.sections, function (section, nextSection) {
-    var s_params = _.defaults({ forum_id: section.id }, this.settings.params);
+  Async.forEach(env.data.sections, function (section, cb) {
+    var s_params = _.defaults({ forum_id: section._id }, env.settings.params);
+
     nodeca.settings.get('forum_show', s_params, function (err, val) {
       if (val) {
-        clean.push(section);
+        filtered_sections.push(section);
       }
 
-      nextSection(err);
+      cb(err);
     });
   }, function (err) {
     if (err) {
@@ -383,8 +387,8 @@ nodeca.filters.after('@', function filter_sections(params, next) {
       return;
     }
 
-    env.data.sections = clean;
-    env.extras.puncher.stop({ count: clean.length });
+    env.extras.puncher.stop({ count: filtered_sections.length });
+    env.data.sections = filtered_sections;
 
     next();
   });

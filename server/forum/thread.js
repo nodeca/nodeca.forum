@@ -138,7 +138,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 nodeca.filters.before('@', function thread_get_settings(params, next) {
   var env = this;
 
-  env.settings.params.forum_id = params.forum_id;
+  env.settings.params.forum_id = env.data.thread.forum._id;
 
   env.settings.fetch(settings_fetch, function (err, settings) {
     if (err) {
@@ -149,18 +149,16 @@ nodeca.filters.before('@', function thread_get_settings(params, next) {
     // propose all settings to data
     env.data.settings = settings;
 
-    // propose requirested settings for views to response.data
-    env.response.data.settings = {};
-    settings_expose.forEach(function (key) {
-      env.response.data.settings[key] = settings[key];
-    });
+    // propose settings for views to response.data
+    env.response.data.settings = _.pick(settings, settings_expose);
 
     next();
   });
 });
 
 
-nodeca.filters.before('@', function thread_check_settings(params, next) {
+nodeca.filters.before('@', function thread_check_permissions(params, next) {
+
   if (!this.data.settings.forum_show) {
     next(nodeca.io.NOT_AUTHORIZED);
     return;
@@ -172,6 +170,7 @@ nodeca.filters.before('@', function thread_check_settings(params, next) {
   }
 
   next();
+
 });
 
 
