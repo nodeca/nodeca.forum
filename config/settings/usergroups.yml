@@ -3,24 +3,24 @@ setting_schemas:
 
     forum_show:
       type: boolean
-      default: true
+      default: false
       category: forum
       priority: 0
 
     forum_read_topics:
       type: boolean
-      default: true
+      default: false
       category: forum
       priority: 0
 
     forum_reply_topics:
       type: boolean
-      default: true
+      default: false
       category: forum
       priority: 0
 
     forum_start_topics:
       type: boolean
-      default: true
+      default: false
       category: forum
       priority: 0
