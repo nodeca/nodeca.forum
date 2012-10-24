@@ -18,11 +18,12 @@ article
           mixin forum_child_list(forum)
 
   footer
-    .btn-toolbar
-      a.btn.icon-check(href='#')= self.t('forum.action.mark_all_read')
-      | 
-      a.btn(href='#')= self.t('forum.action.exclude', { count: 5 })
-    
+    - if (self.runtime.is_member)
+      .btn-toolbar
+        a.btn.icon-check(href='#')= self.t('forum.action.mark_all_read')
+        | 
+        a.btn(href='#')= self.t('forum.action.exclude', { count: 5 })
+
     dl.page-summary
       dt= self.t('forum.counter.total_active.all', { count: 710, interval: 30})
       dd.small

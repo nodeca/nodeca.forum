@@ -138,7 +138,6 @@ nodeca.filters.after('@', function fill_forums_tree_and_users(params, next) {
     }
   });
 
-
   this.response.data.sections = to_tree(this.data.sections, null);
 
   // Cleanup output tree - delete attributes, that are not white list.
