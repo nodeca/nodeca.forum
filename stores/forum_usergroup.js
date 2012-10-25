@@ -33,8 +33,9 @@ var fetchForumSesstingsCached = nodeca.components.memoizee(fetchForumSettings, {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-var ForumUserGroupStore = new Store({
-  get: function (key, params, options, callback) {
+module.exports = new Store({
+  get: function (keys, params, options, callback) {
+    var self = this;
     var func = options.skipCache ? fetchForumSettings : fetchForumSesstingsCached;
 
     func(params.forum_id, function (err, forum) {
@@ -44,30 +45,34 @@ var ForumUserGroupStore = new Store({
       }
 
       var settings  = forum.settings || {};
-      var values    = [];
-
-      params.usergroup_ids.forEach(function (id) {
-        if (settings[key + ':usergroup:' + id]) {
-          values.push(settings[key + ':usergroup:' + id]);
-        }
-      });
-
-      // push default value
-      values.push({ value: ForumUserGroupStore.getDefaultValue(key) });
-
-      var result;
+      var results   = {};
 
       try {
-        result = Store.mergeValues(values);
+        keys.forEach(function (k) {
+          var values = [];
+
+          params.usergroup_ids.forEach(function (id) {
+            if (settings[k + ':usergroup:' + id]) {
+              values.push(settings[k + ':usergroup:' + id]);
+            }
+          });
+
+          // push default value
+          values.push({ value: self.getDefaultValue(k) });
+
+          results[k] = Store.mergeValues(values);
+        });
       } catch (err) {
         callback(err);
         return;
       }
 
-      callback(null, result);
+      callback(null, results);
     });
   },
   set: function (values, params, callback) {
+    var self = this;
+
     fetchForumSettings(params.forum_id, function (err, forum) {
       if (err) {
         callback(err);
@@ -75,7 +80,7 @@ var ForumUserGroupStore = new Store({
       }
 
       // leave only those params, that we know about
-      values = _.pick(values || {}, ForumUserGroupStore.keys);
+      values = _.pick(values || {}, self.keys);
 
       forum.settings = forum.settings || {};
 
@@ -91,22 +96,5 @@ var ForumUserGroupStore = new Store({
       forum.markModified('settings');
       forum.save(callback);
     });
-  },
-  params: {
-    usergroup_ids: {
-      type: 'array',
-      required: true,
-      minItems: 1
-    },
-    forum_id: {
-      type: 'string',
-      required: true
-    }
   }
 });
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-module.exports = ForumUserGroupStore;
