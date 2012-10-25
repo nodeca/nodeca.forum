@@ -1,5 +1,5 @@
 setting_schemas:
-  forumgroups:
+  forum_usergroup:
 
     forum_show:
       extends: true
