@@ -56,7 +56,16 @@ var ForumUserGroupStore = new Store({
       // push default value
       values.push({ value: ForumUserGroupStore.getDefaultValue(key) });
 
-      callback(null, Store.mergeValues(values));
+      var result;
+
+      try {
+        result = Store.mergeValues(values);
+      } catch (err) {
+        callback(err);
+        return;
+      }
+
+      callback(null, result);
     });
   },
   set: function (values, params, callback) {
