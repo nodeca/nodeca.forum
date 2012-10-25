@@ -15,9 +15,8 @@ var async = require('nlib').Vendor.Async;
 // Helper to fetch usergroups by IDs
 //
 function fetchForumSettings(id, callback) {
-  nodeca.models.users.Forum.find()
+  nodeca.models.forum.Section.find({ _id: id })
     .select('settings')
-    .where('_id').in(id)
     .exec(callback);
 }
 
