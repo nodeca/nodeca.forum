@@ -128,7 +128,7 @@ nodeca.filters.before('@', function section_get_settings(params, next) {
   var env = this;
 
   env.settings.params.forum_id = env.data.section._id;
-  env.puncher.start('Fetch settings');
+  env.extras.puncher.start('Fetch settings');
 
   env.settings.fetch(settings_fetch, function (err, settings) {
     if (err) {
@@ -141,7 +141,7 @@ nodeca.filters.before('@', function section_get_settings(params, next) {
 
     // propose settings for views to response.data
     env.response.data.settings = _.pick(settings, settings_expose);
-    env.puncher.stop();
+    env.extras.puncher.stop();
 
     next();
   });
