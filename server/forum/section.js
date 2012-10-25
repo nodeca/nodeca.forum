@@ -127,7 +127,7 @@ nodeca.filters.before('@', function prefetch_forum(params, next) {
 nodeca.filters.before('@', function section_get_settings(params, next) {
   var env = this;
 
-  env.settings.params.forum_id = env.data.section._id;
+  env.settings.params.forum_id = String(env.data.section._id);
 
   env.settings.fetch(settings_fetch, function (err, settings) {
     if (err) {
@@ -372,7 +372,7 @@ nodeca.filters.after('@', function clean_sub_forums(params, next) {
   env.extras.puncher.start('Filter subforums');
 
   Async.forEach(env.data.sections, function (section, cb) {
-    var s_params = _.defaults({ forum_id: section._id }, env.settings.params);
+    var s_params = _.defaults({ forum_id: String(section._id) }, env.settings.params);
 
     nodeca.settings.get('forum_show', s_params, function (err, val) {
       if (val) {

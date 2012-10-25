@@ -80,7 +80,7 @@ nodeca.filters.after('@', function clean_sections(params, next) {
   env.extras.puncher.start('Filter subforums');
 
   Async.forEach(env.data.sections, function (section, cb) {
-    var s_params = _.defaults({ forum_id: section._id }, env.settings.params);
+    var s_params = _.defaults({ forum_id: String(section._id) }, env.settings.params);
 
     nodeca.settings.get('forum_show', s_params, function (err, val) {
       if (val) {
