@@ -106,7 +106,11 @@ module.exports = new Store({
       forum.settings.forum_usergroup[grp_id] = forum.settings.forum_usergroup[grp_id] || {};
 
       _.each(settings, function (opts, key) {
-        forum.settings.forum_usergroup[grp_id][key] = opts;
+        if (null === opts) {
+          delete forum.settings.forum_usergroup[grp_id][key];
+        } else {
+          forum.settings.forum_usergroup[grp_id][key] = opts;
+        }
       });
 
       forum.markModified('settings');
