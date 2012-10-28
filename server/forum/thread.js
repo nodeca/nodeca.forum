@@ -138,7 +138,7 @@ nodeca.filters.before('@', function fetch_thread_and_forum_info(params, next) {
 nodeca.filters.before('@', function thread_get_settings(params, next) {
   var env = this;
 
-  env.settings.params.forum_id = env.data.thread.forum._id;
+  env.settings.params.forum_id = env.data.thread.forum;
   env.extras.puncher.start('Fetch settings');
 
   env.settings.fetch(settings_fetch, function (err, settings) {
