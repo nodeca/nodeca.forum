@@ -16,7 +16,8 @@ var async = require('nlib').Vendor.Async;
 //
 function fetchForumSettings(id, callback) {
   nodeca.models.forum.Section.findOne({ _id: String(id) })
-    .select('settings')
+    .select('settings.forum_usergroup')
+    .setOptions({ lean: true })
     .exec(callback);
 }
 
@@ -24,7 +25,7 @@ function fetchForumSettings(id, callback) {
 // Memoized version of fetchUserGroups helper
 //
 var fetchForumSesstingsCached = nodeca.components.memoizee(fetchForumSettings, {
-  // momoizee options. revalidate cache after 30 sec
+  // memoizee options. revalidate cache after 30 sec
   async:  true,
   maxAge: 30000
 });
@@ -38,59 +39,83 @@ module.exports = new Store({
     var self = this;
     var func = options.skipCache ? fetchForumSettings : fetchForumSesstingsCached;
 
+    if (!params.forum_id) {
+      callback("forum_id param is required for getting settings from forum_usergroup store");
+      return;
+    }
+
+    if (!_.isArray(params.usergroup_ids) || !params.usergroup_ids.length) {
+      callback("usergroup_ids param required to be non-empty array for getting settings from forum_usergroup store");
+      return;
+    }
+
     func(params.forum_id, function (err, forum) {
+      var settings, results = {};
+
       if (err) {
         callback(err);
         return;
       }
 
-      var settings  = forum.settings || {};
-      var results   = {};
+      settings = forum.settings || {};
+      settings = settings.forum_usergroup  || {};
 
-      try {
-        keys.forEach(function (k) {
-          var values = [];
+      keys.forEach(function (k) {
+        var values = [];
 
-          params.usergroup_ids.forEach(function (id) {
-            if (settings[k + ':usergroup:' + id]) {
-              values.push(settings[k + ':usergroup:' + id]);
-            }
-          });
-
-          // push default value
-          values.push({ value: self.getDefaultValue(k) });
-
-          results[k] = Store.mergeValues(values);
+        params.usergroup_ids.forEach(function (id) {
+          if (settings[id]) {
+            values.push(settings[id]);
+          } else {
+            values.push({
+              value: self.getDefaultValue(k),
+              force: false
+            });
+          }
         });
-      } catch (err) {
-        callback(err);
-        return;
-      }
+
+        results[k] = Store.mergeValues(values);
+      });
 
       callback(null, results);
     });
   },
-  set: function (values, params, callback) {
+  set: function (settings, params, callback) {
     var self = this;
 
-    fetchForumSettings(params.forum_id, function (err, forum) {
+    if (!params.forum_id) {
+      callback("forum_id param is required for saving settings into forum_usergroup store");
+      return;
+    }
+
+    if (!params.usergroup_id) {
+      callback("usergroup_id param is required for saving settings into forum_usergroup store");
+      return;
+    }
+
+    nodeca.models.forum.Section.findOne({
+      _id: params.forum_id
+    }).exec(function (err, forum) {
+      var grp_id = params.usergroup_id;
+
       if (err) {
         callback(err);
         return;
       }
 
-      // leave only those params, that we know about
-      values = _.pick(values || {}, self.keys);
+      // leave only those params, that store knows about
+      settings = _.pick(settings || {}, self.keys);
 
+      // make sure we have settings storages
       forum.settings = forum.settings || {};
+      forum.settings.forum_usergroup = forum.settings.forum_usergroup || {};
+      forum.settings.forum_usergroup[grp_id] = forum.settings.forum_usergroup[grp_id] || {};
 
-      params.usergroup_ids.forEach(function (id) {
-        _.each(values, function (opts, key) {
-          forum.settings[key + ':usergroup:' + id] = {
-            value: opts.value,
-            force: !!opts.value
-          };
-        });
+      _.each(settings, function (opts, key) {
+        forum.settings.forum_usergroup[grp_id][key] = {
+          value: opts.value,
+          force: !!opts.value
+        };
       });
 
       forum.markModified('settings');
