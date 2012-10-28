@@ -103,19 +103,13 @@ module.exports = new Store({
         return;
       }
 
-      // leave only those params, that store knows about
-      settings = _.pick(settings || {}, self.keys);
-
       // make sure we have settings storages
       forum.settings = forum.settings || {};
       forum.settings.forum_usergroup = forum.settings.forum_usergroup || {};
       forum.settings.forum_usergroup[grp_id] = forum.settings.forum_usergroup[grp_id] || {};
 
       _.each(settings, function (opts, key) {
-        forum.settings.forum_usergroup[grp_id][key] = {
-          value: opts.value,
-          force: !!opts.value
-        };
+        forum.settings.forum_usergroup[grp_id][key] = opts;
       });
 
       forum.markModified('settings');
