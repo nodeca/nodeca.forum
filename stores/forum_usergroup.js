@@ -67,10 +67,7 @@ module.exports = new Store({
           if (settings[id]) {
             values.push(settings[id]);
           } else {
-            values.push({
-              value: self.getDefaultValue(k),
-              force: false
-            });
+            values.push(null);
           }
         });
 
