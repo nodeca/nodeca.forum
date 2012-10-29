@@ -24,7 +24,7 @@ function fetchForumSettings(id, callback) {
 
 // Memoized version of fetchUserGroups helper
 //
-var fetchForumSesstingsCached = nodeca.components.memoizee(fetchForumSettings, {
+var fetchForumSettingsCached = nodeca.components.memoizee(fetchForumSettings, {
   // memoizee options. revalidate cache after 30 sec
   async:      true,
   maxAge:     30000,
@@ -43,7 +43,7 @@ module.exports = new Store({
   //
   get: function (keys, params, options, callback) {
     var self = this;
-    var func = options.skipCache ? fetchForumSettings : fetchForumSesstingsCached;
+    var func = options.skipCache ? fetchForumSettings : fetchForumSettingsCached;
 
     if (!params.forum_id) {
       callback("forum_id param is required for getting settings from forum_usergroup store");
