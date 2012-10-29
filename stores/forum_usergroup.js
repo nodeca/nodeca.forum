@@ -35,6 +35,11 @@ var fetchForumSesstingsCached = nodeca.components.memoizee(fetchForumSettings, {
 
 
 module.exports = new Store({
+  // ##### Params
+  //
+  // - usergroup_ids (Array)
+  // - forum_id (String|ObjectId)
+  //
   get: function (keys, params, options, callback) {
     var self = this;
     var func = options.skipCache ? fetchForumSettings : fetchForumSesstingsCached;
@@ -49,7 +54,7 @@ module.exports = new Store({
       return;
     }
 
-    func(params.forum_id, function (err, forum) {
+    func(String(params.forum_id), function (err, forum) {
       var settings, results = {};
 
       if (err) {
@@ -77,6 +82,11 @@ module.exports = new Store({
       callback(null, results);
     });
   },
+  // ##### Params
+  //
+  // - usergroup_id (String|ObjectId)
+  // - forum_id (String|ObjectId)
+  //
   set: function (settings, params, callback) {
     var self = this;
 
