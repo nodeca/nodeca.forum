@@ -6,7 +6,7 @@ var Async = require('nlib').Vendor.Async;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');
-var fetch_sections_permissions = require('../../lib/fetch_sections_permissions');
+var fetch_sections_visibility = require('../../lib/fetch_sections_visibility');
 
 var Section = nodeca.models.forum.Section;
 
@@ -78,13 +78,12 @@ nodeca.filters.after('@', function clean_sections(params, next) {
   var env = this;
 
   var filtered_sections = [];
-  var permissions       = ['forum_show'];
   var sections          = this.data.sections.map(function (s) { return s._id; });
   var usergroups        = this.settings.params.usergroup_ids;
 
   env.extras.puncher.start('Filter subforums');
 
-  fetch_sections_permissions(permissions, sections, usergroups, function (err, results) {
+  fetch_sections_visibility(sections, usergroups, function (err, results) {
     if (err) {
       next(err);
       return;
