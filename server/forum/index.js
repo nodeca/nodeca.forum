@@ -6,6 +6,7 @@ var Async = require('nlib').Vendor.Async;
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../lib/to_tree.js');
+var fetch_sections_permissions = require('../../lib/fetch_sections_permissions');
 
 var Section = nodeca.models.forum.Section;
 
@@ -75,25 +76,27 @@ module.exports = function (params, next) {
 //
 nodeca.filters.after('@', function clean_sections(params, next) {
   var env = this;
+
   var filtered_sections = [];
+  var permissions       = ['forum_show'];
+  var sections          = this.data.sections.map(function (s) { return s._id; });
+  var usergroups        = this.settings.params.usergroup_ids;
 
   env.extras.puncher.start('Filter subforums');
 
-  Async.forEach(env.data.sections, function (section, cb) {
-    var s_params = _.defaults({ forum_id: String(section._id) }, env.settings.params);
-
-    nodeca.settings.get('forum_show', s_params, function (err, val) {
-      if (val) {
-        filtered_sections.push(section);
-      }
-
-      cb(err);
-    });
-  }, function (err) {
+  fetch_sections_permissions(permissions, sections, usergroups, function (err, results) {
     if (err) {
       next(err);
       return;
     }
+
+    env.data.sections.forEach(function (section) {
+      var o = results[section._id];
+
+      if (o && o.forum_show) {
+        filtered_sections.push(section);
+      }
+    });
 
     env.extras.puncher.stop({ count: filtered_sections.length });
     env.data.sections = filtered_sections;
