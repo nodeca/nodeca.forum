@@ -81,7 +81,7 @@ nodeca.filters.after('@', function clean_sections(params, next) {
   var sections          = this.data.sections.map(function (s) { return s._id; });
   var usergroups        = this.settings.params.usergroup_ids;
 
-  env.extras.puncher.start('Filter subforums');
+  env.extras.puncher.start('Filter sections');
 
   fetch_sections_visibility(sections, usergroups, function (err, results) {
     if (err) {
