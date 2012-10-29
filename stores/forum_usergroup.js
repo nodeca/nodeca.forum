@@ -26,8 +26,9 @@ function fetchForumSettings(id, callback) {
 //
 var fetchForumSesstingsCached = nodeca.components.memoizee(fetchForumSettings, {
   // memoizee options. revalidate cache after 30 sec
-  async:  true,
-  maxAge: 30000
+  async:      true,
+  maxAge:     30000,
+  primitive:  true
 });
 
 
@@ -54,7 +55,7 @@ module.exports = new Store({
       return;
     }
 
-    func(String(params.forum_id), function (err, forum) {
+    func(params.forum_id, function (err, forum) {
       var settings, results = {};
 
       if (err) {
