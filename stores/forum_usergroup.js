@@ -72,7 +72,7 @@ module.exports = function (N) {
             }
           });
 
-          results[k] = ForumGroupStore.mergeValues(values);
+          results[k] = N.settings.mergeValues(values);
         });
 
         callback(null, results);
