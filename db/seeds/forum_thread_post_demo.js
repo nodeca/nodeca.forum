@@ -179,12 +179,12 @@ Faker.Helpers.user = function () {
   };
 };
 
-var Category  = nodeca.models.forum.Section;
-var Forum     = nodeca.models.forum.Section;
-var Thread    = nodeca.models.forum.Thread;
-var Post      = nodeca.models.forum.Post;
-var User      = nodeca.models.users.User;
-var UserGroup = nodeca.models.users.UserGroup;
+var Category  = N.models.forum.Section;
+var Forum     = N.models.forum.Section;
+var Thread    = N.models.forum.Thread;
+var Post      = N.models.forum.Post;
+var User      = N.models.users.User;
+var UserGroup = N.models.users.UserGroup;
 
 var is_big_thread = true;
 var is_big_forum = true;
