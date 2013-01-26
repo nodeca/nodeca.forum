@@ -1,12 +1,12 @@
 "use strict";
 
-/*global nodeca, _*/
+/*global N*/
 
-var NLib = require('nlib');
+var _     = require('lodash');
+var async = require('async');
 
-var Async = NLib.Vendor.Async;
 
-var models = nodeca.models;
+var models = N.models;
 
 module.exports.up = function (cb) {
 
@@ -18,7 +18,7 @@ module.exports.up = function (cb) {
   var user     = new models.users.User();
   var auth     = new models.users.AuthLink();
 
-  Async.series([
+  async.series([
     // create admin user
     function (callback) {
       // get administrators group Id

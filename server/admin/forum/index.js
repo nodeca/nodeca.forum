@@ -1,28 +1,26 @@
+// Show forums list
+//
 "use strict";
 
-/*global nodeca*/
+
+////////////////////////////////////////////////////////////////////////////////
+
+module.exports = function (N, apiPath) {
+  N.validate(apiPath, {
+  });
 
 
-var Section = nodeca.models.forum.Section;
+  // Request handler
+  //
+  N.wire.on(apiPath, function (env, callback) {
 
-
-// Validate input parameters
-//
-var params_schema = {
-};
-nodeca.validate(params_schema);
-
-
-module.exports = function (params, next) {
-  var env = this;
-
-  Section.find().sort('display_order').exec(function (err, sections) {
-    if (err) {
-      next(err);
-      return;
-    }
-    env.data.sections = sections;
-    next();
+    N.models.forum.Section.find().sort('display_order').exec(function (err, sections) {
+      if (err) {
+        callback(err);
+        return;
+      }
+      env.data.sections = sections;
+      callback();
+    });
   });
 };
-

@@ -1,0 +1,23 @@
+bundles:
+  frontend:
+    - forum
+
+
+packages:
+  admin:
+    server:
+      root:       "./server/admin"
+      include:    "*.js"
+      exclude:    "/(^|\\/)_.*/"
+
+  forum:
+    server:
+      root:       "./server/forum"
+      include:    "*.js"
+      exclude:    "/(^|\\/)_.*/"
+
+    views:
+      root:       "./views/desktop/layouts"
+      include:    "*.jade"
+      exclude:    "/(^|\\/)_.*/"
+      apiPrefix:  "layouts"

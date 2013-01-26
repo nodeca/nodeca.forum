@@ -1,6 +1,6 @@
 "use strict";
 
-/*global nodeca, _*/
+/*global N*/
 
 /*
  * This seed create data for demo forum:
@@ -11,10 +11,9 @@
  *
  */
 
-var NLib = require('nlib');
-
-var Async = NLib.Vendor.Async;
-var Faker = NLib.Vendor.Faker;
+var _     = require('lodash');
+var async = require('async');
+var Faker = require('Faker');
 
 
 var CATEGORY_COUNT = 3;
@@ -220,13 +219,13 @@ var create_thread = function (forum, callback) {
 
   var thread = new Thread(Faker.Helpers.thread(forum));
 
-  Async.series([
+  async.series([
     function (cb) {
       thread.save(cb);
     },
     // create posts
     function (cb) {
-      Async.forEachSeries(_.range(post_count), function (current_post, next_post) {
+      async.forEachSeries(_.range(post_count), function (current_post, next_post) {
         create_post(thread, function (err, post) {
           if (err) {
             next_post(err);
@@ -282,14 +281,14 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
   var forum = new Forum(Faker.Helpers.forum(category));
 
-  Async.series([
+  async.series([
     function (cb) {
       forum.save(cb);
     },
 
     // create threads
     function (cb) {
-      Async.forEachSeries(_.range(thread_count), function (current_thread, next_thread) {
+      async.forEachSeries(_.range(thread_count), function (current_thread, next_thread) {
         create_thread(forum, function (err, thread) {
           if (err) {
             next_thread(err);
@@ -309,7 +308,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
         return;
       }
       var sub_forum_count = Faker.Helpers.randomNumber(MAX_SUB_FORUM_COUNT);
-      Async.forEach(_.range(sub_forum_count), function (current_forum, next_forum) {
+      async.forEach(_.range(sub_forum_count), function (current_forum, next_forum) {
         create_forum(forum, sub_forum_deep - 1, function (err, sub_forum) {
           sub_forum_list.push(sub_forum._id);
           sub_forum_id_list.push(sub_forum.id);
@@ -344,7 +343,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
 var create_categories = function (callback) {
   var category;
-  Async.forEachSeries(_.range(CATEGORY_COUNT), function (current_category, next_category) {
+  async.forEachSeries(_.range(CATEGORY_COUNT), function (current_category, next_category) {
     category = new Category(Faker.Helpers.category());
 
     category.save(function (err) {
@@ -354,7 +353,7 @@ var create_categories = function (callback) {
       }
 
       // create forums
-      Async.forEachSeries(_.range(FORUM_COUNT), function (current_forum, next_forum) {
+      async.forEachSeries(_.range(FORUM_COUNT), function (current_forum, next_forum) {
         create_forum(category, SUB_FORUM_DEEP, function (err/*, forum */) {
           next_forum(err);
         });
@@ -378,7 +377,7 @@ module.exports = function (callback) {
       usergroups_cache[group.short_name] = group;
     });
 
-    Async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
+    async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
       var user = new User(Faker.Helpers.user());
       user.usergroups = usergroups_cache['members'];
       user.save(next_user);
