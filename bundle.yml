@@ -1,23 +1,59 @@
-bundles:
-  frontend:
-    - forum
-
-
 packages:
   admin:
+    client:
+      root:       "./client/admin"
+      include:    "*.js"
+      exclude:    "/(^|\\/)_.*/"
+
+    views:
+      root:       "./client/admin"
+      include:    "*.jade"
+      exclude:    "/(^|\\/)_.*/"
+
+    i18n_client:
+      root:       "./client/admin"
+      include:    "i18n/*.yml"
+
+    styles:
+      root:       "./client/admin"
+      main:       "app.styl"
+      include:    "*.styl"
+
     server:
       root:       "./server/admin"
       include:    "*.js"
       exclude:    "/(^|\\/)_.*/"
 
+    i18n_server:
+      root:       "./server/admin"
+      include:    "i18n/*.yml"
+
+
   forum:
+    client:
+      root:       "./client/forum"
+      include:    "*.js"
+      exclude:    "/(^|\\/)_.*/"
+
+    views:
+      root:       "./client/forum"
+      include:    "*.jade"
+      exclude:    "/(^|\\/)_.*/"
+
+    i18n_client:
+      root:       "./client/forum"
+      include:    "i18n/*.yml"
+
+    styles:
+      root:       "./client/forum"
+      main:       "app.styl"
+      include:    "*.styl"
+
     server:
       root:       "./server/forum"
       include:    "*.js"
       exclude:    "/(^|\\/)_.*/"
 
-    views:
-      root:       "./views/desktop/layouts"
-      include:    "*.jade"
-      exclude:    "/(^|\\/)_.*/"
-      apiPrefix:  "layouts"
+    i18n_server:
+      root:       "./server/forum"
+      include:    "i18n/*.yml"
