@@ -1,14 +1,12 @@
 "use strict";
 
-/*global N*/
 
 var _     = require('lodash');
 var async = require('async');
 
 
-var models = N.models;
-
-module.exports.up = function (cb) {
+module.exports.up = function (N, cb) {
+  var models = N.models;
 
   var category = new models.forum.Section();
   var forum    = new models.forum.Section();

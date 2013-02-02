@@ -1,6 +1,5 @@
 "use strict";
 
-/*global N*/
 
 /*
  * This seed create data for demo forum:
@@ -14,6 +13,9 @@
 var _     = require('lodash');
 var async = require('async');
 var Faker = require('Faker');
+
+
+var N;
 
 
 var CATEGORY_COUNT = 3;
@@ -370,7 +372,11 @@ var create_categories = function (callback) {
   });
 };
 
-module.exports = function (callback) {
+module.exports = function (_N, callback) {
+
+  // Copy N to 'global' scope
+  N = _N;
+
   UserGroup.find().select('_id short_name').exec(function(err, groups) {
     // collect usergroups
     groups.forEach(function(group) {
