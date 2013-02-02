@@ -16,6 +16,12 @@ var Faker = require('Faker');
 
 
 var N;
+var Category;
+var Forum;
+var Thread;
+var Post;
+var User;
+var UserGroup;
 
 
 var CATEGORY_COUNT = 3;
@@ -180,13 +186,6 @@ Faker.Helpers.user = function () {
     // ToDo add groups
   };
 };
-
-var Category  = N.models.forum.Section;
-var Forum     = N.models.forum.Section;
-var Thread    = N.models.forum.Thread;
-var Post      = N.models.forum.Post;
-var User      = N.models.users.User;
-var UserGroup = N.models.users.UserGroup;
 
 var is_big_thread = true;
 var is_big_forum = true;
@@ -376,6 +375,13 @@ module.exports = function (_N, callback) {
 
   // Copy N to 'global' scope
   N = _N;
+  
+  Category  = N.models.forum.Section;
+  Forum     = N.models.forum.Section;
+  Thread    = N.models.forum.Thread;
+  Post      = N.models.forum.Post;
+  User      = N.models.users.User;
+  UserGroup = N.models.users.UserGroup;
 
   UserGroup.find().select('_id short_name').exec(function(err, groups) {
     // collect usergroups
