@@ -96,9 +96,13 @@ module.exports = function (N, collectionName) {
   , _id: -1
   });
 
-  Section.__init__ = function __init__() {
-    return Mongoose.model(collectionName, Section);
-  };
 
-  return Section;
+  N.wire.on("init:models", function emit_init_Section(__, callback) {
+    N.wire.emit("init:models." + collectionName, Section, callback);
+  });
+
+  N.wire.on("init:models." + collectionName, function init_model_Section(schema, callback) {
+    N.models[collectionName] = Mongoose.model(collectionName, schema);
+    callback();
+  });
 };

@@ -102,9 +102,12 @@ module.exports = function (N, collectionName) {
   });
 
 
-  Thread.__init__ = function __init__() {
-    return Mongoose.model(collectionName, Thread);
-  };
+  N.wire.on("init:models", function emit_init_Thread(__, callback) {
+    N.wire.emit("init:models." + collectionName, Thread, callback);
+  });
 
-  return Thread;
+  N.wire.on("init:models." + collectionName, function init_model_Thread(schema, callback) {
+    N.models[collectionName] = Mongoose.model(collectionName, schema);
+    callback();
+  });
 };
