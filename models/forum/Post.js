@@ -70,8 +70,7 @@ module.exports = function (N, collectionName) {
     N.wire.emit("init:models." + collectionName, Post, callback);
   });
 
-  N.wire.on("init:models." + collectionName, function init_model_Post(schema, callback) {
+  N.wire.on("init:models." + collectionName, function init_model_Post(schema) {
     N.models[collectionName] = Mongoose.model(collectionName, schema);
-    callback();
   });
 };
