@@ -43,6 +43,9 @@ packages:
 
 
   forum:
+    depends:
+      - lib
+
     client:
       root:       "./client/forum"
       include:    "*.js"
