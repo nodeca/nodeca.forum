@@ -44,7 +44,7 @@ packages:
 
   forum:
     depends:
-      - lib
+      - common
 
     client:
       root:       "./client/forum"
