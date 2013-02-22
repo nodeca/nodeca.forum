@@ -60,7 +60,7 @@ module.exports = function (N, apiPath) {
     page: {
       type: "integer",
       minimum: 1,
-      default: 1
+      'default': 1
     }
   });
 
@@ -95,7 +95,7 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.thread = thread;
-    
+
       env.extras.puncher.start('Forum(parent) info prefetch');
 
       // `params.forum_id` can be wrong (old link to moved thread)
@@ -347,7 +347,7 @@ module.exports = function (N, apiPath) {
       data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
 
       env.extras.puncher.stop();
-      
+
       callback();
     });
 

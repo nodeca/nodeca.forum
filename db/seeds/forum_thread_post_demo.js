@@ -97,7 +97,7 @@ Faker.Helpers.forum = function (parent) {
     moderator_list.push(moderator);
     moderator_id_list.push(moderator.id);
   }
- 
+
   return {
     title: capitalize(Faker.Lorem.sentence(1)),
     description: capitalize(Faker.Lorem.sentence()),
@@ -180,7 +180,7 @@ Faker.Helpers.user = function () {
     _uname_short: nick,
 
     email       : Faker.Internet.email(),
-    
+
     joined_ts   : new Date(),
 
     // ToDo add groups
@@ -375,7 +375,7 @@ module.exports = function (_N, callback) {
 
   // Copy N to 'global' scope
   N = _N;
-  
+
   Category  = N.models.forum.Section;
   Forum     = N.models.forum.Section;
   Thread    = N.models.forum.Thread;

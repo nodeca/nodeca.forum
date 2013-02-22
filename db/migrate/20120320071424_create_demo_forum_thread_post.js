@@ -51,7 +51,7 @@ module.exports.up = function (N, cb) {
 
       auth.save(callback);
     },
-   
+
     // create basic category record
     function (callback) {
       category.title = 'Demo category';

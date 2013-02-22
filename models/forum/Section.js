@@ -11,8 +11,8 @@ module.exports = function (N, collectionName) {
 
   var cache = {
     real: {
-      thread_count      : { type: Number, default: 0 }
-    , post_count        : { type: Number, default: 0 }
+      thread_count      : { type: Number, 'default': 0 }
+    , post_count        : { type: Number, 'default': 0 }
 
     , last_post         : Schema.ObjectId
     , last_post_id      : Number
@@ -23,8 +23,8 @@ module.exports = function (N, collectionName) {
     , last_ts           : Date
     }
   , hb: {
-      thread_count      : { type: Number, default: 0 }
-    , post_count        : { type: Number, default: 0 }
+      thread_count      : { type: Number, 'default': 0 }
+    , post_count        : { type: Number, 'default': 0 }
 
     , last_post         : Schema.ObjectId
     , last_post_id      : Number
@@ -51,23 +51,23 @@ module.exports = function (N, collectionName) {
     , parent_list     : [Schema.ObjectId]
     , parent_id_list  : [Number]
 
-    , level           : { type: Number, default: 0 }
+    , level           : { type: Number, 'default': 0 }
 
     , moderator_id_list    : [Number]
     , moderator_list   : [Schema.ObjectId]
 
 
       // Options
-    , is_category     : { type: Boolean, default: false } // subforum or category
-    , is_enabled      : { type: Boolean, default: true }  // hiden inactive
-    , is_writeble     : { type: Boolean, default: true} // read-only archive
-    , is_searcheable  : { type: Boolean, default: true }
-    , is_voteable     : { type: Boolean, default: true }
-    , is_counted      : { type: Boolean, default: true }  // inc user's counter, when posted here
-    , is_excludable   : { type: Boolean, default: true}
+    , is_category     : { type: Boolean, 'default': false } // subforum or category
+    , is_enabled      : { type: Boolean, 'default': true }  // hiden inactive
+    , is_writeble     : { type: Boolean, 'default': true} // read-only archive
+    , is_searcheable  : { type: Boolean, 'default': true }
+    , is_voteable     : { type: Boolean, 'default': true }
+    , is_counted      : { type: Boolean, 'default': true }  // inc user's counter, when posted here
+    , is_excludable   : { type: Boolean, 'default': true}
 
       // Topic prefixes
-    , is_prefix_required  : { type: Boolean, default: false }
+    , is_prefix_required  : { type: Boolean, 'default': false }
     , prefix_groups   : [Schema.ObjectId] // allowed groups of prefixes
 
       // Cache
