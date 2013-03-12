@@ -300,6 +300,8 @@ module.exports = function (N, apiPath) {
       }
     });
 
+    env.response.data.users = env.data.users;
+
     env.extras.puncher.stop();
 
     callback();
@@ -324,7 +326,7 @@ module.exports = function (N, apiPath) {
     data.head.title = thread.title;
     if (env.params.page > 1) {
       t_params = { title: thread.title, page: env.params.page };
-      data.head.title = env.helpers.t('forum.title_with_page', t_params);
+      data.head.title = env.helpers.t(env.method + '.title_with_page', t_params);
     }
 
     // prepare thread info
@@ -344,7 +346,8 @@ module.exports = function (N, apiPath) {
       }
 
       parents.push(forum);
-      data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
+      data.blocks = data.blocks || {};
+      data.blocks.breadcrumbs = forum_breadcrumbs(env, parents);
 
       env.extras.puncher.stop();
 

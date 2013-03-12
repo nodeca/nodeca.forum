@@ -1,7 +1,7 @@
 - if (self.show_page_number)
-  .pl-head= self.t('forum.page_separator', { page: self.show_page_number })
+  .pl-head= self.t('page_separator', { page: self.show_page_number })
 
-- each post in self.posts
+- each post in self.blocks.posts_list
   article.forum-post.clearfix(id='post#{post.id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.post-meta.clearfix
       - if (self.users[post.user])
@@ -23,12 +23,12 @@
       .message= post.text
       footer.post-controls.clearfix
         ul.pull-left
-          li: a.post-action(href='#')= self.t('forum.post.report')
-          li: a.post-action(href='#')= self.t('forum.post.ip_show')
+          li: a.post-action(href='#')= self.t('report')
+          li: a.post-action(href='#')= self.t('ip_show')
         ul.pull-right
-          li: a.post-action.icon-reply(href='#')= self.t('forum.post.reply')
-          li: a.post-action(href='#')= self.t('forum.post.edit')
-          li: a.post-action(href='#')= self.t('forum.post.delete')
+          li: a.post-action.icon-reply(href='#')= self.t('reply')
+          li: a.post-action(href='#')= self.t('edit')
+          li: a.post-action(href='#')= self.t('delete')
           li
             a.vote-up.icon-vote-up(href='#')
             span.vote-count +47

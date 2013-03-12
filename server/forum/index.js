@@ -137,6 +137,7 @@ module.exports = function (N, apiPath) {
       }
     });
 
+    env.response.data.users = env.data.users;
     env.response.data.sections = to_tree(env.data.sections, null);
 
     // Cleanup output tree - delete attributes, that are not white list.
@@ -162,7 +163,10 @@ module.exports = function (N, apiPath) {
   // Fill breadcrumbs and head meta
   //
   N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
-    env.response.data.head.title = env.helpers.t('common.forum.title');
-    env.response.data.widgets.breadcrumbs = forum_breadcrumbs(env);
+    var data = env.response.data;
+
+    data.head.title = env.helpers.t(env.method + '.title');
+    data.blocks = data.blocks || {};
+    data.blocks.breadcrumbs = forum_breadcrumbs(env);
   });
 };

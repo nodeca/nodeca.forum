@@ -1,8 +1,5 @@
-include ./partials/_subsections_list
-include ../common/partials/_pagination
-
-article.forum-threadlist
-  include ../common/widgets/breadcrumbs
+article#content.forum-threadlist
+  != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
     h1(itemprop='name')= self.forum.title
@@ -12,8 +9,9 @@ article.forum-threadlist
   //- Subforums, if exist
   - if (self.sections && self.sections.length)
     ul.fl-cat-list
-      - each sub_forum in self.sections
-        mixin forum_child_list(sub_forum)
+      - self.blocks = self.blocks || {}
+      - self.blocks.subsections_list = self.sections
+      != self.partial('@forum.blocks.subsections_list')
 
   - if (self.forum.is_category === false)
     //- Toolbar with pagination & controls
@@ -28,38 +26,42 @@ article.forum-threadlist
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }
               .btn-group.pull-left.hidden-phone-vert
-                mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
+                - self.blocks = self.blocks || {}
+                - self.blocks.pagination = { route: self.head.apiPath, params: link_params, current: self.page.current, max_page: self.page.max }
+                != self.partial('@common.blocks.pagination')
 
             .btn-group.pull-right
               a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
-                li: a(href='#')= self.t('forum.action.section_announce')
-                li: a(href='#')= self.t('forum.action.section_add_moderator')
-                li: a(href='#')= self.t('forum.action.section_mass_move')
-                li: a(href='#')= self.t('forum.action.section_mass_prune')
+                li: a(href='#')= self.t('section_announce')
+                li: a(href='#')= self.t('section_add_moderator')
+                li: a(href='#')= self.t('section_mass_move')
+                li: a(href='#')= self.t('section_mass_prune')
 
             - if (self.runtime.is_member)
               .btn-group.pull-right
                 a.btn.icon-track.tip(
-                  href='#', title=self.t('forum.action.section_subscribe')) 24
+                  href='#', title=self.t('section_subscribe')) 24
 
               .btn-group.pull-right
                 a.btn.btn-icon-only.icon-check.tip(
-                  href='#', title=self.t('forum.action.section_mark_read_tip'))
+                  href='#', title=self.t('section_mark_read_tip'))
 
             - if (self.settings.forum_start_topics)
               .btn-group.pull-right.hidden-phone
-                a.btn.btn-primary.icon-new(href='#')= self.t('forum.action.thread_create')
+                a.btn.btn-primary.icon-new(href='#')= self.t('thread_create')
               .btn-group.pull-right.visible-phone
                 a.btn.btn-primary.icon-new.btn-icon-only(
-                  href='#', title=self.t('forum.action.thread_create'))
+                  href='#', title=self.t('thread_create'))
 
           //- left part, no `float left` to avoid deals with container height
 
 
     - if (self.threads && self.threads.length)
-      include ./partials/threads_list
+      - self.blocks = self.blocks || {}
+      - self.blocks.threads_list = self.threads
+      != self.partial('@forum.blocks.threads_list')
 
       //- Button "More Threads"
       - var link_params = { id: self.forum.id, page: self.page.current + 1 };
@@ -69,8 +71,8 @@ article.forum-threadlist
         href=self.link_to(self.head.apiPath, link_params),
         data-on-click="forum.section.append_next_page",
         data-forum-id=self.forum.id,
-        data-current-page=self.page.current)= self.t('forum.action.more_threads')
+        data-current-page=self.page.current)= self.t('more_threads')
 
     - else
       p
-        strong= self.t('forum.no_threads')
+        strong= self.t('no_threads')

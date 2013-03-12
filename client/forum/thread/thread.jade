@@ -1,7 +1,5 @@
-include ../common/partials/_pagination
-
-article
-  include ../common/widgets/breadcrumbs
+article#content
+  != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
     h1(itemprop='name')= self.thread.title
@@ -20,30 +18,34 @@ article
           - if (self.page.max > 1)
             - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id }
             .btn-group.pull-left.hidden-phone-vert
-              mixin pagination(self.head.apiPath, link_params, self.page.current, self.page.max)
+              - self.blocks = self.blocks || {}
+              - self.blocks.pagination = { route: self.head.apiPath, params: link_params, current: self.page.current, max_page: self.page.max }
+              != self.partial('@common.blocks.pagination')
 
           .btn-group.pull-right
             a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
-              li: a(href='#')= self.t('forum.action.thread_delete')
-              li: a(href='#')= self.t('forum.action.thread_close')
+              li: a(href='#')= self.t('thread_delete')
+              li: a(href='#')= self.t('thread_close')
               li.divider
-              li: a(href='#')= self.t('forum.action.thread_pin')
-              li: a(href='#')= self.t('forum.action.thread_history')
-              li: a(href='#')= self.t('forum.action.thread_approve')
-              li: a(href='#')= self.t('forum.action.thread_merge')
+              li: a(href='#')= self.t('thread_pin')
+              li: a(href='#')= self.t('thread_history')
+              li: a(href='#')= self.t('thread_approve')
+              li: a(href='#')= self.t('thread_merge')
 
           - if (self.runtime.is_member)
             .btn-group.pull-right
-              a.btn.icon-track.tip(href='#', title=self.t('forum.action.thread_subscribe')) 24
+              a.btn.icon-track.tip(href='#', title=self.t('thread_subscribe')) 24
 
           - if (self.settings.forum_reply_topics)
             .btn-group.pull-right
-              a.btn.btn-primary(href='#')= self.t('forum.action.post_add')
+              a.btn.btn-primary(href='#')= self.t('post_add')
 
 
-  include ./partials/posts_list
+  - self.blocks = self.blocks || {}
+  - self.blocks.posts_list = self.posts
+  != self.partial('@forum.blocks.posts_list')
 
   //- Button "More Threads"
   - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id, page: self.page.current + 1 };
@@ -54,4 +56,4 @@ article
     data-on-click="forum.thread.append_next_page",
     data-forum-id=self.thread.forum_id,
     data-thread-id=self.thread.id,
-    data-current-page=self.page.current)= self.t('forum.action.more_posts')
+    data-current-page=self.page.current)= self.t('more_posts')
