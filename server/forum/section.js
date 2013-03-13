@@ -501,7 +501,7 @@ module.exports = function (N, apiPath) {
     data.head.title = forum.title;
     if (env.params.page > 1) {
       t_params = { title: forum.title, page: env.params.page };
-      data.head.title = env.helpers.t(env.method + '.title_with_page', t_params);
+      data.head.title = env.helpers.t('forum.section.title_with_page', t_params);
     }
 
     // prepare forum info
