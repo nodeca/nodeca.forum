@@ -1,7 +1,7 @@
 - if (self.show_page_number)
   .pl-head= self.t('page_separator', { page: self.show_page_number })
 
-- each post in self.blocks.posts_list
+- each post in self.posts
   article.forum-post.clearfix(id='post#{post.id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.post-meta.clearfix
       - if (self.users[post.user])

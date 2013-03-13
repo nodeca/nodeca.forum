@@ -1,5 +1,5 @@
 article#content.forum-threadlist
-  != self.partial('@common.blocks.breadcrumbs')
+  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   header.page-head
     h1(itemprop='name')= self.forum.title
@@ -9,9 +9,7 @@ article#content.forum-threadlist
   //- Subforums, if exist
   - if (self.sections && self.sections.length)
     ul.fl-cat-list
-      - self.blocks = self.blocks || {}
-      - self.blocks.subsections_list = self.sections
-      != self.partial('@forum.blocks.subsections_list')
+      != self.partial('@forum.blocks.subsections_list', { subsections: self.sections, users: self.users })
 
   - if (self.forum.is_category === false)
     //- Toolbar with pagination & controls
@@ -26,9 +24,7 @@ article#content.forum-threadlist
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }
               .btn-group.pull-left.hidden-phone-vert
-                - self.blocks = self.blocks || {}
-                - self.blocks.pagination = { route: self.head.apiPath, params: link_params, current: self.page.current, max_page: self.page.max }
-                != self.partial('@common.blocks.pagination')
+                != self.partial('@common.blocks.pagination', { route: self.head.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
             .btn-group.pull-right
               a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
@@ -59,9 +55,7 @@ article#content.forum-threadlist
 
 
     - if (self.threads && self.threads.length)
-      - self.blocks = self.blocks || {}
-      - self.blocks.threads_list = self.threads
-      != self.partial('@forum.blocks.threads_list')
+      != self.partial('@forum.blocks.threads_list', { threads: self.threads, users: self.users })
 
       //- Button "More Threads"
       - var link_params = { id: self.forum.id, page: self.page.current + 1 };

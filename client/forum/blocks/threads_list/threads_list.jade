@@ -5,10 +5,10 @@ include ../pagination_micro/pagination_micro
 //- - appending next page posts via autoload or "more" button
 ul.tl-thread-list
   - var replies, views;
-  - if (self.show_page_number)
-    li.tl-head= self.t('page_separator', { page: self.show_page_number })
+  - if (self.page)
+    li.tl-head= self.t('page_separator', { page: self.page })
 
-  - each thread in self.blocks.threads_list
+  - each thread in self.threads
     - fp_user = thread.cache.real.first_user
     - lp_user = thread.cache.real.last_user
     - fp_ts   = thread.cache.real.first_ts

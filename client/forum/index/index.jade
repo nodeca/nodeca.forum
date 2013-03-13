@@ -1,5 +1,5 @@
 article#content
-  != self.partial('@common.blocks.breadcrumbs')
+  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   //h1= t('forum.index.title')
 
@@ -12,9 +12,7 @@ article#content
           i.icon-collapse
 
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
-        - self.blocks = self.blocks || {}
-        - self.blocks.subsections_list = category.child_list
-        != self.partial('@forum.blocks.subsections_list')
+        != self.partial('@forum.blocks.subsections_list', { subsections: category.child_list, users: self.users })
 
   footer
     - if (self.runtime.is_member)
