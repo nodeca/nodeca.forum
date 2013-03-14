@@ -1,0 +1,10 @@
+en-US:
+  no_threads: No threads yet.
+  thread_create: New topic
+  more_threads: More threads
+  section_mark_read_tip: Mark all read
+  section_subscribe: Subscribe to new topics notification
+  section_announce: Announce
+  section_add_moderator: Add moderator
+  section_mass_move: Mass move
+  section_mass_prune: Mass prune

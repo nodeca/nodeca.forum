@@ -1,6 +1,6 @@
 //- List of subsections
 //- !!! needs <ul> cover
-mixin forum_child_list(forum)
+- each forum in self.subsections
   - last_thread = forum.cache.real.last_thread_id || null
   - last_user = forum.cache.real.last_user || null
   - last_ts = forum.cache.real.last_ts || null
@@ -18,7 +18,7 @@ mixin forum_child_list(forum)
 
         - if (forum.moderator_list && forum.moderator_list.length > 0)
           dl.def-hlist.fl-moderators.hidden-phone
-            dt= self.t('forum.moderators', { count: forum.moderator_list.length })
+            dt= self.t('moderators', { count: forum.moderator_list.length })
             - each moderator in forum.moderator_list
               - if (self.users[moderator])
                 dd
@@ -29,10 +29,10 @@ mixin forum_child_list(forum)
       ul.span2.fl-item-counters.hidden-phone
         li
           strong #{forum.cache.real.thread_count}
-          = self.t('forum.counter.forum_topics', { count: forum.cache.real.thread_count })
+          = self.t('forum_topics', { count: forum.cache.real.thread_count })
         li 
           strong #{forum.cache.real.post_count}
-          = self.t('forum.counter.forum_posts', { count: forum.cache.real.post_count })
+          = self.t('forum_posts', { count: forum.cache.real.post_count })
       
       - if (last_thread)
         ul.span3.fl-item-lastpost.hidden-phone
@@ -40,7 +40,7 @@ mixin forum_child_list(forum)
             a(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
           - if (self.users[last_user])
             li.lastpost-user
-              = self.t('forum.topic_by') 
+              = self.t('topic_by') 
               - lp_user = self.users[last_user]
               a.usercard-popover(
                 href=self.link_to('users.member', lp_user),

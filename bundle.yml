@@ -10,27 +10,18 @@ packages:
       include:    "*.js"
       exclude:    "/(^|\\/|\\\\)_.*/"
 
-    #views:
-    #  root:       "./client/admin"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
-
-    #views:
-    #  root:       "./views/desktop/admin"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
+    views:
+      root:       "./client/admin"
+      include:    "*.jade"
+      exclude:    "/(^|\\/|\\\\)_.*/"
 
     i18n_client:
       root:       "./client/admin"
       include:    "i18n/*.yml"
 
-    #styles:
-    #  root:       "./client/admin"
-    #  include:    "*.styl"
-
-    #styles:
-    #  root:       "./assets"
-    #  include:    "desktop/admin/**.styl"
+    styles:
+      root:       "./client/admin"
+      include:    "*.styl"
 
     server:
       root:       "./server/admin"
@@ -51,29 +42,18 @@ packages:
       include:    "*.js"
       exclude:    "/(^|\\/|\\\\)_.*/"
 
-    #views:
-    #  root:       "./client/forum"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
-
-    #views:
-    #  root:       "./views/desktop/forum"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
+    views:
+      root:       "./client/forum"
+      include:    "*.jade"
+      exclude:    "/(^|\\/|\\\\)_.*/"
 
     i18n_client:
       root:       "./client/forum"
       include:    "i18n/*.yml"
 
-    #styles:
-    #  root:       "./client/forum"
-    #  main:       "app.styl"
-    #  include:    "*.styl"
-
-    #styles:
-    #  root:       "./assets"
-    #  main:       "desktop/forum/app.styl"
-    #  include:    "desktop/forum/**.styl"
+    styles:
+      root:       "./client/forum"
+      include:    "*.styl"
 
     server:
       root:       "./server/forum"

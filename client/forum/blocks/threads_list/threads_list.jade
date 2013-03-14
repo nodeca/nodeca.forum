@@ -1,12 +1,12 @@
-include ./_pagination_micro
+include ../pagination_micro/pagination_micro
 
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
 ul.tl-thread-list
   - var replies, views;
-  - if (self.show_page_number)
-    li.tl-head= self.t('forum.page_separator', { page: self.show_page_number })
+  - if (self.page)
+    li.tl-head= self.t('page_separator', { page: self.page })
 
   - each thread in self.threads
     - fp_user = thread.cache.real.first_user
@@ -26,7 +26,7 @@ ul.tl-thread-list
 
 
           .tl-meta
-            a.tl-preview-ctl.icon-more(href='#')= self.t('forum.action.thread_preview')
+            a.tl-preview-ctl.icon-more(href='#')= self.t('thread_preview')
             - if (self.users[fp_user])
               a.usercard-popover.tl-starter(
                 href=self.link_to('users.member', self.users[fp_user]),
@@ -38,10 +38,10 @@ ul.tl-thread-list
           - views   = thread.views_count;
           li
             | #{replies}
-            = self.t('forum.counter.thread_replies', { count: replies })
+            = self.t('thread_replies', { count: replies })
           li
             | #{views}
-            = self.t('forum.counter.thread_views', { count: views })
+            = self.t('thread_views', { count: views })
 
         ul.span3.tl-item-lastpost.hidden-phone
           li.lastpost-time
