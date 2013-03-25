@@ -1,18 +1,23 @@
 'use strict';
 
 
-/*global nodeca, $, window*/
+/*global N, window*/
 
 
-module.exports = function ($el) {
-  var current = parseInt($el.data('current-page'), 10),
-      params  = {};
+var $ = window.jQuery;
+var injectStats = require('nodeca.core/client/common/_inject_stats');
+
+
+N.wire.on(module.apiPath, function (event) {
+  var $el     = $(event.currentTarget)
+    , current = parseInt($el.data('current-page'), 10)
+    , params  = {};
 
   params.page     = current + 1;
   params.id       = $el.data('thread-id');
   params.forum_id = $el.data('forum-id');
 
-  nodeca.server.forum.thread(params, function (err, payload) {
+  N.io.rpc('forum.thread', params, function (err, payload) {
     if (err) {
       // common case:
       // - amount of pages reduced (some posts were removed)
@@ -27,28 +32,28 @@ module.exports = function ($el) {
     payload.data.show_page_number = payload.data.page.current;
 
     // Update current state in the history
-    nodeca.client.common.history.updateState(payload, $el.attr('href'));
+    N.wire.emit('history_update', { payload: payload, url: $el.attr('href') });
 
     if (payload.data.page.current === payload.data.page.max) {
       $el.addClass('hidden');
     } else {
-      $el.attr('href', nodeca.runtime.router.linkTo(payload.data.head.apiPath, {
+      $el.attr('href', N.runtime.router.linkTo(payload.data.head.apiPath, {
         id:       payload.data.thread.id,
         forum_id: payload.data.thread.forum_id,
         page:     payload.data.page.current + 1
       }));
     }
 
-    var $html = $(nodeca.client.common.render.template('forum.partials.posts_list', payload.data));
+    var $html = $(N.runtime.render('forum.blocks.posts_list', payload.data));
     $('.forum-post:last').after($html.hide());
 
     // update pager
     $('.pagination').replaceWith(
-      nodeca.client.common.render.template('common.pagination', {
+      N.runtime.render('common.blocks.pagination', {
         route:    'forum.thread',
         params:   payload.data.thread,
         current:  payload.data.page.current,
-        max:      payload.data.page.max
+        max_page: payload.data.page.max
       })
     );
 
@@ -56,8 +61,6 @@ module.exports = function ($el) {
     $html.fadeIn();
 
     // inject debug stats if needed/possible
-    nodeca.client.common.stats.inject(payload.data);
+    injectStats(payload.data);
   });
-
-  return false;
-};
+});
