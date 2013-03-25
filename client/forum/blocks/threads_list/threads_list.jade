@@ -6,7 +6,7 @@ include ../pagination_micro/pagination_micro
 ul.tl-thread-list
   - var replies, views;
   - if (self.page)
-    li.tl-head= self.t('page_separator', { page: self.page })
+    li.tl-head= self.t('page_separator', { page: self.show_page_number })
 
   - each thread in self.threads
     - fp_user = thread.cache.real.first_user
