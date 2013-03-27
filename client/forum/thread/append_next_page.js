@@ -1,10 +1,6 @@
 'use strict';
 
 
-/*global N, window*/
-
-
-var $ = window.jQuery;
 var injectStats = require('nodeca.core/client/common/_inject_stats');
 
 

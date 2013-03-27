@@ -15,7 +15,6 @@ var async = require('async');
 var Faker = require('Faker');
 
 
-var N;
 var Category;
 var Forum;
 var Thread;
@@ -371,11 +370,7 @@ var create_categories = function (callback) {
   });
 };
 
-module.exports = function (_N, callback) {
-
-  // Copy N to 'global' scope
-  N = _N;
-
+module.exports = function (N, callback) {
   Category  = N.models.forum.Section;
   Forum     = N.models.forum.Section;
   Thread    = N.models.forum.Thread;
