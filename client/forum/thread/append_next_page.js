@@ -30,6 +30,8 @@ N.wire.on(module.apiPath, function (event) {
     // Update current state in the history
     N.wire.emit('history_update', { payload: payload, url: $el.attr('href') });
 
+    // Hide "More posts" button if there are no more pages.
+    // Or update the button's link to the next page.
     if (payload.data.page.current === payload.data.page.max) {
       $el.addClass('hidden');
     } else {
