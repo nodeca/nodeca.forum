@@ -1,9 +1,6 @@
 'use strict';
 
 
-var injectStats = require('nodeca.core/client/common/_inject_stats');
-
-
 N.wire.on(module.apiPath, function (event) {
   var $el     = $(event.currentTarget)
     , current = parseInt($el.data('current-page'), 10)
@@ -57,8 +54,5 @@ N.wire.on(module.apiPath, function (event) {
 
     // show content
     $html.fadeIn();
-
-    // inject debug stats if needed/possible
-    injectStats(payload.data);
   });
 });
