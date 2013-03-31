@@ -162,7 +162,7 @@ module.exports = function (N, apiPath) {
   // presets pagination data and redirects to the last page if
   // requested page is bigger than max available
   //
-  N.wire.before(apiPath, { priority: -5 }, function check_and_set_page_info(env, callback) {
+  N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
     var per_page = env.data.settings.threads_per_page,
         max      = Math.ceil(env.data.section.cache.real.thread_count / per_page),
         current  = parseInt(env.params.page, 10);
