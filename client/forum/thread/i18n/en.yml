@@ -1,0 +1,11 @@
+en-US:
+  thread_subscribe: Subscribe to new posts notification
+  thread_delete: Delete
+  thread_close: Close
+  thread_pin: Pin
+  thread_unpin: Unpin
+  thread_history: History
+  thread_approve: Approve
+  thread_merge: Merge
+  post_add: Add reply
+  more_posts: More posts

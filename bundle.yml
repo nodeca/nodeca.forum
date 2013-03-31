@@ -6,40 +6,25 @@ bundles:
 packages:
   admin:
     client:
-      root:       "./client/admin"
-      include:    "*.js"
-      exclude:    "/(^|\\/|\\\\)_.*/"
+      include: client/admin/**.js
+      exclude: /(^|\/|\\)_.*/
 
-    #views:
-    #  root:       "./client/admin"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
-
-    #views:
-    #  root:       "./views/desktop/admin"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
+    views:
+      include: client/admin/**.jade
+      exclude: /(^|\/|\\)_.*/
 
     i18n_client:
-      root:       "./client/admin"
-      include:    "i18n/*.yml"
+      include: client/admin/**i18n/*.yml
 
-    #styles:
-    #  root:       "./client/admin"
-    #  include:    "*.styl"
-
-    #styles:
-    #  root:       "./assets"
-    #  include:    "desktop/admin/**.styl"
+    styles:
+      include: client/admin/**.styl
 
     server:
-      root:       "./server/admin"
-      include:    "*.js"
-      exclude:    "/(^|\\/|\\\\)_.*/"
+      include: server/admin/**.js
+      exclude: /(^|\/|\\)_.*/
 
     i18n_server:
-      root:       "./server/admin"
-      include:    "i18n/*.yml"
+      include: server/admin/**i18n/*.yml
 
 
   forum:
@@ -47,39 +32,22 @@ packages:
       - common
 
     client:
-      root:       "./client/forum"
-      include:    "*.js"
-      exclude:    "/(^|\\/|\\\\)_.*/"
+      include: client/forum/**.js
+      exclude: /(^|\/|\\)_.*/
 
-    #views:
-    #  root:       "./client/forum"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
-
-    #views:
-    #  root:       "./views/desktop/forum"
-    #  include:    "*.jade"
-    #  exclude:    "/(^|\\/|\\\\)_.*/"
+    views:
+      include: client/forum/**.jade
+      exclude: /(^|\/|\\)_.*/
 
     i18n_client:
-      root:       "./client/forum"
-      include:    "i18n/*.yml"
+      include: client/forum/**i18n/*.yml
 
-    #styles:
-    #  root:       "./client/forum"
-    #  main:       "app.styl"
-    #  include:    "*.styl"
-
-    #styles:
-    #  root:       "./assets"
-    #  main:       "desktop/forum/app.styl"
-    #  include:    "desktop/forum/**.styl"
+    styles:
+      include: client/forum/**.styl
 
     server:
-      root:       "./server/forum"
-      include:    "*.js"
-      exclude:    "/(^|\\/|\\\\)_.*/"
+      include: server/forum/**.js
+      exclude: /(^|\/|\\)_.*/
 
     i18n_server:
-      root:       "./server/forum"
-      include:    "i18n/*.yml"
+      include: server/forum/**i18n/*.yml

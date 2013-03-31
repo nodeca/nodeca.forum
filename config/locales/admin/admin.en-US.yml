@@ -1,9 +1,6 @@
 i18n:
   en-US:
     admin:
-      forum:
-        title: Category and Forum Overview
-
       menus:
         navbar:
           forum: Forums

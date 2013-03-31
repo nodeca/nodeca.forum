@@ -1,0 +1,9 @@
+en-US:
+  index:
+    title: Nodeca forums
+
+  section:
+    title_with_page: "#{title} - page #{page}"
+
+  thread:
+    title_with_page: "#{title} - page #{page}"

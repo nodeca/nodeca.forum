@@ -1,7 +1,5 @@
-include ./partials/_subsections_list
-
-article
-  include ../common/widgets/breadcrumbs
+article#content
+  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   //h1= t('forum.index.title')
 
@@ -14,24 +12,23 @@ article
           i.icon-collapse
 
       ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
-        - each forum in category.child_list
-          mixin forum_child_list(forum)
+        != self.partial('@forum.blocks.subsections_list', { subsections: category.child_list, users: self.users })
 
   footer
     - if (self.runtime.is_member)
       .btn-toolbar
-        a.btn.icon-check(href='#')= self.t('forum.action.mark_all_read')
+        a.btn.icon-check(href='#')= self.t('mark_all_read')
         | 
-        a.btn(href='#')= self.t('forum.action.exclude', { count: 5 })
+        a.btn(href='#')= self.t('exclude', { count: 5 })
 
     dl.page-summary
-      dt= self.t('forum.counter.total_active.all', { count: 710, interval: 30})
+      dt= self.t('total_active.all', { count: 710, interval: 30})
       dd.small
-        = self.t('forum.counter.total_active.members', { count: 128 })
+        = self.t('total_active.members', { count: 128 })
         | , 
-        = self.t('forum.counter.total_active.guests', { count: 567 })
+        = self.t('total_active.guests', { count: 567 })
         | , 
-        = self.t('forum.counter.total_active.anonymous', { count: 6 })
+        = self.t('total_active.anonymous', { count: 6 })
       dd
         ul.hlist
           li: a(href='#') Google
@@ -49,11 +46,11 @@ article
       dd
         ul.hlist
           li
-            = self.t('forum.counter.total_topics', { count: 25 })
+            = self.t('total_topics', { count: 25 })
             strong 35 836
           li
-            = self.t('forum.counter.total_posts', { count: 3 })
+            = self.t('total_posts', { count: 3 })
             strong 456 949
           li
-            = self.t('forum.counter.total_members', { count: 3 })
+            = self.t('total_members', { count: 3 })
             strong 269 270

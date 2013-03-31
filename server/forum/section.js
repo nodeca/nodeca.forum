@@ -433,6 +433,7 @@ module.exports = function (N, apiPath) {
 
 
     root = env.data.section._id;
+    env.response.data.users = env.data.users;
     env.response.data.sections = to_tree(env.data.sections, root);
 
     // Cleanup output tree - delete attributes, that are not white list.
@@ -500,7 +501,7 @@ module.exports = function (N, apiPath) {
     data.head.title = forum.title;
     if (env.params.page > 1) {
       t_params = { title: forum.title, page: env.params.page };
-      data.head.title = env.helpers.t('forum.title_with_page', t_params);
+      data.head.title = env.helpers.t('forum.section.title_with_page', t_params);
     }
 
     // prepare forum info
@@ -520,7 +521,8 @@ module.exports = function (N, apiPath) {
       }
 
       parents.push(forum);
-      data.widgets.breadcrumbs = forum_breadcrumbs(env, parents);
+      data.blocks = data.blocks || {};
+      data.blocks.breadcrumbs = forum_breadcrumbs(env, parents);
 
       env.extras.puncher.stop();
 

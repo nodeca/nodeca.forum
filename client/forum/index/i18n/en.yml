@@ -1,0 +1,11 @@
+en-US:
+  mark_all_read: Mark all read
+  exclude: "Exclude forums (now #{count})"
+  total_active:
+    all: "#{count} active ((user|users)) in the past #{interval} ((minute|minutes)):interval"
+    members: "#{count} ((member|members))"
+    guests: "#{count} ((guest|guests))"
+    anonymous: "#{count} anonymous ((member|members))"
+  total_topics: "((Topic|Topics)): "
+  total_posts: "((Post|Posts)): "
+  total_members: "((Member|Members)): "
