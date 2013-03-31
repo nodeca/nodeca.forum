@@ -63,9 +63,7 @@ article#content.forum-threadlist
       a.btn.btn-block.icon-more(
         class=btn_more_state,
         href=self.link_to(self.head.apiPath, link_params),
-        data-on-click="forum.section.append_next_page",
-        data-forum-id=self.forum.id,
-        data-current-page=self.page.current)= self.t('more_threads')
+        data-on-click="forum.section.append_next_page")= self.t('more_threads')
 
     - else
       p
