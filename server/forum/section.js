@@ -269,7 +269,10 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          // Fetch IDs of "delete" threads from (use coverage index)
+          // delete last ID, if successefuly fetched (threads_per_page+1)
+          if (ids.length > threads_per_page) { ids.pop(); }
+
+          // Fetch IDs of "hidden" threads (use coverage index)
           Thread.find({ forum_id: env.params.id })
               .where('state').equals(DELETED_STATE)
               .where('cache.real.last_ts')

@@ -179,6 +179,7 @@ module.exports = function (N, apiPath) {
 
   // presets pagination data and redirects to the last page if
   // requested page is bigger than max available
+  //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
     var per_page = env.data.settings.posts_per_page,
         max      = Math.ceil(env.data.thread.cache.real.post_count / per_page),
@@ -211,6 +212,7 @@ module.exports = function (N, apiPath) {
   //
   // - `id`         thread id
   // - `forum_id`   forum id
+  //
   N.wire.on(apiPath, function (env, callback) {
     var start;
     var query;
@@ -227,6 +229,8 @@ module.exports = function (N, apiPath) {
 
     start = (env.params.page - 1) * posts_per_page;
 
+    // Unlike threads list, we can use simplified fetch,
+    // because posts are always ordered by id - no need to sort by timestamp
     Post.find({ thread_id: env.params.id }).select('_id').sort('ts').skip(start)
         .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
 
