@@ -24,7 +24,7 @@ article#content.forum-threadlist
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }
               .btn-group.pull-left.hidden-phone-vert
-                != self.partial('@common.blocks.pagination', { route: self.get_apipath(), params: link_params, current: self.page.current, max_page: self.page.max })
+                != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
             .btn-group.pull-right
               a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
@@ -62,7 +62,7 @@ article#content.forum-threadlist
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
       a.btn.btn-block.icon-more(
         class=btn_more_state,
-        href=self.link_to(self.get_apipath(), link_params),
+        href=self.link_to(self.apiPath, link_params),
         data-on-click="forum.section.append_next_page")= self.t('more_threads')
 
     - else
