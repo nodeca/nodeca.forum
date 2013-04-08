@@ -10,9 +10,9 @@
  *
  */
 
-var _     = require('lodash');
-var async = require('async');
-var Faker = require('Faker');
+var _         = require('lodash');
+var async     = require('async');
+var Charlatan = require('charlatan');
 
 
 var Category;
@@ -42,9 +42,9 @@ var USER_ID_SHIFT = 2;
 // cache usergroups ids
 var usergroups_cache = {};
 
-// extend Faker
+// extend Charlatan
 // add numeric id generator
-Faker.Incrementer = {
+Charlatan.Incrementer = {
   category_shift: CATEGORY_ID_SHIFT,
   forum_shift: FORUM_ID_SHIFT,
   display_order_shift: DISPLAY_ORDER_SHIFT,
@@ -53,7 +53,7 @@ Faker.Incrementer = {
   user_shift: USER_ID_SHIFT
 };
 
-Faker.Incrementer.next = function (type) {
+Charlatan.Incrementer.next = function (type) {
   var last_id_prop_name = type + '_last_id';
   if (!this[last_id_prop_name]) {
     var shift_prop_name = type + '_shift';
@@ -66,42 +66,38 @@ Faker.Incrementer.next = function (type) {
   return this[last_id_prop_name];
 };
 
-Faker.users = [];
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+Charlatan.users = [];
 
 // add helpers for categorys,forums, threads and posts
-Faker.Helpers.category = function () {
+Charlatan.Helpers.category = function () {
   return {
-    title: capitalize(Faker.Lorem.sentence(1)),
-    description: capitalize(Faker.Lorem.sentence()),
+    title: Charlatan.Lorem.sentence(),
+    description: Charlatan.Lorem.sentence(),
 
-    display_order: Faker.Incrementer.next('display_order'),
+    display_order: Charlatan.Incrementer.next('display_order'),
     level: 0,
-    id: Faker.Incrementer.next('category'),
+    id: Charlatan.Incrementer.next('category'),
     is_category: true
   };
 };
 
-Faker.Helpers.forum = function (parent) {
+Charlatan.Helpers.forum = function (parent) {
   var moderator_id_list = [];
   var moderator_list = [];
   var moderator;
 
-  var moderator_count = Faker.Helpers.randomNumber(MAX_MODERATOR_COUNT + 1);
+  var moderator_count = Charlatan.Helpers.rand(MAX_MODERATOR_COUNT + 1);
   for (var i = 0; i < moderator_count; i++) {
-    moderator = Faker.users[Faker.Helpers.randomNumber(USER_COUNT)];
+    moderator = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
     moderator_list.push(moderator);
     moderator_id_list.push(moderator.id);
   }
 
   return {
-    title: capitalize(Faker.Lorem.sentence(1)),
-    description: capitalize(Faker.Lorem.sentence()),
+    title: Charlatan.Lorem.sentence(),
+    description: Charlatan.Lorem.sentence(),
 
-    id: Faker.Incrementer.next('forum'),
+    id: Charlatan.Incrementer.next('forum'),
 
     parent: parent._id,
     parent_list: parent.parent_list.slice().concat([parent._id]),
@@ -109,7 +105,7 @@ Faker.Helpers.forum = function (parent) {
     parent_id: parent.id,
     parent_id_list: parent.parent_id_list.slice().concat([parent.id]),
 
-    display_order: Faker.Incrementer.next('display_order'),
+    display_order: Charlatan.Incrementer.next('display_order'),
 
     level:  parent.level + 1,
 
@@ -122,27 +118,27 @@ Faker.Helpers.forum = function (parent) {
   };
 };
 
-Faker.Helpers.thread = function (forum) {
+Charlatan.Helpers.thread = function (forum) {
   return {
-    title: capitalize(Faker.Lorem.sentence(1)),
+    title: Charlatan.Lorem.sentence(),
 
-    id: Faker.Incrementer.next('thread'),
+    id: Charlatan.Incrementer.next('thread'),
 
     // Stub. This constants should be defined globally
     state:  0,
     forum: forum._id,
     forum_id: forum.id,
 
-    views_count: Faker.Helpers.randomNumber(1000)
+    views_count: Charlatan.Helpers.rand(1000)
   };
 };
 
-Faker.Helpers.post = function (thread) {
-  var id = Faker.Incrementer.next('post');
+Charlatan.Helpers.post = function (thread) {
+  var id = Charlatan.Incrementer.next('post');
 
   var ts =  new Date(2010, 0, id);
   return {
-    text: capitalize(Faker.Lorem.paragraph()),
+    text: Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join(' '),
     fmt:  'txt',
 
     id: id,
@@ -157,7 +153,7 @@ Faker.Helpers.post = function (thread) {
     thread_id: thread.id,
     forum_id: thread.forum_id,
 
-    user: Faker.users[Faker.Helpers.randomNumber(USER_COUNT)],
+    user: Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)],
 
     ts: ts
     // ToDo user
@@ -165,12 +161,12 @@ Faker.Helpers.post = function (thread) {
 };
 
 
-Faker.Helpers.user = function () {
-  var nick = Faker.Internet.userName();
-  var first_name = Faker.Name.firstName();
-  var last_name = Faker.Name.lastName();
+Charlatan.Helpers.user = function () {
+  var nick = Charlatan.Internet.userName();
+  var first_name = Charlatan.Name.firstName();
+  var last_name = Charlatan.Name.lastName();
   return {
-    id          : Faker.Incrementer.next('user'),
+    id          : Charlatan.Incrementer.next('user'),
     first_name  : first_name,
     last_name   : last_name,
     nick        : nick,
@@ -178,7 +174,7 @@ Faker.Helpers.user = function () {
     _uname      : first_name + ' (' + nick + ') ' + last_name,
     _uname_short: nick,
 
-    email       : Faker.Internet.email(),
+    email       : Charlatan.Internet.email(),
 
     joined_ts   : new Date(),
 
@@ -191,7 +187,7 @@ var is_big_forum = true;
 
 
 var create_post = function (thread, callback) {
-  var post = new Post(Faker.Helpers.post(thread));
+  var post = new Post(Charlatan.Helpers.post(thread));
 
   post.save(function (err, post) {
     if (err) {
@@ -217,7 +213,7 @@ var create_thread = function (forum, callback) {
     post_count = 1;
   }
 
-  var thread = new Thread(Faker.Helpers.thread(forum));
+  var thread = new Thread(Charlatan.Helpers.thread(forum));
 
   async.series([
     function (cb) {
@@ -279,7 +275,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
     thread_count = 1;
   }
 
-  var forum = new Forum(Faker.Helpers.forum(category));
+  var forum = new Forum(Charlatan.Helpers.forum(category));
 
   async.series([
     function (cb) {
@@ -303,11 +299,11 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
     // add sub-forums
     function (cb) {
-      if (!sub_forum_deep || Faker.Helpers.randomNumber(3) === 2) {
+      if (!sub_forum_deep || Charlatan.Helpers.rand(3) === 2) {
         cb();
         return;
       }
-      var sub_forum_count = Faker.Helpers.randomNumber(MAX_SUB_FORUM_COUNT);
+      var sub_forum_count = Charlatan.Helpers.rand(MAX_SUB_FORUM_COUNT);
       async.forEach(_.range(sub_forum_count), function (current_forum, next_forum) {
         create_forum(forum, sub_forum_deep - 1, function (err, sub_forum) {
           sub_forum_list.push(sub_forum._id);
@@ -344,7 +340,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
 var create_categories = function (callback) {
   var category;
   async.forEachSeries(_.range(CATEGORY_COUNT), function (current_category, next_category) {
-    category = new Category(Faker.Helpers.category());
+    category = new Category(Charlatan.Helpers.category());
 
     category.save(function (err) {
       if (err) {
@@ -365,7 +361,7 @@ var create_categories = function (callback) {
       return;
     }
     // Added empty forum to last category
-    var forum = new Forum(Faker.Helpers.forum(category));
+    var forum = new Forum(Charlatan.Helpers.forum(category));
     forum.save(callback);
   });
 };
@@ -385,12 +381,12 @@ module.exports = function (N, callback) {
     });
 
     async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
-      var user = new User(Faker.Helpers.user());
+      var user = new User(Charlatan.Helpers.user());
       user.usergroups = usergroups_cache['members'];
       user.save(next_user);
 
       // add user to store
-      Faker.users.push(user);
+      Charlatan.users.push(user);
     }, function (err) {
       if (err) {
         callback(err);
