@@ -4,8 +4,3 @@ i18n:
       menus:
         navbar:
           forum: Forum
-
-    admin:
-      menus:
-        navbar:
-          forum: Forums
