@@ -127,10 +127,10 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.before(apiPath, function section_get_settings(env, callback) {
-    env.settings.params.forum_id = env.data.section._id;
+    env.extras.settings.params.forum_id = env.data.section._id;
     env.extras.puncher.start('Fetch settings');
 
-    env.settings.fetch(settings_fetch, function (err, settings) {
+    env.extras.settings.fetch(settings_fetch, function (err, settings) {
       if (err) {
         callback(err);
         return;
@@ -369,7 +369,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
     var filtered_sections = [];
     var sections          = env.data.sections.map(function (s) { return s._id; });
-    var usergroups        = env.settings.params.usergroup_ids;
+    var usergroups        = env.extras.settings.params.usergroup_ids;
 
     env.extras.puncher.start('Filter sub-forums');
 

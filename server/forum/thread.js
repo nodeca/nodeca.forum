@@ -139,10 +139,10 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.before(apiPath, function thread_get_settings(env, callback) {
-    env.settings.params.forum_id = env.data.thread.forum;
+    env.extras.settings.params.forum_id = env.data.thread.forum;
     env.extras.puncher.start('Fetch settings');
 
-    env.settings.fetch(settings_fetch, function (err, settings) {
+    env.extras.settings.fetch(settings_fetch, function (err, settings) {
       if (err) {
         callback(err);
         return;

@@ -77,7 +77,7 @@ module.exports = function (N, apiPath) {
 
     var filtered_sections = [];
     var sections          = env.data.sections.map(function (s) { return s._id; });
-    var usergroups        = env.settings.params.usergroup_ids;
+    var usergroups        = env.extras.settings.params.usergroup_ids;
 
     env.extras.puncher.start('Filter sections');
 
