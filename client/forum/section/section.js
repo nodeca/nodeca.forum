@@ -39,8 +39,8 @@ N.wire.on('forum.section.append_next_page', function (event) {
   }
 
   N.wire.emit('navigate.to', {
-    href:    $button.attr('href')
-  , render:  renderNextPage
-  , history: window.History.replaceState
+    href: $button.attr('href')
+  , render: renderNextPage
+  , replaceState: true
   });
 });
