@@ -108,6 +108,8 @@ module.exports = function (N, apiPath) {
     Section.findOne({ id: env.params.id }).setOptions({ lean: true })
         .exec(function (err, forum) {
 
+      env.extras.puncher.stop();
+
       if (err) {
         callback(err);
         return;
@@ -120,7 +122,6 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.section = forum;
-      env.extras.puncher.stop();
       callback();
     });
   });
@@ -131,6 +132,9 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(settings_fetch, function (err, settings) {
+
+      env.extras.puncher.stop();
+
       if (err) {
         callback(err);
         return;
@@ -141,7 +145,6 @@ module.exports = function (N, apiPath) {
 
       // propose settings for views to response.data
       env.response.data.settings = _.pick(settings, settings_expose);
-      env.extras.puncher.stop();
 
       callback();
     });
@@ -230,14 +233,17 @@ module.exports = function (N, apiPath) {
             .limit(threads_per_page + 1).setOptions({ lean: true })
             .exec(function (err, visible_threads) {
 
+          env.extras.puncher.stop({ count: visible_threads.length });
+
           if (err) {
             next(err);
             return;
           }
 
-          env.extras.puncher.stop({ count: visible_threads.length });
-
           if (!visible_threads.length) {
+            // properly close puncher scope on early interrupt
+            env.extras.puncher.stop();
+
             if (env.params.page > 1) {
               // When user requests page that is out of possible range we redirect
               // them during before filter (see above).
@@ -250,9 +256,6 @@ module.exports = function (N, apiPath) {
 
             // category or forum without threads
             env.data.threads = [];
-
-            // properly close puncher scope on early interrupt
-            env.extras.puncher.stop();
 
             next();
             return;
@@ -309,16 +312,16 @@ module.exports = function (N, apiPath) {
         // interval: visible + deleted and others (if allowed by permissions)
         query.select(threads_in_fields.join(' ')).sort(sort)
             .setOptions({ lean: true }).exec(function (err, threads) {
+
+          env.extras.puncher.stop({ count: threads.length });
+          env.extras.puncher.stop();
+
           if (err) {
             next(err);
             return;
           }
 
           env.data.threads = threads;
-
-          env.extras.puncher.stop({ count: threads.length });
-          env.extras.puncher.stop();
-
           next();
         });
       }
@@ -338,6 +341,7 @@ module.exports = function (N, apiPath) {
       callback();
       return;
     }
+
     env.extras.puncher.start('Get subforums');
 
     max_level = env.data.section.level + 2; // need two next levels
@@ -349,14 +353,15 @@ module.exports = function (N, apiPath) {
     Section.find(query).sort('display_order').setOptions({ lean: true })
         .select(subforums_in_fields.join(' '))
         .exec(function (err, sections) {
+
+      env.extras.puncher.stop({ count: sections.length });
+
       if (err) {
         callback(err);
         return;
       }
 
       env.data.sections = sections;
-      env.extras.puncher.stop({ count: sections.length });
-
       callback();
     });
   });
@@ -374,6 +379,8 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('Filter sub-forums');
 
     fetch_sections_visibility(sections, usergroups, function (err, results) {
+      env.extras.puncher.stop({ count: filtered_sections.length });
+
       if (err) {
         callback(err);
         return;
@@ -387,9 +394,7 @@ module.exports = function (N, apiPath) {
         }
       });
 
-      env.extras.puncher.stop({ count: filtered_sections.length });
       env.data.sections = filtered_sections;
-
       callback();
     });
   });
@@ -518,7 +523,9 @@ module.exports = function (N, apiPath) {
 
     Section.find(query).select(fields).sort({ 'level': 1 })
         .setOptions({ lean: true }).exec(function (err, parents) {
+
       if (err) {
+        env.extras.puncher.stop();
         callback(err);
         return;
       }

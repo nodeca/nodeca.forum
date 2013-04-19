@@ -143,6 +143,8 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(settings_fetch, function (err, settings) {
+      env.extras.puncher.stop();
+
       if (err) {
         callback(err);
         return;
@@ -153,7 +155,6 @@ module.exports = function (N, apiPath) {
 
       // propose settings for views to response.data
       env.response.data.settings = _.pick(settings, settings_expose);
-      env.extras.puncher.stop();
 
       callback();
     });
@@ -234,6 +235,8 @@ module.exports = function (N, apiPath) {
     Post.find({ thread_id: env.params.id }).select('_id').sort('ts').skip(start)
         .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
 
+      env.extras.puncher.stop(!!docs ? { count: docs.length } : null);
+
       if (err) {
         callback(err);
         return;
@@ -250,7 +253,6 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.extras.puncher.stop(!!docs ? { count: docs.length } : null);
       env.extras.puncher.start('Get posts by _id list');
 
       // FIXME modify state condition (deleted and etc) if user has permission
@@ -267,16 +269,15 @@ module.exports = function (N, apiPath) {
       query.select(posts_in_fields.join(' ')).setOptions({ lean: true })
           .exec(function (err, posts) {
 
+        env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
+        env.extras.puncher.stop();
+
         if (err) {
           callback(err);
           return;
         }
 
         env.data.posts = posts;
-
-        env.extras.puncher.stop(!!posts ? { count: posts.length} : null);
-        env.extras.puncher.stop();
-
         callback();
       });
     });
@@ -344,7 +345,9 @@ module.exports = function (N, apiPath) {
 
     Section.find(query).select(fields).sort({ 'level': 1 })
         .setOptions({ lean: true }).exec(function (err, parents) {
+
       if (err) {
+        env.extras.puncher.stop();
         callback(err);
         return;
       }

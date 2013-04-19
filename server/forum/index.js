@@ -56,14 +56,15 @@ module.exports = function (N, apiPath) {
         .setOptions({ lean: true })
         .select(sections_in_fields.join(' '))
         .exec(function (err, sections) {
+
+      env.extras.puncher.stop({ count: sections.length });
+
       if (err) {
         callback(err);
         return;
       }
 
-      env.extras.puncher.stop({ count: sections.length });
       env.data.sections = sections;
-
       callback();
     });
   });
@@ -82,6 +83,8 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('Filter sections');
 
     fetch_sections_visibility(sections, usergroups, function (err, results) {
+      env.extras.puncher.stop({ count: filtered_sections.length });
+
       if (err) {
         callback(err);
         return;
@@ -95,9 +98,7 @@ module.exports = function (N, apiPath) {
         }
       });
 
-      env.extras.puncher.stop({ count: filtered_sections.length });
       env.data.sections = filtered_sections;
-
       callback();
     });
   });
