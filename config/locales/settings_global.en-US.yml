@@ -2,6 +2,10 @@ i18n:
   en-US:
     admin:
       setting:
+        group:
+          forum: Forum
+          forum_general: General
+
         category:
           forum: Forum
           thread: Thread

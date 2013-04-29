@@ -1,11 +1,20 @@
+setting_groups:
+  forum: ~
+
+  forum_general:
+    parent: forum
+
+
 setting_schemas:
   global:
     threads_per_page:
       type: number
-      category: forum
+      group_key: forum_general
+      category_key: forum
       default: 30
 
     posts_per_page:
       type: number
-      category: thread
+      group_key: forum_general
+      category_key: thread
       default: 25
