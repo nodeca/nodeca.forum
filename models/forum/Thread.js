@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 
 var Mongoose = require('mongoose');
@@ -45,41 +45,37 @@ module.exports = function (N, collectionName) {
   };
 
 
-  var Thread = module.exports.Thread = new Schema({
+  var Thread = new Schema({
+    title           : { type: String, required: true }
+    // user-friendly id (autoincremented)
+  , id              : { type: Number, required: true, min: 1, index: true }
 
-      title           : { type: String, required: true }
-      // user-friendly id (autoincremented)
-    , id              : { type: Number, required: true, min: 1, index: true }
+    // prefix id/cache
+  , prefix          : Schema.ObjectId
 
-      // prefix id/cache
-    , prefix          : Schema.ObjectId
+  , forum           : Schema.ObjectId
+  , forum_id        : Number
 
-    , forum           : Schema.ObjectId
-    , forum_id        : Number
+    // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
+    // constants should be defined globally
+  , state           : { type: Number, required: true }
+  , state_ext       : Number  // real state, if thread is sticky
+                              // (general `state` is used for fast selects)
+  , state_prev      : Number  // previous value, to rollback `delete`
 
-      // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
-      // constants should be defined globally
-    , state           : { type: Number, required: true }
-    , state_ext       : Number  // real state, if thread is sticky
-                                // (general `state` is used for fast selects)
-    , state_prev      : Number  // previous value, to rollback `delete`
+    // Tags
+  , tags_id_list    : [Number]
 
-      // Tags
-    , tags_id_list    : [Number]
+    // "Similar" threads cache
+  , similar         : [Schema.ObjectId]
 
-      // "Similar" threads cache
-    , similar         : [Schema.ObjectId]
-
-      // Cache
-    , cache           : cache
+    // Cache
+  , cache           : cache
 
 
-    , tags            : [String]
-    , views_count     : { type: Number, 'default': 0 }
-
-    },
-    { strict: true }
-  );
+  , tags            : [String]
+  , views_count     : { type: Number, 'default': 0 }
+  });
 
 
   // Indexes

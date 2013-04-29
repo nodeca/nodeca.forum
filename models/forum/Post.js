@@ -1,50 +1,46 @@
-"use strict";
+'use strict';
 
 
 var Mongoose = require('mongoose');
-var Schema = Mongoose.Schema;
+var Schema   = Mongoose.Schema;
 
-
-////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, collectionName) {
 
-  var Post = module.exports.Post = new Schema({
-      // user-friendly id (autoincremented)
-      id             : { type: Number, required: true, min: 1, index: true }
+  var Post = new Schema({
+    // user-friendly id (autoincremented)
+    id              : { type: Number, required: true, min: 1, index: true }
 
-    , thread          : Schema.ObjectId
-    , thread_id       : Number
-    , forum           : Schema.ObjectId
-    , forum_id        : Number
+  , thread          : Schema.ObjectId
+  , thread_id       : Number
+  , forum           : Schema.ObjectId
+  , forum_id        : Number
 
-    , user            : Schema.ObjectId
-    , ts              : Date    // timestamp
+  , user            : Schema.ObjectId
+  , ts              : Date    // timestamp
 
-    , ip              : String  // ip address
+  , ip              : String  // ip address
 
-    , text            : { type: String, required: true }
+  , text            : { type: String, required: true }
 
-    // Text format. Possible values:
-    //  `md`  - markdown
-    //  `vb`  - vBulletin bbcode
-    //  `txt` - clear text, with line breaks
-    //  `ts`  - textile
-    , fmt             : String
-    , html            : String  // Optional, rendered text, if needed
-                                // (some formats are rendered on the fly)
+  // Text format. Possible values:
+  //  `md`  - markdown
+  //  `vb`  - vBulletin bbcode
+  //  `txt` - clear text, with line breaks
+  //  `ts`  - textile
+  , fmt             : String
+  , html            : String  // Optional, rendered text, if needed
+                              // (some formats are rendered on the fly)
 
-    // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
-    // constants should be defined globally
-    , state           : { type: Number, required: true }
-    , state_ext       : Number  // real state, if thread is sticky
-                                // (general `state` is used for fast selects)
-    , state_prev      : Number  // previous value, to rollback `delete`
+  // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
+  // constants should be defined globally
+  , state           : { type: Number, required: true }
+  , state_ext       : Number  // real state, if thread is sticky
+                              // (general `state` is used for fast selects)
+  , state_prev      : Number  // previous value, to rollback `delete`
 
-    , attach_list     : [Schema.ObjectId]
-    },
-    { strict: true }
-  );
+  , attach_list     : [Schema.ObjectId]
+  });
 
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
