@@ -1,24 +1,23 @@
 router:
-  map:
-    http.get:
-      forum.index:
-        "/": ~
+  http.get:
+    forum.index:
+      "/": ~
 
-      forum.section:
-        "/f{id}(/page{page})":
-          id: /\d+/
-          page:
-            match: /[1-9]\d*/
-            default: 1
+    forum.section:
+      "/f{id}(/page{page})":
+        id: /\d+/
+        page:
+          match: /[1-9]\d*/
+          default: 1
 
 
-      forum.thread:
-        "/f{forum_id}/thread{id}(/page{page})":
-          forum_id: /\d+/
-          id: /\d+/
-          page:
-            match: /[1-9]\d*/
-            default: 1
+    forum.thread:
+      "/f{forum_id}/thread{id}(/page{page})":
+        forum_id: /\d+/
+        id: /\d+/
+        page:
+          match: /[1-9]\d*/
+          default: 1
 
-      admin.forum.index:
-        "/forums": ~
+    admin.forum.index:
+      "/forums": ~
