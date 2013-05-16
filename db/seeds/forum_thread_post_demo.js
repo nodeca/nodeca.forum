@@ -29,8 +29,8 @@ var SUB_FORUM_DEEP = 3;
 var THREAD_COUNT_IN_BIG_FORUM  = 200;
 var POST_COUNT_IN_BIG_THREAD  = 100;
 var USER_COUNT = 200;
-var MAX_MODERATOR_COUNT = 4;
-var MAX_SUB_FORUM_COUNT = 10;
+var MAX_MODERATOR_COUNT = 3;
+var MAX_SUB_FORUM_COUNT = 3;
 
 var CATEGORY_ID_SHIFT = 3;
 var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
@@ -71,7 +71,7 @@ Charlatan.users = [];
 // add helpers for categorys,forums, threads and posts
 Charlatan.Helpers.category = function () {
   return {
-    title: Charlatan.Lorem.sentence(),
+    title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: Charlatan.Lorem.sentence(),
 
     display_order: Charlatan.Incrementer.next('display_order'),
@@ -86,7 +86,7 @@ Charlatan.Helpers.forum = function (parent) {
   var moderator_list = [];
   var moderator;
 
-  var moderator_count = Charlatan.Helpers.rand(MAX_MODERATOR_COUNT + 1);
+  var moderator_count = Charlatan.Helpers.rand(MAX_MODERATOR_COUNT);
   for (var i = 0; i < moderator_count; i++) {
     moderator = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
     moderator_list.push(moderator);
@@ -94,7 +94,7 @@ Charlatan.Helpers.forum = function (parent) {
   }
 
   return {
-    title: Charlatan.Lorem.sentence(),
+    title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: Charlatan.Lorem.sentence(),
 
     id: Charlatan.Incrementer.next('forum'),
@@ -113,14 +113,14 @@ Charlatan.Helpers.forum = function (parent) {
     moderator_list: _.uniq(moderator_list),
 
     cache: {
-      real: {},
+      real: {}
     }
   };
 };
 
 Charlatan.Helpers.thread = function (forum) {
   return {
-    title: Charlatan.Lorem.sentence(),
+    title: Charlatan.Lorem.sentence().slice(0, -1),
 
     id: Charlatan.Incrementer.next('thread'),
 
@@ -176,7 +176,7 @@ Charlatan.Helpers.user = function () {
 
     email       : Charlatan.Internet.email(),
 
-    joined_ts   : new Date(),
+    joined_ts   : new Date()
 
     // ToDo add groups
   };
