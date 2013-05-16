@@ -1,10 +1,12 @@
 i18n:
   en-US:
     admin:
-      setting:
-        category:
+      core:
+        category_names:
           forum: Forum
-        forum_show: Show Forum
-        forum_read_topics: Read Topics
-        forum_reply_topics: Reply Topics
-        forum_start_topics: Start Topics
+
+        setting_names:
+          forum_show: Show Forum
+          forum_read_topics: Read Topics
+          forum_reply_topics: Reply Topics
+          forum_start_topics: Start Topics

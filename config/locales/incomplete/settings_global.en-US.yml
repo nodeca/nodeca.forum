@@ -1,15 +1,15 @@
 i18n:
   en-US:
     admin:
-      setting:
-        group:
+      core:
+        group_names:
           forum: Forum
           forum_general: General
 
-        category:
+        category_names:
           forum: Forum
           thread: Thread
 
-        threads_per_page: Threads per page
-
-        posts_per_page: Posts per page
+        setting_names:
+          threads_per_page: Threads per page
+          posts_per_page: Posts per page
