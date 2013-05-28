@@ -331,7 +331,7 @@ module.exports = function (N, apiPath) {
     data.head.title = thread.title;
     if (env.params.page > 1) {
       t_params = { title: thread.title, page: env.params.page };
-      data.head.title = env.helpers.t('forum.thread.title_with_page', t_params);
+      data.head.title = env.t('title_with_page', t_params);
     }
 
     // prepare thread info

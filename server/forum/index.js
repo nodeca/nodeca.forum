@@ -166,7 +166,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
     var data = env.response.data;
 
-    data.head.title = env.helpers.t('forum.index.title');
+    data.head.title = env.t('title');
     data.blocks = data.blocks || {};
     data.blocks.breadcrumbs = forum_breadcrumbs(env);
   });
