@@ -4,3 +4,4 @@ i18n:
       menus:
         navbar:
           forum: Forums
+          forum.section: Sections

@@ -21,3 +21,6 @@ router:
 
     admin.forum.index:
       "/forums": ~
+
+    admin.forum.section.index:
+      "/forum/section": ~

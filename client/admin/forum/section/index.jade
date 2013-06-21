@@ -1,0 +1,18 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.menus.admin })
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.menus.admin, path: self.blocks.breadcrumbs })
+
+    - self.add_raw_data('sections', self.sections)
+    ul#section_index.section-list(data-bind="template: { name: 'section_template', foreach: sections }")
+
+    script#section_template(type="text/html")
+      li.section(data-bind="css: { 'section-with-children': childrenEnabled }")
+        .section-control
+          span(data-bind="text: title")
+          .section-control-buttons
+            label
+              = self.t('section_children_enabled')
+              input(type="checkbox", data-bind="checked: childrenEnabled")
+        ul.section-children.section-list(data-bind="visible: hasChildren, template: { name: 'section_template', foreach: children }")

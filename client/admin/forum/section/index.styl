@@ -1,0 +1,28 @@
+#section_index
+  list-style: none
+
+.section-control
+  margin: 5px 0px
+  padding: 5px
+  width: 500px
+  background-color: #EFEFEF
+  border: solid 1px #EAEAEA
+  cursor: pointer
+
+.section-control-buttons
+  float: right
+
+.section-placeholder
+  @extend .section-control
+  height: 15px
+  background-color: #FFFB91
+  border: solid 1px #FFF947
+
+.section-children
+  margin-left: 50px
+  list-style: none
+  &:empty
+    height: 25px
+    width: 500px
+    background-color: #FAFAFA
+    border: solid 1px #FCFCFC
