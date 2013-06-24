@@ -5,14 +5,26 @@
     != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.menus.admin, path: self.blocks.breadcrumbs })
 
     - self.add_raw_data('sections', self.sections)
-    ul#section_index.section-list(data-bind="template: { name: 'section_template', foreach: sections }")
+    ul.section-list(data-bind="template: { name: 'section_template', foreach: sections }")
 
     script#section_template(type="text/html")
-      li.section(data-bind="css: { 'section-with-children': childrenEnabled }")
-        .section-control
-          span(data-bind="text: title")
-          .section-control-buttons
-            label
-              = self.t('section_children_enabled')
-              input(type="checkbox", data-bind="checked: childrenEnabled")
-        ul.section-children.section-list(data-bind="visible: hasChildren, template: { name: 'section_template', foreach: children }")
+      li.section
+        .row
+          .span7.section-control
+            .row
+              .span4
+                .section-title(data-bind="text: title")
+              .span3.text-right
+                button.btn.btn-link      #{self.t('button_rename')}
+                a.btn.btn-link(href="#") #{self.t('button_edit')}
+                button.btn.btn-link      #{self.t('button_delete')}
+            
+        .section-children(data-bind="visible: showChildren")
+          ul.section-list(data-bind="template: { name: 'section_template', foreach: children }")
+          ul.section-form
+            li.section
+              .row
+                form.span7.form-inline.section-control
+                  .controls.controls-row
+                    input.span5(type="text", name="title", placeholder=self.t('new_section_title'))
+                    button.btn.span2(type="submit") #{self.t('button_add_section')}

@@ -1,28 +1,23 @@
-#section_index
+.section-list, .section-form
   list-style: none
 
 .section-control
-  margin: 5px 0px
+  margin: 3px 0px
   padding: 5px
-  width: 500px
   background-color: #EFEFEF
   border: solid 1px #EAEAEA
-  cursor: pointer
+  border-radius: 5px
 
-.section-control-buttons
-  float: right
+.section-title
+  margin: 5px 0px 5px 10px
+  font-size: 12pt
 
 .section-placeholder
   @extend .section-control
   height: 15px
+  width: 600px
   background-color: #FFFB91
   border: solid 1px #FFF947
 
 .section-children
-  margin-left: 50px
-  list-style: none
-  &:empty
-    height: 25px
-    width: 500px
-    background-color: #FAFAFA
-    border: solid 1px #FCFCFC
+  margin-left: 20px

@@ -22,21 +22,18 @@ function Section(fields, children) {
     return new Section(section.fields, section.children);
   }));
 
-  this.childrenEnabled = ko.observable(!_.isEmpty(children));
-
-  this.hasChildren = ko.computed(function () {
-    if (this.childrenEnabled()) {
-      return true;
-    } else {
-      return this.childrenEnabled() && !_.isEmpty(this.children());
-    }
-  }, this);
+  this.showChildren = ko.observable(false);
 }
 
 
 function Form(sections) {
   this.sections = ko.observableArray(_.map(sections, function (section) {
-    return new Section(section.fields, section.children);
+    var section = new Section(section.fields, section.children);
+
+    // Show children of all top-level sections.
+    section.showChildren(true);
+
+    return section;
   }));
 }
 
@@ -47,6 +44,8 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
   $('.section-list').sortable({
     connectWith: '.section-list'
   , placeholder: 'section-placeholder'
+  , corsorAt: { top: 5, left: 5 }
+  , opacity: 0.4
   });
 });
 
