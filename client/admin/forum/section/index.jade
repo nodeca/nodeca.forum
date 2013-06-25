@@ -15,21 +15,18 @@
     script#section_template(type="text/html")
       li
         .clearfix.section-control.section-handle
-          .pull-right
-            .btn-group
-              button.btn.btn-link.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
-                span(data-bind="text: moderatorsInfo")
-                span.caret
+          a.pull-right.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
 
-              ul.pull-right.dropdown-menu
-                // ko foreach: moderator_list
-                li: a(data-bind="text: name, attr: { href: href }")
-                // /ko
-                li.divider(data-bind="visible: hasModerators")
-                li: a(href="#", data-bind="click: newModerator") #{self.t('add_moderator')}
+          a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
+            span(data-bind="text: moderatorsInfo")
+            span.caret
 
-            .btn-group
-              button.btn.btn-link.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
+          ul.pull-right.dropdown-menu
+            // ko foreach: moderator_list
+            li: a(data-bind="text: name, attr: { href: href }")
+            // /ko
+            li.divider(data-bind="visible: hasModerators")
+            li: a(href="#", data-bind="click: newModerator") #{self.t('add_moderator')}
 
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
           .pull-left.section-drag-mark ⇵
