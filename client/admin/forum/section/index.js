@@ -57,6 +57,10 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
   , placeholder: 'section-placeholder'
   , cursor: 'move'
   , cursorAt: { top: 0, left: 0 }
+  , change: function () {
+      $('.section-children-placeholder').removeClass('section-children-placeholder');
+      $('.section-placeholder').prev().children('.section-children:empty').addClass('section-children-placeholder');
+    }
   });
 });
 
