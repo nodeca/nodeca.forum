@@ -61,6 +61,9 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
       $('.section-children-placeholder').removeClass('section-children-placeholder');
       $('.section-placeholder').prev().children('.section-children:empty').addClass('section-children-placeholder');
     }
+  , stop: function () {
+      $('.section-children-placeholder').removeClass('section-children-placeholder');
+    }
   });
 });
 
