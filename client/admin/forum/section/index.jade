@@ -17,11 +17,11 @@
         .clearfix.section-control.section-handle
           .pull-right
             .btn-group
-              button.btn.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
+              button.btn.btn-link.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
                 span(data-bind="text: moderatorsInfo")
                 span.caret
 
-              ul.dropdown-menu
+              ul.pull-right.dropdown-menu
                 // ko foreach: moderator_list
                 li: a(data-bind="text: name, attr: { href: href }")
                 // /ko
@@ -29,7 +29,7 @@
                 li: a(href="#", data-bind="click: newModerator") #{self.t('add_moderator')}
 
             .btn-group
-              button.btn.btn-danger.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
+              button.btn.btn-link.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
 
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
           .pull-left.section-drag-mark ⇵
