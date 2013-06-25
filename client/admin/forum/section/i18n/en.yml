@@ -1,6 +1,6 @@
 en-US:
   index:
-    moderators_info: '#{count} ((moderator|moderators))'
+    moderators_info: 'Moderators (#{count})'
     add_moderator: Add moderator
     new_section: Create new section
     delete_section: Delete
