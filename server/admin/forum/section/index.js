@@ -11,10 +11,10 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  function fetchSections(accumulator, parent, callback) {
+  function fetchSections(env, accumulator, parent, callback) {
     N.models.forum.Section
         .find({ parent: parent })
-        .select('_id id title level parent parent_id parent_list parent_id_list')
+        .select('_id title parent moderator_list')
         .setOptions({ lean: true })
         .exec(function (err, sections) {
 
@@ -27,9 +27,10 @@ module.exports = function (N, apiPath) {
         var entry = { fields: section, children: [] };
 
         accumulator.push(entry);
+        env.data.users = env.data.users.concat(section.moderator_list);
 
         // Fill-in section's children.
-        fetchSections(entry.children, section._id, next);
+        fetchSections(env, entry.children, section._id, next);
       }, callback);
     });
   }
@@ -39,7 +40,9 @@ module.exports = function (N, apiPath) {
     env.response.data.head.title = env.t('title');
     env.response.data.sections = [];
 
+    env.data.users = env.data.users || [];
+
     // Fill-in sections list.
-    fetchSections(env.response.data.sections, null, callback);
+    fetchSections(env, env.response.data.sections, null, callback);
   });
 };

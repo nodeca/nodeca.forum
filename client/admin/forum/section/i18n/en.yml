@@ -1,7 +1,6 @@
 en-US:
   index:
-    new_section_title: New Section Title
-    button_add_section: add section
-    button_rename: rename
-    button_edit: edit
-    button_delete: delete
+    moderators_info: '#{count} ((moderator|moderators))'
+    add_moderator: Add moderator
+    new_section: Create new section
+    delete_section: Delete

@@ -4,27 +4,36 @@
   .main
     != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.menus.admin, path: self.blocks.breadcrumbs })
 
+    .pull-right: a.btn.btn-primary #{self.t('new_section')}
+
+    h1 #{self.head.title}
+
     - self.add_raw_data('sections', self.sections)
-    ul.section-list(data-bind="template: { name: 'section_template', foreach: sections }")
+    - self.add_raw_data('users',    self.users)
+    ul.section-list.section-draggable(data-bind="template: { name: 'section_template', foreach: sections }")
 
     script#section_template(type="text/html")
-      li.section
-        .row
-          .span7.section-control
-            .row
-              .span4
-                .section-title(data-bind="text: title")
-              .span3.text-right
-                button.btn.btn-link      #{self.t('button_rename')}
-                a.btn.btn-link(href="#") #{self.t('button_edit')}
-                button.btn.btn-link      #{self.t('button_delete')}
+      li
+        .clearfix.section-control.section-handle
+          .pull-right
+            .btn-group
+              button.btn.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
+                span(data-bind="text: moderatorsInfo")
+                span.caret
+
+              ul.dropdown-menu
+                // ko foreach: moderator_list
+                li: a(data-bind="text: name, attr: { href: href }")
+                // /ko
+                li.divider(data-bind="visible: hasModerators")
+                li: a(href="#", data-bind="click: newModerator") #{self.t('add_moderator')}
+
+            .btn-group
+              button.btn.btn-danger.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
+
+          //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
+          .pull-left.section-drag-mark ⇵
+
+          a.section-title(data-bind="text: title, attr: { href: href }")
             
-        .section-children(data-bind="visible: showChildren")
-          ul.section-list(data-bind="template: { name: 'section_template', foreach: children }")
-          ul.section-form
-            li.section
-              .row
-                form.span7.form-inline.section-control
-                  .controls.controls-row
-                    input.span5(type="text", name="title", placeholder=self.t('new_section_title'))
-                    button.btn.span2(type="submit") #{self.t('button_add_section')}
+        ul.section-children.section-list.section-draggable(data-bind="visible: showChildren, template: { name: 'section_template', foreach: children }")
