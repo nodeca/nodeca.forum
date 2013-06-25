@@ -48,12 +48,15 @@ function Form(sections) {
 N.wire.on('navigate.done:' + module.apiPath, function () {
   ko.applyBindings(new Form(N.runtime.page_data.sections), $('#content')[0]);
 
+  var dragHelper = $('<div>').css('height', '20px').css('width', '20px')[0];
+
   $('.section-draggable').sortable({
     handle: '.section-handle'
+  , helper: function () { return dragHelper; }
   , connectWith: '.section-draggable'
   , placeholder: 'section-placeholder'
   , cursor: 'move'
-  , opacity: 0.5
+  , cursorAt: { top: 0, left: 0 }
   });
 });
 
