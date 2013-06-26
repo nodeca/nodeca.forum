@@ -14,6 +14,7 @@ module.exports = function (N, apiPath) {
   function fetchSections(env, accumulator, parent, callback) {
     N.models.forum.Section
         .find({ parent: parent })
+        .sort('display_order')
         .select('_id title parent moderator_list')
         .setOptions({ lean: true })
         .exec(function (err, sections) {

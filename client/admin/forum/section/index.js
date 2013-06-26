@@ -47,22 +47,47 @@ function Form(sections) {
 
 N.wire.on('navigate.done:' + module.apiPath, function () {
   ko.applyBindings(new Form(N.runtime.page_data.sections), $('#content')[0]);
-
-  var dragHelper = $('<div>').css('height', '20px').css('width', '20px')[0];
-
-  $('.section-draggable').sortable({
+  
+  $('.section-group').draggable({
     handle: '.section-handle'
-  , helper: function () { return dragHelper; }
-  , connectWith: '.section-draggable'
-  , placeholder: 'section-placeholder'
+  , revert: 'invalid'
+  , helper: 'clone'
+  , opacity: 0.5
   , cursor: 'move'
-  , cursorAt: { top: 0, left: 0 }
-  , change: function () {
-      $('.section-children-placeholder').removeClass('section-children-placeholder');
-      $('.section-placeholder').prev().children('.section-children:empty').addClass('section-children-placeholder');
+  , start: function () {
+      $(this).addClass('section-dragging');
+
+      // To scroll window:
+      // - WebKit-based browsers and the quirks mode use `body` element.
+      // - Other browsers use `html` element.
+      var offsetTop;
+      
+      if (document.documentElement.scrollTop) {
+        offsetTop = document.documentElement.scrollTop - $(this).offset().top;
+      } else if (document.body.scrollTop) {
+        offsetTop = document.body.scrollTop - $(this).offset().top;
+      }
+
+      $('.section-placeholder').show();
+
+      if (document.documentElement.scrollTop) {
+        document.documentElement.scrollTop = $(this).offset().top + offsetTop;
+      } else if (document.body.scrollTop) {
+        document.body.scrollTop = $(this).offset().top + offsetTop;
+      }
     }
   , stop: function () {
-      $('.section-children-placeholder').removeClass('section-children-placeholder');
+      $(this).removeClass('section-dragging');
+      $('.section-placeholder').hide();
+    }
+  });
+
+  $('.section-placeholder').droppable({
+    hoverClass: 'section-placeholder-hover'
+  , tolerance: 'pointer'
+  , drop: function (event, ui) {
+      ui.draggable.prev().insertBefore(this);
+      ui.draggable.insertBefore(this);
     }
   });
 });

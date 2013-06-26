@@ -1,6 +1,9 @@
 .section-list
   list-style: none
 
+.section-dragging
+  opacity: 0.3
+
 .section-control
   margin: 3px 0px
   padding: 5px
@@ -23,19 +26,22 @@
   width: 100px
   text-align: center
 
+.section-children
+  margin-left: 50px
+
 .section-placeholder
   margin-top: 3px
   margin-bottom: 3px
   height: 25px
-  background-color: #FFFB91
-  border: solid 2px #FFF947
-  border-radius: 5px
-
-.section-children
-  margin-left: 50px
-
-.section-children-placeholder:empty
-  @extend .section-placeholder
   background-color: #FAFAFA
-  border-style: dashed
-  border-color: #E8E8E8
+  border: dashed 2px #E8E8E8
+  border-radius: 5px
+  display: none
+
+.section-placeholder-active
+  display: block
+
+.section-placeholder-hover
+  background-color: #FFFB91
+  border-style: solid
+  border-color: #FFF947
