@@ -60,20 +60,20 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
       // To scroll window:
       // - WebKit-based browsers and the quirks mode use `body` element.
       // - Other browsers use `html` element.
-      var offsetTop;
+      var screenOffsetTop;
       
       if (document.documentElement.scrollTop) {
-        offsetTop = document.documentElement.scrollTop - $(this).offset().top;
+        screenOffsetTop = $(this).offset().top - document.documentElement.scrollTop;
       } else if (document.body.scrollTop) {
-        offsetTop = document.body.scrollTop - $(this).offset().top;
+        screenOffsetTop = $(this).offset().top - document.body.scrollTop;
       }
 
       $('.section-placeholder').show();
 
       if (document.documentElement.scrollTop) {
-        document.documentElement.scrollTop = $(this).offset().top + offsetTop;
+        document.documentElement.scrollTop = $(this).offset().top - screenOffsetTop;
       } else if (document.body.scrollTop) {
-        document.body.scrollTop = $(this).offset().top + offsetTop;
+        document.body.scrollTop = $(this).offset().top - screenOffsetTop;
       }
     }
   , stop: function () {
