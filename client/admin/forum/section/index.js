@@ -10,7 +10,9 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
   , opacity: 0.5
   , cursor: 'move'
   , start: function () {
-      $(this).addClass('section-dragging');
+      var $this = $(this);
+
+      $this.addClass('section-dragging');
 
       // To scroll window:
       // - WebKit-based browsers and the quirks mode use `body` element.
@@ -19,18 +21,23 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
   
       // Calculate element offset relative to upper edge of viewport.
       if (document.documentElement.scrollTop) {
-        screenOffsetTop = $(this).offset().top - document.documentElement.scrollTop;
+        screenOffsetTop = $this.offset().top - document.documentElement.scrollTop;
       } else if (document.body.scrollTop) {
-        screenOffsetTop = $(this).offset().top - document.body.scrollTop;
+        screenOffsetTop = $this.offset().top - document.body.scrollTop;
       }
 
-      $('.section-placeholder').show();
+      // Show all placeholders except useless (inner and surrounding).
+      $('.section-placeholder')
+        .not($this.find('.section-placeholder'))
+        .not($this.prev('.section-placeholder'))
+        .not($this.next('.section-placeholder'))
+        .show();
 
       // After placeholders are shown, restore the offset to prevent jerk effect.
       if (document.documentElement.scrollTop) {
-        document.documentElement.scrollTop = $(this).offset().top - screenOffsetTop;
+        document.documentElement.scrollTop = $this.offset().top - screenOffsetTop;
       } else if (document.body.scrollTop) {
-        document.body.scrollTop = $(this).offset().top - screenOffsetTop;
+        document.body.scrollTop = $this.offset().top - screenOffsetTop;
       }
     }
   , stop: function () {
