@@ -1,6 +1,9 @@
 'use strict';
 
 
+var _ = require('lodash');
+
+
 N.wire.on('navigate.done:' + module.apiPath, function () {
   // Make sections draggable (both section control and children).
   $('.section-group').draggable({
@@ -55,6 +58,23 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
       // Move section and it's allied placeholder into new location.
       ui.draggable.prev().filter('.section-placeholder').insertBefore(this);
       ui.draggable.insertBefore(this);
+
+      var self   = this
+        , _id    = ui.draggable.children('.section-control').data('id')
+        , parent = $(this).parents('.section-group:first').children('.section-control').data('id');
+
+      N.io.rpc('admin.forum.section.update', { _id: _id, parent: parent }, function (err) {
+        if (err) {
+          return false; // Invoke standard error handling.
+        }
+
+        _.forEach($(self).siblings('.section-group'), function (section, index) {
+          N.io.rpc('admin.forum.section.update', {
+            _id: $(section).children('.section-control').data('id')
+          , display_order: index
+          });
+        });
+      });
     }
   });
 });
