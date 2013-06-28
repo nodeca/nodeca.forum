@@ -5,30 +5,30 @@ var _  = require('lodash');
 var ko = require('knockout');
 
 
-function Section(fields, children) {
-  fields = fields || {};
+// List of all available sections.
+var sections = null;
 
-  this._id    = ko.observable(fields._id    || null                  ).extend({ dirty: false });
-  this.title  = ko.observable(fields.title  || t('new_section_title')).extend({ dirty: false });
-  this.parent = ko.observable(fields.parent || null                  ).extend({ dirty: false });
+
+function Section(fields) {
+  this._id   = fields._id;
+  this.title = fields.title;
+
+  this.parent = ko.observable(fields.parent || null).extend({ dirty: false });
 
   this.moderator_list = ko.observableArray(_.map(fields.moderator_list, function (moderatorId) {
     var moderator = N.runtime.page_data.users[moderatorId];
     return { name: moderator._uname, href: '#' };
-  }));
+  })).extend({ dirty: false });
 
   this.hasModerators = ko.computed(function () {
     return !_.isEmpty(this.moderator_list());
   }, this);
 
-  this.children = ko.observableArray(_.map(children, function (section) {
-    return new Section(section.fields, section.children);
-  }));
-
-  this.showChildren = ko.observable(true);
+  this.moderatorsInfo = ko.computed(function () {
+    return t('moderators_info', { count: this.moderator_list().length });
+  }, this);
 
   this.href = '#';
-  this.moderatorsInfo = t('moderators_info', { count: this.moderator_list().length });
 }
 
 Section.prototype.destroy = function destroy() {
@@ -38,16 +38,26 @@ Section.prototype.newModerator = function newModerator() {
 };
 
 
-function Form(sections) {
-  this.sections = ko.observableArray(_.map(sections, function (section) {
-    return new Section(section.fields, section.children);
-  }));
-}
-
-
 N.wire.on('navigate.done:' + module.apiPath, function () {
-  ko.applyBindings(new Form(N.runtime.page_data.sections), $('#content')[0]);
-  
+  function generateSectionModels(dataList) {
+    _.forEach(dataList, function (data) {
+      sections.push(new Section(data.fields));
+
+      // Recursively generate children.
+      generateSectionModels(data.children);
+    });
+  }
+
+  // Generate full sections list.
+  sections = [];
+  generateSectionModels(N.runtime.page_data.sections);
+
+  // Apply section bindings.
+  _.forEach(sections, function (section) {
+    ko.applyBindings(section, $('#section_' + section._id)[0]);
+  });
+ 
+  // Make sections draggable (both section control and children).
   $('.section-group').draggable({
     handle: '.section-handle'
   , revert: 'invalid'
@@ -61,7 +71,8 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
       // - WebKit-based browsers and the quirks mode use `body` element.
       // - Other browsers use `html` element.
       var screenOffsetTop;
-      
+  
+      // Calculate element offset relative to upper edge of viewport.
       if (document.documentElement.scrollTop) {
         screenOffsetTop = $(this).offset().top - document.documentElement.scrollTop;
       } else if (document.body.scrollTop) {
@@ -70,6 +81,7 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
 
       $('.section-placeholder').show();
 
+      // After placeholders are shown, restore the offset to prevent jerk effect.
       if (document.documentElement.scrollTop) {
         document.documentElement.scrollTop = $(this).offset().top - screenOffsetTop;
       } else if (document.body.scrollTop) {
@@ -82,11 +94,14 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
     }
   });
 
+  // Make all placeholders (hidden by default) droppable.
   $('.section-placeholder').droppable({
-    hoverClass: 'section-placeholder-hover'
+    accept: '.section-group'
+  , hoverClass: 'section-placeholder-hover'
   , tolerance: 'pointer'
   , drop: function (event, ui) {
-      ui.draggable.prev().insertBefore(this);
+      // Move section and it's allied placeholder into new location.
+      ui.draggable.prev().filter('.section-placeholder').insertBefore(this);
       ui.draggable.insertBefore(this);
     }
   });
@@ -94,5 +109,6 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
 
 
 N.wire.on('navigate.exit:' + module.apiPath, function () {
+  sections = null;
   ko.cleanNode($('#content')[0]);
 });

@@ -8,17 +8,12 @@
 
     h1 #{self.head.title}
 
-    - self.add_raw_data('sections', self.sections)
-    - self.add_raw_data('users',    self.users)
-    ul.section-list.section-draggable
-      // ko template: { name: 'section_template', foreach: sections }
-      // /ko
-      li.section-placeholder
-
-    script#section_template(type="text/html")
+    //- Helper to render single section control bar with children list.
+    mixin render_section(section)
       li.section-placeholder
       li.section-group
-        .clearfix.section-control
+        //- Section's own control bar. 
+        .clearfix.section-control(id="section_#{section.fields._id}")
           a.pull-right.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
 
           a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
@@ -36,8 +31,19 @@
           .pull-left.section-handle.section-drag-mark ⇵
 
           a.section-title(data-bind="text: title, attr: { href: href }")
-            
-        ul.section-children.section-list.section-draggable(data-bind="visible: showChildren")
-          // ko template: { name: 'section_template', foreach: children }
-          // /ko
+
+        //- Section's children list.
+        ul.section-children.section-list.section-draggable
+          each child in section.children
+            mixin render_section(child)
           li.section-placeholder
+
+    //- Root sections list
+    ul.section-list.section-draggable
+      each section in self.sections
+        mixin render_section(section)
+      li.section-placeholder
+
+    //- Raw data for client-side Knockout bindings.
+    - self.add_raw_data('sections', self.sections)
+    - self.add_raw_data('users',    self.users)
