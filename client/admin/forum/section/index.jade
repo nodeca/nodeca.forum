@@ -13,24 +13,26 @@
       li.section-placeholder
       li.section-group
         //- Section's own control bar. 
-        .clearfix.section-control(id="section_#{section.fields._id}")
-          a.pull-right.section-delete-button(data-bind="click: destroy") #{self.t('delete_section')}
+        .clearfix.section-control(data-id=section._id.toString())
+          a.pull-right.section-delete-button #{self.t('delete_section')}
 
           a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
-            span(data-bind="text: moderatorsInfo")
+            = self.t('moderators_info', { count: section.moderator_list.length })
             span.caret
 
           ul.pull-right.dropdown-menu
-            // ko foreach: moderator_list
-            li: a(data-bind="text: name, attr: { href: href }")
-            // /ko
-            li.divider(data-bind="visible: hasModerators")
-            li: a(href="#", data-bind="click: newModerator") #{self.t('add_moderator')}
+            each moderator in section.moderator_list
+              li: a(href="#") #{self.users[moderator]._uname}
+
+            if 0 !== section.moderator_list.length
+              li.divider
+
+            li: a(href="#") #{self.t('add_moderator')}
 
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
           .pull-left.section-handle.section-drag-mark ⇵
 
-          a.section-title(data-bind="text: title, attr: { href: href }")
+          a.section-title(href="#") #{section.title}
 
         //- Section's children list.
         ul.section-children.section-list.section-draggable
@@ -43,7 +45,3 @@
       each section in self.sections
         mixin render_section(section)
       li.section-placeholder
-
-    //- Raw data for client-side Knockout bindings.
-    - self.add_raw_data('sections', self.sections)
-    - self.add_raw_data('users',    self.users)

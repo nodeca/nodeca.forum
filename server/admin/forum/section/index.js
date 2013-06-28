@@ -25,13 +25,13 @@ module.exports = function (N, apiPath) {
       }
 
       async.forEach(sections, function (section, next) {
-        var entry = { fields: section, children: [] };
+        section.children = [];
 
-        accumulator.push(entry);
+        accumulator.push(section);
         env.data.users = env.data.users.concat(section.moderator_list);
 
         // Fill-in section's children.
-        fetchSections(env, entry.children, section._id, next);
+        fetchSections(env, section.children, section._id, next);
       }, callback);
     });
   }
