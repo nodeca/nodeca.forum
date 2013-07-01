@@ -35,22 +35,27 @@ form.form-horizontal
   fieldset
     legend #{self.t('fieldset_moderator_list')}
 
-    table.table.table-condensed.table-striped.table-hover
-      tr
-        th #{self.t('column_moderator_name')}
-        th
-      tr
-        td: a(href="#") Moderator 1
-        td: a(href="#").pull-right #{self.t('button_delete_moderator')}
-      tr
-        td: a(href="#") Moderator 2
-        td: a(href="#").pull-right #{self.t('button_delete_moderator')}
-      tr
-        td: a(href="#") Moderator 3
-        td: a(href="#").pull-right #{self.t('button_delete_moderator')}
+    .control-group
+      label.control-label(for="section_add_moderator") #{self.t('field_add_moderator')}
+      .controls
+        .input-append
+          input#section_add_moderator(type="text")
+          button.btn #{self.t('button_add_moderator')}
 
-    .pull-right
-      button.btn #{self.t('button_add_moderator')}
+    .control-group
+      table.table.table-condensed.table-striped.table-hover
+        tr
+          th #{self.t('column_moderator_name')}
+          th
+        tr
+          td: a(href="#") Moderator 1
+          td: a(href="#").pull-right #{self.t('button_delete_moderator')}
+        tr
+          td: a(href="#") Moderator 2
+          td: a(href="#").pull-right #{self.t('button_delete_moderator')}
+        tr
+          td: a(href="#") Moderator 3
+          td: a(href="#").pull-right #{self.t('button_delete_moderator')}
 
   fieldset
     legend #{self.t('fieldset_settings')}

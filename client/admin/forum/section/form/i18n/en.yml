@@ -21,7 +21,8 @@ en-US:
 
   fieldset_moderator_list: Moderators
   column_moderator_name: Name
-  button_add_moderator: Add moderator
+  field_add_moderator: Add moderator by name
+  button_add_moderator: Ok
   button_delete_moderator: delete
 
   fieldset_settings: Usergroup-specific settings
