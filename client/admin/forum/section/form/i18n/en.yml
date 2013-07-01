@@ -22,7 +22,7 @@ en-US:
   fieldset_moderator_list: Moderators
   column_moderator_name: Name
   button_add_moderator: Add moderator
-  button_delete_moderator: Delete
+  button_delete_moderator: delete
 
   fieldset_settings: Usergroup-specific settings
   field_copy_settings_from: Copy from
