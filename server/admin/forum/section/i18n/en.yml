@@ -1,3 +1,6 @@
 en-US:
   index:
     title: Edit forum sections
+
+  edit:
+    title: 'Edit forum section: #{name}'

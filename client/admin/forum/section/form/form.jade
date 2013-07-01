@@ -1,0 +1,77 @@
+form.form-horizontal
+  fieldset
+    legend #{self.t('fieldset_main')}
+
+    .control-group
+      label.control-label #{self.t('field_title')}
+      .controls: input(type="text")
+
+    .control-group
+      label.control-label #{self.t('field_description')}
+      .controls: textarea
+
+    .control-group
+      label.control-label #{self.t('field_parent')}
+      .controls: select: option #{self.t('field_parent_none')}
+
+  fieldset
+    legend #{self.t('fieldset_options')}
+
+    mixin option_field(name)
+      .control-group
+        label.control-label(for="section_#{name}") #{self.t('field_' + name)}
+        .controls.switch
+          input(id="section_#{name}", type="checkbox")
+          label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+
+    mixin option_field('is_category')
+    mixin option_field('is_enabled')
+    mixin option_field('is_writeble')
+    mixin option_field('is_searcheable')
+    mixin option_field('is_voteable')
+    mixin option_field('is_counted')
+    mixin option_field('is_excludable')
+
+  fieldset
+    legend #{self.t('fieldset_moderator_list')}
+
+    table.table.table-condensed.table-striped.table-hover
+      tr
+        th #{self.t('column_moderator_name')}
+        th
+      tr
+        td: a(href="#") Moderator 1
+        td: a(href="#") #{self.t('button_delete_moderator')}
+      tr
+        td: a(href="#") Moderator 2
+        td: a(href="#") #{self.t('button_delete_moderator')}
+      tr
+        td: a(href="#") Moderator 3
+        td: a(href="#") #{self.t('button_delete_moderator')}
+
+    .pull-right
+      button.btn #{self.t('button_add_moderator')}
+
+  fieldset
+    legend #{self.t('fieldset_settings')}
+
+    .control-group
+      label.control-label(for="section_copy_settings_from") #{self.t('field_copy_settings_from')}
+      .controls
+        select: option #{self.t('field_copy_settings_from_none')}
+        button.btn #{self.t('button_copy_settings_from_accept')}
+
+    mixin setting_field(name)
+      .control-group
+        label.control-label(for="section_#{name}") Setting Name
+        .controls.switch
+          input(id="section_#{name}", type="checkbox")
+          label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+
+    mixin setting_field('setting_1')
+    mixin setting_field('setting_2')
+    mixin setting_field('setting_3')
+    mixin setting_field('setting_4')
+
+  hr
+  button.btn.btn-primary.btn-large(type="submit") #{self.t('save')}

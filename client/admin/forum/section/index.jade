@@ -32,7 +32,8 @@
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
           .pull-left.section-handle.section-drag-mark ⇵
 
-          a.section-title(href="#") #{section.title}
+          a.section-title(href=self.link_to('admin.forum.section.edit', { _id: section._id }))
+            = section.title
 
         //- Section's children list.
         ul.section-children.section-list.section-draggable
