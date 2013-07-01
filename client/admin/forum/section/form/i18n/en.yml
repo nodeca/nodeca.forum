@@ -28,3 +28,4 @@ en-US:
   field_copy_settings_from: Copy from
   field_copy_settings_from_none: None (use own)
   button_copy_settings_from_accept: Accept
+  checkbox_override_setting: Override

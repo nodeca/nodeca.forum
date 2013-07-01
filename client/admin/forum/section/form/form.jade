@@ -64,9 +64,16 @@ form.form-horizontal
     mixin setting_field(name)
       .control-group
         label.control-label(for="section_#{name}") Setting Name
-        .controls.switch
-          input(id="section_#{name}", type="checkbox")
-          label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+        .controls
+          .row-fluid
+            .span4
+              .switch
+                input(id="section_#{name}", type="checkbox")
+                label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+            .span4
+              label.checkbox.inline
+                input(type="checkbox")
+                = self.t('checkbox_override_setting')
 
     mixin setting_field('setting_1')
     mixin setting_field('setting_2')
