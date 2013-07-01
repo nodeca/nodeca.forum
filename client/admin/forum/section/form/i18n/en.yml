@@ -1,5 +1,5 @@
 en-US:
-  save: Save
+  button_save: Save
 
   value_yes: Yes
   value_no: No
@@ -24,8 +24,14 @@ en-US:
   button_add_moderator: Add moderator
   button_delete_moderator: Delete
 
-  fieldset_settings: Settings
+  fieldset_settings: Usergroup-specific settings
   field_copy_settings_from: Copy from
   field_copy_settings_from_none: None (use own)
-  button_copy_settings_from_accept: Accept
-  checkbox_override_setting: Override
+  button_copy_settings_from: Accept
+  field_add_settings_for: Add custom
+  field_add_settings_for_none: <select usergroup>
+  button_add_settings_for: Accept
+
+  fieldset_usergroup_settings: 'Settings for #{usergroup}'
+  button_delete_usergroup_settings: delete
+  checkbox_override_usergroup_setting: Override

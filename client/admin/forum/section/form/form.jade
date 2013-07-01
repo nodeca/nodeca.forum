@@ -58,27 +58,43 @@ form.form-horizontal
     .control-group
       label.control-label(for="section_copy_settings_from") #{self.t('field_copy_settings_from')}
       .controls
-        select: option #{self.t('field_copy_settings_from_none')}
-        button.btn #{self.t('button_copy_settings_from_accept')}
+        select#section_copy_settings_from: option #{self.t('field_copy_settings_from_none')}
+        button.btn #{self.t('button_copy_settings_from')}
 
-    mixin setting_field(name)
-      .control-group.control-group-hover
-        label.control-label(for="section_#{name}") Setting Name
-        .controls
-          .row-fluid
-            .span4
-              .switch
-                input(id="section_#{name}", type="checkbox")
-                label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
-            .span4
-              label.checkbox.inline
-                input(type="checkbox")
-                = self.t('checkbox_override_setting')
+    .control-group
+      label.control-label(for="section_add_settings_for") #{self.t('field_add_settings_for')}
+      .controls
+        select#section_add_settings_for: option #{self.t('field_add_settings_for_none')}
+        button.btn #{self.t('button_add_settings_for')}
 
-    mixin setting_field('setting_1')
-    mixin setting_field('setting_2')
-    mixin setting_field('setting_3')
-    mixin setting_field('setting_4')
+  mixin settings_fieldset(usergroup)
+    fieldset
+      legend
+        .row-fluid
+          .span6 #{self.t('fieldset_usergroup_settings', { usergroup: usergroup })}
+          .span6.text-right: a(href="#") #{self.t('button_delete_usergroup_settings')}
+
+      mixin setting_field(name)
+        .control-group.control-group-hover
+          label.control-label(for="section_#{usergroup}_#{name}") Setting Name
+          .controls
+            .row-fluid
+              .span4
+                .switch
+                  input(id="section_#{usergroup}_#{name}", type="checkbox")
+                  label(for="section_#{usergroup}_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+              .span4
+                label.checkbox.inline
+                  input(type="checkbox")
+                  = self.t('checkbox_override_usergroup_setting')
+
+      mixin setting_field('setting_1')
+      mixin setting_field('setting_2')
+      mixin setting_field('setting_3')
+      mixin setting_field('setting_4')
+
+  mixin settings_fieldset('members')
+  mixin settings_fieldset('guests')
 
   hr
-  button.btn.btn-primary.btn-large(type="submit") #{self.t('save')}
+  button.btn.btn-primary.btn-large(type="submit") #{self.t('button_save')}
