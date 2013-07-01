@@ -1,15 +1,14 @@
-article#content.forum-threadlist
+article#content.forum-threads-root
   != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   header.page-head
-    h1(itemprop='name')= self.forum.title
-    p(itemprop='description')
+    h1.page-head__title(itemprop='name')= self.forum.title
+    p.page-head__descr(itemprop='description')
       | #{self.forum.description}
 
   //- Subforums, if exist
   - if (self.sections && self.sections.length)
-    ul.fl-cat-list
-      != self.partial('@forum.blocks.subsections_list', { subsections: self.sections, users: self.users })
+    != self.partial('@forum.blocks.subsections_list', { subsections: self.sections, users: self.users })
 
   - if (self.forum.is_category === false)
     //- Toolbar with pagination & controls

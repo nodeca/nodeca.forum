@@ -1,0 +1,46 @@
+// Forum `index` styles.
+//
+
+@import "nodeca.core/client/common/_variables"
+
+//
+// Category block
+//
+
+.forum-category
+  margin-bottom baseLineHeight
+
+.forum-category__head
+  border-bottom 2px solid grayLighter
+  transition opacity .3s ease
+
+.forum-category__title
+  font-weight normal
+  font-style italic
+  color grayLight
+  margin 0
+
+a.forum-category__link
+  color grayLight
+  text-decoration none
+
+.forum-category__collapser
+  transition opacity .3s ease
+  margin-left .3em
+  opacity 0
+
+//
+// Transitions & states
+//
+.forum-category__title:hover .forum-category__collapser
+  opacity 1
+
+.collapsed .forum-category__head
+  opacity .2
+
+.collapsed:hover .forum-category__head
+  opacity .7
+
+// Remove subsections border
+.forum-category .forum-sections
+  border-top 0

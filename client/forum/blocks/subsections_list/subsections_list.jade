@@ -1,50 +1,52 @@
 //- List of subsections
-//- !!! needs <ul> cover
-- each forum in self.subsections
-  - last_thread = forum.cache.real.last_thread_id || null
-  - last_user = forum.cache.real.last_user || null
-  - last_ts = forum.cache.real.last_ts || null
-  li
-    //- Add 'unread' class & #id below, for new data
-    .row
-      .span7.fl-item-summary
-        h3
-          a(href=self.link_to('forum.section', forum))= forum.title
 
-        - if (forum.child_list && forum.child_list.length > 0)
-          ul.hlist.fl-subsections.hidden-phone
-            - each sub_forum in forum.child_list
-              li: a(href=self.link_to('forum.section', sub_forum))= sub_forum.title
+ul.forum-sections
+  - each forum in self.subsections
+    - last_thread = forum.cache.real.last_thread_id || null
+    - last_user = forum.cache.real.last_user || null
+    - last_ts = forum.cache.real.last_ts || null
+    li.forum-section
+      //- Add 'unread' class & #id below, for new data
+      .row
+        .forum-section__summary.span7
+          h3.forum-section__title
+            a.forum-section__title-link(href=self.link_to('forum.section', forum))= forum.title
 
-        - if (forum.moderator_list && forum.moderator_list.length > 0)
-          dl.def-hlist.fl-moderators.hidden-phone
-            dt= self.t('moderators', { count: forum.moderator_list.length })
-            - each moderator in forum.moderator_list
-              - if (self.users[moderator])
-                dd
-                  a.usercard-popover(
-                    href=self.link_to('users.member', self.users[moderator]),
-                    data-user-id=String(moderator)) #{self.users[moderator]._uname}
+          - if (forum.child_list && forum.child_list.length > 0)
+            ul.forum-section__subforums.hidden-phone
+              - each sub_forum in forum.child_list
+                li.forum-section__subforum-item
+                  a.forum-section__subforum-link(href=self.link_to('forum.section', sub_forum))= sub_forum.title
 
-      ul.span2.fl-item-counters.hidden-phone
-        li
-          strong #{forum.cache.real.thread_count}
-          = self.t('forum_topics', { count: forum.cache.real.thread_count })
-        li 
-          strong #{forum.cache.real.post_count}
-          = self.t('forum_posts', { count: forum.cache.real.post_count })
-      
-      - if (last_thread)
-        ul.span3.fl-item-lastpost.hidden-phone
-          li.lastpost-title
-            a(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
-          - if (self.users[last_user])
-            li.lastpost-user
-              = self.t('topic_by') 
-              - lp_user = self.users[last_user]
-              a.usercard-popover(
-                href=self.link_to('users.member', lp_user),
-                data-user-id=String(lp_user._id)) #{lp_user._uname}
-          - if (last_ts)
-            li.lastpost-time
-              time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
+          - if (forum.moderator_list && forum.moderator_list.length > 0)
+            dl.forum-section__moderators.hidden-phone
+              dt.forum-section__moderators-caption= self.t('moderators', { count: forum.moderator_list.length })
+              - each moderator in forum.moderator_list
+                - if (self.users[moderator])
+                  dd.forum-section__moderator
+                    a.forum-section__moderator-link.usercard-popover(
+                      href=self.link_to('users.member', self.users[moderator]),
+                      data-user-id=String(moderator)) #{self.users[moderator]._uname}
+
+        ul.forum-section__counters.span2
+          li.forum-section__counter-item
+            span.forum-section__counter-val #{forum.cache.real.thread_count}
+            = self.t('forum_topics', { count: forum.cache.real.thread_count })
+          li.forum-section__counter-item
+            span.forum-section__counter-val #{forum.cache.real.post_count}
+            = self.t('forum_posts', { count: forum.cache.real.post_count })
+        
+        - if (last_thread)
+          ul.forum-section__lpost.span3.hidden-phone
+            li.forum-section__lpost-title
+              a.forum-section__lpost-title-link(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
+            - if (self.users[last_user])
+              li.forum-section__lpost-user
+                = self.t('topic_by') 
+                - lp_user = self.users[last_user]
+                a.forum-section__lpost-user-link.usercard-popover(
+                  href=self.link_to('users.member', lp_user),
+                  data-user-id=String(lp_user._id)) #{lp_user._uname}
+            - if (last_ts)
+              li.forum-section__lpost-time
+                time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}

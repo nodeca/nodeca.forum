@@ -1,0 +1,152 @@
+// Forum sections list. Used on forum `index` & forum `section` page
+//
+
+@import "nodeca.core/client/common/_variables"
+
+.forum-sections
+  font-family sansWideFontFamily
+  margin 0
+  list-style none
+  border-top 1px solid grayLightest
+
+.forum-section
+  padding 15px 0
+  border-bottom 1px solid grayLightest
+  //min-height 40px
+  &:last-child
+    border 0
+
+//
+// first column
+//
+
+.forum-section__summary
+  padding-left 2em
+  box-sizing border-box
+  // IE7 hack - no :before & box-sizing
+  *padding-left 0
+
+.forum-section__title
+  position relative
+  font-weight normal
+  margin-top 0
+  margin-bottom 0
+  &:before
+    content ''
+    position absolute
+    left -20px
+    top 0
+    height baseLineHeight
+    width 4px
+    background-color grayLighter
+
+.forum-section__title-link
+  color grayDark
+  &:hover
+    color linkColorHover
+
+// -- subforums list
+.forum-section__subforums
+  position relative
+  font-size 12px
+  line-height (baseLineHeight*3/4)
+  margin (baseLineHeight/4) 0 0 1.5em
+  color grayLight
+  &:before
+    content '╰ '
+    position absolute
+    top 0
+    left -1em
+
+.forum-section__subforum-item
+  display inline-block
+  line-height (baseLineHeight*3/4)
+  &:after
+    content: ",";
+    margin-right: 0.5em;
+  &:last-child:after
+    content: "";
+
+a.forum-section__subforum-link
+  color grayLight
+  &:hover
+    color linkColorHover
+
+// -- moderators list
+.forum-section__moderators
+  font-size 11px
+  line-height (baseLineHeight*3/4)
+  margin (baseLineHeight/4) 0 0 .7em
+  color grayLight
+
+.forum-section__moderators-caption
+  display inline-block
+  line-height (baseLineHeight*3/4)
+  font-weight normal
+  &:after
+    content ':'
+
+.forum-section__moderator
+  display inline-block
+  line-height (baseLineHeight*3/4)
+  margin-left 5px
+  &:after
+    content ','
+  &:last-child:after
+    content ""
+
+a.forum-section__moderator-link
+  color grayLight
+  &:hover
+    color linkColorHover
+
+//
+// Second column (topics/posts counters)
+//
+
+.forum-section__counters
+  list-style none
+  font-size 13px
+  color gray
+
+.forum-section__counter-item
+  line-height (baseLineHeight*3/4)
+
+.forum-section__counter-val
+  font-weight bold
+
+//
+// Last column (latest post info)
+//
+
+.forum-section__lpost
+  list-style none
+  font-size 11px
+
+.forum-section__lpost-title
+.forum-section__lpost-user
+.forum-section__lpost-time
+    line-height (baseLineHeight*3/4)
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
+
+a.forum-section__lpost-title-link
+  color grayLight
+
+.forum-section__lpost-user
+a.forum-section__lpost-user-link
+  color gray
+
+.forum-section__lpost-time
+  color grayLight
+  padding-left 0.5em
+
+//
+// Markers
+//
+////////////////////////////////////////////////
+
+.unread .forum-section__title:before
+  background-color colorUnread
+  width 6px

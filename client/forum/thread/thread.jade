@@ -1,10 +1,10 @@
-article#content
+article#content.forum-topic-root
   != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   header.page-head
-    h1(itemprop='name')= self.thread.title
+    h1.page-head__title(itemprop='name')= self.thread.title
     - if (self.thread._seo_desc)
-      p(itemprop='description')
+      p.page-head__descr(itemprop='description')
         | #{self.thread._seo_desc}
 
   nav.controlbar-keeper

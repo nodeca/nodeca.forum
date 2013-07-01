@@ -1,17 +1,17 @@
-article#content
+article#content.forum-index__root
   != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   //h1= t('forum.index.title')
 
   - each category in self.sections
-    article.fl-category(id='cat_box_#{category.id}')
-      header(id='cat#{category.id}')
-        h2
-          a(href='#cat#{category.id}', data-toggle='collapse', data-target='#cat_list_#{category.id}')
+    article.forum-category(id='cat_box_#{category.id}')
+      header.forum-category__head(id='cat#{category.id}')
+        h2.forum-category__title
+          a.forum-category__link(href='#cat#{category.id}', data-toggle='collapse', data-target='#cat_list_#{category.id}')
             = category.title 
-          i.icon-collapse
+          i.forum-category__collapser.icon-collapse
 
-      ul.fl-cat-list(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
+      .forum-category__content(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
         != self.partial('@forum.blocks.subsections_list', { subsections: category.child_list, users: self.users })
 
   footer
