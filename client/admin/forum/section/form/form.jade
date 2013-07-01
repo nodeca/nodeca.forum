@@ -69,8 +69,9 @@ form.form-horizontal
     .control-group
       label.control-label(for="section_copy_settings_from") #{self.t('field_copy_settings_from')}
       .controls
-        select#section_copy_settings_from: option #{self.t('field_copy_settings_from_none')}
-        button.btn #{self.t('button_copy_settings_from')}
+        .input-append
+          select#section_copy_settings_from: option #{self.t('field_copy_settings_from_none')}
+          button.btn #{self.t('button_copy_settings_from')}
 
     mixin settings_fieldset(usergroup, active)
       .tab-pane(id="section_#{usergroup}", class=(active ? "active" : ""))
