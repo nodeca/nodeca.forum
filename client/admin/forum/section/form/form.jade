@@ -1,104 +1,34 @@
 form.form-horizontal
-  fieldset
-    legend #{self.t('fieldset_main')}
+  .control-group
+    label.control-label #{self.t('field_copy_section')}
+    .controls: select: option #{self.t('value_copy_section_none')}
 
+  .control-group
+    label.control-label #{self.t('field_title')}
+    .controls: input(type="text")
+
+  .control-group
+    label.control-label #{self.t('field_description')}
+    .controls: textarea
+
+  .control-group
+    label.control-label #{self.t('field_parent')}
+    .controls: select: option #{self.t('value_parent_none')}
+
+  mixin option_field(name)
     .control-group
-      label.control-label #{self.t('field_title')}
-      .controls: input(type="text")
+      label.control-label(for="section_#{name}") #{self.t('field_' + name)}
+      .controls.switch
+        input(id="section_#{name}", type="checkbox")
+        label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
 
-    .control-group
-      label.control-label #{self.t('field_description')}
-      .controls: textarea
-
-    .control-group
-      label.control-label #{self.t('field_parent')}
-      .controls: select: option #{self.t('field_parent_none')}
-
-  fieldset
-    legend #{self.t('fieldset_options')}
-
-    mixin option_field(name)
-      .control-group
-        label.control-label(for="section_#{name}") #{self.t('field_' + name)}
-        .controls.switch
-          input(id="section_#{name}", type="checkbox")
-          label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
-
-    mixin option_field('is_category')
-    mixin option_field('is_enabled')
-    mixin option_field('is_writeble')
-    mixin option_field('is_searcheable')
-    mixin option_field('is_voteable')
-    mixin option_field('is_counted')
-    mixin option_field('is_excludable')
-
-  fieldset
-    legend #{self.t('fieldset_moderator_list')}
-
-    .control-group
-      label.control-label(for="section_add_moderator") #{self.t('field_add_moderator')}
-      .controls
-        .input-append
-          input#section_add_moderator(type="text")
-          button.btn #{self.t('button_add_moderator')}
-
-    .control-group
-      table.table.table-condensed.table-striped.table-hover
-        tr
-          th #{self.t('column_moderator_name')}
-          th
-        tr
-          td: a(href="#") Moderator 1
-          td: a(href="#").pull-right #{self.t('button_delete_moderator')}
-        tr
-          td: a(href="#") Moderator 2
-          td: a(href="#").pull-right #{self.t('button_delete_moderator')}
-        tr
-          td: a(href="#") Moderator 3
-          td: a(href="#").pull-right #{self.t('button_delete_moderator')}
-
-  fieldset
-    legend #{self.t('fieldset_settings')}
-
-    ul.nav.nav-pills
-      li.active: a(href="#section_members", data-toggle="tab") members (3)
-      li: a(href="#section_guests", data-toggle="tab") guests (2)
-      li: a(href="#section_administrators", data-toggle="tab") administrators
-      li: a(href="#section_validating", data-toggle="tab") validating
-
-    .control-group
-      label.control-label(for="section_copy_settings_from") #{self.t('field_copy_settings_from')}
-      .controls
-        .input-append
-          select#section_copy_settings_from: option #{self.t('field_copy_settings_from_none')}
-          button.btn #{self.t('button_copy_settings_from')}
-
-    mixin settings_fieldset(usergroup, active)
-      .tab-pane(id="section_#{usergroup}", class=(active ? "active" : ""))
-        mixin setting_field(name)
-          .control-group.control-group-hover
-            label.control-label(for="section_#{usergroup}_#{name}") Setting Name
-            .controls
-              .row-fluid
-                .span4
-                  .switch
-                    input(id="section_#{usergroup}_#{name}", type="checkbox")
-                    label(for="section_#{usergroup}_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
-                .span4
-                  label.checkbox.inline
-                    input(type="checkbox")
-                    = self.t('checkbox_override_setting')
-
-        mixin setting_field('setting_1')
-        mixin setting_field('setting_2')
-        mixin setting_field('setting_3')
-        mixin setting_field('setting_4')
-
-    .tab-content
-      mixin settings_fieldset('guests')
-      mixin settings_fieldset('members', true)
-      mixin settings_fieldset('validating')
-      mixin settings_fieldset('administrators')
+  mixin option_field('is_category')
+  mixin option_field('is_enabled')
+  mixin option_field('is_writeble')
+  mixin option_field('is_searcheable')
+  mixin option_field('is_voteable')
+  mixin option_field('is_counted')
+  mixin option_field('is_excludable')
 
   hr
   button.btn.btn-primary.btn-large(type="submit") #{self.t('button_save')}
