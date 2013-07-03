@@ -21,7 +21,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
     }
 
     $result = $(N.runtime.render('forum.blocks.threads_list', locals)).hide();
-    $('.tl-thread-list:last').after($result);
+    $('#topiclist > :last').after($result);
 
     // update pager
     $('.pagination').replaceWith(

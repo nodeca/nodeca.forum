@@ -3,6 +3,13 @@
 
 @import "nodeca.core/client/common/_variables"
 
+// pages separator
+.forum-topicline__separator
+  border-bottom 1px solid grayLighter
+  font-size 10px
+  font-weight bold
+  padding 0
+
 //
 // Topics lines
 //
@@ -10,8 +17,13 @@
 .forum-topicline
   padding 10px 0
   border-top 1px solid grayLightest
+  // hide border on first item
   &:first-child
     border 0
+// hide border on item after page separator
+.forum-topicline__separator + .forum-topicline
+  border-top: 0
+
 
 //
 // First column 

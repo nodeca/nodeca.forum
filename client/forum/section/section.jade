@@ -54,7 +54,7 @@ article#content.forum-threads-root
 
 
     - if (self.threads && self.threads.length)
-      .forum-topiclines
+      #topiclist.forum-topiclines
         != self.partial('@forum.blocks.threads_list', { threads: self.threads, users: self.users })
 
       //- Button "More Threads"
