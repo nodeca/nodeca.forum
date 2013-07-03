@@ -29,8 +29,12 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
         screenOffsetTop = $this.offset().top - document.body.scrollTop;
       }
 
-      // Show all placeholders.
-      $('.section-placeholder').show();
+      // Show all placeholders except useless (inner and surrounding).
+      $('.section-placeholder')
+        .not($this.find('.section-placeholder'))
+        .not($this.prev('.section-placeholder'))
+        .not($this.next('.section-placeholder'))
+        .show();
 
       // After placeholders are shown, restore the offset to prevent jerk effect.
       if (document.documentElement.scrollTop) {
