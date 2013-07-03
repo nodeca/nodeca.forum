@@ -42,9 +42,11 @@ N.wire.on('navigate.done:' + module.apiPath, function () {
   , hoverClass: 'section-placeholder-hover'
   , tolerance: 'pointer'
   , drop: function (event, ui) {
+      var $draggableGroup = ui.draggable.parent();
+
       // Move section and it's allied placeholder into new location.
-      ui.draggable.parent().prev().filter('.section-placeholder').insertBefore(this);
-      ui.draggable.parent().insertBefore(this);
+      $draggableGroup.prev('.section-placeholder').insertBefore(this);
+      $draggableGroup.insertBefore(this);
 
       var self   = this
         , _id    = ui.draggable.data('id')
