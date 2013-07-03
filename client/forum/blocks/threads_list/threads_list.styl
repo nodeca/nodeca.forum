@@ -1,0 +1,116 @@
+// Forum topics list. Used on forum `section` page
+//
+
+@import "nodeca.core/client/common/_variables"
+
+//
+// Topics lines
+//
+
+.forum-topicline
+  padding 10px 0
+  border-top 1px solid grayLightest
+  &:first-child
+    border 0
+
+//
+// First column 
+//
+
+.forum-topicline__summary
+  padding-left 5px
+  box-sizing border-box
+  // IE7 hack
+  *padding-left 0
+
+.forum-topicline__title
+  position relative
+  font-size 16px
+  font-weight normal
+  line-height (baseLineHeight*5/4)
+  display inline-block
+  margin 0 .7em 0 0
+
+.forum-topicline__title-link
+  color grayDark
+  &:hover
+    color linkColorHover
+
+.forum-topicline__meta
+  margin-left 10px
+  font-size 11px
+  line-height (baseLineHeight*3/4)
+
+a.forum-topicline__preview-link
+  transition opacity 0.3s ease
+  float right
+  color gray
+  opacity 0
+  &:hover
+    color linkColorHover
+.forum-topicline:hover .forum-topicline__preview-link
+  opacity 1
+
+a.forum-topicline__author
+  color grayLight
+  &:hover
+    color linkColorHover
+
+.forum-topicline__time
+  font-style italic
+  margin-left 1em
+  color grayLight
+  
+//
+// Second column (topics/posts counters)
+//
+
+.forum-topicline__counters
+  list-style none
+  font-size 13px
+  color gray
+  margin-bottom 0
+
+.forum-topicline__counter-item
+  line-height baseLineHeight
+
+
+//
+// Last column (latest post info)
+//
+
+.forum-topicline__lpost
+  list-style none
+  font-size 11px
+
+.forum-topicline__lpost-user
+.forum-topicline__lpost-time
+  line-height (baseLineHeight*3/4)
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
+
+a.forum-topicline__lpost-time-link
+  color grayLight
+
+a.forum-topicline__lpost-user-link
+  color gray
+
+
+// Markers
+//
+.unread
+  .forum-topicline__summary
+    padding-left 20px
+    // IE7 hack
+    *padding-left 0
+  .forum-topicline__title
+    font-weight bold
+    &:before
+      content ''
+      position absolute
+      left -15px
+      top 3px
+      height 19px
+      background-color colorUnread
+      width 7px

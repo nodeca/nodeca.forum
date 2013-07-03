@@ -54,16 +54,17 @@ article#content.forum-threads-root
 
 
     - if (self.threads && self.threads.length)
-      != self.partial('@forum.blocks.threads_list', { threads: self.threads, users: self.users })
+      .forum-topiclines
+        != self.partial('@forum.blocks.threads_list', { threads: self.threads, users: self.users })
 
       //- Button "More Threads"
       - var link_params = { id: self.forum.id, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-      a.btn.btn-block.icon-more(
+      a.forum-section__more-link.btn.btn-block.icon-more(
         class=btn_more_state,
         href=self.link_to(self.apiPath, link_params),
         data-on-click="forum.section.append_next_page")= self.t('more_threads')
 
     - else
-      p
-        strong= self.t('no_threads')
+      p.forum-section__nothreads
+        != self.t('no_threads')

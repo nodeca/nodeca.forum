@@ -1,23 +1,28 @@
 mixin pagination_micro(route, params, max_page)
   - var i;
-  ul.tl-pages
+  ul.forum-pgn-micro
 
     - if (max_page > 4)
-      li: a(href=self.link_to(route, params)) 1
+      li.forum-pgn-micro__item
+        a.forum-pgn-micro__link(href=self.link_to(route, params)) 1
 
       - params.page = 2;
-      li: a(href=self.link_to(route, params)) #{params.page}
+      li.forum-pgn-micro__item
+        a.forum-pgn-micro__link(href=self.link_to(route, params)) #{params.page}
 
-      li …
+      li.forum-pgn-micro__item …
 
       - params.page = max_page - 1;
-      li: a(href=self.link_to(route, params)) #{params.page}
+      li.forum-pgn-micro__item
+        a.forum-pgn-micro__link(href=self.link_to(route, params)) #{params.page}
 
       - params.page = max_page;
-      li: a(href=self.link_to(route, params)) #{params.page}
+      li.forum-pgn-micro__item
+        a.forum-pgn-micro__link(href=self.link_to(route, params)) #{params.page}
 
     - else
       - for (i = 1; i <= max_page; i++) {
         - params.page = i;
-        li: a(href=self.link_to(route, params)) #{params.page}
+        li.forum-pgn-micro__item
+          a.forum-pgn-micro__link(href=self.link_to(route, params)) #{params.page}
       - }

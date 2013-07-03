@@ -3,52 +3,51 @@ include ../pagination_micro/pagination_micro
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
-ul.tl-thread-list
-  - var replies, views;
-  - if (self.page)
-    li.tl-head= self.t('page_separator', { page: self.show_page_number })
+- var replies, views;
+- if (self.page)
+  .tl-head= self.t('page_separator', { page: self.show_page_number })
 
-  - each thread in self.threads
-    - fp_user = thread.cache.real.first_user
-    - lp_user = thread.cache.real.last_user
-    - fp_ts   = thread.cache.real.first_ts
-    - lp_ts   = thread.cache.real.last_ts
-    li
-      .row
-        .span7.tl-item-summary
-          h2
-            a(href=self.link_to('forum.thread', thread))= thread.title
-          //a.mark-i-attach._tip(href="#")=thread.attach_count
-          - if (thread._pages_count > 1)
-            //- micro-pagination
-            - var route_params = { id: thread.id, forum_id: thread.forum_id }
-            mixin pagination_micro('forum.thread', route_params, thread._pages_count)
+- each thread in self.threads
+  - fp_user = thread.cache.real.first_user
+  - lp_user = thread.cache.real.last_user
+  - fp_ts   = thread.cache.real.first_ts
+  - lp_ts   = thread.cache.real.last_ts
+  .forum-topicline
+    .row
+      .forum-topicline__summary.span7
+        h2.forum-topicline__title
+          a.forum-topicline__title-link(href=self.link_to('forum.thread', thread))= thread.title
+        //a.mark-i-attach._tip(href="#")=thread.attach_count
+        - if (thread._pages_count > 1)
+          //- micro-pagination
+          - var route_params = { id: thread.id, forum_id: thread.forum_id }
+          mixin pagination_micro('forum.thread', route_params, thread._pages_count)
 
 
-          .tl-meta
-            a.tl-preview-ctl.icon-more(href='#')= self.t('thread_preview')
-            - if (self.users[fp_user])
-              a.usercard-popover.tl-starter(
-                href=self.link_to('users.member', self.users[fp_user]),
-                data-user-id=String(fp_user)) #{self.users[fp_user]._uname}
-            time.tl-start-date(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
+        .forum-topicline__meta
+          a.forum-topicline__preview-link.icon-more(href='#')= self.t('thread_preview')
+          - if (self.users[fp_user])
+            a.forum-topicline__author.usercard-popover(
+              href=self.link_to('users.member', self.users[fp_user]),
+              data-user-id=String(fp_user)) #{self.users[fp_user]._uname}
+          time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
-        ul.span2.tl-item-counters.hidden-phone
-          - replies = thread.cache.real.post_count - 1;
-          - views   = thread.views_count;
-          li
-            | #{replies}
-            = self.t('thread_replies', { count: replies })
-          li
-            | #{views}
-            = self.t('thread_views', { count: views })
+      ul.forum-topicline__counters.span2.hidden-phone
+        - replies = thread.cache.real.post_count - 1;
+        - views   = thread.views_count;
+        li.forum-topicline__counter-item
+          span.forum-topicline__counter-val #{replies}
+          = self.t('thread_replies', { count: replies })
+        li.forum-topicline__counter-item
+          span.forum-topicline__counter-val  #{views}
+          = self.t('thread_views', { count: views })
 
-        ul.span3.tl-item-lastpost.hidden-phone
-          li.lastpost-time
-            a(href='#')
-              time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}
-          - if (self.users[lp_user])
-            li.lastpost-user
-              a.usercard-popover(
-                href=self.link_to('users.member', self.users[lp_user]),
-                data-user-id=String(lp_user)) #{self.users[lp_user]._uname}
+      ul.forum-topicline__lpost.span3.hidden-phone
+        li.forum-topicline__lpost-time
+          a.forum-topicline__lpost-time-link(href='#')
+            time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}
+        - if (self.users[lp_user])
+          li.forum-topicline__lpost-user
+            a.forum-topicline__lpost-user-link.usercard-popover(
+              href=self.link_to('users.member', self.users[lp_user]),
+              data-user-id=String(lp_user)) #{self.users[lp_user]._uname}
