@@ -9,3 +9,4 @@ en-US:
   thread_merge: Merge
   post_add: Add reply
   more_posts: More posts
+  warn_unsaved: You have unsent message text. Are you shure you wish to leave this page?
