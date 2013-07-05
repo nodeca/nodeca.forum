@@ -78,10 +78,29 @@ N.wire.on('navigate.exit:' + module.apiPath, function () {
       draft.save(editor.parent_post_id, 'forum.post', editor.field.value());
       dropEditor();
     } else {
-      // TODO: prevent leaving page
       return false;
     }
   }
+});
+
+N.wire.once('navigate.done', function () {
+  $(window).on('beforeunload', function (event) {
+    if (!editor.$form) {
+      return; // No opened form on page - do nothing.
+    }
+
+    event = event || window.event;
+
+    var message = t('warn_unsaved');
+
+    // For IE and Firefox
+    if (event) {
+      event.returnValue = message;
+    }
+
+    // For Chrome and Safari
+    return message;
+  });
 });
 
 N.wire.on('forum.thread.append_next_page', function (event) {
