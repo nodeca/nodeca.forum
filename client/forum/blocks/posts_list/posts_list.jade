@@ -2,7 +2,7 @@
   .pl-head= self.t('page_separator', { page: self.show_page_number })
 
 - each post in self.posts
-  article.forum-post.clearfix(id='post#{post.id}', itemscope, itemtype='http://schema.org/WebPageElement')
+  article.forum-post.clearfix(id='post#{post._id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.post-meta.clearfix
       - if (self.users[post.user])
         a.usercard-popover.post-author.pull-left(
@@ -26,7 +26,7 @@
           li: a.post-action(href='#')= self.t('report')
           li: a.post-action(href='#')= self.t('ip_show')
         ul.pull-right
-          li: a.post-action.icon-reply(href='#')= self.t('reply')
+          li: a.post-action.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
           li: a.post-action(href='#')= self.t('edit')
           li: a.post-action(href='#')= self.t('delete')
           li
