@@ -7,7 +7,7 @@
       .forum-post__meta-blk.pull-right
         time.forum-post__time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
         - var _post_anchor = self.link_to('forum.thread', self.thread) + '#post' + post.id;
-        a.forum-post__link(href=_post_anchor) #
+        a.forum-post__link.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left
         - if (self.users[post.user])

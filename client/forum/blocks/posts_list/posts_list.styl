@@ -6,16 +6,19 @@
 
 // pages separator
 .forum-postlist__separator
+  font-family sansWideFontFamily
   font-size 10px
   font-weight bold
   padding 0 5px
-  background-color grayLightest
-  margin-bottom (baseLineHeight/2)
+  border-bottom 1px solid grayLighter
+  margin-bottom (baseLineHeight/4)
+
 
 
 // Post styles
 
 .forum-post
+  font-family sansWideFontFamily
   margin-bottom baseLineHeight
 
 //
@@ -23,7 +26,7 @@
 //
 
 .forum-post__meta
-  background-color grayLightest
+  background-color #f8f8f8
   border 1px solid darken(grayLightest, 5%)
   border-radius 2px
   box-shadow 0 0 2px darken(grayLightest, 5%)
@@ -31,7 +34,7 @@
   margin-bottom:10px
 
 .forum-post__meta-blk
-  font-size 12px
+  font-size 11px
   color gray
   height 20px
   line-height 20px
@@ -42,6 +45,10 @@
 
 .forum-post__link
   margin-left 1em
+  font-size 14px
+  &:before
+    margin 0
+    font-size 100%
 
 .forum-post__check
   margin 0 0 0 1em !important
