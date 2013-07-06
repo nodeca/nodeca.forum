@@ -28,7 +28,7 @@ ul.forum-sections
                       href=self.link_to('users.member', self.users[moderator]),
                       data-user-id=String(moderator)) #{self.users[moderator]._uname}
 
-        ul.forum-section__counters.span2
+        ul.forum-section__counters.span2.hidden-phone
           li.forum-section__counter-item
             span.forum-section__counter-val #{forum.cache.real.thread_count}
             = self.t('forum_topics', { count: forum.cache.real.thread_count })
