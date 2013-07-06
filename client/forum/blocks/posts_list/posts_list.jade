@@ -1,35 +1,41 @@
 - if (self.show_page_number)
-  .pl-head= self.t('page_separator', { page: self.show_page_number })
+  .forum-postlist__separator= self.t('page_separator', { page: self.show_page_number })
 
 - each post in self.posts
   article.forum-post.clearfix(id='post#{post._id}', itemscope, itemtype='http://schema.org/WebPageElement')
-    footer.post-meta.clearfix
-      - if (self.users[post.user])
-        a.usercard-popover.post-author.pull-left(
-          href=self.link_to('users.member', self.users[post.user]),
-          data-user-id=String(post.user)) #{self.users[post.user]._uname}
-      .pull-right
-        time.post-time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
+    footer.forum-post__meta.clearfix
+      .forum-post__meta-blk.pull-right
+        time.forum-post__time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
         - var _post_anchor = self.link_to('forum.thread', self.thread) + '#post' + post.id;
-        a.post-permalink(href=_post_anchor) #
-        input.post-check(type='checkbox')
-    .post-aside
+        a.forum-post__link(href=_post_anchor) #
+        input.forum-post__check(type='checkbox')
+      .forum-post__meta-blk.pull-left
+        - if (self.users[post.user])
+          a.forum-post__author.usercard-popover(
+            href=self.link_to('users.member', self.users[post.user]),
+            data-user-id=String(post.user)) #{self.users[post.user]._uname}
+    .forum-post__aside
       - if (self.users[post.user])
-        a.post-userpic(href='#')
+        a.forum-post__userpic(href='#')
           img.av-xl(alt='#{self.users[post.user]._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{self.users[post.user].id}')
       - else
         .av-xl
-    .post-content
-      .message= post.text
-      footer.post-controls.clearfix
-        ul.pull-left
-          li: a.post-action(href='#')= self.t('report')
-          li: a.post-action(href='#')= self.t('ip_show')
-        ul.pull-right
-          li: a.post-action.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
-          li: a.post-action(href='#')= self.t('edit')
-          li: a.post-action(href='#')= self.t('delete')
-          li
-            a.vote-up.icon-vote-up(href='#')
-            span.vote-count +47
-            a.vote-down.icon-vote-down(href='#')
+    .forum-post__content
+      .forum-post__message= post.text
+      footer.forum-post__controls.clearfix
+        ul.forum-post__controls-blk.pull-left
+          li.forum-post__control-item
+            a.forum-post__action-link(href='#')= self.t('report')
+          li.forum-post__control-item
+            a.forum-post__action-link(href='#')= self.t('ip_show')
+        ul.forum-post__controls-blk.pull-right
+          li.forum-post__control-item
+            a.forum-post__action-link.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
+          li.forum-post__control-item
+            a.forum-post__action-link(href='#')= self.t('edit')
+          li.forum-post__control-item
+            a.forum-post__action-link(href='#')= self.t('delete')
+          li.forum-post__control-item
+            a.forum-post__vote-up.icon-vote-up(href='#')
+            span.forum-post__vote-count +47
+            a.forum-post__vote-down.icon-vote-down(href='#')

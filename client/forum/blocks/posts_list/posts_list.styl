@@ -1,85 +1,128 @@
+// Forum posts list. Used in forum `thread` page
+//
+
 @import "nodeca.core/client/common/_variables"
 
 
-//
-// Posts list
-//
-////////////////////////////////////////
-
-
-// Header for appended posts block 
-//
-.pl-head
-  font-family sansWideFontFamily
+// pages separator
+.forum-postlist__separator
   font-size 10px
   font-weight bold
   padding 0 5px
-  background-color #fbfbfb
-  margin-bottom 10px
-
+  background-color grayLightest
+  margin-bottom (baseLineHeight/2)
 
 
 // Post styles
-//
+
 .forum-post
-  margin-top (baseLineHeight/2)
   margin-bottom baseLineHeight
 
-.controlbar + .forum-post
-  margin-top 20px
+//
+// header
+//
 
-.post-meta
+.forum-post__meta
   background-color grayLightest
   border 1px solid darken(grayLightest, 5%)
   border-radius 2px
   box-shadow 0 0 2px darken(grayLightest, 5%)
-  padding 10px 15px
-  font-size 12px
-  color gray
+  padding 5px 15px
   margin-bottom:10px
 
-.post-author
+.forum-post__meta-blk
+  font-size 12px
   color gray
-  font-size 18px
+  height 20px
+  line-height 20px
 
-.post-permalink
+.forum-post__author
+  color gray
+  font-size 16px
+
+.forum-post__link
   margin-left 1em
 
-.post-check
+.forum-post__check
   margin 0 0 0 1em !important
   vertical-align text-top
 
-.post-aside
+
+//
+// left column
+//
+
+.forum-post__aside
   float left
   margin 5px 15px 0
 
-.post-content
+//
+// content column
+//
+
+.forum-post__content
   font-family sansWideFontFamily
   overflow hidden
   margin 0 15px
-  > .message
+
+.forum-post__message
     margin-bottom 10px
     min-height 125px
 
-.post-controls
-  > ul
-    margin 0
-    list-style none
-    > li
-      display inline-block
-    > li + li
-      margin-left 15px
 
-.post-action
+.forum-post__controls-blk
+  margin 0
+  list-style none
+
+.forum-post__control-item
+    display inline-block
+    margin-right: 15px
+    &:last-child
+      margin-right: 0
+
+a.forum-post__action-link
   color grayDark
   text-decoration underline
   &:before
     color grayLight
 
+// votes
+.forum-post__vote-up
+  margin-left 0
+  margin-right .1em
+  color #080
+  text-shadow 1px 1px 1px rgba(127, 127, 127, 0.5)
+  &:before
+    font-size 100%
+    margin 0
+  &:hover
+    color #4c4
+    text-decoration none
 
+.forum-post__vote-down
+  margin-left .1em
+  margin-right 0
+  color #c00
+  text-shadow 1px 1px 1px rgba(127, 127, 127, 0.5)
+  &:before
+    font-size 100%
+    margin 0
+  &:hover
+    color #f44
+    text-decoration none
+
+//
 // Hovering magick
 //
-.forum-post:not(:hover)
-  .post-action, .vote-up, .vote-down
+
+.forum-post
+  .forum-post__action-link
+  .forum-post__vote-up
+  .forum-post__vote-down
     transition opacity .3s ease
     opacity .2
+.forum-post:hover
+  .forum-post__action-link
+  .forum-post__vote-up
+  .forum-post__vote-down
+    opacity 1

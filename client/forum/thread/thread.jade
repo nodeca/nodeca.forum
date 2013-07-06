@@ -40,8 +40,8 @@ article#content.forum-topic-root
             .btn-group.pull-right
               a.btn.btn-primary(href='#')= self.t('post_add')
 
-
-  != self.partial('@forum.blocks.posts_list', { thread: self.thread, posts: self.posts, users: self.users })
+  #postlist.forum-postlist
+    != self.partial('@forum.blocks.posts_list', { thread: self.thread, posts: self.posts, users: self.users })
 
   //- Button "More Threads"
   - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id, page: self.page.current + 1 };
