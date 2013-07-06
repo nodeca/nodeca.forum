@@ -124,7 +124,7 @@ N.wire.on('forum.thread.append_next_page', function (event) {
     }
 
     $result = $(N.runtime.render('forum.blocks.posts_list', locals)).hide();
-    $('.forum-post:last').after($result);
+    $('#postlist > :last').after($result);
 
     // update pager
     $('.pagination').replaceWith(
