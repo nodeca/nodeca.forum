@@ -21,36 +21,35 @@ article#content.forum-index__root
         | 
         a.btn(href='#')= self.t('exclude', { count: 5 })
 
-    dl.page-summary
-      dt= self.t('total_active.all', { count: 710, interval: 30})
-      dd.small
-        = self.t('total_active.members', { count: 128 })
-        | , 
-        = self.t('total_active.guests', { count: 567 })
-        | , 
-        = self.t('total_active.anonymous', { count: 6 })
-      dd
+    .page-summary
+      .page-summary__head= self.t('total_active.all', { count: 710, interval: 30})
+        .page-summary__subhead
+          = self.t('total_active.members', { count: 128 })
+          | , 
+          = self.t('total_active.guests', { count: 567 })
+          | , 
+          = self.t('total_active.anonymous', { count: 6 })
+      .page-summary__content
         ul.hlist
-          li: a(href='#') Google
-          li: a(href='#') Asso
-          li: a(href='#') Warfo
-          li: a(href='#') ibra
-          li: a(href='#') Brandon
-          li: a(href='#') hao-sama
-          li: a(href='#') Lesovsky
-          li: a(href='#') RUAHusker
-          li: a(href='#') MSN/Bing
+          li.hlist-item: a(href='#') Google
+          li.hlist-item: a(href='#') Asso
+          li.hlist-item: a(href='#') Warfo
+          li.hlist-item: a(href='#') ibra
+          li.hlist-item: a(href='#') Brandon
+          li.hlist-item: a(href='#') hao-sama
+          li.hlist-item: a(href='#') Lesovsky
+          li.hlist-item: a(href='#') RUAHusker
+          li.hlist-item: a(href='#') MSN/Bing
 
-
-      dt Total
-      dd
+      .page-summary__head Total
+      .page-summary__content
         ul.hlist
-          li
+          li.hlist-item
             = self.t('total_topics', { count: 25 })
-            strong 35 836
-          li
+            strong 35836
+          li.hlist-item
             = self.t('total_posts', { count: 3 })
-            strong 456 949
-          li
+            strong 456949
+          li.hlist-item
             = self.t('total_members', { count: 3 })
-            strong 269 270
+            strong 269270
