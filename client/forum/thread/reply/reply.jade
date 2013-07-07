@@ -1,5 +1,13 @@
-.forum-reply
-  .forum-reply__editor
-  .forum-reply__buttons.form-actions
-    button.forum-reply__save.btn.btn-primary(data-on-click='forum.reply.save')=self.t('reply_save')
-    button.forum-reply__cancel.btn(data-on-click='forum.reply.cancel')=self.t('reply_cancel')
+.forum-reply.clearfix
+  .forum-reply__aside
+    img.av-l(src='http://lorempixel.com/150/150/sports/a' + '#{ Math.ceil(Math.random()*1000) }')
+
+  .forum-reply__content
+    .forum-reply__editor
+    .forum-reply__buttons.clearfix
+      .forum-reply__buttons-blk.pull-right
+        button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.reply.cancel')=self.t('reply_cancel')
+        |  
+        button.forum-reply__save.btn.btn-primary(data-on-click='forum.reply.save')=self.t('reply_save')
+      .forum-reply__buttons-blk.pull-left
+        button.forum-reply__options.btn.btn-link=self.t('reply_options')
