@@ -116,11 +116,7 @@ N.wire.on('forum.post.reply.cancel', function () {
 //
 N.wire.on('navigate.exit:' + module.apiPath, function () {
   if (eState.$form && eState.editor.isDirty()) {
-    if (window.confirm(t('warn_unsaved'))) {
-      removeEditor();
-    } else {
-      return false;
-    }
+    saveDraft()
   }
 });
 
@@ -129,19 +125,9 @@ N.wire.on('navigate.exit:' + module.apiPath, function () {
 // catch browser close
 
 var winCloseHandler = function (event) {
-  // No opened form on page - do nothing.
-  if (!(eState.$form && eState.editor.isDirty())) { return; }
-
-  // Save draft anyway
-  saveDraft();
-
-  event = event || window.event;
-  var message = t('warn_unsaved');
-
-  // For IE
-  if (event) { event.returnValue = message; }
-  // For normal browsers
-  return message;
+  if (eState.$form && eState.editor.isDirty()) {
+    saveDraft()
+  }
 };
 
 N.wire.on('navigate.done:' + module.apiPath, function () {
