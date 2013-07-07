@@ -116,7 +116,7 @@ N.wire.on('forum.post.reply.cancel', function () {
 //
 N.wire.on('navigate.exit:' + module.apiPath, function () {
   if (eState.$form && eState.editor.isDirty()) {
-    saveDraft()
+    saveDraft();
   }
 });
 
@@ -124,9 +124,9 @@ N.wire.on('navigate.exit:' + module.apiPath, function () {
 ////////////////////////////////////////////////////////////////////////////////
 // catch browser close
 
-var winCloseHandler = function (event) {
+var winCloseHandler = function (/*event*/) {
   if (eState.$form && eState.editor.isDirty()) {
-    saveDraft()
+    saveDraft();
   }
 };
 
