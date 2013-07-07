@@ -40,7 +40,10 @@ article#content.forum-topic-root
             .btn-group.pull-right
               a.btn.btn-primary(href='#')= self.t('post_add')
 
-  #postlist.forum-postlist
+  #postlist.forum-postlist(
+    data-forum_id=self.thread.forum_id,
+    data-thread_id=self.thread.id
+  )
     != self.partial('@forum.blocks.posts_list', { thread: self.thread, posts: self.posts, users: self.users })
 
   //- Button "More Threads"

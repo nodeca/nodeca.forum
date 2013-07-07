@@ -1,66 +1,83 @@
+// Simple key/value drafts store API. Use localstore for persistance
+//
+
 'use strict';
-
-var storageId = 'forum_drafts';
-
-var storageLimit = 10;
 
 var _ = require('lodash');
 
-/*
- * {
- *   type: string,
- *   id: string,
- *   ts: number, // update time
- *   data: mixed // data
- * }
- */
+var storageKey = 'drafts';
+var storageLimit = 10;
 
-function DraftStorage() {}
+////////////////////////////////////////////////////////////////////////////////
+// Safe localstore interface helpers
 
-DraftStorage.prototype.find = function (id, type) {
-  var drafts = JSON.parse(localStorage.getItem(storageId) || '[]');
+var store = {};
 
-  drafts = _.filter(drafts, function (entry) {
-    return type === entry.type && id === entry.id;
-  });
+store.exists = _.memoize(function () {
+  try {
+    localStorage.setItem('__ls_test__','__ls_test__');
+    localStorage.removeItem('__ls_test__');
+    return true;
 
-  return drafts.length ? drafts[0].data : null;
+  } catch (e) {
+    return false;
+  }
+});
+
+store.remove = function (key) {
+  if (!store.exists()) { return; }
+  localStorage.removeItem(key);
 };
 
-DraftStorage.prototype.save = function (id, type, data) {
-  var drafts = JSON.parse(localStorage.getItem(storageId) || '[]');
+store.set = function (key, value) {
+  if (!store.exists()) { return; }
+  if (value === undefined) { return store.remove(key); }
+  localStorage.setItem(key, JSON.stringify(value));
+};
 
-  drafts = _.filter(drafts, function (entry) {
-    return !(type === entry.type && id === entry.id);
-  });
-
-  if (drafts.length >= storageLimit) {
-    var older_entry = _.reduce(drafts, function(older_entry, entry){
-      return entry.ts < older_entry.ts ? entry : older_entry;
-    });
-    drafts = _.filter(drafts, function (entry) {
-      return !(older_entry.type === entry.type && older_entry.id === entry.id);
-    });
+store.get = function (key) {
+  if (!store.exists()) { return undefined; }
+  try {
+    return JSON.parse(localStorage.getItem(key));
+  } catch (e) {
+    return undefined;
   }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Drafts interface
+
+var draft = {};
+
+draft.find = function (id) {
+  var drafts = store.get(storageKey);
+
+  if (!_.isArray(drafts)) { drafts = []; }
+
+  var result = _.find(drafts, function (entry) { return id === entry.id; }) || {};
+
+  return result.data;
+};
+
+draft.save = function (id, data) {
+  var drafts = store.get(storageKey);
+
+  if (!_.isArray(drafts)) { drafts = []; }
+
+  // Remove existing draft if exists
+  drafts = _.filter(drafts, function (entry) { return id !== entry.id; });
+
+  // Cut head (remove oldest elements)
+  drafts.splice(0, drafts.length - storageLimit);
 
   drafts.push({
-    type: type,
     id: id,
-    ts: new Date().getTime(),
     data: data
   });
 
-  localStorage.setItem(storageId, JSON.stringify(drafts));
+  store.set(storageKey, drafts);
 };
 
-DraftStorage.prototype.remove = function (id, type) {
-  var drafts = JSON.parse(localStorage.getItem(storageId) || '[]');
+draft.remove = function (id) { store.remove(id); };
 
-  drafts = _.filter(drafts, function (entry) {
-    return !(type === entry.type && id === entry.id);
-  });
-
-  localStorage.setItem(storageId, JSON.stringify(drafts));
-};
-
-module.exports = DraftStorage;
+module.exports = draft;
