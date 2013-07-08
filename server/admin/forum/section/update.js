@@ -25,7 +25,7 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function (env, callback) {
-    N.models.forum.Section.findById(env.params._id, function (err, section) {
+    N.models.forum.Section.findById(env.params._id, function (err, updateSection) {
       if (err) {
         callback(err);
         return;
@@ -45,58 +45,105 @@ module.exports = function (N, apiPath) {
       , 'is_excludable'
       ], function (field) {
         if (_.has(env.params, field)) {
-          section[field] = env.params[field];
+          updateSection.set(field, env.params[field]);
         }
       });
 
-      section.save(function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      var isParentChanged = updateSection.isModified('parent');
 
-        N.models.forum.Section.find().exec(function (err, sections) {
-          if (err) {
-            callback(err);
+      async.series([
+        //
+        // If section's `parent` is changed, but new `display_order` is not
+        // specified, find free `display_order`.
+        //
+        function set_display_order(next) {
+          if (!isParentChanged || _.has(env.params, 'display_order')) {
+            next();
             return;
           }
 
-          var sectionsById = {};
+          // Select section's new siblings to find free 'display_order' index.
+          N.models.forum.Section
+              .find({ parent: updateSection.parent })
+              .select('display_order')
+              .setOptions({ lean: true })
+              .exec(function (err, sections) {
 
-          // Recursively collect `parent_list`.
-          function collectParentList(id) {
-            var result;
-
-            if (id) {
-              result = collectParentList(sectionsById[id].parent);
-              result.push(id);
-            } else {
-              result = [];
+            if (err) {
+              next(err);
+              return;
             }
 
-            return result;
+            if (_.isEmpty(sections)) {
+              updateSection.display_order = 1;
+            } else {
+              updateSection.display_order = _.max(sections, 'display_order').display_order + 1;
+            }
+            next();
+          });
+        }
+        //
+        // Save changes at updateSection.
+        //
+      , function save_section(next) {
+          updateSection.save(next);
+        }
+        //
+        // Update all related sections. (descendants)
+        //
+      , function update_related_sections(next) {
+          if (!isParentChanged) {
+            next();
+            return;
           }
 
-          _.forEach(sections, function (section) {
-            sectionsById[section._id] = section;
-          });
-
-          _.forEach(sections, function (section) {
-            section.parent_list = collectParentList(section.parent);
-            section.parent_id_list = _.map(section.parent_list, function (id) {
-              return sectionsById[id].id;
-            });
-          });
-
-          async.forEach(sections, function (section, next) {
-            if (section.isModified()) {
-              section.save(next);
-            } else {
-              next();
+          N.models.forum.Section.find().exec(function (err, sections) {
+            if (err) {
+              callback(err);
+              return;
             }
-          }, callback);
-        });
-      });
+
+            var sectionsById = {};
+
+            // Recursively collect `parent_list`.
+            function collectParentList(id) {
+              var result;
+
+              if (id) {
+                result = collectParentList(sectionsById[id].parent);
+                result.push(id);
+              } else {
+                result = [];
+              }
+
+              return result;
+            }
+
+            // Remap sections list.
+            _.forEach(sections, function (section) {
+              sectionsById[section._id] = section;
+            });
+
+            // Update parent-dependent fields.
+            _.forEach(sections, function (section) {
+              section.parent_list = collectParentList(section.parent);
+              section.parent_id_list = _.map(section.parent_list, function (id) {
+                return sectionsById[id].id;
+              });
+              section.level = section.parent_list.length;
+            });
+
+            // Save changed sections.
+            async.forEach(sections, function (section, next) {
+              if (section.isModified()) {
+                section.save(next);
+              } else {
+                next();
+              }
+            }, next);
+          });
+        }
+      ], callback);
     });
   });
 };
