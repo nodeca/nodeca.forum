@@ -1,34 +1,36 @@
-form.form-horizontal
-  .control-group
-    label.control-label #{self.t('field_copy_section')}
-    .controls: select: option #{self.t('value_copy_section_none')}
-
-  .control-group
-    label.control-label #{self.t('field_title')}
-    .controls: input(type="text")
-
-  .control-group
-    label.control-label #{self.t('field_description')}
-    .controls: textarea
-
-  .control-group
-    label.control-label #{self.t('field_parent')}
-    .controls: select: option #{self.t('value_parent_none')}
-
-  mixin option_field(name)
+form.form-horizontal(data-bind="submit: update")
+  fieldset
     .control-group
-      label.control-label(for="section_#{name}") #{self.t('field_' + name)}
-      .controls.switch
-        input(id="section_#{name}", type="checkbox")
-        label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+      label.control-label #{self.t('field_title')}
+      .controls: input(type="text", data-bind="value: activeSection.title")
 
-  mixin option_field('is_category')
-  mixin option_field('is_enabled')
-  mixin option_field('is_writeble')
-  mixin option_field('is_searcheable')
-  mixin option_field('is_voteable')
-  mixin option_field('is_counted')
-  mixin option_field('is_excludable')
+    .control-group
+      label.control-label #{self.t('field_description')}
+      .controls: textarea(data-bind="value: activeSection.description")
 
-  hr
-  button.btn.btn-primary.btn-large(type="submit") #{self.t('button_save')}
+  fieldset
+    .control-group
+      label.control-label #{self.t('field_copy_section')}
+      .controls: select(data-bind="value: copySection, options: otherSections, optionsText: 'title', optionsValue: '_id'")
+
+    .control-group
+      label.control-label #{self.t('field_parent')}
+      .controls: select(data-bind="value: activeSection.parent, options: otherSections, optionsText: 'title', optionsValue: '_id'")
+
+    mixin option_field(name)
+      .control-group
+        label.control-label(for="section_#{name}") #{self.t('field_' + name)}
+        .controls.switch
+          input(id="section_#{name}", type="checkbox", data-bind="checked: activeSection.#{name}")
+          label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+
+    mixin option_field('is_category')
+    mixin option_field('is_enabled')
+    mixin option_field('is_writeble')
+    mixin option_field('is_searcheable')
+    mixin option_field('is_voteable')
+    mixin option_field('is_counted')
+    mixin option_field('is_excludable')
+
+  .form-actions
+    button.btn.btn-primary(type="submit", data-bind="enable: isDirty") #{self.t('button_save')}

@@ -6,4 +6,6 @@
 
     h1 #{self.head.title}
 
+    - self.add_raw_data('active_section', self.active_section);
+    - self.add_raw_data('other_sections', self.other_sections);
     != self.partial('@admin.forum.section.form')

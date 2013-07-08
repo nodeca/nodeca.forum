@@ -1,17 +1,15 @@
 en-US:
   button_save: Save
+  message_updated: Section is updated
 
   value_yes: Yes
   value_no: No
-
-  field_copy_section: Copy section
-  value_copy_section_none: <use default values>
+  value_section_none: None
 
   field_title: Title
   field_description: Description
+  field_copy_section: Copy section
   field_parent: Parent section
-  value_parent_none: <no parent>
-
   field_is_category: Category
   field_is_enabled: Enabled
   field_is_writeble: Writable

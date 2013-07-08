@@ -10,9 +10,18 @@ var async = require('async');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    _id:           { type: 'string',           required: true  }
-  , parent:        { type: ['null', 'string'], required: false }
-  , display_order: { type: 'number',           required: false }
+    _id:            { type: 'string',           required: true  }
+  , parent:         { type: ['null', 'string'], required: false }
+  , display_order:  { type: 'number',           required: false }
+  , title:          { type: 'string',           required: false }
+  , description:    { type: 'string',           required: false }
+  , is_category:    { type: 'boolean',          required: false }
+  , is_enabled:     { type: 'boolean',          required: false }
+  , is_writeble:    { type: 'boolean',          required: false }
+  , is_searcheable: { type: 'boolean',          required: false }
+  , is_voteable:    { type: 'boolean',          required: false }
+  , is_counted:     { type: 'boolean',          required: false }
+  , is_excludable:  { type: 'boolean',          required: false }
   });
 
   N.wire.on(apiPath, function (env, callback) {
@@ -22,13 +31,23 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (_.has(env.params, 'display_order')) {
-        section.display_order = env.params.display_order;
-      }
-
-      if (_.has(env.params, 'parent')) {
-        section.parent = env.params.parent;
-      }
+      _.forEach([
+        'parent'
+      , 'display_order'
+      , 'title'
+      , 'description'
+      , 'is_category'
+      , 'is_enabled'
+      , 'is_writeble'
+      , 'is_searcheable'
+      , 'is_voteable'
+      , 'is_counted'
+      , 'is_excludable'
+      ], function (field) {
+        if (_.has(env.params, field)) {
+          section[field] = env.params[field];
+        }
+      });
 
       section.save(function (err) {
         if (err) {
