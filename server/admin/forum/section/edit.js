@@ -24,6 +24,7 @@ var OTHER_SECTION_FIELDS = [
 , 'title'
 , 'parent'
 , 'level'
+, 'display_order'
 , 'is_category'
 , 'is_enabled'
 , 'is_writeble'
@@ -63,7 +64,6 @@ module.exports = function (N, apiPath) {
           .find()
           .ne('_id', env.params._id)
           .select(OTHER_SECTION_FIELDS)
-          .sort('display_order level')
           .setOptions({ lean: true })
           .exec(function (err, otherSections) {
 

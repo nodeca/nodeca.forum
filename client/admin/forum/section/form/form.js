@@ -30,26 +30,36 @@ var view = null;
 N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view = {};
   view.activeSection = _.defaults(data.active_section || {}, SECTION_FIELD_DEFAULTS);
-  view.otherSections = data.other_sections;
+  view.otherSections = [];
 
   // Create observable fields on activeSection.
   _.forEach(SECTION_FIELD_NAMES, function (field) {
     view.activeSection[field] = ko.observable(view.activeSection[field]).extend({ dirty: false });
   });
 
-  // Prepand "– " string to titles of otherSections depending on nesting level.
-  _.forEach(view.otherSections, function (section) {
-    var level = section.level, prefix = '';
-
-    do { prefix += '– '; level -= 1; } while (level >= 0);
-
-    section.title = prefix + section.title;
-  });
-
   // Prepend virtual Null-section to otherSections list.
   // This is used instead of Knockout's optionsCaption because it does not
   // allow custom values - null in our case.
-  view.otherSections = [{ _id: null, title: t('value_section_none') }].concat(view.otherSections);
+  view.otherSections.push({ _id: null, title: t('value_section_none') });
+
+  // Collect otherSections list using tree order.
+  // Prepand "– " string to title of each sections depending on nesting level.
+  function fetchOtherSections(parent) {
+    var sections = _.select(data.other_sections, function (section) {
+      return parent === (section.parent || null);
+    });
+
+    _(sections).sortBy('display_order').forEach(function (section) {
+      var level = section.level, prefix = '';
+
+      do { prefix += '– '; level -= 1; } while (level >= 0);
+      section.title = prefix + section.title;
+
+      view.otherSections.push(section);
+      fetchOtherSections(section._id); // Fetch children sections.
+    });
+  }
+  fetchOtherSections(null); // Fetch root sections.
 
   // "Copy another section" special field.
   view.copySection = ko.observable(null);
