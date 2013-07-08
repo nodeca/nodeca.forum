@@ -45,6 +45,7 @@ function removeEditor(dropDraft) {
 //
 N.wire.on('forum.post.reply', function (event) {
   var $button = $(event.currentTarget),
+      button_offset = $button.offset().top,
       parent_post_id = $button.data('post-id') || 0;
 
   // Check if previous editor exists
@@ -94,6 +95,9 @@ N.wire.on('forum.post.reply', function (event) {
 
     // Show form
     eState.$form.fadeIn();
+
+    // Fix scroll
+    $('html,body').animate({scrollTop: '+=' + ($button.offset().top - button_offset)}, 0);
   });
 });
 
