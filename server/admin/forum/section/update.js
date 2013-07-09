@@ -1,4 +1,4 @@
-// Update a set of sections.
+// Update a set of basic fields on section.
 
 
 'use strict';
