@@ -67,3 +67,29 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     }
   });
 });
+
+
+N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
+  var $control = $(event.currentTarget).parents('.section-control:first')
+    , $group   = $control.parent() // .section-group
+    , _id      = $control.data('id')
+    , title    = $control.find('.section-title').text();
+
+  if (!window.confirm(t('message_confim_section_delete', { title: title }))) {
+    return;
+  }
+
+  N.io.rpc('admin.forum.section.destroy', { _id: _id }, function (err) {
+    if (err && (N.io.CLIENT_ERROR === err.code) && !_.isEmpty(err.message)) {
+      window.alert(err.message);
+      return;
+    }
+
+    if (err) {
+      return false; // Invoke standard error handling.
+    }
+
+    // Remove all destroyed elements from DOM.
+    $group.remove();
+  });
+});

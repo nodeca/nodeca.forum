@@ -14,7 +14,7 @@
       li.section-group
         //- Section's own control bar. 
         .clearfix.section-control(data-id=section._id.toString())
-          a.pull-right.section-delete-button #{self.t('delete_section')}
+          a.pull-right.section-delete-button(href="#", data-on-click="admin.forum.section.destroy") #{self.t('delete_section')}
 
           a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
             = self.t('moderators_info', { count: section.moderator_list.length })

@@ -4,3 +4,4 @@ en-US:
     add_moderator: Add moderator
     new_section: Create new section
     delete_section: Delete
+    message_confim_section_delete: 'Are you sure you want to delete "#{title}" section?'

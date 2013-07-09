@@ -10,3 +10,6 @@ en-US:
 
   edit:
     title: 'Edit forum section: #{name}'
+
+  destroy:
+    error_section_contains_posts: Can't delete this section because it contains user posts.
