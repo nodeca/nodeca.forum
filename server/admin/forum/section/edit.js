@@ -22,16 +22,6 @@ var ACTIVE_SECTION_FIELDS = [
 var OTHER_SECTION_FIELDS = [
   '_id'
 , 'title'
-, 'parent'
-, 'level'
-, 'display_order'
-, 'is_category'
-, 'is_enabled'
-, 'is_writeble'
-, 'is_searcheable'
-, 'is_voteable'
-, 'is_counted'
-, 'is_excludable'
 ].join(' ');
 
 

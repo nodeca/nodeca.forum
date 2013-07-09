@@ -1,4 +1,9 @@
 form.form-horizontal(data-bind="submit: isNewSection ? create : update")
+  fieldset(data-bind="if: isNewSection")
+    .control-group
+      label.control-label #{self.t('field_copy_section')}
+      .controls: select(data-bind="value: copySection, options: otherSections, optionsText: 'title', optionsValue: '_id'")
+
   fieldset
     .control-group
       label.control-label #{self.t('field_title')}
@@ -7,11 +12,6 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
     .control-group
       label.control-label #{self.t('field_description')}
       .controls: textarea(data-bind="value: activeSection.description")
-
-  fieldset
-    .control-group
-      label.control-label #{self.t('field_copy_section')}
-      .controls: select(data-bind="value: copySection, options: otherSections, optionsText: 'title', optionsValue: '_id'")
 
     .control-group
       label.control-label #{self.t('field_parent')}

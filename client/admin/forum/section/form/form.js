@@ -20,8 +20,6 @@ var SECTION_FIELD_DEFAULTS = {
 
 var SECTION_FIELD_NAMES = _.keys(SECTION_FIELD_DEFAULTS);
 
-var SECTION_COPYABLE_FIELD_NAMES = _.without(SECTION_FIELD_NAMES, 'title', 'description');
-
 
 // Knockout bindings root object.
 var view = null;
@@ -30,10 +28,10 @@ var view = null;
 N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view = {};
 
-  view.activeSection = _.defaults(data.active_section || { _id: null }, SECTION_FIELD_DEFAULTS);
+  view.activeSection = data.active_section ? _.clone(data.active_section) : { _id: null };
+  _.defaults(view.activeSection, SECTION_FIELD_DEFAULTS);
   view.otherSections = [];
-
-  view.isNewSection = (null === view.activeSection._id);
+  view.isNewSection  = (null === view.activeSection._id);
 
   // Create observable fields on activeSection.
   _.forEach(SECTION_FIELD_NAMES, function (field) {
@@ -56,9 +54,12 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       var level = section.level, prefix = '';
 
       do { prefix += '– '; level -= 1; } while (level >= 0);
-      section.title = prefix + section.title;
 
-      view.otherSections.push(section);
+      view.otherSections.push({
+        _id:   section._id
+      , title: prefix + section.title
+      });
+
       fetchOtherSections(section._id); // Fetch children sections.
     });
   }
@@ -69,13 +70,13 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view.copySection.subscribe(function (targetId) {
     if (!targetId) {
       // Reset field values to defaults.
-      _.forEach(SECTION_COPYABLE_FIELD_NAMES, function (field) {
+      _.forEach(SECTION_FIELD_NAMES, function (field) {
         view.activeSection[field](SECTION_FIELD_DEFAULTS[field]);
       });
       return;
     }
 
-    var targetSection = _.find(view.otherSections, { _id: targetId });
+    var targetSection = _.find(data.other_sections, { _id: targetId });
 
     if (!targetSection) {
       N.logger.error('Cannot find section %j in page data.', targetId);
@@ -83,7 +84,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
     }
 
     // Copy field values.
-    _.forEach(SECTION_COPYABLE_FIELD_NAMES, function (field) {
+    _.forEach(SECTION_FIELD_NAMES, function (field) {
       view.activeSection[field](targetSection[field]);
     });
   });

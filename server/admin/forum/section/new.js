@@ -7,6 +7,7 @@
 var OTHER_SECTION_FIELDS = [
   '_id'
 , 'title'
+, 'description'
 , 'parent'
 , 'level'
 , 'display_order'
