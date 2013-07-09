@@ -2,5 +2,11 @@ en-US:
   index:
     title: Edit forum sections
 
+  new:
+    title: 'New forum section'
+
+  create:
+    error_parent_not_exists: Given parent section does not exists anymore.
+
   edit:
     title: 'Edit forum section: #{name}'

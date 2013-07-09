@@ -1,4 +1,4 @@
-form.form-horizontal(data-bind="submit: update")
+form.form-horizontal(data-bind="submit: isNewSection ? create : update")
   fieldset
     .control-group
       label.control-label #{self.t('field_title')}

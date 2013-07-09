@@ -4,7 +4,7 @@
   .main
     != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
 
-    .pull-right: a.btn.btn-primary #{self.t('new_section')}
+    .pull-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
 
     h1 #{self.head.title}
 

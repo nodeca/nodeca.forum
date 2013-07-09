@@ -25,6 +25,9 @@ router:
     admin.forum.section.index:
       "/forum/section": ~
 
+    admin.forum.section.new:
+      "/forum/section/new": ~
+
     admin.forum.section.edit:
       "/forum/section/{_id}":
         _id: /[0-9a-f]+/

@@ -1,5 +1,6 @@
 en-US:
   button_save: Save
+  message_created: Section is created
   message_updated: Section is updated
 
   value_yes: Yes

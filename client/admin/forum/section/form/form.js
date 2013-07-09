@@ -29,12 +29,15 @@ var view = null;
 
 N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view = {};
-  view.activeSection = _.defaults(data.active_section || {}, SECTION_FIELD_DEFAULTS);
+
+  view.activeSection = _.defaults(data.active_section || { _id: null }, SECTION_FIELD_DEFAULTS);
   view.otherSections = [];
+
+  view.isNewSection = (null === view.activeSection._id);
 
   // Create observable fields on activeSection.
   _.forEach(SECTION_FIELD_NAMES, function (field) {
-    view.activeSection[field] = ko.observable(view.activeSection[field]).extend({ dirty: false });
+    view.activeSection[field] = ko.observable(view.activeSection[field]).extend({ dirty: view.isNewSection });
   });
 
   // Prepend virtual Null-section to otherSections list.
@@ -91,6 +94,25 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       return view.activeSection[field].isDirty();
     });
   });
+
+  // Save new section.
+  view.create = function create() {
+    var payload = {};
+
+    _.forEach(SECTION_FIELD_NAMES, function (field) {
+      payload[field] = view.activeSection[field]();
+    });
+
+    N.io.rpc('admin.forum.section.create', payload, function (err) {
+      if (err) {
+        // Invoke standard error handling.
+        return false;
+      }
+
+      N.wire.emit('notify', { type: 'info', message: t('message_created') });
+      N.wire.emit('navigate.to', { apiPath: 'admin.forum.section.index' });
+    });
+  };
 
   // Save actually existent activeSection.
   view.update = function update() {

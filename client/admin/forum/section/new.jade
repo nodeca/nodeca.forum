@@ -1,0 +1,10 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
+
+    h1 #{self.head.title}
+
+    - self.add_raw_data('other_sections', self.other_sections);
+    != self.partial('@admin.forum.section.form')
