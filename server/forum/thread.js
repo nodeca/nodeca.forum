@@ -12,6 +12,7 @@ var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
 var posts_in_fields = [
   '_id',
   'id',
+  'to',
   'attach_list',
   'text',
   'fmt',
@@ -21,6 +22,7 @@ var posts_in_fields = [
 ];
 
 var thread_info_out_fields = [
+  '_id',
   'id',
   'forum_id',
   'title',

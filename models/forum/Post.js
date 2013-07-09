@@ -16,8 +16,11 @@ module.exports = function (N, collectionName) {
   , forum           : Schema.ObjectId
   , forum_id        : Number
 
+    // Related post for replies
+  , to              : Schema.ObjectId
+
   , user            : Schema.ObjectId
-  , ts              : Date    // timestamp
+  , ts              : { type: Date, required: true, 'default': function(){ return new Date(); } }    // timestamp
 
   , ip              : String  // ip address
 

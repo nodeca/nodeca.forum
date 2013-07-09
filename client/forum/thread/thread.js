@@ -8,6 +8,8 @@ var draft = require('../_draft');
 // Editor class (CommonJS module), lazy-loaded
 var Editor;
 
+var threadInfo = {};
+
 // Editor state
 var eState = {};
 
@@ -64,11 +66,9 @@ N.wire.on('forum.post.reply', function (event) {
     eState.type = 'post-reply';
     eState.parent_post_id = parent_post_id;
 
-    var $postlist = $('#postlist');
-
     // draft id = 'forum:reply:<forum_id>:<thread_id>:<post_id>'
-    eState.draft_id = 'forum:reply:' + $postlist.data('forum_id') + ':' +
-      $postlist.data('thread_id') + ':' + parent_post_id;
+    eState.draft_id = 'forum:reply:' + threadInfo.forum_id + ':' +
+      threadInfo.id + ':' + parent_post_id;
 
     // Create editing form instance
     eState.$form = $(N.runtime.render('forum.thread.reply'));
@@ -104,8 +104,31 @@ N.wire.on('forum.post.reply', function (event) {
 // on eState Save button click
 //
 N.wire.on('forum.post.reply.save', function () {
-  // TODO: Save reply on server
-  removeEditor(true);
+  // Save reply on server
+  N.io.rpc('forum.thread.reply', {
+    thread_id: threadInfo.id,
+    to_id: eState.parent_post_id,
+    format: 'txt',
+    text: eState.editor.value()
+  }, function (err, env) {
+    if (err) {
+      return;
+    }
+
+    var locals = {
+      thread: threadInfo,
+      posts: env.data.posts,
+      users: env.data.users
+    };
+
+    // Render and append new post
+    var $result = $(N.runtime.render('forum.blocks.posts_list', locals)).hide();
+    $('#postlist > :last').after($result);
+
+    $result.fadeIn();
+
+    removeEditor(true);
+  });
 });
 
 // on Cancel reply button click
@@ -116,9 +139,18 @@ N.wire.on('forum.post.reply.cancel', function () {
   });
 });
 
+N.wire.on('navigate.done:' + module.apiPath, function () {
+  var $postlist = $('#postlist');
+
+  threadInfo.id = $postlist.data('thread_id');
+  threadInfo.forum_id = $postlist.data('forum_id');
+});
+
 // on page exit via link click
 //
 N.wire.on('navigate.exit:' + module.apiPath, function () {
+  threadInfo = {};
+
   if (eState.$form && eState.editor.isDirty()) {
     saveDraft();
   }
