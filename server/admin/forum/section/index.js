@@ -37,7 +37,7 @@ module.exports = function (N, apiPath) {
   }
 
 
-  N.wire.on(apiPath, function (env, callback) {
+  N.wire.on(apiPath, function section_index(env, callback) {
     env.response.data.head.title = env.t('title');
     env.response.data.sections = [];
 

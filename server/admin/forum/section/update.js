@@ -24,7 +24,7 @@ module.exports = function (N, apiPath) {
   , is_excludable:  { type: 'boolean',          required: false }
   });
 
-  N.wire.on(apiPath, function (env, callback) {
+  N.wire.on(apiPath, function section_update(env, callback) {
     N.models.forum.Section.findById(env.params._id, function (err, updateSection) {
       if (err) {
         callback(err);

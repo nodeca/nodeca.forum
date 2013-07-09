@@ -4,7 +4,7 @@
 var _ = require('lodash');
 
 
-N.wire.on('navigate.done:' + module.apiPath, function () {
+N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
   // Make sections draggable (both section control and children).
   $('.section-control').draggable({
     handle: '.section-handle'

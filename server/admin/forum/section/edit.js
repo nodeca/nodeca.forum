@@ -40,7 +40,7 @@ module.exports = function (N, apiPath) {
     _id: { type: 'string', required: true }
   });
 
-  N.wire.on(apiPath, function (env, callback) {
+  N.wire.on(apiPath, function section_edit(env, callback) {
     N.models.forum.Section
         .findById(env.params._id)
         .select(ACTIVE_SECTION_FIELDS)

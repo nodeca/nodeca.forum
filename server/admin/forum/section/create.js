@@ -22,7 +22,7 @@ module.exports = function (N, apiPath) {
   , is_excludable:  { type: 'boolean',          required: true }
   });
 
-  N.wire.on(apiPath, function (env, callback) {
+  N.wire.on(apiPath, function section_create(env, callback) {
     var newSection = new N.models.forum.Section(env.params);
 
     async.series([

@@ -23,7 +23,7 @@ var OTHER_SECTION_FIELDS = [
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
-  N.wire.on(apiPath, function (env, callback) {
+  N.wire.on(apiPath, function section_new(env, callback) {
     env.response.data.head.title = env.t('title');
 
     N.models.forum.Section.find({}, OTHER_SECTION_FIELDS, { lean: true }, function (err, otherSections) {
