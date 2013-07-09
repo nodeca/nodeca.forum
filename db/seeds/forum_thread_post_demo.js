@@ -148,7 +148,7 @@ Charlatan.Helpers.post = function (thread) {
 
     thread: thread._id,
 
-    forum: thread.forum._id,
+    forum: thread.forum,
 
     thread_id: thread.id,
     forum_id: thread.forum_id,
