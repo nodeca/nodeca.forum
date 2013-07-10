@@ -53,7 +53,7 @@ module.exports = function (N, apiPath) {
       if (!thread) {
         callback({
           code: N.io.BAD_REQUIEST,
-          message: env.t('invalid_thread', env.params)
+          message: env.t('error_invalid_thread', env.params)
         });
         return;
       }
@@ -81,7 +81,7 @@ module.exports = function (N, apiPath) {
         if (!post) {
           callback({
             code: N.io.BAD_REQUEST,
-            message: env.t('invalid_parent_post')
+            message: env.t('error_invalid_parent_post')
           });
           return;
         }

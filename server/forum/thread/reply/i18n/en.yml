@@ -1,0 +1,3 @@
+en-US:
+  error_invalid_thread: "Invalid thread id #{thread_id}"
+  error_invalid_parent_post: "Can't reply. Probably, moderator deleted parent post."
