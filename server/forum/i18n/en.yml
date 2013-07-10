@@ -4,9 +4,3 @@ en-US:
 
   section:
     title_with_page: "#{title} - page #{page}"
-
-  thread:
-    title_with_page: "#{title} - page #{page}"
-    reply:
-      invalid_thread: "Invalid thread with id #{thread_id}"
-      invalid_parent_post: "Unable to save reply because parent post has been deleted"

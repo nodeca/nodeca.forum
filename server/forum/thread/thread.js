@@ -6,7 +6,7 @@
 var _     = require('lodash');
 
 
-var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
+var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
 
 
 var posts_in_fields = [
