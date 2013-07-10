@@ -202,7 +202,7 @@ N.wire.on('forum.thread.append_next_page', function (event) {
     $('#postlist > :last').after($result);
 
     // update pager
-    $('.pagination').replaceWith(
+    $('._pagination').html(
       N.runtime.render('common.blocks.pagination', {
         route:    'forum.thread'
       , params:   locals.thread

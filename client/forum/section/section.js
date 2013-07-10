@@ -24,7 +24,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
     $('#topiclist > :last').after($result);
 
     // update pager
-    $('.pagination').replaceWith(
+    $('._pagination').html(
       N.runtime.render('common.blocks.pagination', {
         route:    'forum.section',
         params:   locals.forum,

@@ -22,7 +22,7 @@ article#content.forum-threads-root
 
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }
-              .btn-group.pull-left.hidden-phone-vert
+              .btn-group.pull-left.hidden-phone-vert._pagination
                 != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
             .btn-group.pull-right
