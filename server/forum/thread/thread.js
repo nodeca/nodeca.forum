@@ -3,7 +3,8 @@
 "use strict";
 
 
-var _  = require('lodash');
+var _         = require('lodash');
+var memoizee  = require('memoizee');
 
 
 var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
@@ -70,9 +71,6 @@ module.exports = function (N, apiPath) {
 
       // No thread -> "Not Found" status
       if (!thread) {
-
-        // FIXME Redirect to last page if possible
-
         callback(N.io.NOT_FOUND);
         return;
       }
@@ -219,14 +217,11 @@ module.exports = function (N, apiPath) {
 
 
 
-  // Fill head meta & fetch/fill breadcrumbs
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
+  // Fill head meta & thread info
+  N.wire.after(apiPath, function fill_meta(env) {
     var t_params;
-    var query;
-    var fields;
     var data = env.response.data;
     var thread = env.data.thread;
-    var forum = env.data.section;
 
     if (env.session && env.session.hb) {
       thread.cache.real = thread.cache.hb;
@@ -241,16 +236,37 @@ module.exports = function (N, apiPath) {
 
     // prepare thread info
     data.thread = _.pick(thread, thread_info_out_fields);
+  });
 
-    // build breadcrumbs
-    query = { _id: { $in: forum.parent_list }};
-    fields = { '_id': 1, 'id': 1, 'title': 1 };
+
+  // Helper - cacheable bredcrumbs info fetch, to save DB request.
+  // We can cache it, because cache size is limited by sections count.
+  var fetchForumsBcInfo = memoizee(
+    function (ids, callback) {
+      var query = { _id: { $in: ids }};
+      var fields = { '_id': 1, 'id': 1, 'title': 1 };
+
+      Section.find(query).select(fields).sort({ 'level': 1 })
+        .setOptions({ lean: true }).exec(function (err, parents) {
+
+        callback(err, parents);
+      });
+    },
+    {
+      async: true,
+      maxAge:     60000, // cache TTL = 60 seconds
+      primitive:  true   // params keys are calculated as toStrins, ok for our case
+    }
+  );
+
+  // build breadcrumbs
+  N.wire.after(apiPath, function fill_breadcrumbs(env, callback) {
+    var forum = env.data.section;
+    var data = env.response.data;
 
     env.extras.puncher.start('Build breadcrumbs');
 
-    Section.find(query).select(fields).sort({ 'level': 1 })
-        .setOptions({ lean: true }).exec(function (err, parents) {
-
+    fetchForumsBcInfo(forum.parent_list, function (err, parents) {
       if (err) {
         env.extras.puncher.stop();
         callback(err);

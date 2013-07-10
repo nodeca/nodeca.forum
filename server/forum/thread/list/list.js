@@ -55,9 +55,6 @@ module.exports = function (N, apiPath) {
 
       // No thread -> "Not Found" status
       if (!thread) {
-
-        // FIXME Redirect to last page if possible
-
         callback(N.io.NOT_FOUND);
         return;
       }
