@@ -125,7 +125,6 @@ module.exports = function (N, apiPath) {
 
     var posts_per_page = env.data.posts_per_page;
 
-    env.extras.puncher.start('Get posts');
     env.extras.puncher.start('Post ids prefetch');
 
 
@@ -170,7 +169,6 @@ module.exports = function (N, apiPath) {
           .exec(function (err, posts) {
 
         env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
-        env.extras.puncher.stop();
 
         if (err) {
           callback(err);
