@@ -36,7 +36,7 @@ module.exports = function (N, apiPath) {
 
     // If thread already fetched (in parent request, for example),
     // skip this step.
-    if (env.thread) {
+    if (env.data.thread) {
       callback();
       return;
     }
