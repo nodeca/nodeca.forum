@@ -30,15 +30,6 @@ var thread_info_out_fields = [
 ];
 
 
-// settings that needs to be fetched
-var settings_fetch = [
-  'posts_per_page',
-  'forum_show',
-  'forum_read_topics',
-  'forum_reply_topics'
-];
-
-
 // settings that would be "exposed" into views
 var settings_expose = [
   'forum_read_topics',
@@ -73,8 +64,9 @@ module.exports = function (N, apiPath) {
   var Post = N.models.forum.Post;
 
 
-  // fetch thread and forum info to simplify permisson check
-  N.wire.before(apiPath, function fetch_thread_and_forum_info(env, callback) {
+  // fetch thread info & check that thread exists
+  N.wire.before(apiPath, function fetch_thread_info(env, callback) {
+
     env.extras.puncher.start('Thread info prefetch');
 
     Thread.findOne({ id: env.params.id }).setOptions({ lean: true })
@@ -97,54 +89,20 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.thread = thread;
-
-      env.extras.puncher.start('Forum(parent) info prefetch');
-
-      // `params.forum_id` can be wrong (old link to moved thread)
-      // Use real id from fetched thread
-      Section.findOne({ _id: thread.forum }).setOptions({ lean: true })
-          .exec(function (err, forum) {
-
-        env.extras.puncher.stop();
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        // No forum -> thread with missed parent, return "Not Found" too
-        if (!forum) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
-        // If params.forum_id defined, and not correct - redirect to proper location
-        if (env.params.forum_id && (forum.id !== +env.params.forum_id)) {
-          callback({
-            code: N.io.REDIRECT,
-            head: {
-              'Location': N.runtime.router.linkTo('forum.section', {
-                id:       thread.id,
-                forum_id: forum.id,
-                page:     env.params.page || 1
-              })
-            }
-          });
-          return;
-        }
-
-        env.data.section = forum;
-        callback();
-      });
+      callback();
     });
   });
 
+  // fetch forum info & redirect if needed
+  N.wire.before(apiPath, function fetch_forum_info(env, callback) {
 
-  N.wire.before(apiPath, function thread_get_settings(env, callback) {
-    env.extras.settings.params.forum_id = env.data.thread.forum;
-    env.extras.puncher.start('Fetch settings');
+    env.extras.puncher.start('Forum(parent) info prefetch');
 
-    env.extras.settings.fetch(settings_fetch, function (err, settings) {
+    // `params.forum_id` can be wrong (old link to moved thread)
+    // Use real id from fetched thread
+    Section.findOne({ _id: env.data.thread.forum }).setOptions({ lean: true })
+        .exec(function (err, forum) {
+
       env.extras.puncher.stop();
 
       if (err) {
@@ -152,31 +110,59 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // propose all settings to data
-      env.data.settings = settings;
+      // No forum -> thread with missed parent, return "Not Found" too
+      if (!forum) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
 
-      // propose settings for views to response.data
-      env.response.data.settings = _.pick(settings, settings_expose);
+      // If params.forum_id defined, and not correct - redirect to proper location
+      if (env.params.forum_id && (forum.id !== +env.params.forum_id)) {
+        callback({
+          code: N.io.REDIRECT,
+          head: {
+            'Location': N.runtime.router.linkTo('forum.section', {
+              id:       env.data.thread.id,
+              forum_id: forum.id,
+              page:     env.params.page || 1
+            })
+          }
+        });
+        return;
+      }
 
+      env.data.section = forum;
       callback();
     });
   });
 
 
-  N.wire.before(apiPath, function fetch_thread_and_forum_info(env, callback) {
+  // check access permissions
+  N.wire.before(apiPath, function check_permissions(env, callback) {
 
-    if (!env.data.settings.forum_show) {
-      callback(N.io.NOT_AUTHORIZED);
-      return;
-    }
+    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.puncher.start('Fetch settings');
 
-    if (!env.data.settings.forum_read_topics) {
-      callback(N.io.NOT_AUTHORIZED);
-      return;
-    }
+    env.extras.settings.fetch(['forum_show', 'forum_read_topics'], function (err, settings) {
+      env.extras.puncher.stop();
 
-    callback();
+      if (err) {
+        callback(err);
+        return;
+      }
 
+      if (!settings.forum_show) {
+        callback(N.io.NOT_AUTHORIZED);
+        return;
+      }
+
+      if (!settings.forum_read_topics) {
+        callback(N.io.NOT_AUTHORIZED);
+        return;
+      }
+
+      callback();
+    });
   });
 
 
@@ -184,28 +170,41 @@ module.exports = function (N, apiPath) {
   // requested page is bigger than max available
   //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
-    var per_page = env.data.settings.posts_per_page,
-        max      = Math.ceil(env.data.thread.cache.real.post_count / per_page),
-        current  = parseInt(env.params.page, 10);
+    env.extras.puncher.start('Fetch posts per page setting');
 
-    if (current > max) {
-      // Requested page is BIGGER than maximum - redirect to the last one
-      callback({
-        code: N.io.REDIRECT,
-        head: {
-          "Location": N.runtime.router.linkTo('forum.thread', {
-            forum_id: env.params.forum_id,
-            id:       env.params.id,
-            page:     max
-          })
-        }
-      });
-      return;
-    }
+    env.extras.settings.fetch(['posts_per_page'], function (err, settings) {
+      env.extras.puncher.stop();
 
-    // requested page is OK. propose data for pagination
-    env.response.data.page = { max: max, current: current };
-    callback();
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      var per_page = settings.posts_per_page,
+          max      = Math.ceil(env.data.thread.cache.real.post_count / per_page),
+          current  = parseInt(env.params.page, 10);
+
+      if (current > max) {
+        // Requested page is BIGGER than maximum - redirect to the last one
+        callback({
+          code: N.io.REDIRECT,
+          head: {
+            "Location": N.runtime.router.linkTo('forum.thread', {
+              forum_id: env.params.forum_id,
+              id:       env.params.id,
+              page:     max
+            })
+          }
+        });
+        return;
+      }
+
+      // requested page is OK. propose data for pagination
+      env.data.posts_per_page = per_page;
+
+      env.response.data.page = { max: max, current: current };
+      callback();
+    });
   });
 
 
@@ -220,7 +219,7 @@ module.exports = function (N, apiPath) {
     var start;
     var query;
 
-    var posts_per_page = env.data.settings.posts_per_page;
+    var posts_per_page = env.data.posts_per_page;
 
     env.response.data.show_page_number = false;
 
@@ -364,4 +363,24 @@ module.exports = function (N, apiPath) {
     });
 
   });
+
+  // expose permissions/settings
+  N.wire.after(apiPath, function expose_settings(env, callback) {
+    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.puncher.start('Fetch thread public settings');
+
+    env.extras.settings.fetch(settings_expose, function (err, settings) {
+      env.extras.puncher.stop();
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.response.data.settings = _.extend({}, env.response.data.settings, settings);
+
+      callback();
+    });
+  });
+
 };
