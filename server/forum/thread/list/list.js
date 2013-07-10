@@ -145,14 +145,11 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No page -> "Not Found" status
+      // No page -> return empty data, without trying to fetch posts
       if (!docs.length) {
-        // When user requests page that is out of possible range we redirect
-        // them during before filter (see above).
-        //
-        // But very rarely, cached posts counter can be out of sync.
-        // In this case return 404 for empty result.
-        callback(N.io.NOT_FOUND);
+        // Very rarely, user can request next page, when moderator deleted thread tail.
+        env.data.posts = [];
+        callback();
         return;
       }
 

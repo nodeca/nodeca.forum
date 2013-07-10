@@ -10,6 +10,9 @@ var Editor;
 
 var threadInfo = {};
 
+// Page params - forum_id, thread_id & page
+var params = {};
+
 // Editor state
 var eState = {};
 
@@ -139,11 +142,18 @@ N.wire.on('forum.post.reply.cancel', function () {
   });
 });
 
-N.wire.on('navigate.done:' + module.apiPath, function () {
+N.wire.on('navigate.done:' + module.apiPath, function (config) {
+  // Save page params for futher use
+  params = config.params;
+
+  // FIXME
+  params.id = +params.id;
+
   var $postlist = $('#postlist');
 
   threadInfo.id = $postlist.data('thread_id');
   threadInfo.forum_id = $postlist.data('forum_id');
+
 });
 
 // on page exit via link click
@@ -181,10 +191,49 @@ N.wire.before('navigate.exit:' + module.apiPath, function () {
 N.wire.on('forum.thread.append_next_page', function (event) {
   var $button = $(event.currentTarget);
 
+  N.io.rpc(
+    'forum.thread.list',
+    { id: params.id, page: params.page + 1 },
+    function (err, res) {
+      var locals = res.data;
+
+      // if no posts - just disable 'More' button
+      if (!locals.posts || !locals.posts.length) {
+        $button.addClass('hidden');
+        return;
+      }
+
+      params.page += 1;
+
+      locals.thread = { id: params.id };
+      locals.show_page_number = params.page;
+
+      var $result = $(N.runtime.render('forum.blocks.posts_list', res.data));
+      $('#postlist > :last').after($result);
+
+      $button.attr('href', N.runtime.router.linkTo('forum.thread', {
+        id:       params.id
+      , forum_id: params.forum_id
+      , page:     params.page + 1
+      }));
+
+      // update pager
+      $('._pagination').html(
+        N.runtime.render('common.blocks.pagination', {
+          route:    'forum.thread'
+        , params:   locals.thread
+        , current:  params.page
+        , max_page: 10
+        })
+      );
+    }
+  );
+
+  return;
+/*
   function renderNextPage(data, callback) {
     var $result, locals = data.locals;
 
-    locals.show_page_number = locals.page.current;
 
     // Hide "More posts" button if there are no more pages.
     // Or update the button's link to the next page.
@@ -220,5 +269,5 @@ N.wire.on('forum.thread.append_next_page', function (event) {
     href: $button.attr('href')
   , render: renderNextPage
   , replaceState: true
-  });
+  });*/
 });
