@@ -1,18 +1,17 @@
 'use strict';
 
 
-var _     = require('lodash');
+var _        = require('lodash');
 var memoizee = require('memoizee');
 
-
-////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N) {
 
   // Helper to fetch usergroups by IDs
   //
-  function fetchForumSettings(id, callback) {
-    N.models.forum.Section.findOne({ _id: String(id) })
+  function fetchSectionSettings(id, callback) {
+    N.models.forum.Section
+      .findById(id)
       .select('settings.forum_usergroup')
       .setOptions({ lean: true })
       .exec(callback);
@@ -20,15 +19,12 @@ module.exports = function (N) {
 
   // Memoized version of fetchUserGroups helper
   //
-  var fetchForumSettingsCached = memoizee(fetchForumSettings, {
+  var fetchSectionSettingsCached = memoizee(fetchSectionSettings, {
     // memoizee options. revalidate cache after 30 sec
-    async:      true,
-    maxAge:     30000,
-    primitive:  true
+    async:     true
+  , maxAge:    30000
+  , primitive: true
   });
-
-
-  ////////////////////////////////////////////////////////////////////////////////
 
 
   // ##### Params
@@ -38,83 +34,95 @@ module.exports = function (N) {
   //
   var ForumGroupStore = N.settings.createStore({
     get: function (keys, params, options, callback) {
-      var func = options.skipCache ? fetchForumSettings : fetchForumSettingsCached;
-
       if (!params.forum_id) {
-        callback("forum_id param is required for getting settings from forum_usergroup store");
+        callback('forum_id param is required for getting settings from forum_usergroup store');
         return;
       }
 
-      if (!_.isArray(params.usergroup_ids) || !params.usergroup_ids.length) {
-        callback("usergroup_ids param required to be non-empty array for getting settings from forum_usergroup store");
+      if (!_.isArray(params.usergroup_ids) || _.isEmpty(params.usergroup_ids)) {
+        callback('usergroup_ids param required to be non-empty array for getting settings from forum_usergroup store');
         return;
       }
 
-      func(params.forum_id, function (err, forum) {
-        var settings, results = {};
+      var self  = this
+        , fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
 
+      fetch(params.forum_id, function (err, section) {
         if (err) {
           callback(err);
           return;
         }
 
-        settings = forum.settings || {};
-        settings = settings.forum_usergroup  || {};
+        if (!section) {
+          callback('Forum section ' + params.forum_id + ' not exists.');
+          return;
+        }
 
-        keys.forEach(function (k) {
+        var results = {};
+
+        _.forEach(keys, function (key) {
           var values = [];
 
-          params.usergroup_ids.forEach(function (id) {
-            if (settings[id]) {
-              values.push(settings[id]);
+          _.forEach(params.usergroup_ids, function (usergroupId) {
+            if (section.settings &&
+                section.settings.forum_usergroup &&
+                section.settings.forum_usergroup[usergroupId] &&
+                section.settings.forum_usergroup[usergroupId][key]) {
+              values.push(section.settings.forum_usergroup[usergroupId][key]);
             } else {
-              values.push(null);
+              values.push({
+                value: self.getDefaultValue(key)
+              , force: false
+              });
             }
           });
 
-          results[k] = N.settings.mergeValues(values);
+          // Get merged value.
+          results[key] = N.settings.mergeValues(values);
         });
 
         callback(null, results);
       });
-    },
-
-    set: function (settings, params, callback) {
+    }
+  , set: function (settings, params, callback) {
       if (!params.forum_id) {
-        callback("forum_id param is required for saving settings into forum_usergroup store");
+        callback('forum_id param is required for saving settings into forum_usergroup store');
         return;
       }
 
       if (!params.usergroup_id) {
-        callback("usergroup_id param is required for saving settings into forum_usergroup store");
+        callback('usergroup_id param is required for saving settings into forum_usergroup store');
         return;
       }
 
-      N.models.forum.Section.findOne({
-        _id: params.forum_id
-      }).exec(function (err, forum) {
-        var grp_id = params.usergroup_id;
-
+      N.models.forum.Section.findById(params.forum_id, function (err, section) {
         if (err) {
           callback(err);
           return;
         }
 
-        // make sure we have settings storages
-        forum.settings = forum.settings || {};
-        forum.settings.forum_usergroup = forum.settings.forum_usergroup || {};
-        forum.settings.forum_usergroup[grp_id] = forum.settings.forum_usergroup[grp_id] || {};
+        if (!section) {
+          callback('Forum section ' + params.forum_id + ' not exists.');
+          return;
+        }
 
-        _.each(settings, function (opts, key) {
-          if (null === opts) {
-            delete forum.settings.forum_usergroup[grp_id][key];
+        var usergroupId = params.usergroup_id;
+
+        // Make sure we have settings storages.
+        section.settings                              = section.settings || {};
+        section.settings.forum_usergroup              = section.settings.forum_usergroup || {};
+        section.settings.forum_usergroup[usergroupId] = section.settings.forum_usergroup[usergroupId] || {};
+
+        _.forEach(settings, function (setting, key) {
+          if (null === setting) {
+            delete section.settings.forum_usergroup[usergroupId][key];
           } else {
-            forum.settings.forum_usergroup[grp_id][key] = opts;
+            section.settings.forum_usergroup[usergroupId][key] = setting;
           }
         });
 
-        forum.markModified('settings');
-        forum.save(callback);
+        section.markModified('settings.forum_usergroup');
+        section.save(callback);
       });
     }
   });
