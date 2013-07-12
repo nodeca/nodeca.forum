@@ -69,6 +69,12 @@ module.exports = function (N, collectionName) {
 
     // Cache
   , cache           : cache
+
+    // Settings info used by admin interface to calculate inheritance, etc.
+  , raw_settings    : { type: Schema.Types.Mixed, 'default': {} }
+
+    // Setting storage. Only `forum_usergroup` settings store should access this.
+  , settings        : { type: Schema.Types.Mixed, 'default': {} }
   });
 
 

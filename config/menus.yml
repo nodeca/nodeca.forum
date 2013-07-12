@@ -11,3 +11,6 @@ menus:
         submenu:
           section:
             to: admin.forum.section.index
+
+          section_permissions:
+            to: admin.forum.section_permissions.index

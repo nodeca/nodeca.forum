@@ -5,3 +5,4 @@ i18n:
         navbar:
           forum: Forums
           forum.section: Sections
+          forum.section_permissions: Section permissions

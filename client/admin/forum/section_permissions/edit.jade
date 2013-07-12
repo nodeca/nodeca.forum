@@ -1,0 +1,42 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
+
+    h1 #{self.head.title}
+
+    - self.add_raw_data('setting_schemas', self.setting_schemas)
+    - self.add_raw_data('settings',        self.settings)
+    - self.add_raw_data('parent_settings', self.parent_settings)
+
+    form#section_permissions_edit_form.form-horizontal(data-bind="submit: save", style="display: none")
+      // ko foreach: settings
+      .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited, forced: forced }")
+        label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
+        .controls
+          .row-fluid
+            .span4.control-value
+              // ko if: 'boolean' === type
+              .switch
+                input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
+                label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
+              // /ko
+
+              // ko if: localizedHelp
+              span.help-block(data-bind="text: localizedHelp")
+              // /ko
+
+            .span4
+              div
+                label.checkbox.inline(data-bind="visible: showOverrideCheckbox")
+                  input(type="checkbox", data-bind="checked: overriden")
+                  = self.t('checkbox_override')
+
+                label.checkbox.inline(data-bind="visible: showForceCheckbox")
+                  input(type="checkbox", data-bind="checked: forced")
+                  = self.t('checkbox_force')
+      // /ko
+      .form-actions
+        button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
+          = self.t('button_save')

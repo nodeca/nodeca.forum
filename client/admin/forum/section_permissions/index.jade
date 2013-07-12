@@ -1,0 +1,40 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
+
+    h1 #{self.head.title}
+
+    mixin sections_tree(sections)
+      each section in sections
+        li.section-group
+          .section-control
+            .section-title #{section.title}
+
+            ul.section-usergroup-list
+              each usergroup in self.usergroups
+                //- Count of overriden permission settings.
+                overriden = section.overriden[usergroup._id]
+
+                //- CSS class for current usergroup <li>
+                if overriden >= self.settings_total
+                  usergroup_class = 'section-usergroup-all-overriden'
+                else if overriden > 0
+                  usergroup_class = 'section-usergroup-some-overriden'
+                else
+                  usergroup_class = 'section-usergroup-none-overriden'
+
+                li
+                  a(href=self.link_to('admin.forum.section_permissions.edit', { section_id: section._id, usergroup_id: usergroup._id }))
+                    = usergroup.name
+                  span(class=usergroup_class)
+                    = self.t('overriden_permissions_count', { count: overriden, total: self.settings_total })
+
+          if section.children.length > 0
+            ul.section-list.section-children
+              mixin sections_tree(section.children)
+
+
+    ul.section-list
+      mixin sections_tree(self.sections)

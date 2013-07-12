@@ -31,3 +31,11 @@ router:
     admin.forum.section.edit:
       "/forum/section/{_id}":
         _id: /[0-9a-f]+/
+
+    admin.forum.section_permissions.index:
+      "/forum/section_permissions": ~
+
+    admin.forum.section_permissions.edit:
+      "/forum/section_permissions/{section_id}/{usergroup_id}":
+        section_id: /[0-9a-f]+/
+        usergroup_id: /[0-9a-f]+/
