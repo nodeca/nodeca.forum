@@ -11,7 +11,7 @@ var async = require('async');
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
-  N.wire.on(apiPath, function section_index(env, callback) {
+  N.wire.on(apiPath, function section_permissions_index(env, callback) {
     var store = N.settings.getStore('forum_usergroup');
 
     if (!store) {

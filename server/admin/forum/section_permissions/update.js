@@ -14,7 +14,7 @@ module.exports = function (N, apiPath) {
   , settings:     { type: 'object', required: true }
   });
 
-  N.wire.on(apiPath, function section_index(env, callback) {
+  N.wire.on(apiPath, function section_permissions_update(env, callback) {
     N.models.forum.Section.findById(env.params.section_id, function (err, section) {
       if (err) {
         callback(err);

@@ -1,0 +1,19 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
+
+    .pull-right
+      if self.is_inherited
+        = self.t('this_is_inherited_moderator')
+      else
+        a(href="#", data-section-id=self.section_id.toString(), data-user-id=self.user_id.toString(), data-on-click="admin.forum.section_moderator.destroy")
+          = self.t('button_delete')
+
+    h1 #{self.head.title}
+
+    - self.add_raw_data('setting_schemas', self.setting_schemas)
+    - self.add_raw_data('settings',        self.settings)
+    - self.add_raw_data('parent_settings', self.parent_settings)
+    != self.partial('@admin.forum.section_moderator.form')

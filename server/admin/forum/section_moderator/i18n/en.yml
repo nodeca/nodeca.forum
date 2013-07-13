@@ -1,0 +1,6 @@
+en-US:
+  new:
+    title: 'Add moderator for #{section}'
+
+  edit:
+    title: 'Edit moderator "#{user}" at #{section}'

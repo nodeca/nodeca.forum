@@ -17,17 +17,21 @@
           a.pull-right.section-delete-button(href="#", data-on-click="admin.forum.section.destroy") #{self.t('delete_section')}
 
           a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
-            = self.t('moderators_info', { count: section.moderator_list.length })
+            = self.t('moderators_info', { count: section.moderator_list_full.length })
             span.caret
 
           ul.pull-right.dropdown-menu
-            each moderator in section.moderator_list
-              li: a(href="#") #{self.users[moderator]._uname}
+            each moderator_id in section.moderator_list_full
+              li
+                a(href=self.link_to('admin.forum.section_moderator.edit', { section_id: section._id, user_id: moderator_id }))
+                  = self.users[moderator_id]._uname
 
-            if 0 !== section.moderator_list.length
+            if 0 !== section.moderator_list_full.length
               li.divider
 
-            li: a(href="#") #{self.t('add_moderator')}
+            li
+              a(href=self.link_to('admin.forum.section_moderator.new', { section_id: section._id }))
+                = self.t('add_moderator')
 
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
           .pull-left.section-handle.section-drag-mark ⇵

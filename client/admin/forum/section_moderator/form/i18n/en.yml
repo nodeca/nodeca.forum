@@ -1,0 +1,9 @@
+en-US:
+  value_yes: Yes
+  value_no: No
+  input_find_by_name: Find by name
+  checkbox_override: Override
+  button_save: Save
+  error_user_not_selected: Select user to be a moderator first
+  message_created: Moderator is created
+  message_updated: Moderator is updated

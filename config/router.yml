@@ -39,3 +39,12 @@ router:
       "/forum/section_permissions/{section_id}/{usergroup_id}":
         section_id: /[0-9a-f]+/
         usergroup_id: /[0-9a-f]+/
+
+    admin.forum.section_moderator.new:
+      "/forum/section_moderator/{section_id}/new":
+        section_id: /[0-9a-f]+/
+
+    admin.forum.section_moderator.edit:
+      "/forum/section_moderator/{section_id}/{user_id}":
+        section_id: /[0-9a-f]+/
+        user_id: /[0-9a-f]+/

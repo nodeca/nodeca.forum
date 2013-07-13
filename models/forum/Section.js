@@ -50,9 +50,12 @@ module.exports = function (N, collectionName) {
 
   , level           : { type: Number, 'default': 0 }
 
-  , moderator_id_list    : [Number]
-  , moderator_list   : [Schema.ObjectId]
+    // Visible moderator lists.
+  , moderator_id_list : [Number]
+  , moderator_list    : [Schema.ObjectId]
 
+    // Full (visible and hidden) moderator list.
+  , moderator_list_full : [Schema.ObjectId]
 
     // Options
   , is_category     : { type: Boolean, 'default': false } // subforum or category

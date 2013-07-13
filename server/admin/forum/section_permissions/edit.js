@@ -10,7 +10,7 @@ module.exports = function (N, apiPath) {
   , usergroup_id: { type: 'string', required: true }
   });
 
-  N.wire.on(apiPath, function section_index(env, callback) {
+  N.wire.on(apiPath, function section_permissions_edit(env, callback) {
     var store = N.settings.getStore('forum_usergroup');
 
     if (!store) {

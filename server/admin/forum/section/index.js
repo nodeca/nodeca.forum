@@ -15,7 +15,7 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section
         .find({ parent: parent })
         .sort('display_order')
-        .select('_id title parent moderator_list')
+        .select('_id title parent moderator_list_full')
         .setOptions({ lean: true })
         .exec(function (err, sections) {
 
@@ -25,10 +25,11 @@ module.exports = function (N, apiPath) {
       }
 
       async.forEach(sections, function (section, next) {
+        section.moderator_list_full = section.moderator_list_full || [];
         section.children = [];
 
         accumulator.push(section);
-        env.data.users = env.data.users.concat(section.moderator_list);
+        env.data.users = env.data.users.concat(section.moderator_list_full);
 
         // Fill-in section's children.
         fetchSections(env, section.children, section._id, next);
