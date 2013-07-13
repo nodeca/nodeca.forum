@@ -17,30 +17,33 @@ module.exports = function (N) {
       .exec(callback);
   }
 
-  // Memoized version of fetchUserGroups helper
+  // Memoized version of `fetchSectionSettings` helper.
+  // Revalidate cache after 30 seconds.
   //
   var fetchSectionSettingsCached = memoizee(fetchSectionSettings, {
-    // memoizee options. revalidate cache after 30 sec
     async:     true
   , maxAge:    30000
   , primitive: true
   });
 
 
-  // ##### Params
-  //
-  // - usergroup_ids (Array)
-  // - forum_id (String|ObjectId)
-  //
-  var ForumGroupStore = N.settings.createStore({
+  var ForumUsergroupStore = N.settings.createStore({
+    //
+    // params:
+    //   forum_id      - ObjectId
+    //   usergroup_ids - Array of ObjectIds
+    //
+    // options:
+    //   skipCache     - Boolean
+    //
     get: function (keys, params, options, callback) {
       if (!params.forum_id) {
-        callback('forum_id param is required for getting settings from forum_usergroup store');
+        callback('`forum_id` parameter is required for getting settings from `forum_usergroup` store.');
         return;
       }
 
       if (!_.isArray(params.usergroup_ids) || _.isEmpty(params.usergroup_ids)) {
-        callback('usergroup_ids param required to be non-empty array for getting settings from forum_usergroup store');
+        callback('`usergroup_ids` parameter required to be non-empty array for getting settings from `forum_usergroup` store.');
         return;
       }
 
@@ -54,7 +57,7 @@ module.exports = function (N) {
         }
 
         if (!section) {
-          callback('Forum section ' + params.forum_id + ' not exists.');
+          callback('Forum section `' + params.forum_id + '` not exists.');
           return;
         }
 
@@ -84,14 +87,19 @@ module.exports = function (N) {
         callback(null, results);
       });
     }
+    //
+    // params:
+    //   forum_id     - ObjectId
+    //   usergroup_id - ObjectId
+    //
   , set: function (settings, params, callback) {
       if (!params.forum_id) {
-        callback('forum_id param is required for saving settings into forum_usergroup store');
+        callback('`forum_id` parameter is required for saving settings into `forum_usergroup` store.');
         return;
       }
 
       if (!params.usergroup_id) {
-        callback('usergroup_id param is required for saving settings into forum_usergroup store');
+        callback('`usergroup_id` parameter is required for saving settings into `forum_usergroup` store.');
         return;
       }
 
@@ -127,5 +135,5 @@ module.exports = function (N) {
     }
   });
 
-  return ForumGroupStore;
+  return ForumUsergroupStore;
 };
