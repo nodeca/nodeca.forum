@@ -1,0 +1,5 @@
+en-US:
+  edit:
+    this_is_inherited_moderator: This is inherited moderator
+    button_delete: Delete
+    message_deleted: Moderator is deleted

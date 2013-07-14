@@ -1,0 +1,26 @@
+setting_schemas:
+  forum_moderator:
+    forum_visible_moderator:
+      priority: 10
+      type: boolean
+      default: true
+
+    forum_can_edit_titles:
+      priority: 20
+      type: boolean
+      default: false
+
+    forum_can_edit_posts:
+      priority: 30
+      type: boolean
+      default: false
+
+    forum_can_delete_threads:
+      priority: 40
+      type: boolean
+      default: false
+
+    forum_can_delete_posts:
+      priority: 50
+      type: boolean
+      default: false

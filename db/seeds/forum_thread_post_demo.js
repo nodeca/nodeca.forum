@@ -82,13 +82,15 @@ Charlatan.Helpers.category = function () {
 };
 
 Charlatan.Helpers.forum = function (parent) {
-  var moderator_id_list = [];
-  var moderator_list = [];
+  var moderator_id_list   = _.clone(parent.moderator_id_list   || []);
+  var moderator_list      = _.clone(parent.moderator_list      || []);
+  var moderator_list_full = _.clone(parent.moderator_list_full || []);
   var moderator;
 
   var moderator_count = Charlatan.Helpers.rand(MAX_MODERATOR_COUNT);
   for (var i = 0; i < moderator_count; i++) {
     moderator = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
+    moderator_list_full.push(moderator);
     moderator_list.push(moderator);
     moderator_id_list.push(moderator.id);
   }
@@ -111,6 +113,7 @@ Charlatan.Helpers.forum = function (parent) {
 
     moderator_id_list: _.uniq(moderator_id_list),
     moderator_list: _.uniq(moderator_list),
+    moderator_list_full: _.uniq(moderator_list_full),
 
     cache: {
       real: {}

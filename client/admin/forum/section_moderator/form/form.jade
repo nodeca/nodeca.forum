@@ -1,0 +1,31 @@
+form#section_moderator_form.form-horizontal(data-bind="submit: isNewModerator ? create : update", style="display: none")
+  .control-group(data-bind="if: isNewModerator")
+    label.control-label #{self.t('input_find_by_name')}
+    .controls
+      input#section_moderator_search(type="text")
+
+  // ko foreach: settings
+  .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
+    label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
+    .controls
+      .row-fluid
+        .span4.control-value
+          // ko if: 'boolean' === type
+          .switch
+            input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
+            label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
+          // /ko
+
+          // ko if: localizedHelp
+          span.help-block(data-bind="text: localizedHelp")
+          // /ko
+
+        .span4
+          div
+            label.checkbox.inline(data-bind="visible: showOverrideCheckbox")
+              input(type="checkbox", data-bind="checked: overriden")
+              = self.t('checkbox_override')
+  // /ko
+  .form-actions
+    button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
+      = self.t('button_save')

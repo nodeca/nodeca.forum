@@ -1,0 +1,6 @@
+en-US:
+  index:
+    title: Edit forum section permissions.
+
+  edit:
+    title: 'Edit permissions for "#{usergroup}" at #{section}'

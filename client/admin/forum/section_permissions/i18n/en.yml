@@ -1,0 +1,11 @@
+en-US:
+  index:
+    overriden_permissions_count: '(#{count}/#{total} overriden)'
+
+  edit:
+    value_yes: Yes
+    value_no: No
+    checkbox_override: Override
+    checkbox_force: Force
+    button_save: Save
+    message_saved: Permissions saved
