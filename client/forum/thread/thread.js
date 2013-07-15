@@ -4,7 +4,7 @@
 'use strict';
 
 
-var _ = require('lodash');
+//var _ = require('lodash');
 
 
 var draft = require('../_draft');
