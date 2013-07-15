@@ -15,6 +15,8 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function section_destroy(env, callback) {
+
+    // Cast string to ObjectId. Required for Mongo query.
     var _id = mongoose.Types.ObjectId(env.params._id);
 
     // Select section and all it's descendants.

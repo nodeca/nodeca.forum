@@ -7,6 +7,8 @@
 var _     = require('lodash');
 var async = require('async');
 
+var updateForumSections = require('./_lib/update_forum_sections');
+
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -27,16 +29,15 @@ module.exports = function (N, apiPath) {
 
     async.series([
       //
-      // In case that new section has a parent, we must compute values for
-      // `parent_list`, `parent_id`, `parent_id_list`, and `level` fields.
+      // Ensure parent section exists. (if provided)
       //
-      function compute_parent_dependent_fields(next) {
+      function (next) {
         if (!newSection.parent) {
-          next();
+          next(); // No parent - OK.
           return;
         }
 
-        N.models.forum.Section.findById(newSection.parent, function (err, parentSection) {
+        N.models.forum.Section.findById(newSection.parent, '_id', { lean: true }, function (err, parentSection) {
           if (err) {
             next(err);
             return;
@@ -47,17 +48,13 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          newSection.parent_list    = parentSection.parent_list.concat(parentSection._id);
-          newSection.parent_id      = parentSection.id;
-          newSection.parent_id_list = parentSection.parent_id_list.concat(parentSection.id);
-          newSection.level          = parentSection.level + 1;
           next();
         });
       }
       //
       // Find and set free `id` value for new section. (not `_id`!)
       //
-    , function set_id(next) {
+    , function (next) {
         // This is the most simple way to find max value of a field in Mongo.
         N.models.forum.Section
             .find()
@@ -79,7 +76,7 @@ module.exports = function (N, apiPath) {
       //
       // Find and set free `display_order` value in the end of siblings list.
       //
-    , function set_display_order(next) {
+    , function (next) {
         // This is the most simple way to find max value of a field in Mongo.
         N.models.forum.Section
             .find({ parent: newSection.parent })
@@ -101,9 +98,13 @@ module.exports = function (N, apiPath) {
       //
       // Save new section into the database.
       //
-    , function save_section(next) {
+    , function (next) {
         newSection.save(next);
       }
+      //
+      // Fill-in parent-dependent fields for newly created section.
+      //
+    , async.apply(updateForumSections, N)
     ], callback);
   });
 };

@@ -42,27 +42,45 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
   , hoverClass: 'section-placeholder-hover'
   , tolerance: 'pointer'
   , drop: function (event, ui) {
-      var $draggableGroup = ui.draggable.parent();
+      // Data to update.
+      var payload = {
+        _id:    ui.draggable.data('id')
+      , parent: $(this).parents('.section-group:first').children('.section-control').data('id')
+      };
+
+      // Compute `display_order` depending on previous and next sibling sections.
+      var prev = $(this).prev('.section-group').children('.section-control').data('displayOrder')
+        , next = $(this).next('.section-group').children('.section-control').data('displayOrder');
+
+      if ((null !== prev) && (null !== next)) {
+        // Between other.
+        payload.display_order = (Number(prev) + Number(next)) / 2;
+
+      } else if (null !== prev) {
+        // After all.
+        payload.display_order = Number(prev) + 1;
+
+      } else if (null !== next) {
+        // Before all.
+        payload.display_order = Number(next) - 1;
+
+      } else {
+        // Single in current children list.
+        payload.display_order = 1;
+      }
 
       // Move section and it's allied placeholder into new location.
+      var $draggableGroup = ui.draggable.parent();
+
       $draggableGroup.prev('.section-placeholder').insertBefore(this);
       $draggableGroup.insertBefore(this);
+      $draggableGroup.children('.section-control').data('displayOrder', payload.display_order);
 
-      var self   = this
-        , _id    = ui.draggable.data('id')
-        , parent = $(this).parents('.section-group:first').children('.section-control').data('id');
-
-      N.io.rpc('admin.forum.section.update', { _id: _id, parent: parent }, function (err) {
+      // Send save request.
+      N.io.rpc('admin.forum.section.update', payload, function (err) {
         if (err) {
           return false; // Invoke standard error handling.
         }
-
-        _.forEach($(self).siblings('.section-group'), function (section, index) {
-          N.io.rpc('admin.forum.section.update', {
-            _id: $(section).children('.section-control').data('id')
-          , display_order: index
-          });
-        });
       });
     }
   });

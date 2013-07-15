@@ -13,7 +13,7 @@
       li.section-placeholder
       li.section-group
         //- Section's own control bar. 
-        .clearfix.section-control(data-id=section._id.toString())
+        .clearfix.section-control(data-id=section._id.toString(), data-display-order=section.display_order)
           a.pull-right.section-delete-button(href="#", data-on-click="admin.forum.section.destroy") #{self.t('delete_section')}
 
           a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")

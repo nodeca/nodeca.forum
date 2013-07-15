@@ -7,6 +7,8 @@
 var _     = require('lodash');
 var async = require('async');
 
+var updateForumSections = require('./_lib/update_forum_sections');
+
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -56,93 +58,40 @@ module.exports = function (N, apiPath) {
         // If section's `parent` is changed, but new `display_order` is not
         // specified, find free `display_order`.
         //
-        function set_display_order(next) {
+        function (next) {
           if (!isParentChanged || _.has(env.params, 'display_order')) {
             next();
             return;
           }
 
-          // Select section's new siblings to find free 'display_order' index.
+          // This is the most simple way to find max value of a field in Mongo.
           N.models.forum.Section
               .find({ parent: updateSection.parent })
               .select('display_order')
+              .sort('-display_order')
+              .limit(1)
               .setOptions({ lean: true })
-              .exec(function (err, sections) {
+              .exec(function (err, result) {
 
             if (err) {
               next(err);
               return;
             }
 
-            if (_.isEmpty(sections)) {
-              updateSection.display_order = 1;
-            } else {
-              updateSection.display_order = _.max(sections, 'display_order').display_order + 1;
-            }
+            updateSection.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
             next();
           });
         }
         //
         // Save changes at updateSection.
         //
-      , function save_section(next) {
+      , function (next) {
           updateSection.save(next);
         }
         //
-        // Update all related sections. (descendants)
+        // Recompute parent-dependent fields for all sections.
         //
-      , function update_related_sections(next) {
-          if (!isParentChanged) {
-            next();
-            return;
-          }
-
-          N.models.forum.Section.find().exec(function (err, sections) {
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            var sectionsById = {};
-
-            // Recursively collect `parent_list`.
-            function collectParentList(id) {
-              var result;
-
-              if (id) {
-                result = collectParentList(sectionsById[id].parent);
-                result.push(id);
-              } else {
-                result = [];
-              }
-
-              return result;
-            }
-
-            // Remap sections list.
-            _.forEach(sections, function (section) {
-              sectionsById[section._id] = section;
-            });
-
-            // Update parent-dependent fields.
-            _.forEach(sections, function (section) {
-              section.parent_list = collectParentList(section.parent);
-              section.parent_id_list = _.map(section.parent_list, function (id) {
-                return sectionsById[id].id;
-              });
-              section.level = section.parent_list.length;
-            });
-
-            // Save changed sections.
-            async.forEach(sections, function (section, next) {
-              if (section.isModified()) {
-                section.save(next);
-              } else {
-                next();
-              }
-            }, next);
-          });
-        }
+      , async.apply(updateForumSections, N)
       ], callback);
     });
   });

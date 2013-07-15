@@ -4,47 +4,48 @@
 'use strict';
 
 
-var async = require('async');
+var _ = require('lodash');
 
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
+  N.wire.on(apiPath, function section_index(env, callback) {
+    env.data.users = env.data.users || []; // Used by `users_join` hook.
 
-  function fetchSections(env, accumulator, parent, callback) {
+    env.response.data.head.title = env.t('title');
+
     N.models.forum.Section
-        .find({ parent: parent })
+        .find()
         .sort('display_order')
-        .select('_id title parent moderator_list_full')
+        .select('_id display_order title parent moderator_list_full')
         .setOptions({ lean: true })
-        .exec(function (err, sections) {
+        .exec(function (err, allSections) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      async.forEach(sections, function (section, next) {
-        section.moderator_list_full = section.moderator_list_full || [];
-        section.children = [];
+      function collectSectionsTree(parent) {
+        var selectedSections = _.select(allSections, function (section) {
+          // Universal way for equal check on: Null, ObjectId, and String.
+          return String(section.parent || null) === String(parent);
+        });
 
-        accumulator.push(section);
-        env.data.users = env.data.users.concat(section.moderator_list_full);
+        _.forEach(selectedSections, function (section) {
+          // Register section's moderators for `users_join` hooks.
+          env.data.users = env.data.users.concat(section.moderator_list_full);
 
-        // Fill-in section's children.
-        fetchSections(env, section.children, section._id, next);
-      }, callback);
+          // Recursively collect descendants.
+          section.children = collectSectionsTree(section._id);
+        });
+
+        return selectedSections;
+      }
+
+      env.response.data.sections = collectSectionsTree(null);
+      callback();
     });
-  }
-
-
-  N.wire.on(apiPath, function section_index(env, callback) {
-    env.response.data.head.title = env.t('title');
-    env.response.data.sections = [];
-
-    env.data.users = env.data.users || [];
-
-    // Fill-in sections list.
-    fetchSections(env, env.response.data.sections, null, callback);
   });
 };
