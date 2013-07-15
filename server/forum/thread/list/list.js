@@ -169,6 +169,7 @@ module.exports = function (N, apiPath) {
           .exec(function (err, posts) {
 
         env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
+        env.extras.puncher.stop();
 
         if (err) {
           callback(err);

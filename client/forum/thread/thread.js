@@ -4,6 +4,9 @@
 'use strict';
 
 
+var _ = require('lodash');
+
+
 var draft = require('../_draft');
 // Editor class (CommonJS module), lazy-loaded
 var Editor;
@@ -148,6 +151,8 @@ N.wire.on('navigate.done:' + module.apiPath, function (config) {
 
   // FIXME
   params.id = +params.id;
+  params.forum_id = +params.forum_id;
+  params.page = +params.page;
 
   var $postlist = $('#postlist');
 
@@ -199,11 +204,15 @@ N.wire.on('forum.thread.append_next_page', function (event) {
 
       // if no posts - just disable 'More' button
       if (!locals.posts || !locals.posts.length) {
+        N.wire.emit('notify', {
+          type: 'warning',
+          message: t('error_no_more_posts')
+        });
         $button.addClass('hidden');
         return;
       }
 
-      params.page += 1;
+      params.page = params.page + 1;
 
       locals.thread = { id: params.id };
       locals.show_page_number = params.page;
@@ -221,7 +230,7 @@ N.wire.on('forum.thread.append_next_page', function (event) {
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
           route:    'forum.thread'
-        , params:   locals.thread
+        , params:   params
         , current:  params.page
         , max_page: 10
         })

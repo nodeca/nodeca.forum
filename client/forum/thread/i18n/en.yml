@@ -9,3 +9,5 @@ en-US:
   thread_merge: Merge
   post_add: Add reply
   more_posts: More posts
+
+  error_no_more_posts: Ups! No more posts in this thread.
