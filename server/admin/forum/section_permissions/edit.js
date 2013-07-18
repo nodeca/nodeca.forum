@@ -100,9 +100,9 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          if (editSection.raw_settings &&
-              editSection.raw_settings.forum_usergroup &&
-              editSection.raw_settings.forum_usergroup[usergroup._id]) {
+          if (parentSection.raw_settings &&
+              parentSection.raw_settings.forum_usergroup &&
+              parentSection.raw_settings.forum_usergroup[usergroup._id]) {
             env.response.data.parent_settings = parentSection.raw_settings.forum_usergroup[usergroup._id];
           } else {
             env.response.data.parent_settings = null;
