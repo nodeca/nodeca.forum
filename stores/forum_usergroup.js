@@ -118,29 +118,29 @@ module.exports = function (N) {
       var formatError = 'Bad input for `forum_usergroup` settings store. Must be: { usergroup_id: { setting_name: { value: Mixed, force: Boolean } } }';
 
       if (!_.isObject(data)) {
-        throw new Error(formatError);
+        throw formatError;
       }
 
       _.forEach(data, function (settings) {
         if (!_.isObject(settings)) {
-          throw new Error(formatError);
+          throw formatError;
         }
 
         _.forEach(settings, function (setting, key) {
           if (!_.isObject(setting)) {
-            throw new Error(formatError);
+            throw formatError;
           }
 
           if (!_.has(setting, 'value')) {
-            throw new Error(formatError);
+            throw formatError;
           }
 
           if (!_.isBoolean(setting.force)) {
-            throw new Error(formatError);
+            throw formatError;
           }
 
           if (2 !== _.keys(setting).length) {
-            throw new Error(formatError);
+            throw formatError;
           }
 
           var validationError = this.validateSetting(key, setting.value);
