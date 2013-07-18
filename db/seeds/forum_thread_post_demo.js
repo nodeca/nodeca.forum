@@ -14,6 +14,9 @@ var _         = require('lodash');
 var async     = require('async');
 var Charlatan = require('charlatan');
 
+var updateForumSections    = require('nodeca.forum/server/admin/forum/section/_lib/update_forum_sections');
+var updateForumPermissions = require('nodeca.forum/server/admin/forum/section_permissions/_lib/update_forum_permissions');
+
 
 var Category;
 var Forum;
@@ -383,19 +386,20 @@ module.exports = function (N, callback) {
       usergroups_cache[group.short_name] = group;
     });
 
-    async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
-      var user = new User(Charlatan.Helpers.user());
-      user.usergroups = usergroups_cache['members'];
-      user.save(next_user);
+    async.series([
+      function (next) {
+        async.forEachSeries(_.range(USER_COUNT), function (current_user, next_user) {
+          var user = new User(Charlatan.Helpers.user());
+          user.usergroups = usergroups_cache['members'];
+          user.save(next_user);
 
-      // add user to store
-      Charlatan.users.push(user);
-    }, function (err) {
-      if (err) {
-        callback(err);
-        return;
+          // add user to store
+          Charlatan.users.push(user);
+        }, next);
       }
-      create_categories(callback);
-    });
+    , create_categories
+    , async.apply(updateForumSections, N)
+    , async.apply(updateForumPermissions, N)
+    ], callback);
   });
 };
