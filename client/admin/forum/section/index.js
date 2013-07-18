@@ -108,6 +108,7 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
     }
 
     // Remove all destroyed elements from DOM.
+    $group.prev('.section-placeholder').remove();
     $group.remove();
   });
 });
