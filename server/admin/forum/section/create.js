@@ -7,7 +7,8 @@
 var _     = require('lodash');
 var async = require('async');
 
-var updateForumSections = require('./_lib/update_forum_sections');
+var updateForumSections    = require('./_lib/update_forum_sections');
+var updateForumPermissions = require('../section_permissions/_lib/update_forum_permissions');
 
 
 module.exports = function (N, apiPath) {
@@ -102,9 +103,10 @@ module.exports = function (N, apiPath) {
         newSection.save(next);
       }
       //
-      // Fill-in parent-dependent fields for newly created section.
+      // Setup parent-dependent data for newly created section.
       //
     , async.apply(updateForumSections, N)
+    , async.apply(updateForumPermissions, N)
     ], callback);
   });
 };

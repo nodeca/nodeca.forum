@@ -89,17 +89,11 @@ module.exports = function (N) {
     }
     //
     // params:
-    //   forum_id     - ObjectId
-    //   usergroup_id - ObjectId
+    //   forum_id - ObjectId
     //
   , set: function (settings, params, callback) {
       if (!params.forum_id) {
         callback('`forum_id` parameter is required for saving settings into `forum_usergroup` store.');
-        return;
-      }
-
-      if (!params.usergroup_id) {
-        callback('`usergroup_id` parameter is required for saving settings into `forum_usergroup` store.');
         return;
       }
 
@@ -114,24 +108,48 @@ module.exports = function (N) {
           return;
         }
 
-        var usergroupId = params.usergroup_id;
-
-        // Make sure we have settings storages.
-        section.settings                              = section.settings || {};
-        section.settings.forum_usergroup              = section.settings.forum_usergroup || {};
-        section.settings.forum_usergroup[usergroupId] = section.settings.forum_usergroup[usergroupId] || {};
-
-        _.forEach(settings, function (setting, key) {
-          if (null === setting) {
-            delete section.settings.forum_usergroup[usergroupId][key];
-          } else {
-            section.settings.forum_usergroup[usergroupId][key] = setting;
-          }
-        });
-
+        section.settings = section.settings || {};
+        section.settings.forum_usergroup = settings;
         section.markModified('settings.forum_usergroup');
         section.save(callback);
       });
+    }
+  , validate: function (data) {
+      var formatError = 'Bad input for `forum_usergroup` settings store. Must be: { usergroup_id: { setting_name: { value: Mixed, force: Boolean } } }';
+
+      if (!_.isObject(data)) {
+        throw new Error(formatError);
+      }
+
+      _.forEach(data, function (settings) {
+        if (!_.isObject(settings)) {
+          throw new Error(formatError);
+        }
+
+        _.forEach(settings, function (setting, key) {
+          if (!_.isObject(setting)) {
+            throw new Error(formatError);
+          }
+
+          if (!_.has(setting, 'value')) {
+            throw new Error(formatError);
+          }
+
+          if (!_.isBoolean(setting.force)) {
+            throw new Error(formatError);
+          }
+
+          if (2 !== _.keys(setting).length) {
+            throw new Error(formatError);
+          }
+
+          var validationError = this.validateSetting(key, setting.value);
+
+          if (null !== validationError) {
+            throw validationError;
+          }
+        }, this);
+      }, this);
     }
   });
 

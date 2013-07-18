@@ -7,7 +7,8 @@
 var _     = require('lodash');
 var async = require('async');
 
-var updateForumSections = require('./_lib/update_forum_sections');
+var updateForumSections    = require('./_lib/update_forum_sections');
+var updateForumPermissions = require('../section_permissions/_lib/update_forum_permissions');
 
 
 module.exports = function (N, apiPath) {
@@ -89,9 +90,10 @@ module.exports = function (N, apiPath) {
           updateSection.save(next);
         }
         //
-        // Recompute parent-dependent fields for all sections.
+        // Recompute parent-dependent data for all sections.
         //
       , async.apply(updateForumSections, N)
+      , async.apply(updateForumPermissions, N)
       ], callback);
     });
   });

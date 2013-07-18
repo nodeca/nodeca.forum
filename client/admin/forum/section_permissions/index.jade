@@ -10,9 +10,11 @@
       each section in sections
         li.section-group
           .section-control
-            .section-title #{section.title}
+            .section-title
+              a(href="#", data-toggle="collapse", data-target="#section_#{section._id}") #{section.title}
+              a.icon-collapse(href="#", data-toggle="collapse", data-target="#section_#{section._id}")
 
-            ul.section-usergroup-list
+            ul.section-usergroup-list.collapse(id="section_#{section._id}", data-notify="#section_#{section._id}")
               each usergroup in self.usergroups
                 //- Count of overriden permission settings.
                 overriden = section.overriden[usergroup._id]
@@ -28,8 +30,9 @@
                 li
                   a(href=self.link_to('admin.forum.section_permissions.edit', { section_id: section._id, usergroup_id: usergroup._id }))
                     = usergroup.name
-                  span(class=usergroup_class)
-                    = self.t('overriden_permissions_count', { count: overriden, total: self.settings_total })
+                  if section.parent
+                    span(class=usergroup_class)
+                      = self.t('overriden_permissions_count', { count: overriden, total: self.settings_total })
 
           if section.children.length > 0
             ul.section-list.section-children

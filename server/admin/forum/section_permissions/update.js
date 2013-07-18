@@ -4,17 +4,43 @@
 'use strict';
 
 
-var updateStoreSettings = require('./_lib/update_store_settings');
+var _ = require('lodash');
+
+var updateForumPermissions = require('./_lib/update_forum_permissions');
 
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_id:   { type: 'string', required: true }
   , usergroup_id: { type: 'string', required: true }
-  , settings:     { type: 'object', required: true }
+  , settings: {
+      type: 'object'
+    , required: true
+    , patternProperties: {
+        '.*': {
+          type: 'object'
+        , additionalProperties: false
+        , properties: {
+            value:     {                  required: true }
+          , force:     { type: 'boolean', required: true }
+          , overriden: { type: 'boolean', required: true }
+          }
+        }
+      }
+    }
   });
 
   N.wire.on(apiPath, function section_permissions_update(env, callback) {
+    var store = N.settings.getStore('forum_usergroup');
+
+    if (!store) {
+      callback({
+        code:    N.io.APP_ERROR
+      , message: 'Settings store `forum_usergroup` is not registered.'
+      });
+      return;
+    }
+
     N.models.forum.Section.findById(env.params.section_id, function (err, section) {
       if (err) {
         callback(err);
@@ -38,7 +64,21 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        // TODO: Add checks for values format before writing raw settings.
+        var validationError;
+
+        _.forEach(env.params.settings, function (setting, key) {
+          validationError = store.validateSetting(key, setting.value);
+
+          if (null !== validationError) {
+            return false; // break;
+          }
+        });
+
+        // Invalid input settings.
+        if (validationError) {
+          callback({ code: N.io.CLIENT_ERROR, message: validationError });
+          return;
+        }
 
         // Create raw settings storage if it does not exist.
         // It is used to store interface state on particular document and remap
@@ -58,7 +98,7 @@ module.exports = function (N, apiPath) {
 
           // Remap raw settings on all sections into actual setting stores
           // with inheritance resolving.
-          updateStoreSettings(N, callback);
+          updateForumPermissions(N, callback);
         });
       });
     });

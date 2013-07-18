@@ -16,18 +16,17 @@ function Setting(name, schema, value, overriden, forced) {
 
   this.name = name;
   this.type = schema.type;
-  this.hasParent = _.has(N.runtime.page_data.parent_settings, name);
 
-  this.overriden = ko.observable(overriden).extend({ dirty: false });
+  this.overriden = ko.observable(Boolean(overriden)).extend({ dirty: false });
   this.inherited = ko.computed(function () { return !this.overriden(); }, this);
-  this.forced = ko.observable(forced).extend({ dirty: false });
+  this.forced = ko.observable(Boolean(forced)).extend({ dirty: false });
 
   this._value = ko.observable(value).extend({ dirty: false });
   this.value = ko.computed({
     read: function () {
       if (this.overriden()) {
         return this._value();
-      } else if (this.hasParent) {
+      } else if (_.has(N.runtime.page_data.parent_settings, name)) {
         return N.runtime.page_data.parent_settings[this.name].value;
       } else {
         return schema['default'];
@@ -46,7 +45,7 @@ function Setting(name, schema, value, overriden, forced) {
            (this.overriden() && this._value.isDirty());
   }, this);
 
-  this.showOverrideCheckbox = this.hasParent; // Just an alias.
+  this.showOverrideCheckbox = _.has(N.runtime.page_data.parent_settings, name);
   this.showForceCheckbox = ko.computed(function () {
     return this.showOverrideCheckbox && this.overriden();
   }, this);
@@ -75,7 +74,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   view.settings = _.map(N.runtime.page_data.setting_schemas, function (schema, name) {
     var value, overriden, forced;
 
-    overriden = _.has(N.runtime.page_data.settings, name);
+    overriden = N.runtime.page_data.settings[name] &&
+                N.runtime.page_data.settings[name].overriden;
 
     if (overriden) {
       // Use overriden.
@@ -111,12 +111,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     };
 
     _.forEach(view.settings, function (setting) {
-      if (setting.overriden()) {
-        payload.settings[setting.name] = {
-          value: setting.value()
-        , force: setting.forced()
-        };
-      }
+      payload.settings[setting.name] = {
+        value:     setting.value()
+      , force:     setting.forced()
+      , overriden: setting.overriden()
+      };
     });
 
     _.forEach(view.settings, function (setting) {
