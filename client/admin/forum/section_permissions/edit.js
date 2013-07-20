@@ -5,10 +5,9 @@ var _  = require('lodash');
 var ko = require('knockout');
 
 
-function Setting(name, schema, value, overriden, forced) {
+function Setting(name, schema, value, overriden) {
   var tName = '@admin.core.setting_names.' + name
     , tHelp = '@admin.core.setting_names.' + name + '_help';
-
 
   this.elementId = 'setting_' + name; // HTML id attribute.
   this.localizedName = t(tName);
@@ -19,16 +18,24 @@ function Setting(name, schema, value, overriden, forced) {
 
   this.overriden = ko.observable(Boolean(overriden)).extend({ dirty: false });
   this.inherited = ko.computed(function () { return !this.overriden(); }, this);
-  this.forced = ko.observable(Boolean(forced)).extend({ dirty: false });
 
   this._value = ko.observable(value).extend({ dirty: false });
   this.value = ko.computed({
     read: function () {
       if (this.overriden()) {
+        // Use overriden.
         return this._value();
+
       } else if (_.has(N.runtime.page_data.parent_settings, name)) {
+        // Use parent section.
         return N.runtime.page_data.parent_settings[this.name].value;
+
+      } else if (_.has(N.runtime.page_data.usergroup_settings, name)) {
+        // Use usergroup.
+        return N.runtime.page_data.usergroup_settings[this.name].value;
+
       } else {
+        // Use defaults.
         return schema['default'];
       }
     }
@@ -41,25 +48,12 @@ function Setting(name, schema, value, overriden, forced) {
 
   this.isDirty = ko.computed(function () {
     return (this.overriden.isDirty()) ||
-           (this.overriden() && this.forced.isDirty()) ||
            (this.overriden() && this._value.isDirty());
-  }, this);
-
-  this.showOverrideCheckbox = _.has(N.runtime.page_data.parent_settings, name);
-  this.showForceCheckbox = ko.computed(function () {
-    return this.showOverrideCheckbox && this.overriden();
-  }, this);
-
-  this.overriden.subscribe(function (overriden) {
-    if (!overriden) {
-      this.forced(false);
-    }
   }, this);
 }
 
 Setting.prototype.markClean = function markClean() {
   this.overriden.markClean();
-  this.forced.markClean();
   this._value.markClean();
 };
 
@@ -72,29 +66,30 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   view = {};
 
   view.settings = _.map(N.runtime.page_data.setting_schemas, function (schema, name) {
-    var value, overriden, forced;
+    var value, overriden;
 
-    overriden = N.runtime.page_data.settings[name] &&
-                N.runtime.page_data.settings[name].overriden;
+    overriden = N.runtime.page_data.settings &&
+                N.runtime.page_data.settings[name] &&
+                N.runtime.page_data.settings[name].own;
 
     if (overriden) {
       // Use overriden.
-      value  = N.runtime.page_data.settings[name].value;
-      forced = N.runtime.page_data.settings[name].force;
+      value = N.runtime.page_data.settings[name].value;
 
     } else if (_.has(N.runtime.page_data.parent_settings, name)) {
-      // Use parent.
-      value  = N.runtime.page_data.parent_settings[name].value;
-      forced = N.runtime.page_data.parent_settings[name].force;
+      // Use parent section.
+      value = N.runtime.page_data.parent_settings[name].value;
+
+    } else if (_.has(N.runtime.page_data.usergroup_settings, name)) {
+      // Use usergroup.
+      value = N.runtime.page_data.usergroup_settings[name].value;
 
     } else {
-      // Use defaults for root-level section.
-      value     = schema['default'];
-      forced    = false;
-      overriden = true;
+      // Use defaults.
+      value = schema['default'];
     }
 
-    return new Setting(name, schema, value, overriden, forced);
+    return new Setting(name, schema, value, overriden);
   });
 
   view.isDirty = ko.computed(function () {
@@ -111,11 +106,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     };
 
     _.forEach(view.settings, function (setting) {
-      payload.settings[setting.name] = {
-        value:     setting.value()
-      , force:     setting.forced()
-      , overriden: setting.overriden()
-      };
+      if (setting.overriden()) {
+        payload.settings[setting.name] = setting.value();
+      }
     });
 
     _.forEach(view.settings, function (setting) {

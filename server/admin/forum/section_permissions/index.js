@@ -4,25 +4,23 @@
 'use strict';
 
 
-var _ = require('lodash');
+var _     = require('lodash');
+var async = require('async');
 
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
   N.wire.on(apiPath, function section_permissions_index(env, callback) {
-    var store = N.settings.getStore('forum_usergroup');
+    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
 
-    if (!store) {
-      callback({
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_usergroup` is not registered.'
-      });
+    if (!ForumUsergroupStore) {
+      callback({ code: N.io.APP_ERROR, message: 'Settings store `forum_usergroup` is not registered.' });
       return;
     }
 
     env.response.data.head.title     = env.t('title');
-    env.response.data.settings_total = store.keys.length;
+    env.response.data.settings_total = ForumUsergroupStore.keys.length;
 
     // Collect usergroups info.
     N.models.users.UserGroup
@@ -37,62 +35,76 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.usergroups = _.map(usergroups, function (usergroup) {
+      // Set localized name for each section.
+      _.forEach(usergroups, function (usergroup) {
         var i18n = '@admin.users.usergroup_names.' + usergroup.short_name;
-        return {
-          _id:  usergroup._id
-        , name: env.t.exists(i18n) ? env.t(i18n) : usergroup.short_name
-        };
+        usergroup.localized_name = env.t.exists(i18n) ? env.t(i18n) : usergroup.short_name;
       });
+
+      env.response.data.usergroups = usergroups;
 
       // Collect sections tree.
       N.models.forum.Section
           .find()
-          .select('_id title parent raw_settings.forum_usergroup')
+          .select('_id title parent')
           .sort('display_order')
           .setOptions({ lean: true })
-          .exec(function (err, allSections) {
+          .exec(function (err, sections) {
 
         if (err) {
           callback(err);
           return;
         }
 
-        function collectSectionsTree(parent) {
-          var selectedSections = _.select(allSections, function (section) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(section.parent || null) === String(parent);
-          });
+        // Set count of overriden settings for each section/usergroup.
+        async.forEach(sections, function (section, nextSection) {
+          section.overriden = {};
 
-          return _.map(selectedSections, function (section) {
-            var overriden = {}; // Count of overriden permission settings.
-            
-            _.forEach(usergroups, function (usergroup) {
-              overriden[usergroup._id] = 0;
-
-              if (section.raw_settings &&
-                  section.raw_settings.forum_usergroup &&
-                  section.raw_settings.forum_usergroup[usergroup._id]) {
-                _.forEach(section.raw_settings.forum_usergroup[usergroup._id], function (setting) {
-                  if (setting.overriden) {
-                    overriden[usergroup._id] += 1;
-                  }
-                });
+          async.forEach(usergroups, function (usergroup, nextGroup) {
+            ForumUsergroupStore.get(
+              ForumUsergroupStore.keys
+            , { forum_id: section._id, usergroup_ids: [ usergroup._id ] }
+            , { skipCache: true, verbose: true }
+            , function (err, settings) {
+              if (err) {
+                nextGroup(err);
+                return;
               }
+
+              section.overriden[usergroup._id] = 0;
+
+              _.forEach(settings, function (setting) {
+                if (setting.own) {
+                  section.overriden[usergroup._id] += 1;
+                }
+              });
+
+              nextGroup();
+            });
+          }, nextSection);
+        }, function (err) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          function collectSectionsTree(parent) {
+            var selectedSections = _.select(sections, function (section) {
+              // Universal way for equal check on: Null, ObjectId, and String.
+              return String(section.parent || null) === String(parent);
             });
 
-            return {
-              _id:       section._id
-            , title:     section.title
-            , parent:    section.parent
-            , overriden: overriden
-            , children:  collectSectionsTree(section._id)
-            };
-          });
-        }
+            // Collect children subtree for each section.
+            _.forEach(selectedSections, function (section) {
+              section.children = collectSectionsTree(section._id);
+            });
 
-        env.response.data.sections = collectSectionsTree(null);
-        callback();
+            return selectedSections;
+          }
+
+          env.response.data.sections = collectSectionsTree(null);
+          callback();
+        });
       });
     });
   });

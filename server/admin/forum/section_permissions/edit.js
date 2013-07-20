@@ -4,6 +4,9 @@
 'use strict';
 
 
+var async = require('async');
+
+
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_id:   { type: 'string', required: true }
@@ -11,28 +14,32 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function section_permissions_edit(env, callback) {
-    var store = N.settings.getStore('forum_usergroup');
+    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
 
-    if (!store) {
-      callback({
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_usergroup` is not registered.'
-      });
+    if (!ForumUsergroupStore) {
+      callback({ code: N.io.APP_ERROR, message: 'Settings store `forum_usergroup` is not registered.' });
+      return;
+    }
+
+    var UsergroupStore = N.settings.getStore('usergroup');
+
+    if (!UsergroupStore) {
+      callback({ code: N.io.APP_ERROR, message: 'Settings store `usergroup` is not registered.' });
       return;
     }
 
     N.models.forum.Section
         .findById(env.params.section_id)
-        .select('_id title parent raw_settings.forum_usergroup')
+        .select('_id title parent')
         .setOptions({ lean: true })
-        .exec(function (err, editSection) {
+        .exec(function (err, section) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      if (!editSection) {
+      if (!section) {
         callback(N.io.NOT_FOUND);
         return;
       }
@@ -57,58 +64,60 @@ module.exports = function (N, apiPath) {
         var usergroupI18n = '@admin.users.usergroup_names.' + usergroup.short_name;
 
         env.response.data.head.title = env.t('title', {
-          section:   editSection.title
+          section:   section.title
         , usergroup: env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : usergroup.short_name
         });
 
         // Setting schemas to build client interface.
         env.response.data.setting_schemas = N.config.setting_schemas.forum_usergroup;
 
-        // Overriden settings.
-        if (editSection.raw_settings &&
-            editSection.raw_settings.forum_usergroup &&
-            editSection.raw_settings.forum_usergroup[usergroup._id]) {
-          env.response.data.settings = editSection.raw_settings.forum_usergroup[usergroup._id];
-        } else {
-          env.response.data.settings = {};
-        }
-
-        // If section has no parent - it's done. Skip further operations.
-        if (!editSection.parent) {
-          env.response.data.parent_settings = null;
-          callback();
-          return;
-        }
-
-        // Fetch parent section settings.
-        N.models.forum.Section
-            .findById(editSection.parent)
-            .select('raw_settings.forum_usergroup')
-            .setOptions({ lean: true })
-            .exec(function (err, parentSection) {
-
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          if (!parentSection) {
-            callback({
-              code:    N.io.APP_ERROR
-            , message: 'Broken reference to parent forum section at ' + editSection.parent
+        async.parallel([
+          //
+          // Fetch settings with inheritace info for current edit section.
+          //
+          function (next) {
+            ForumUsergroupStore.get(
+              ForumUsergroupStore.keys
+            , { forum_id: section._id, usergroup_ids: [ usergroup._id ] }
+            , { skipCache: true, verbose: true }
+            , function (err, editSettings) {
+              env.response.data.settings = editSettings;
+              next(err);
             });
-            return;
           }
+          //
+          // Fetch inherited settings from section's parent.
+          //
+        , function (next) {
+            if (!section.parent) {
+              env.response.data.parent_settings = null;
+              next();
+              return;
+            }
 
-          if (parentSection.raw_settings &&
-              parentSection.raw_settings.forum_usergroup &&
-              parentSection.raw_settings.forum_usergroup[usergroup._id]) {
-            env.response.data.parent_settings = parentSection.raw_settings.forum_usergroup[usergroup._id];
-          } else {
-            env.response.data.parent_settings = null;
+            ForumUsergroupStore.get(
+              ForumUsergroupStore.keys
+            , { forum_id: section.parent, usergroup_ids: [ usergroup._id ] }
+            , { skipCache: true }
+            , function (err, parentSettings) {
+              env.response.data.parent_settings = parentSettings;
+              next(err);
+            });
           }
-          callback();
-        });
+          //
+          // Fetch inherited settings from usergroup.
+          //
+        , function (next) {
+            UsergroupStore.get(
+              UsergroupStore.keys
+            , { usergroup_ids: [ usergroup._id ] }
+            , { skipCache: true }
+            , function (err, usergroupSettings) {
+              env.response.data.usergroup_settings = usergroupSettings;
+              next(err);
+            });
+          }
+        ], callback);
       });
     });
   });

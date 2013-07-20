@@ -6,13 +6,14 @@
 
     h1 #{self.head.title}
 
-    - self.add_raw_data('setting_schemas', self.setting_schemas)
-    - self.add_raw_data('settings',        self.settings)
-    - self.add_raw_data('parent_settings', self.parent_settings)
+    - self.add_raw_data('setting_schemas',    self.setting_schemas)
+    - self.add_raw_data('settings',           self.settings)
+    - self.add_raw_data('parent_settings',    self.parent_settings)
+    - self.add_raw_data('usergroup_settings', self.usergroup_settings)
 
     form#section_permissions_edit_form.form-horizontal(data-bind="submit: save", style="display: none")
       // ko foreach: settings
-      .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited, forced: forced }")
+      .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
         label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
         .controls
           .row-fluid
@@ -29,13 +30,9 @@
 
             .span4
               div
-                label.checkbox.inline(data-bind="visible: showOverrideCheckbox")
+                label.checkbox.inline
                   input(type="checkbox", data-bind="checked: overriden")
                   = self.t('checkbox_override')
-
-                label.checkbox.inline(data-bind="visible: showForceCheckbox")
-                  input(type="checkbox", data-bind="checked: forced")
-                  = self.t('checkbox_force')
       // /ko
       .form-actions
         button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
