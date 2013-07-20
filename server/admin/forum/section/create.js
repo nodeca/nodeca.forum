@@ -7,14 +7,11 @@
 var _     = require('lodash');
 var async = require('async');
 
-var updateForumSections    = require('./_lib/update_forum_sections');
-var updateForumPermissions = require('../section_permissions/_lib/update_forum_permissions');
-
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     parent:         { type: ['null', 'string'], required: true }
-  , title:          { type: 'string',           required: true }
+  , title:          { type: 'string',           required: true, minLength: 1 }
   , description:    { type: 'string',           required: true }
   , is_category:    { type: 'boolean',          required: true }
   , is_enabled:     { type: 'boolean',          required: true }
@@ -26,19 +23,32 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function section_create(env, callback) {
+    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+
+    if (!ForumUsergroupStore) {
+      callback({ code: N.io.APP_ERROR, message: 'Settings store `forum_usergroup` is not registered.' });
+      return;
+    }
+
     var newSection = new N.models.forum.Section(env.params);
 
     async.series([
       //
       // Ensure parent section exists. (if provided)
+      // Setup parent-dependent data for newly created section.
       //
       function (next) {
         if (!newSection.parent) {
-          next(); // No parent - OK.
+          next();
           return;
         }
 
-        N.models.forum.Section.findById(newSection.parent, '_id', { lean: true }, function (err, parentSection) {
+        N.models.forum.Section
+            .findById(newSection.parent)
+            .select('_id id parent_list parent_id_list level')
+            .setOptions({ lean: true })
+            .exec(function (err, parentSection) {
+
           if (err) {
             next(err);
             return;
@@ -49,6 +59,9 @@ module.exports = function (N, apiPath) {
             return;
           }
 
+          newSection.parent_list    = parentSection.parent_list.concat(parentSection._id);
+          newSection.parent_id_list = parentSection.parent_id_list.concat(parentSection.id);
+          newSection.level          = parentSection.level + 1;
           next();
         });
       }
@@ -102,11 +115,6 @@ module.exports = function (N, apiPath) {
     , function (next) {
         newSection.save(next);
       }
-      //
-      // Setup parent-dependent data for newly created section.
-      //
-    , async.apply(updateForumSections, N)
-    , async.apply(updateForumPermissions, N)
     ], callback);
   });
 };

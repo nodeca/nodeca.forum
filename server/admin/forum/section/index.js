@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section
         .find()
         .sort('display_order')
-        .select('_id display_order title parent moderator_list_full')
+        .select('_id display_order title parent moderator_list')
         .setOptions({ lean: true })
         .exec(function (err, allSections) {
 
@@ -35,7 +35,7 @@ module.exports = function (N, apiPath) {
 
         _.forEach(selectedSections, function (section) {
           // Register section's moderators for `users_join` hooks.
-          env.data.users = env.data.users.concat(section.moderator_list_full);
+          env.data.users = env.data.users.concat(section.moderator_list);
 
           // Recursively collect descendants.
           section.children = collectSectionsTree(section._id);

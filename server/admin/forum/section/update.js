@@ -7,9 +7,6 @@
 var _     = require('lodash');
 var async = require('async');
 
-var updateForumSections    = require('./_lib/update_forum_sections');
-var updateForumPermissions = require('../section_permissions/_lib/update_forum_permissions');
-
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -28,6 +25,13 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function section_update(env, callback) {
+    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+
+    if (!ForumUsergroupStore) {
+      callback({ code: N.io.APP_ERROR, message: 'Settings store `forum_usergroup` is not registered.' });
+      return;
+    }
+
     N.models.forum.Section.findById(env.params._id, function (err, updateSection) {
       if (err) {
         callback(err);
@@ -90,10 +94,57 @@ module.exports = function (N, apiPath) {
           updateSection.save(next);
         }
         //
-        // Recompute parent-dependent data for all sections.
+        // Recompute parent-dependent data for descendant sections.
         //
-      , async.apply(updateForumSections, N)
-      , async.apply(updateForumPermissions, N)
+      , function (next) {
+          N.models.forum.Section.find({}, function (err, sections) {
+            if (err) {
+              callback(err);
+              return;
+            }
+
+            var sectionsById = {};
+
+            // Remap sections list.
+            _.forEach(sections, function (section) {
+              sectionsById[section._id] = section;
+            });
+
+            // Recursively collect `parent_list`.
+            function collectParentList(id) {
+              var result;
+
+              if (id) {
+                result = collectParentList(sectionsById[id].parent);
+                result.push(id);
+              } else {
+                result = [];
+              }
+
+              return result;
+            }
+
+            // Update parent-dependent fields.
+            _.forEach(sections, function (section) {
+              section.parent_list = collectParentList(section.parent);
+
+              section.parent_id_list = _.map(section.parent_list, function (id) {
+                return sectionsById[id].id;
+              });
+
+              section.level = section.parent_list.length;
+            });
+
+            // Save changed sections.
+            async.forEach(sections, function (section, nextSection) {
+              if (section.isModified()) {
+                section.save(nextSection);
+              } else {
+                nextSection();
+              }
+            }, next);
+          });
+        }
       ], callback);
     });
   });
