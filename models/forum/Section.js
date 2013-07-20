@@ -54,9 +54,6 @@ module.exports = function (N, collectionName) {
   , moderator_id_list : [Number]
   , moderator_list    : [Schema.ObjectId]
 
-    // Full (visible and hidden) moderator list.
-  , moderator_list_full : [Schema.ObjectId]
-
     // Options
   , is_category     : { type: Boolean, 'default': false } // subforum or category
   , is_enabled      : { type: Boolean, 'default': true }  // hiden inactive
@@ -72,9 +69,6 @@ module.exports = function (N, collectionName) {
 
     // Cache
   , cache           : cache
-
-    // Settings info used by admin interface to calculate inheritance, etc.
-  , raw_settings    : { type: Schema.Types.Mixed, 'default': {} }
 
     // Setting storage. Only `forum_usergroup` settings store should access this.
   , settings        : { type: Schema.Types.Mixed, 'default': {} }
