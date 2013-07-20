@@ -115,6 +115,12 @@ module.exports = function (N, apiPath) {
     , function (next) {
         newSection.save(next);
       }
+      //
+      // Initialize inherited `forum_usergroup` settings.
+      //
+    , function (next) {
+        ForumUsergroupStore.updateInherited(next);
+      }
     ], callback);
   });
 };
