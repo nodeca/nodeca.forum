@@ -9,7 +9,7 @@ module.exports = function (N, apiPath) {
     search: { type: 'string', required: true, minLength: 2 }
   });
 
-  N.wire.on(apiPath, function section_moderator_find_user(env, callback) {
+  N.wire.on(apiPath, function moderator_find_user(env, callback) {
     N.models.users.User
         .find().where('_uname').regex(new RegExp(env.params.search, 'mi'))
         .limit(10)

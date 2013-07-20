@@ -1,8 +1,8 @@
-form#section_moderator_form.form-horizontal(data-bind="submit: isNewModerator ? create : update", style="display: none")
+form#moderator_form.form-horizontal(data-bind="submit: isNewModerator ? create : update", style="display: none")
   .control-group(data-bind="if: isNewModerator")
     label.control-label #{self.t('input_find_by_name')}
     .controls
-      input#section_moderator_search(type="text")
+      input#moderator_search(type="text")
 
   // ko foreach: settings
   .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")

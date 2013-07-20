@@ -115,7 +115,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       setting.markClean();
     });
 
-    N.io.rpc('admin.forum.section_permissions.update', payload, function (err) {
+    N.io.rpc('admin.forum.group_permissions.update', payload, function (err) {
       if (err) {
         return false; // Invoke standard error handling.
       }
@@ -125,7 +125,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   };
 
   ko.applyBindings(view, $('#content')[0]);
-  $('#section_permissions_edit_form').show();
+  $('#group_permissions_edit_form').show();
 });
 
 

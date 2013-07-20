@@ -6,7 +6,7 @@ module.exports = function (N, apiPath) {
     section_id: { type: 'string', required: true }
   });
 
-  N.wire.on(apiPath, function section_moderator_new(env, callback) {
+  N.wire.on(apiPath, function moderator_new(env, callback) {
     var store = N.settings.getStore('forum_moderator');
 
     if (!store) {

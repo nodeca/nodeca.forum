@@ -10,7 +10,7 @@ module.exports = function (N, apiPath) {
   , user_id:    { type: 'string', required: true }
   });
 
-  N.wire.on(apiPath, function section_moderator_edit(env, callback) {
+  N.wire.on(apiPath, function moderator_edit(env, callback) {
     var store = N.settings.getStore('forum_moderator');
 
     if (!store) {

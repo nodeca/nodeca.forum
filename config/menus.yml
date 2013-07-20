@@ -12,5 +12,5 @@ menus:
           section:
             to: admin.forum.section.index
 
-          section_permissions:
-            to: admin.forum.section_permissions.index
+          group_permissions:
+            to: admin.forum.group_permissions.index

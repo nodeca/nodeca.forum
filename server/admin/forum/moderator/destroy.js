@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
   , user_id:    { type: 'string', required: true }
   });
 
-  N.wire.on(apiPath, function section_moderator_destroy(env, callback) {
+  N.wire.on(apiPath, function moderator_destroy(env, callback) {
     N.models.forum.Section.findById(env.params.section_id, function (err, section) {
       if (err) {
         callback(err);

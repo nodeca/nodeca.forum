@@ -69,11 +69,11 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view.isNewModerator = (null === user_id);
 
   if (view.isNewModerator) {
-    $('#section_moderator_search').autocomplete({
+    $('#moderator_search').autocomplete({
       minLength: FIND_BY_NAME_MIN_LENGTH
     , delay:     FIND_BY_NAME_DELAY
     , source: function (request, suggestions) {
-        N.io.rpc('admin.forum.section_moderator.find', { search: request.term }, function (err, response) {
+        N.io.rpc('admin.forum.moderator.find', { search: request.term }, function (err, response) {
           if (err) {
             suggestions();
             return false; // Invoke standard error handling.
@@ -143,7 +143,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       setting.markClean();
     });
 
-    N.io.rpc('admin.forum.section_moderator.update', payload, function (err) {
+    N.io.rpc('admin.forum.moderator.update', payload, function (err) {
       if (err) {
         return false; // Invoke standard error handling.
       }
@@ -170,7 +170,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       setting.markClean();
     });
 
-    N.io.rpc('admin.forum.section_moderator.update', payload, function (err) {
+    N.io.rpc('admin.forum.moderator.update', payload, function (err) {
       if (err) {
         return false; // Invoke standard error handling.
       }
@@ -180,7 +180,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   };
 
   ko.applyBindings(view, $('#content')[0]);
-  $('#section_moderator_form').show();
+  $('#moderator_form').show();
 });
 
 

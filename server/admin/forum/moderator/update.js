@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
   , settings:   { type: 'object', required: true }
   });
 
-  N.wire.on(apiPath, function section_moderator_update(env, callback) {
+  N.wire.on(apiPath, function moderator_update(env, callback) {
     var store = N.settings.getStore('forum_moderator');
 
     if (!store) {

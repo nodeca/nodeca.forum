@@ -23,14 +23,14 @@
           ul.pull-right.dropdown-menu
             each moderator_id in section.moderator_list
               li
-                a(href=self.link_to('admin.forum.section_moderator.edit', { section_id: section._id, user_id: moderator_id }))
+                a(href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator_id }))
                   = self.users[moderator_id]._uname
 
             if 0 !== section.moderator_list.length
               li.divider
 
             li
-              a(href=self.link_to('admin.forum.section_moderator.new', { section_id: section._id }))
+              a(href=self.link_to('admin.forum.moderator.new', { section_id: section._id }))
                 = self.t('add_moderator')
 
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
