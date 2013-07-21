@@ -7,9 +7,11 @@ en-US:
   value_no: No
   value_section_none: None
 
+  field_copy_settings_from: Copy settings from
+  legend_forum_settings: Forum settings
+
   field_title: Title
   field_description: Description
-  field_copy_section: Copy section
   field_parent: Parent section
   field_is_category: Category
   field_is_enabled: Enabled

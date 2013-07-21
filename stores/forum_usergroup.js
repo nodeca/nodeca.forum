@@ -35,16 +35,18 @@ module.exports = function (N) {
     //   usergroup_ids - Array of ObjectIds
     //
     // options:
-    //   skipCache - Boolean
-    //   verbose   - Boolean; Add `own` (aka non-inherited) property to result.
+    //   skipCache  - Boolean
+    //   extended   - Boolean; Add `own` (aka non-inherited) property to result.
+    //   allowHoles - Boolean; Do not replace missed settings with "empty" values.
+    //
+    // This store *always* set `force` flag to true.
+    //
+    // If section has no direct settings for a usergroup, empty setting
+    // values will be returned instead. Such values have the lowest priority,
+    // so other stores can take advance.
     //
     get: function (keys, params, options, callback) {
-      if (!_.has(params, 'forum_id') || !_.has(params, 'usergroup_ids')) {
-        // No required parameters - skip this store. In practice this happens
-        // when we do N.settings.get for common (non-forum) usergroup settings.
-        callback(null, null);
-        return;
-      }
+      var self = this;
 
       if (!params.forum_id) {
         callback('`forum_id` parameter is required for getting settings from `forum_usergroup` store.');
@@ -74,21 +76,29 @@ module.exports = function (N) {
         _.forEach(keys, function (settingName) {
           var settings = [];
 
-          // Collect settings for given usergroups.
-          // Skip non-provided settings to fallback to usergroup store.
+          // Collect settings for given usergroups. Use empty values non-provided
+          // settings to fallback to another store if possible.
           _.forEach(params.usergroup_ids, function (usergroupId) {
             if (!section.settings ||
                 !section.settings.forum_usergroup ||
                 !section.settings.forum_usergroup[usergroupId] ||
                 !section.settings.forum_usergroup[usergroupId][settingName]) {
+
+              // Use empty value instead by default.
+              if (!options.allowHoles) {
+                settings.push({
+                  value: self.getEmptyValue(settingName)
+                , force: false
+                });
+              }
               return;
             }
 
             var setting = section.settings.forum_usergroup[usergroupId][settingName];
 
-            // For verbose mode - get copy of whole setting object.
+            // For extended mode - get copy of whole setting object.
             // For normal mode - get copy of only value field.
-            setting = options.verbose ? _.clone(setting) : _.pick(setting, 'value');
+            setting = options.extended ? _.clone(setting) : _.pick(setting, 'value');
 
             // This store always implies `force` option, but we don't keep it
             // in the database.
@@ -98,12 +108,12 @@ module.exports = function (N) {
           });
 
           // Get merged value.
-          if (!_.isEmpty(settings)) {
+          if (!_.isEmpty(settings) || !options.allowHoles) {
             results[settingName] = N.settings.mergeValues(settings);
           }
         });
 
-        callback(null, (_.isEmpty(results) ? null : results));
+        callback(null, results);
       });
     }
     //
@@ -142,22 +152,25 @@ module.exports = function (N) {
         if (!section.settings.forum_usergroup) {
           section.settings.forum_usergroup = {};
         }
+
+        if (!section.settings.forum_usergroup[params.usergroup_id]) {
+          section.settings.forum_usergroup[params.usergroup_id] = {};
+        }
  
-        // Copy input settings to modify them without side effects.
-        settings = _.clone(settings, true);
-
-        _.forEach(settings, function (setting) {
-          // Mark all input settings as non-inherited.
-          setting.own = true;
-
-          // It's no need to put this into the database, since this store
-          // always implies `force` at `Store#get`.
-          delete setting.force;
+        _.forEach(settings, function (setting, key) {
+          if (null !== setting) {
+            // NOTE: It's no need to put `force` flag into the database, since
+            // this store always implies `force` at `Store#get`.
+            section.settings.forum_usergroup[params.usergroup_id][key] = {
+              value: setting.value
+            , own:   true
+            };
+          } else {
+            delete section.settings.forum_usergroup[params.usergroup_id][key];
+          }
         });
 
-        section.settings.forum_usergroup[params.usergroup_id] = settings;
         section.markModified('settings');
-
         section.save(function (err) {
           if (err) {
             callback(err);
@@ -225,8 +238,6 @@ module.exports = function (N) {
         async.forEach(sections, function (section, next) {
           _.forEach(usergroups, function (usergroup) {
             _.forEach(self.keys, function (settingName) {
-              var setting = findInheritedSetting(section.parent, usergroup._id, settingName);
-
               if (!section.settings) {
                 section.settings = {};
               }
@@ -245,6 +256,8 @@ module.exports = function (N) {
                 return;
               }
 
+              var setting = findInheritedSetting(section.parent, usergroup._id, settingName);
+
               if (setting) {
                 // Set/update inherited setting.
                 section.settings.forum_usergroup[usergroup._id][settingName] = {
@@ -255,15 +268,11 @@ module.exports = function (N) {
                 // Drop deprected inherited setting.
                 delete section.settings.forum_usergroup[usergroup._id][settingName];
               }
-              section.markModified('settings');
             });
           });
 
-          if (section.isModified()) {
-            section.save(next);
-          } else {
-            next();
-          }
+          section.markModified('settings');
+          section.save(next);
         }, callback);
       });
     });

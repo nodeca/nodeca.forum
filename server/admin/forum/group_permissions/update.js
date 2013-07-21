@@ -4,14 +4,24 @@
 'use strict';
 
 
-var _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_id:   { type: 'string', required: true }
   , usergroup_id: { type: 'string', required: true }
-  , settings:     { type: 'object', required: true }
+  , settings: {
+      type: 'object'
+    , required: true
+    , patternProperties: {
+        '.*': {
+          type: ['null', 'object']
+        , additionalProperties: false
+        , properties: {
+            value: {                  required: true }
+          , force: { type: 'boolean', required: true }
+          }
+        }
+      }
+    }
   });
 
   N.wire.on(apiPath, function group_permissions_update(env, callback) {
@@ -49,13 +59,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        var settings = {};
-
-        _.forEach(env.params.settings, function (value, key) {
-          settings[key] = { value: value, force: true };
-        });
-
-        ForumUsergroupStore.set(settings, { forum_id: section._id, usergroup_id: usergroup._id }, callback);
+        ForumUsergroupStore.set(env.params.settings, { forum_id: section._id, usergroup_id: usergroup._id }, callback);
       });
     });
   });

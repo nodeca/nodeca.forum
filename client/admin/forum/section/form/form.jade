@@ -1,10 +1,12 @@
 form.form-horizontal(data-bind="submit: isNewSection ? create : update")
   fieldset(data-bind="if: isNewSection")
     .control-group
-      label.control-label #{self.t('field_copy_section')}
+      label.control-label #{self.t('field_copy_settings_from')}
       .controls: select(data-bind="value: copySection, options: otherSections, optionsText: 'title', optionsValue: '_id'")
 
   fieldset
+    legend #{self.t('legend_forum_settings')}
+
     .control-group
       label.control-label #{self.t('field_title')}
       .controls: input(type="text", data-bind="value: activeSection.title")

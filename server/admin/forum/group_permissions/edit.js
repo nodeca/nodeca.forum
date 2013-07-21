@@ -13,21 +13,25 @@ module.exports = function (N, apiPath) {
   , usergroup_id: { type: 'string', required: true }
   });
 
-  N.wire.on(apiPath, function group_permissions_edit(env, callback) {
-    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
 
-    if (!ForumUsergroupStore) {
-      callback({ code: N.io.APP_ERROR, message: 'Settings store `forum_usergroup` is not registered.' });
-      return;
+  N.wire.before(apiPath, function setting_stores_check() {
+    if (!N.settings.getStore('forum_usergroup')) {
+      return {
+        code:    N.io.APP_ERROR
+      , message: 'Settings store `forum_usergroup` is not registered.'
+      };
     }
 
-    var UsergroupStore = N.settings.getStore('usergroup');
-
-    if (!UsergroupStore) {
-      callback({ code: N.io.APP_ERROR, message: 'Settings store `usergroup` is not registered.' });
-      return;
+    if (!N.settings.getStore('usergroup')) {
+      return {
+        code:    N.io.APP_ERROR
+      , message: 'Settings store `usergroup` is not registered.'
+      };
     }
+  });
 
+
+  N.wire.before(apiPath, function section_fetch(env, callback) {
     N.models.forum.Section
         .findById(env.params.section_id)
         .select('_id title parent')
@@ -44,81 +48,99 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      N.models.users.UserGroup
-          .findById(env.params.usergroup_id)
-          .select('_id short_name')
-          .setOptions({ lean: true })
-          .exec(function (err, usergroup) {
+      env.data.section = section;
+      callback();
+    });
+  });
 
-        if (err) {
-          callback(err);
-          return;
-        }
 
-        if (!usergroup) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
+  N.wire.before(apiPath, function usergroup_fetch(env, callback) {
+    N.models.users.UserGroup
+        .findById(env.params.usergroup_id)
+        .select('_id short_name')
+        .setOptions({ lean: true })
+        .exec(function (err, usergroup) {
 
-        // Translation path for usergroup name.
-        var usergroupI18n = '@admin.users.usergroup_names.' + usergroup.short_name;
+      if (err) {
+        callback(err);
+        return;
+      }
 
-        env.response.data.head.title = env.t('title', {
-          section:   section.title
-        , usergroup: env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : usergroup.short_name
+      if (!usergroup) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.usergroup = usergroup;
+      callback();
+    });
+  });
+
+
+  N.wire.on(apiPath, function group_permissions_edit(env, callback) {
+    var ForumUsergroupStore = N.settings.getStore('forum_usergroup')
+      , UsergroupStore      = N.settings.getStore('usergroup');
+
+    // Setting schemas to build client interface.
+    env.response.data.setting_schemas = N.config.setting_schemas.forum_usergroup;
+
+    async.parallel([
+      //
+      // Fetch settings with inheritance info for current edit section.
+      //
+      function (next) {
+        ForumUsergroupStore.get(
+          ForumUsergroupStore.keys
+        , { forum_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
+        , { skipCache: true, extended: true, allowHoles: true }
+        , function (err, editSettings) {
+          env.response.data.settings = editSettings;
+          next(err);
         });
+      }
+      //
+      // Fetch inherited settings from section's parent.
+      //
+    , function (next) {
+        if (!env.data.section.parent) {
+          env.response.data.parent_settings = null;
+          next();
+          return;
+        }
 
-        // Setting schemas to build client interface.
-        env.response.data.setting_schemas = N.config.setting_schemas.forum_usergroup;
+        ForumUsergroupStore.get(
+          ForumUsergroupStore.keys
+        , { forum_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
+        , { skipCache: true, allowHoles: true }
+        , function (err, parentSettings) {
+          env.response.data.parent_settings = parentSettings;
+          next(err);
+        });
+      }
+      //
+      // Fetch inherited settings from usergroup.
+      //
+    , function (next) {
+        UsergroupStore.get(
+          UsergroupStore.keys
+        , { usergroup_ids: [ env.data.usergroup._id ] }
+        , { skipCache: true }
+        , function (err, usergroupSettings) {
+          env.response.data.usergroup_settings = usergroupSettings;
+          next(err);
+        });
+      }
+    ], callback);
+  });
 
-        async.parallel([
-          //
-          // Fetch settings with inheritace info for current edit section.
-          //
-          function (next) {
-            ForumUsergroupStore.get(
-              ForumUsergroupStore.keys
-            , { forum_id: section._id, usergroup_ids: [ usergroup._id ] }
-            , { skipCache: true, verbose: true }
-            , function (err, editSettings) {
-              env.response.data.settings = editSettings;
-              next(err);
-            });
-          }
-          //
-          // Fetch inherited settings from section's parent.
-          //
-        , function (next) {
-            if (!section.parent) {
-              env.response.data.parent_settings = null;
-              next();
-              return;
-            }
 
-            ForumUsergroupStore.get(
-              ForumUsergroupStore.keys
-            , { forum_id: section.parent, usergroup_ids: [ usergroup._id ] }
-            , { skipCache: true }
-            , function (err, parentSettings) {
-              env.response.data.parent_settings = parentSettings;
-              next(err);
-            });
-          }
-          //
-          // Fetch inherited settings from usergroup.
-          //
-        , function (next) {
-            UsergroupStore.get(
-              UsergroupStore.keys
-            , { usergroup_ids: [ usergroup._id ] }
-            , { skipCache: true }
-            , function (err, usergroupSettings) {
-              env.response.data.usergroup_settings = usergroupSettings;
-              next(err);
-            });
-          }
-        ], callback);
-      });
+  N.wire.after(apiPath, function title_set(env) {
+    // Translation path for usergroup name.
+    var usergroupI18n = '@admin.users.usergroup_names.' + env.data.usergroup.short_name;
+
+    env.response.data.head.title = env.t('title', {
+      section:   env.data.section.title
+    , usergroup: env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : env.data.usergroup.short_name
     });
   });
 };

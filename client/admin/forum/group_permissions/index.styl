@@ -1,11 +1,22 @@
 .section-usergroup-list
   list-style: none
 
-.section-usergroup-all-overriden
-  color: red
+.section-usergroup-override-none
+  &:link, &:visited
+    color: #888888
 
-.section-usergroup-some-overriden
-  color: orange
+.section-usergroup-override-some-own
+  &:link, &:visited
+    color: #FFAA00
 
-.section-usergroup-none-overriden
-  color: grey
+.section-usergroup-override-some-inherited
+  &:link, &:visited
+    color: #FFCC88
+
+.section-usergroup-override-every-own
+  &:link, &:visited
+    color: #FF0000
+
+.section-usergroup-override-every-inherited
+  &:link, &:visited
+    color: #FF8888

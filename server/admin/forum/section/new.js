@@ -25,8 +25,6 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
   N.wire.on(apiPath, function section_new(env, callback) {
-    env.response.data.head.title = env.t('title');
-
     N.models.forum.Section.find({}, OTHER_SECTION_FIELDS, { lean: true }, function (err, otherSections) {
       if (err) {
         callback(err);
@@ -36,5 +34,9 @@ module.exports = function (N, apiPath) {
       env.response.data.other_sections = otherSections;
       callback();
     });
+  });
+
+  N.wire.after(apiPath, function title_set(env) {
+    env.response.data.head.title = env.t('title');
   });
 };

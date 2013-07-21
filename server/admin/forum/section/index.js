@@ -13,8 +13,6 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function section_index(env, callback) {
     env.data.users = env.data.users || []; // Used by `users_join` hook.
 
-    env.response.data.head.title = env.t('title');
-
     N.models.forum.Section
         .find()
         .sort('display_order')
@@ -47,5 +45,9 @@ module.exports = function (N, apiPath) {
       env.response.data.sections = collectSectionsTree(null);
       callback();
     });
+  });
+
+  N.wire.after(apiPath, function title_set(env) {
+    env.response.data.head.title = env.t('title');
   });
 };

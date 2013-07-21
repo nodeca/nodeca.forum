@@ -47,7 +47,6 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.head.title = env.t('title', { name: activeSection.title });
       env.response.data.active_section = activeSection;
 
       N.models.forum.Section
@@ -65,6 +64,12 @@ module.exports = function (N, apiPath) {
         env.response.data.other_sections = otherSections;
         callback();
       });
+    });
+  });
+
+  N.wire.after(apiPath, function title_set(env) {
+    env.response.data.head.title = env.t('title', {
+      name: env.response.data.active_section.title
     });
   });
 };
