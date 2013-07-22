@@ -7,6 +7,8 @@
 var _     = require('lodash');
 var async = require('async');
 
+var updateInheritedSectionData = require('nodeca.forum/lib/admin/update_inherited_section_data');
+
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -35,7 +37,6 @@ module.exports = function (N, apiPath) {
     async.series([
       //
       // Ensure parent section exists. (if provided)
-      // Setup parent-dependent data for newly created section.
       //
       function (next) {
         if (!newSection.parent) {
@@ -59,9 +60,6 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          newSection.parent_list    = parentSection.parent_list.concat(parentSection._id);
-          newSection.parent_id_list = parentSection.parent_id_list.concat(parentSection.id);
-          newSection.level          = parentSection.level + 1;
           next();
         });
       }
@@ -116,11 +114,9 @@ module.exports = function (N, apiPath) {
         newSection.save(next);
       }
       //
-      // Initialize inherited `forum_usergroup` settings.
+      // Compute parent-dependent data for newly created section.
       //
-    , function (next) {
-        ForumUsergroupStore.updateInherited(next);
-      }
+    , async.apply(updateInheritedSectionData, N)
     ], callback);
   });
 };

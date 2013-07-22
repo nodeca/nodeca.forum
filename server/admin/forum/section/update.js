@@ -7,6 +7,8 @@
 var _     = require('lodash');
 var async = require('async');
 
+var updateInheritedSectionData = require('nodeca.forum/lib/admin/update_inherited_section_data');
+
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -96,61 +98,7 @@ module.exports = function (N, apiPath) {
         //
         // Recompute parent-dependent data for descendant sections.
         //
-      , function (next) {
-          N.models.forum.Section.find({}, function (err, sections) {
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            var sectionsById = {};
-
-            // Remap sections list.
-            _.forEach(sections, function (section) {
-              sectionsById[section._id] = section;
-            });
-
-            // Recursively collect `parent_list`.
-            function collectParentList(id) {
-              var result;
-
-              if (id) {
-                result = collectParentList(sectionsById[id].parent);
-                result.push(id);
-              } else {
-                result = [];
-              }
-
-              return result;
-            }
-
-            // Update parent-dependent fields.
-            _.forEach(sections, function (section) {
-              section.parent_list = collectParentList(section.parent);
-
-              section.parent_id_list = _.map(section.parent_list, function (id) {
-                return sectionsById[id].id;
-              });
-
-              section.level = section.parent_list.length;
-            });
-
-            // Save changed sections.
-            async.forEach(sections, function (section, nextSection) {
-              if (section.isModified()) {
-                section.save(nextSection);
-              } else {
-                nextSection();
-              }
-            }, next);
-          });
-        }
-        //
-        // Update inherited `forum_usergroup` settings on this and descendants.
-        //
-      , function (next) {
-          ForumUsergroupStore.updateInherited(next);
-        }
+      , async.apply(updateInheritedSectionData, N)
       ], callback);
     });
   });
