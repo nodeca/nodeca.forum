@@ -4,7 +4,7 @@
 'use strict';
 
 
-//var _ = require('lodash');
+var _ = require('lodash');
 
 
 var draft = require('../_draft');
@@ -36,7 +36,9 @@ function removeEditor(dropDraft) {
   if (dropDraft) {
     draft.remove(eState.draft_id);
   } else {
-    saveDraft();
+    if (eState.editor.isDirty() && 'post-reply' === eState.type) {
+      saveDraft();
+    }
   }
 
   // cleanup
@@ -61,6 +63,11 @@ N.wire.on('forum.post.reply', function (event) {
     // If already writing reply to this post, then nothing to do
     if (parent_post_id === eState.parent_post_id) {
       return;
+    }
+
+    // Show hidden post
+    if ('post-edit' === eState.type) {
+      $('#post' + eState.post_id).show();
     }
 
     removeEditor();
@@ -111,12 +118,21 @@ N.wire.on('forum.post.reply', function (event) {
 //
 N.wire.on('forum.post.reply.save', function () {
   // Save reply on server
-  N.io.rpc('forum.thread.reply', {
+  var post = {
     thread_id: threadInfo.id,
-    to_id: eState.parent_post_id,
     format: 'txt',
     text: eState.editor.value()
-  }, function (err, env) {
+  };
+
+  if ('post-reply' === eState.type) {
+    post.to_id = eState.parent_post_id;
+  }
+
+  if ('post-edit' === eState.type) {
+    post._id = eState.post_id;
+  }
+
+  N.io.rpc('forum.thread.reply', post, function (err, env) {
     if (err) {
       return;
     }
@@ -127,9 +143,24 @@ N.wire.on('forum.post.reply.save', function () {
       users: env.data.users
     };
 
-    // Render and append new post
+    _.each(locals.posts, function(post){
+      post.ts = new Date(post.ts);
+    });
+
+    // Render new post
     var $result = $(N.runtime.render('forum.blocks.posts_list', locals)).hide();
-    $('#postlist > :last').after($result);
+
+    if ('post-reply' === eState.type) {
+      // Append new post
+      $('#postlist > :last').after($result);
+    }
+
+    if ('post-edit' === eState.type) {
+      // Replace post
+      $('#post' + eState.post_id)
+        .replaceWith($result)
+        .fadeOut();
+    }
 
     $result.fadeIn();
 
@@ -141,6 +172,11 @@ N.wire.on('forum.post.reply.save', function () {
 //
 N.wire.on('forum.post.reply.cancel', function () {
   eState.$form.fadeOut(function () {
+    // Show hidden post
+    if ('post-edit' === eState.type) {
+      $('#post' + eState.post_id).show();
+    }
+
     removeEditor();
   });
 });
@@ -166,9 +202,72 @@ N.wire.on('navigate.done:' + module.apiPath, function (config) {
 N.wire.on('navigate.exit:' + module.apiPath, function () {
   threadInfo = {};
 
-  if (eState.$form && eState.editor.isDirty()) {
+  if (eState.$form && eState.editor.isDirty() && 'post-reply' === eState.type) {
     saveDraft();
   }
+});
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Edit post handlers logic
+
+
+// Click on post edit link
+//
+N.wire.on('forum.post.edit', function (event) {
+  var $button = $(event.currentTarget),
+      button_offset = $button.offset().top,
+      post_id = $button.data('post-id') || 0;
+
+  // Check if previous editor exists
+  if (eState.$form) {
+    // If already editing this post, then nothing to do
+    if (post_id === eState.post_id) {
+      return;
+    }
+
+    // Show hidden post
+    if ('post-edit' === eState.type) {
+      $('#post' + eState.post_id).show();
+    }
+
+    removeEditor();
+  }
+
+  N.loader.loadAssets('editor', function () {
+    Editor = require("editor");
+
+    eState.type = 'post-edit';
+    eState.post_id = post_id;
+
+    // Create editing form instance
+    eState.$form = $(N.runtime.render('forum.thread.reply', {
+      type: eState.type
+    }));
+    eState.$form.hide();
+
+    // Find target, to attach editor after
+    var $target_post = $('#post' + eState.post_id);
+
+    // Insert editing form after post
+    $target_post.after(eState.$form);
+
+    // Initialize editable area
+    eState.editor = new Editor();
+    eState.editor.attach(eState.$form.find('.forum-reply__editor'));
+
+    // Load previously saved text
+    eState.editor.value($target_post.find('.forum-post__message').html());
+
+    // Show form
+    eState.$form.fadeIn();
+
+    // Fix scroll
+    $('html,body').animate({scrollTop: '+=' + ($button.offset().top - button_offset)}, 0);
+
+    // Hide post
+    $target_post.hide();
+  });
 });
 
 
@@ -176,7 +275,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function () {
 // catch browser close
 
 var winCloseHandler = function (/*event*/) {
-  if (eState.$form && eState.editor.isDirty()) {
+  if (eState.$form && eState.editor.isDirty() && 'post-reply' === eState.type) {
     saveDraft();
   }
 };
