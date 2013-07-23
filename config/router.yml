@@ -19,9 +19,6 @@ router:
           match: /[1-9]\d*/
           default: 1
 
-    admin.forum.index:
-      "/forums": ~
-
     admin.forum.section.index:
       "/forum/section": ~
 

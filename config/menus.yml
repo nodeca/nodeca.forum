@@ -7,7 +7,7 @@ menus:
   admin:
     navbar:
       forum:
-        to: admin.forum.index
+        to: admin.forum.section.index
         submenu:
           section:
             to: admin.forum.section.index
