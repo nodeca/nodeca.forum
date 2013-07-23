@@ -25,7 +25,6 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function usergroup_fetch(env, callback) {
     N.models.users.UserGroup
         .find()
-        .select('_id short_name')
         .sort('_id')
         .setOptions({ lean: true })
         .exec(function (err, usergroups) {
@@ -39,7 +38,6 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function section_fetch(env, callback) {
     N.models.forum.Section
         .find()
-        .select('_id title parent')
         .sort('display_order')
         .setOptions({ lean: true })
         .exec(function (err, sections) {
@@ -107,7 +105,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      function collectSectionsTree(parent) {
+      function buildSectionsTree(parent) {
         var selectedSections = _.select(env.data.sections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section.parent || null) === String(parent);
@@ -115,14 +113,14 @@ module.exports = function (N, apiPath) {
 
         // Collect children subtree for each section.
         _.forEach(selectedSections, function (section) {
-          section.children = collectSectionsTree(section._id);
+          section.children = buildSectionsTree(section._id);
         });
 
         return selectedSections;
       }
 
       env.response.data.usergroups = env.data.usergroups;
-      env.response.data.sections   = collectSectionsTree(null);
+      env.response.data.sections   = buildSectionsTree(null);
       callback();
     });
   });

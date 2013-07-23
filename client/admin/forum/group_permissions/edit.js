@@ -99,7 +99,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   });
 
   view.save = function save() {
-    var postData = {
+    var request = {
       section_id:   data.params.section_id
     , usergroup_id: data.params.usergroup_id
     , settings:     {}
@@ -107,9 +107,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
     _.forEach(view.settings, function (setting) {
       if (setting.overriden()) {
-        postData.settings[setting.name] = { value: setting.value(), force: true };
+        request.settings[setting.name] = { value: setting.value(), force: true };
       } else {
-        postData.settings[setting.name] = null;
+        request.settings[setting.name] = null;
       }
     });
 
@@ -117,7 +117,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       setting.markClean();
     });
 
-    N.io.rpc('admin.forum.group_permissions.update', postData, function (err) {
+    N.io.rpc('admin.forum.group_permissions.update', request, function (err) {
       if (err) {
         return false; // Invoke standard error handling.
       }

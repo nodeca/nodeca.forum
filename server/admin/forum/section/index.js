@@ -11,8 +11,6 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
   N.wire.on(apiPath, function section_index(env, callback) {
-    env.data.users = env.data.users || []; // Used by `users_join` hook.
-
     N.models.forum.Section
         .find()
         .sort('display_order')
@@ -25,24 +23,29 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      function collectSectionsTree(parent) {
+      function buildSectionsTree(parent) {
         var selectedSections = _.select(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section.parent || null) === String(parent);
         });
 
         _.forEach(selectedSections, function (section) {
-          // Register section's moderators for `users_join` hooks.
-          env.data.users = env.data.users.concat(section.moderator_list);
-
           // Recursively collect descendants.
-          section.children = collectSectionsTree(section._id);
+          section.children = buildSectionsTree(section._id);
         });
 
         return selectedSections;
       }
 
-      env.response.data.sections = collectSectionsTree(null);
+      env.response.data.sections = buildSectionsTree(null);
+
+      // Register section's moderators for `users_join` hooks.
+      env.data.users = env.data.users || [];
+
+      _.forEach(allSections, function (section) {
+        env.data.users = env.data.users.concat(section.moderator_list);
+      });
+
       callback();
     });
   });

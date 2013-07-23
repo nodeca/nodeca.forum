@@ -34,31 +34,16 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    N.models.forum.Section.findById(env.params._id, function (err, updateSection) {
+    N.models.forum.Section.findById(env.params._id, function (err, section) {
       if (err) {
         callback(err);
         return;
       }
 
-      _.forEach([
-        'parent'
-      , 'display_order'
-      , 'title'
-      , 'description'
-      , 'is_category'
-      , 'is_enabled'
-      , 'is_writeble'
-      , 'is_searcheable'
-      , 'is_voteable'
-      , 'is_counted'
-      , 'is_excludable'
-      ], function (field) {
-        if (_.has(env.params, field)) {
-          updateSection.set(field, env.params[field]);
-        }
+      // Update specified fields.
+      _(env.params).keys().without('_id').forEach(function (key) {
+        section.set(key, env.params[key]);
       });
-
-      var isParentChanged = updateSection.isModified('parent');
 
       async.series([
         //
@@ -66,14 +51,14 @@ module.exports = function (N, apiPath) {
         // specified, find free `display_order`.
         //
         function (next) {
-          if (!isParentChanged || _.has(env.params, 'display_order')) {
+          if (!section.isModified('parent') || _.has(env.params, 'display_order')) {
             next();
             return;
           }
 
           // This is the most simple way to find max value of a field in Mongo.
           N.models.forum.Section
-              .find({ parent: updateSection.parent })
+              .find({ parent: section.parent })
               .select('display_order')
               .sort('-display_order')
               .limit(1)
@@ -85,15 +70,15 @@ module.exports = function (N, apiPath) {
               return;
             }
 
-            updateSection.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
+            section.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
             next();
           });
         }
         //
-        // Save changes at updateSection.
+        // Save changes at section.
         //
       , function (next) {
-          updateSection.save(next);
+          section.save(next);
         }
         //
         // Recompute parent-dependent data for descendant sections.

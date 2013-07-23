@@ -43,7 +43,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
   , tolerance: 'pointer'
   , drop: function (event, ui) {
       // Data to update.
-      var payload = {
+      var request = {
         _id:    ui.draggable.data('id')
       , parent: $(this).parents('.section-group:first').children('.section-control').data('id')
       };
@@ -54,19 +54,19 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
       if ((null !== prev) && (null !== next)) {
         // Between other.
-        payload.display_order = (Number(prev) + Number(next)) / 2;
+        request.display_order = (Number(prev) + Number(next)) / 2;
 
       } else if (null !== prev) {
         // After all.
-        payload.display_order = Number(prev) + 1;
+        request.display_order = Number(prev) + 1;
 
       } else if (null !== next) {
         // Before all.
-        payload.display_order = Number(next) - 1;
+        request.display_order = Number(next) - 1;
 
       } else {
         // Single in current children list.
-        payload.display_order = 1;
+        request.display_order = 1;
       }
 
       // Move section and it's allied placeholder into new location.
@@ -74,10 +74,10 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
       $draggableGroup.prev('.section-placeholder').insertBefore(this);
       $draggableGroup.insertBefore(this);
-      $draggableGroup.children('.section-control').data('displayOrder', payload.display_order);
+      $draggableGroup.children('.section-control').data('displayOrder', request.display_order);
 
       // Send save request.
-      N.io.rpc('admin.forum.section.update', payload, function (err) {
+      N.io.rpc('admin.forum.section.update', request, function (err) {
         if (err) {
           return false; // Invoke standard error handling.
         }

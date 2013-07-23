@@ -4,27 +4,6 @@
 'use strict';
 
 
-var ACTIVE_SECTION_FIELDS = [
-  '_id'
-, 'title'
-, 'description'
-, 'parent'
-, 'is_category'
-, 'is_enabled'
-, 'is_writeble'
-, 'is_searcheable'
-, 'is_voteable'
-, 'is_counted'
-, 'is_excludable'
-].join(' ');
-
-
-var OTHER_SECTION_FIELDS = [
-  '_id'
-, 'title'
-].join(' ');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id: { type: 'string', required: true }
@@ -33,35 +12,33 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function section_edit(env, callback) {
     N.models.forum.Section
         .findById(env.params._id)
-        .select(ACTIVE_SECTION_FIELDS)
         .setOptions({ lean: true })
-        .exec(function (err, activeSection) {
+        .exec(function (err, currentSection) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      if (!activeSection) {
+      if (!currentSection) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      env.response.data.active_section = activeSection;
+      env.response.data.current_section = currentSection;
 
       N.models.forum.Section
           .find()
           .ne('_id', env.params._id)
-          .select(OTHER_SECTION_FIELDS)
           .setOptions({ lean: true })
-          .exec(function (err, otherSections) {
+          .exec(function (err, allowedParents) {
 
         if (err) {
           callback(err);
           return;
         }
 
-        env.response.data.other_sections = otherSections;
+        env.response.data.allowed_parents = allowedParents;
         callback();
       });
     });
@@ -69,7 +46,7 @@ module.exports = function (N, apiPath) {
 
   N.wire.after(apiPath, function title_set(env) {
     env.response.data.head.title = env.t('title', {
-      name: env.response.data.active_section.title
+      name: env.response.data.current_section.title
     });
   });
 };
