@@ -90,7 +90,7 @@ module.exports = function (N, apiPath) {
         ForumUsergroupStore.get(
           ForumUsergroupStore.keys
         , { forum_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
-        , { skipCache: true, extended: true, allowHoles: true }
+        , { skipCache: true, extended: true }
         , function (err, editSettings) {
           env.response.data.settings = editSettings;
           next(err);
@@ -109,7 +109,7 @@ module.exports = function (N, apiPath) {
         ForumUsergroupStore.get(
           ForumUsergroupStore.keys
         , { forum_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
-        , { skipCache: true, allowHoles: true }
+        , { skipCache: true, extended: true }
         , function (err, parentSettings) {
           env.response.data.parent_settings = parentSettings;
           next(err);

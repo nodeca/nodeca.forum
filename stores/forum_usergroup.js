@@ -37,7 +37,6 @@ module.exports = function (N) {
     // options:
     //   skipCache  - Boolean
     //   extended   - Boolean; Add `own` (aka non-inherited) property to result.
-    //   allowHoles - Boolean; Do not replace missed settings with "empty" values.
     //
     // This store *always* set `force` flag to true.
     //
@@ -84,13 +83,11 @@ module.exports = function (N) {
                 !section.settings.forum_usergroup[usergroupId] ||
                 !section.settings.forum_usergroup[usergroupId][settingName]) {
 
-              // Use empty value instead by default.
-              if (!options.allowHoles) {
-                settings.push({
-                  value: self.getEmptyValue(settingName)
-                , force: false
-                });
-              }
+              // Use empty value instead.
+              settings.push({
+                value: self.getEmptyValue(settingName)
+              , force: false
+              });
               return;
             }
 
@@ -108,9 +105,7 @@ module.exports = function (N) {
           });
 
           // Get merged value.
-          if (!_.isEmpty(settings) || !options.allowHoles) {
-            results[settingName] = N.settings.mergeValues(settings);
-          }
+          results[settingName] = N.settings.mergeValues(settings);
         });
 
         callback(null, results);
