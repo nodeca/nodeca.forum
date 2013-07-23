@@ -21,7 +21,7 @@
       - else
         .av-l
     .forum-post__content
-      .forum-post__message= post.text
+      .forum-post__message !{post.text}
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-left
           li.forum-post__control-item
@@ -32,7 +32,7 @@
           li.forum-post__control-item
             a.forum-post__action-link.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
           li.forum-post__control-item
-            a.forum-post__action-link(href='#')= self.t('edit')
+            a.forum-post__action-link(href='#',data-on-click="forum.post.edit",data-post-id='#{post._id}')= self.t('edit')
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('delete')
           li.forum-post__control-item

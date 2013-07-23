@@ -8,6 +8,6 @@
       .forum-reply__buttons-blk.pull-right
         button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.post.reply.cancel')=self.t('reply_cancel')
         |  
-        button.forum-reply__save.btn.btn-primary(data-on-click='forum.post.reply.save')=self.t('reply_save')
+        button.forum-reply__save.btn.btn-primary(data-on-click='forum.post.reply.save')='post-reply' === self.type ? self.t('reply_save') : self.t('edit_save')
       .forum-reply__buttons-blk.pull-left
         button.forum-reply__options.btn.btn-link=self.t('reply_options')

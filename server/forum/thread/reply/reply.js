@@ -23,6 +23,9 @@ module.exports = function (N, apiPath) {
     to_id: {
       type: "string"
     },
+    _id: {
+      type: "string"
+    },
     format: {
       type: "string",
       required: true
@@ -96,47 +99,104 @@ module.exports = function (N, apiPath) {
     callback();
   });
 
+  // fetch post to simplify permisson check
+  N.wire.before(apiPath, function fetch_post(env, callback) {
+    if (env.params._id) {
+      env.extras.puncher.start('Post info prefetch (edit)');
+
+      Post.findOne({ _id: env.params._id })
+          .exec(function (err, post) {
+
+        env.extras.puncher.stop();
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        if (!post) {
+          callback({
+            code: N.io.BAD_REQUEST,
+            message: env.t('error_invalid_post')
+          });
+          return;
+        }
+
+        env.data.post = post;
+
+        callback();
+        return;
+      });
+      return;
+    }
+
+    callback();
+  });
+
   // Request handler
   //
   N.wire.on(apiPath, function save_new_post(env, callback) {
     var thread = env.data.thread,
-        parent_post_id = env.data.parent_post_id;
+        parent_post_id = env.data.parent_post_id,
+        post;
 
-    env.extras.puncher.start('New post save (reply)');
+    if (env.data.post) {
+      env.extras.puncher.start('Post save (edit)');
 
-    var post = new Post();
+      post = env.data.post;
 
-    post.text = env.params.text;
-    post.fmt = env.params.format;
-    post.id = 1; // TODO: generate user friendly id
-    post.ip = env.request.ip;
-    post.state = 0;
+      post.text = env.params.text;
+      post.fmt = env.params.format;
 
-    post.forum = thread.forum;
-    post.forum_id = thread.forum_id;
+      post.save(function(err){
+        env.extras.puncher.stop();
 
-    post.thread = thread._id;
-    post.thread_id = thread.id;
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    // TODO: Set post.user
+        env.data.new_post = post;
 
-    if (parent_post_id) {
-      post.to = parent_post_id;
-    }
+        callback();
+      });
+    } else {
+      env.extras.puncher.start('New post save (reply)');
 
-    post.save(function (err) {
+      post = new Post();
 
-      env.extras.puncher.stop();
+      post.text = env.params.text;
+      post.fmt = env.params.format;
+      post.id = 1; // TODO: generate user friendly id
+      post.ip = env.request.ip;
+      post.state = 0;
 
-      if (err) {
-        callback(err);
-        return;
+      post.forum = thread.forum;
+      post.forum_id = thread.forum_id;
+
+      post.thread = thread._id;
+      post.thread_id = thread.id;
+
+      // TODO: Set post.user
+
+      if (parent_post_id) {
+        post.to = parent_post_id;
       }
 
-      env.data.new_post = post;
+      post.save(function (err) {
 
-      callback();
-    });
+        env.extras.puncher.stop();
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        env.data.new_post = post;
+
+        callback();
+      });
+    }
   });
 
   // Process response
