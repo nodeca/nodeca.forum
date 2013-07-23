@@ -1,4 +1,8 @@
 // Update a set of basic fields on section.
+//
+// NOTE: This method is used for both:
+// - section/index page for section reordering.
+// - section/edit page for changing certain section fields.
 
 
 'use strict';
@@ -49,6 +53,8 @@ module.exports = function (N, apiPath) {
         //
         // If section's `parent` is changed, but new `display_order` is not
         // specified, find free `display_order`.
+        //
+        // NOTE: Used when user changes `parent` field via edit page.
         //
         function (next) {
           if (!section.isModified('parent') || _.has(env.params, 'display_order')) {
