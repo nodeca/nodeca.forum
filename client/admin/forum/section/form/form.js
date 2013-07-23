@@ -18,33 +18,32 @@ var SECTION_FIELD_DEFAULTS = {
 , 'is_excludable':  true
 };
 
-var SECTION_FIELD_NAMES = _.keys(SECTION_FIELD_DEFAULTS);
-
 
 // Knockout bindings root object.
 var view = null;
 
 
 N.wire.on(module.apiPath + '.setup', function page_setup(data) {
-  view = {};
-
-  view.currentSection = data.current_section ? _.clone(data.current_section) : { _id: null };
-  _.defaults(view.currentSection, SECTION_FIELD_DEFAULTS);
-  view.allowedParents = [];
-  view.isNewSection   = (null === view.currentSection._id);
-
+  var isNewSection   = !data.current_section
+    , currentSection = {};
+  
   // Create observable fields on currentSection.
-  _.forEach(SECTION_FIELD_NAMES, function (field) {
-    view.currentSection[field] = ko.observable(view.currentSection[field]).extend({ dirty: view.isNewSection });
+  _.forEach(SECTION_FIELD_DEFAULTS, function (defaultValue, key) {
+    var value = _.has(data.current_section, key) ? data.current_section[key] : defaultValue;
+
+    currentSection[key] = ko.observable(value).extend({ dirty: isNewSection });
   });
+
+
+  // Collect allowedParents list using tree order.
+  // Prepand "– " string to title of each sections depending on nesting level.
+  var allowedParents = [];
 
   // Prepend virtual Null-section to allowedParents list.
   // This is used instead of Knockout's optionsCaption because it does not
   // allow custom values - null in our case.
-  view.allowedParents.push({ _id: null, title: t('value_section_none') });
+  allowedParents.push({ _id: null, title: t('value_section_none') });
 
-  // Collect allowedParents list using tree order.
-  // Prepand "– " string to title of each sections depending on nesting level.
   function fetchOtherSections(parent) {
     var sections = _.select(data.allowed_parents, function (section) {
       return parent === (section.parent || null);
@@ -55,7 +54,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
 
       do { prefix += '– '; level -= 1; } while (level >= 0);
 
-      view.allowedParents.push({
+      allowedParents.push({
         _id:   section._id
       , title: prefix + section.title
       });
@@ -65,13 +64,23 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   }
   fetchOtherSections(null); // Fetch root sections.
 
+
+  // Create and fill Knockout binding.
+  view = {};
+
+  view.isNewSection   = isNewSection;
+  view.currentSection = currentSection;
+  view.allowedParents = allowedParents;
+
   // "Copy settings from" special field.
   view.copySettingsFrom = ko.observable(null);
   view.copySettingsFrom.subscribe(function (selectedSourceId) {
     if (!selectedSourceId) {
       // Reset field values to defaults.
-      _.forEach(SECTION_FIELD_NAMES, function (field) {
-        view.currentSection[field](SECTION_FIELD_DEFAULTS[field]);
+      _.forEach(currentSection, function (field, key) {
+        if (_.has(SECTION_FIELD_DEFAULTS, key)) {
+          field(SECTION_FIELD_DEFAULTS[key]);
+        }
       });
       return;
     }
@@ -84,15 +93,17 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
     }
 
     // Copy field values.
-    _.forEach(SECTION_FIELD_NAMES, function (field) {
-      view.currentSection[field](selectedSourceSection[field]);
+    _.forEach(currentSection, function (field, key) {
+      if (_.has(selectedSourceSection, key)) {
+        field(selectedSourceSection[key]);
+      }
     });
   });
 
   // Check if any field values of currentSection were changed.
   view.isDirty = ko.computed(function () {
-    return _.any(SECTION_FIELD_NAMES, function (field) {
-      return view.currentSection[field].isDirty();
+    return _.any(currentSection, function (field) {
+      return field.isDirty();
     });
   });
 
@@ -100,8 +111,8 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view.create = function create() {
     var request = {};
 
-    _.forEach(SECTION_FIELD_NAMES, function (field) {
-      request[field] = view.currentSection[field]();
+    _.forEach(currentSection, function (field, key) {
+      request[key] = field();
     });
 
     N.io.rpc('admin.forum.section.create', request, function (err) {
@@ -110,6 +121,10 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
         return false;
       }
 
+      _.forEach(currentSection, function (field) {
+        field.markClean();
+      });
+
       N.wire.emit('notify', { type: 'info', message: t('message_created') });
       N.wire.emit('navigate.to', { apiPath: 'admin.forum.section.index' });
     });
@@ -117,11 +132,10 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
 
   // Save actually existent currentSection.
   view.update = function update() {
-    var request = { _id: view.currentSection._id };
+    var request = { _id: data.current_section._id };
 
-    _.forEach(SECTION_FIELD_NAMES, function (field) {
-      request[field] = view.currentSection[field]();
-      view.currentSection[field].markClean();
+    _.forEach(currentSection, function (field, key) {
+      request[key] = field();
     });
 
     N.io.rpc('admin.forum.section.update', request, function (err) {
@@ -129,6 +143,10 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
         // Invoke standard error handling.
         return false;
       }
+
+      _.forEach(currentSection, function (field) {
+        field.markClean();
+      });
 
       N.wire.emit('notify', { type: 'info', message: t('message_updated') });
     });
