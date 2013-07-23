@@ -12,4 +12,5 @@ en-US:
     title: 'Edit forum section: #{name}'
 
   destroy:
+    error_section_has_children: Can't delete this section because it has child sections.
     error_section_contains_posts: Can't delete this section because it contains user posts.
