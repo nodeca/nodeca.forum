@@ -1,3 +1,6 @@
+- self.add_raw_data('other_sections', self.other_sections);
+
+
 #content
   != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
 
@@ -6,5 +9,4 @@
 
     h1 #{self.head.title}
 
-    - self.add_raw_data('other_sections', self.other_sections);
     != self.partial('@admin.forum.section.form')

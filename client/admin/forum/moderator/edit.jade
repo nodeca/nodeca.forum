@@ -1,3 +1,8 @@
+- self.add_raw_data('setting_schemas', self.setting_schemas)
+- self.add_raw_data('settings',        self.settings)
+- self.add_raw_data('parent_settings', self.parent_settings)
+
+
 #content
   != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
 
@@ -13,7 +18,4 @@
 
     h1 #{self.head.title}
 
-    - self.add_raw_data('setting_schemas', self.setting_schemas)
-    - self.add_raw_data('settings',        self.settings)
-    - self.add_raw_data('parent_settings', self.parent_settings)
     != self.partial('@admin.forum.moderator.form')
