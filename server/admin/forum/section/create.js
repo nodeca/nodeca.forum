@@ -7,8 +7,6 @@
 var _     = require('lodash');
 var async = require('async');
 
-var updateInheritedSectionData = require('nodeca.forum/lib/admin/update_inherited_section_data');
-
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -113,10 +111,6 @@ module.exports = function (N, apiPath) {
     , function (next) {
         newSection.save(next);
       }
-      //
-      // Compute parent-dependent data for newly created section.
-      //
-    , async.apply(updateInheritedSectionData, N)
     ], callback);
   });
 };

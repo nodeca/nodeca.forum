@@ -8,10 +8,7 @@
 'use strict';
 
 
-var _     = require('lodash');
-var async = require('async');
-
-var updateInheritedSectionData = require('nodeca.forum/lib/admin/update_inherited_section_data');
+var _ = require('lodash');
 
 
 module.exports = function (N, apiPath) {
@@ -49,48 +46,44 @@ module.exports = function (N, apiPath) {
         section.set(key, env.params[key]);
       });
 
-      async.series([
-        //
-        // If section's `parent` is changed, but new `display_order` is not
-        // specified, find free `display_order`.
-        //
-        // NOTE: Used when user changes `parent` field via edit page.
-        //
-        function (next) {
-          if (!section.isModified('parent') || _.has(env.params, 'display_order')) {
-            next();
+      // If section's `parent` is changed, but new `display_order` is not
+      // specified, find free `display_order`.
+      //
+      // NOTE: Used when user changes `parent` field via edit page.
+      //
+      function setDisplayOrder(next) {
+        if (!section.isModified('parent') || _.has(env.params, 'display_order')) {
+          next();
+          return;
+        }
+
+        // This is the most simple way to find max value of a field in Mongo.
+        N.models.forum.Section
+            .find({ parent: section.parent })
+            .select('display_order')
+            .sort('-display_order')
+            .limit(1)
+            .setOptions({ lean: true })
+            .exec(function (err, result) {
+
+          if (err) {
+            next(err);
             return;
           }
 
-          // This is the most simple way to find max value of a field in Mongo.
-          N.models.forum.Section
-              .find({ parent: section.parent })
-              .select('display_order')
-              .sort('-display_order')
-              .limit(1)
-              .setOptions({ lean: true })
-              .exec(function (err, result) {
+          section.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
+          next();
+        });
+      }
 
-            if (err) {
-              next(err);
-              return;
-            }
+      setDisplayOrder(function (err) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-            section.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
-            next();
-          });
-        }
-        //
-        // Save changes at section.
-        //
-      , function (next) {
-          section.save(next);
-        }
-        //
-        // Recompute parent-dependent data for descendant sections.
-        //
-      , async.apply(updateInheritedSectionData, N)
-      ], callback);
+        section.save(callback);
+      });
     });
   });
 };
