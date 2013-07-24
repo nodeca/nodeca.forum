@@ -70,16 +70,9 @@ module.exports.up = function (N, cb) {
       forum.description = 'Description for demo forum';
 
       forum.id = 2;
-
       forum.parent = category._id;
-      forum.parent_id = category.id;
-
-      forum.parent_list.push(category._id);
-      forum.parent_id_list.push(category.id);
-
-      forum.level = 1;
-
       forum.display_order = category.display_order + 1;
+
       forum.save(callback);
     },
 

@@ -75,7 +75,6 @@ Charlatan.Helpers.category = function () {
     description: Charlatan.Lorem.sentence(),
 
     display_order: Charlatan.Incrementer.next('display_order'),
-    level: 0,
     id: Charlatan.Incrementer.next('category'),
     is_category: true
   };
@@ -100,14 +99,7 @@ Charlatan.Helpers.forum = function (parent) {
     id: Charlatan.Incrementer.next('forum'),
 
     parent: parent._id,
-    parent_list: parent.parent_list.slice().concat([parent._id]),
-
-    parent_id: parent.id,
-    parent_id_list: parent.parent_id_list.slice().concat([parent.id]),
-
     display_order: Charlatan.Incrementer.next('display_order'),
-
-    level:  parent.level + 1,
 
     moderator_id_list: _.uniq(moderator_id_list),
     moderator_list: _.uniq(moderator_list),
