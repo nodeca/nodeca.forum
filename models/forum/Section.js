@@ -144,9 +144,9 @@ module.exports = function (N, collectionName) {
     });
   });
 
-  // Recompute and save parent-dependent data on forum sections:
-  // - Fields `parent_list`, `parent_id_list`, and `level`.
-  // - Section-specified settings inheritance.
+  // Update all subforum's data for saved section: `parent_id`, `parent_list`,
+  // `parent_id_list`, and `level`.
+  // Update all inherited settings (permissions) for subforums.
   //
   Section.post('save', function (section) {
 
