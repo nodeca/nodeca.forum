@@ -104,7 +104,8 @@ module.exports = function (N, collectionName) {
     var self = this;
 
     // Record modified state of `parent` field for post hook.
-    self.__isParentModified__ = self.isModified('parent');
+    // Always assume true for unsaved models.
+    self.__isParentModified__ = self.isModified('parent') || self.isNew;
 
     // Nothing to do if parent is not changed.
     if (!self.__isParentModified__) {
