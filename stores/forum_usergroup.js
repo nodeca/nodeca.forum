@@ -172,7 +172,7 @@ module.exports = function (N) {
             return;
           }
 
-          self.updateInherited(callback);
+          self.updateInherited(section._id, callback);
         });
       });
     }
@@ -181,13 +181,60 @@ module.exports = function (N) {
 
   // Update inherited setting on all sections.
   //
-  ForumUsergroupStore.updateInherited = function updateInherited(callback) {
+  // `sectionId` is optional. If omitted - update all sections.
+  //
+  ForumUsergroupStore.updateInherited = function updateInherited(sectionId, callback) {
     var self = this;
 
-    N.models.forum.Section.find({}, function (err, sections) {
+    if (_.isFunction(sectionId)) {
+      callback  = sectionId;
+      sectionId = null;
+    }
+
+    N.models.forum.Section.find({}, function (err, allSections) {
       if (err) {
         callback(err);
         return;
+      }
+
+      function selectSectionDescendants(parentId) {
+        var result = [];
+
+        var children = _.select(allSections, function (section) {
+          // Universal way for equal check on: Null, ObjectId, and String.
+          return String(section.parent || null) === String(parentId);
+        });
+
+        _.forEach(children, function (child) {
+          result.push(child);
+        });
+        
+        _.forEach(children, function (child) {
+          _.forEach(selectSectionDescendants(child._id), function (grandchild) {
+            result.push(grandchild);
+          });
+        });
+
+        return result;
+      }
+
+      // List of sections to recompute settings and save. All by default.
+      var sectionsToUpdate = allSections;
+
+      // If we want update only a subtree of sections,
+      // collect different `sectionsToUpdate` list.
+      if (sectionId) {
+        var section = _.find(allSections, function (section) {
+          // Universal way for equal check on: Null, ObjectId, and String.
+          return String(section._id) === String(sectionId);
+        });
+
+        if (!section) {
+          callback('Forum sections collection contains a reference to non-existent section %s');
+          return;
+        }
+
+        sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
       }
 
       // Find first own setting by name for usergroup.
@@ -196,7 +243,7 @@ module.exports = function (N) {
           return null;
         }
 
-        var section = _.find(sections, function (section) {
+        var section = _.find(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section._id) === String(sectionId);
         });
@@ -230,7 +277,7 @@ module.exports = function (N) {
           return;
         }
 
-        async.forEach(sections, function (section, next) {
+        async.forEach(sectionsToUpdate, function (section, next) {
           _.forEach(usergroups, function (usergroup) {
             _.forEach(self.keys, function (settingName) {
               if (!section.settings) {
