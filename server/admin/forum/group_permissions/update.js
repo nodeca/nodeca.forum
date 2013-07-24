@@ -15,10 +15,7 @@ module.exports = function (N, apiPath) {
         '.*': {
           type: ['null', 'object']
         , additionalProperties: false
-        , properties: {
-            value: {                  required: true }
-          , force: { type: 'boolean', required: true }
-          }
+        , properties: { value: { required: true } }
         }
       }
     }

@@ -109,7 +109,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
     _.forEach(view.settings, function (setting) {
       if (setting.overriden()) {
-        request.settings[setting.name] = { value: setting.value(), force: true };
+        request.settings[setting.name] = { value: setting.value() };
       } else {
         request.settings[setting.name] = null;
       }
