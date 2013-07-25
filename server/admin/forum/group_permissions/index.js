@@ -59,7 +59,8 @@ module.exports = function (N, apiPath) {
 
     // Set override type for each section/usergroup.
     async.forEach(env.data.sections, function (section, nextSection) {
-      section.override_type = {};
+      section.own_settings_count       = {};
+      section.inherited_settings_count = {};
 
       async.forEach(env.data.usergroups, function (usergroup, nextGroup) {
         ForumUsergroupStore.get(
@@ -72,30 +73,8 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          var override_type;
-
-          // Overriden setting counts by type.
-          var own       = _.select(settings, { own: true  }).length
-            , inherited = _.select(settings, { own: false }).length
-            , total     = own + inherited;
-
-          // Select override type.
-          if (total >= ForumUsergroupStore.keys.length) {
-            override_type = 'every';
-          } else if (total > 0) {
-            override_type = 'some';
-          } else {
-            override_type = 'none';
-          }
-
-          // Append type modifier for 'every' and 'some' types.
-          if (own > 0) {
-            override_type += '-own';
-          } else if (inherited > 0) {
-            override_type += '-inherited';
-          }
-
-          section.override_type[usergroup._id] = override_type;
+          section.own_settings_count[usergroup._id]       = _.select(settings, { own: true  }).length;
+          section.inherited_settings_count[usergroup._id] = _.select(settings, { own: false }).length;
           nextGroup();
         });
       }, nextSection);
@@ -119,8 +98,9 @@ module.exports = function (N, apiPath) {
         return selectedSections;
       }
 
-      env.response.data.usergroups = env.data.usergroups;
-      env.response.data.sections   = buildSectionsTree(null);
+      env.response.data.settings_count = ForumUsergroupStore.keys.length;
+      env.response.data.usergroups     = env.data.usergroups;
+      env.response.data.sections       = buildSectionsTree(null);
       callback();
     });
   });
