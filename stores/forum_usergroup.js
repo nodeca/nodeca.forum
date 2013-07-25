@@ -1,3 +1,26 @@
+// Per-forum usergroup setting store. Example structure:
+//
+//   Section:
+//     ... // section fields like _id, title, etc
+//
+//     settings:
+//       forum_usergroup:
+//         '51f0837dfd9fe55d2f000002': // user id
+//           setting_key1: { value: Mixed, own: Boolean }
+//           setting_key2: { value: Mixed, own: Boolean }
+//           setting_key3: { value: Mixed, own: Boolean }
+//
+//         '51f08394fd9fe55d2f000005': { ... }
+//
+//     moderator_list: 
+//       - ObjectId('51f0837dfd9fe55d2f000002')
+//       - ObjectId('51f08394fd9fe55d2f000005')
+//
+//     moderator_id_list:
+//       - 3
+//       - 5
+
+
 'use strict';
 
 

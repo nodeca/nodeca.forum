@@ -4,7 +4,7 @@ i18n:
       core:
         category_names:
           forum: Forum
-          moderator: Moderator
+          moderator: Forum moderators
 
         setting_names:
           forum_show: Show Forum

@@ -1,3 +1,26 @@
+// Per-forum moderator setting store. Example structure:
+//
+//   Section:
+//     ... // section fields like _id, title, etc
+//
+//     settings:
+//       forum_moderator:
+//         '51f1183699651cfc0a000003': // user id
+//           setting_key1: { value: Mixed, own: Boolean }
+//           setting_key2: { value: Mixed, own: Boolean }
+//           setting_key3: { value: Mixed, own: Boolean }
+//
+//         '51f0835b0798894c2f000006': { ... }
+//
+//     moderator_list: 
+//       - ObjectId('51f1183699651cfc0a000003')
+//       - ObjectId('51f0835b0798894c2f000006')
+//
+//     moderator_id_list:
+//       - 12
+//       - 30
+
+
 'use strict';
 
 
@@ -172,34 +195,21 @@ module.exports = function (N) {
   });
 
 
-  // Collect list of all moderators (both own and inherited) for section.
+  // Collect list of section moderators with statistics. (both own and inherited)
   // NOTE: This function only returns statistics information; no real settings.
-  //
-  // options:
-  //   skipCache - Boolean
   //
   // Result example:
   //   [
   //     {
-  //       _id: '51f0835b0798894c2f000006', // user id
-  //       total:     4, // count of overall overriden settings (both own and inherited)
-  //       own:       1, // count of own overirden settings
-  //       inherited: 3  // count of inherited overriden settings
+  //       _id: '51f0835b0798894c2f000006',  // user id
+  //       own: 1,       // count of changed settings done in this section
+  //       inherited: 3  // count of changed settings inherited from parent section
   //     },
   //     { ... }
   //   ]
   //
-  ForumModeratorStore.getModeratorsInfo = function getModeratorsInfo(sectionId, options, callback) {
-    if (_.isFunction(options)) {
-      callback = options;
-      options  = {};
-    }
-
-    options = options || {};
-
-    var fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
-
-    fetch(sectionId, function (err, section) {
+  ForumModeratorStore.getModeratorsInfo = function getModeratorsInfo(sectionId, callback) {
+    fetchSectionSettings(sectionId, function (err, section) {
       if (err) {
         callback(err);
         return;
@@ -216,7 +226,6 @@ module.exports = function (N) {
         _.forEach(section.settings.forum_moderator, function (settings, userId) {
           result.push({
             _id:       userId
-          , total:     _.keys(settings).length
           , own:       _.select(settings, { own: true  }).length
           , inherited: _.select(settings, { own: false }).length
           });
