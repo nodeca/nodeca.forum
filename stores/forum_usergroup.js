@@ -66,7 +66,7 @@ module.exports = function (N) {
         }
 
         if (!section) {
-          callback('Forum section `' + params.forum_id + '` not exists.');
+          callback('Forum section ' + params.forum_id + ' does not exist.');
           return;
         }
 
@@ -136,7 +136,7 @@ module.exports = function (N) {
         }
 
         if (!section) {
-          callback('Forum section ' + params.forum_id + ' not exists.');
+          callback('Forum section ' + params.forum_id + ' does not exist.');
           return;
         }
 
@@ -197,6 +197,9 @@ module.exports = function (N) {
         return;
       }
 
+
+      // Collect flat list of section's descendants.
+      //
       function selectSectionDescendants(parentId) {
         var result = [];
 
@@ -218,26 +221,9 @@ module.exports = function (N) {
         return result;
       }
 
-      // List of sections to recompute settings and save. All by default.
-      var sectionsToUpdate = allSections;
-
-      // If we want update only a subtree of sections,
-      // collect different `sectionsToUpdate` list.
-      if (sectionId) {
-        var section = _.find(allSections, function (section) {
-          // Universal way for equal check on: Null, ObjectId, and String.
-          return String(section._id) === String(sectionId);
-        });
-
-        if (!section) {
-          callback('Forum sections collection contains a reference to non-existent section %s');
-          return;
-        }
-
-        sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
-      }
 
       // Find first own setting by name for usergroup.
+      //
       function findInheritedSetting(sectionId, usergroupId, settingName) {
         if (!sectionId) {
           return null;
@@ -268,6 +254,26 @@ module.exports = function (N) {
         }
 
         return null;
+      }
+
+
+      // List of sections to recompute settings and save. All by default.
+      var sectionsToUpdate = allSections;
+
+      // If we want update only a subtree of sections,
+      // collect different `sectionsToUpdate` list.
+      if (sectionId) {
+        var section = _.find(allSections, function (section) {
+          // Universal way for equal check on: Null, ObjectId, and String.
+          return String(section._id) === String(sectionId);
+        });
+
+        if (!section) {
+          callback('Forum sections collection contains a reference to non-existent section %s');
+          return;
+        }
+
+        sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
       }
 
       // Fetch list of all existent usergroup ids.
