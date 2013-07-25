@@ -42,7 +42,7 @@ module.exports = function (N, apiPath) {
     async.forEach(env.data.sections, function (section, next) {
       section.own_moderator_list = [];
 
-      ForumModeratorStore.getModeratorsInfo(section._id, { skipCache: true }, function (err, moderators) {
+      ForumModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
         if (err) {
           next(err);
           return;
