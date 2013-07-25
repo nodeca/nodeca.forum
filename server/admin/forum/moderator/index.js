@@ -22,86 +22,86 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function moderator_sections_fetch(env, callback) {
-    var ForumModeratorStore = N.settings.getStore('forum_moderator');
-
+  N.wire.before(apiPath, function sections_fetch(env, callback) {
     N.models.forum.Section
-        .find('_id title')
+        .find()
         .setOptions({ lean: true })
         .exec(function (err, sections) {
 
-      env.data.sectionsByModerator = {};
+      if (err) {
+        callback(err);
+        return;
+      }
 
-      async.forEach(sections, function (section, next) {
-        ForumModeratorStore.getModeratorsInfo(
-          section._id
-        , { skipCache: true }
-        , function (err, sectionsByModerator) {
-          if (err) {
-            next(err);
-            return;
-          }
-
-          _.forEach(sectionsByModerator, function (moderator) {
-            if (!_.has(env.data.sectionsByModerator, moderator._id)) {
-              env.data.sectionsByModerator[moderator._id] = [];
-            }
-
-            env.data.sectionsByModerator[moderator._id].push({
-              _id:       section._id
-            , title:     section.title
-            , total:     moderator.total
-            , own:       moderator.own
-            , inherited: moderator.inherited
-            });
-          });
-          next();
-        });
-      }, callback);
+      env.data.sections     = sections;
+      env.data.sectionsById = {};
+      
+      _.forEach(sections, function (section) {
+        env.data.sectionsById[section._id] = section;
+      });
+      callback();
     });
   });
 
 
-  N.wire.before(apiPath, function overriden_type_compute(env) {
-    var ForumModeratorStore = N.settings.getStore('forum_moderator');
+  // Fetch moderators map `user_id` => `array of section info`.
+  //
+  N.wire.on(apiPath, function moderator_index(env, callback) {
+    var ForumModeratorStore = N.settings.getStore('forum_moderator')
+      , sectionsByModerator = {};
 
-    _.forEach(env.data.sectionsByModerator, function (sections) {
-      _.forEach(sections, function (section) {
-        // Select override type.
-        if (section.total >= ForumModeratorStore.keys.length) {
-          section.override_type = 'every';
-        } else if (section.total > 0) {
-          section.override_type = 'some';
-        } else {
-          section.override_type = 'none';
+    async.forEach(env.data.sections, function (section, next) {
+      ForumModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
+        if (err) {
+          next(err);
+          return;
         }
 
-        // Append type modifier for 'every' and 'some' types.
-        if (section.own > 0) {
-          section.override_type += '-own';
-        } else if (section.inherited > 0) {
-          section.override_type += '-inherited';
-        }
+        _.forEach(moderators, function (moderator) {
+          if (!_.has(sectionsByModerator, moderator._id)) {
+            sectionsByModerator[moderator._id] = [];
+          }
+
+          sectionsByModerator[moderator._id].push({
+            _id:       section._id
+          , own:       moderator.own
+          , inherited: moderator.inherited
+          });
+        });
+        next();
       });
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.response.data.settings_count = ForumModeratorStore.keys.length;
+
+      env.response.data.sections = env.data.sectionsById;
+
+      env.response.data.moderators = _(sectionsByModerator)
+        .map(function (sections, userId) {
+          var sortedSections = _.sortBy(sections, function (section) {
+            return env.data.sectionsById[section._id].title;
+          });
+
+          return { _id: userId, sections: sortedSections };
+        })
+        .sortBy(function (moderator) {
+          return String(moderator._id); // Sort moderators by user id.
+        })
+        .valueOf();
+
+      callback();
     });
   });
 
 
   // Collect user ids for `users_join` hook. (provides users info)
-  N.wire.on(apiPath, function users_prepare(env) {
-    env.data.users = (env.data.users || []).concat(_.keys(env.data.sectionsByModerator));
-  });
-
-
-  N.wire.on(apiPath, function moderator_index(env) {
-    env.response.data.moderators = _(env.data.sectionsByModerator)
-      .map(function (sections, userId) {
-        return { _id: userId, sections: _.sortBy(sections, 'title') };
-      })
-      .sortBy(env.data.moderators, function (moderator) {
-        return String(moderator._id);
-      })
-      .valueOf();
+  //
+  N.wire.after(apiPath, function users_prepare(env) {
+    env.data.users = (env.data.users || []).concat(_.pluck(env.response.data.moderators, '_id'));
   });
 
 
