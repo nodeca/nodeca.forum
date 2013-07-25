@@ -14,3 +14,6 @@ menus:
 
           group_permissions:
             to: admin.forum.group_permissions.index
+
+          moderator:
+            to: admin.forum.moderator.index

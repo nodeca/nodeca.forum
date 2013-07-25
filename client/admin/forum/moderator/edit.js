@@ -1,26 +1,143 @@
 'use strict';
 
 
-N.wire.on('navigate.done:' + module.apiPath, function page_setup(data, callback) {
-  N.wire.emit('admin.forum.moderator.form.setup', data, callback);
-});
+var _  = require('lodash');
+var ko = require('knockout');
 
 
-N.wire.on('navigate.exit:' + module.apiPath, function page_teardown(data, callback) {
-  N.wire.emit('admin.forum.moderator.form.teardown', data, callback);
-});
+function Setting(name, schema, value, overriden) {
+  var tName = '@admin.core.setting_names.' + name
+    , tHelp = '@admin.core.setting_names.' + name + '_help';
+
+  this.elementId = 'setting_' + name; // HTML id attribute.
+  this.localizedName = t(tName);
+  this.localizedHelp = t.exists(tHelp) ? N.runtime.t(tHelp) : null;
+
+  this.name = name;
+  this.type = schema.type;
+
+  this.overriden = ko.observable(Boolean(overriden)).extend({ dirty: false });
+  this.inherited = ko.computed(function () { return !this.overriden(); }, this);
+
+  this._value = ko.observable(value).extend({ dirty: false });
+  this.value = ko.computed({
+    read: function () {
+      if (this.overriden()) {
+        // Use overriden.
+        return this._value();
+
+      } else if (N.runtime.page_data.parent_settings &&
+                 N.runtime.page_data.parent_settings[this.name] &&
+                _.has(N.runtime.page_data.parent_settings[this.name], 'own')) {
+        // Use parent section.
+        return N.runtime.page_data.parent_settings[this.name].value;
+
+      } else if (N.runtime.page_data.usergroup_settings &&
+                 N.runtime.page_data.usergroup_settings[this.name]) {
+        // Use usergroup.
+        return N.runtime.page_data.usergroup_settings[this.name].value;
+
+      } else {
+        // Use defaults.
+        return schema['default'];
+      }
+    }
+  , write: function (value) {
+      this.overriden(true);
+      this._value(value);
+    }
+  , owner: this
+  });
+
+  this.isDirty = ko.computed(function () {
+    return (this.overriden.isDirty()) ||
+           (this.overriden() && this._value.isDirty());
+  }, this);
+}
+
+Setting.prototype.markClean = function markClean() {
+  this.overriden.markClean();
+  this._value.markClean();
+};
 
 
-N.wire.on('admin.forum.moderator.destroy', function moderator_destroy(event) {
-  var sectionId = $(event.currentTarget).data('sectionId')
-    , userId    = $(event.currentTarget).data('userId');
+// Knockout bindings root object.
+var view = null;
 
-  N.io.rpc('admin.forum.moderator.destroy', { section_id: sectionId, user_id: userId }, function (err) {
-    if (err) {
-      return false; // Invoke standard error handling.
+
+N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+  view = {};
+
+  view.settings = _.map(N.runtime.page_data.setting_schemas, function (schema, name) {
+    var value, overriden;
+
+    overriden = N.runtime.page_data.settings &&
+                N.runtime.page_data.settings[name] &&
+                N.runtime.page_data.settings[name].own;
+
+    if (overriden) {
+      // Use overriden.
+      value = N.runtime.page_data.settings[name].value;
+
+    } else if (N.runtime.page_data.parent_settings &&
+               N.runtime.page_data.parent_settings[name] &&
+               _.has(N.runtime.page_data.parent_settings[name], 'own')) {
+      // Use parent section.
+      value = N.runtime.page_data.parent_settings[name].value;
+
+    } else if (N.runtime.page_data.usergroup_settings &&
+               N.runtime.page_data.usergroup_settings[name]) {
+      // Use usergroup.
+      value = N.runtime.page_data.usergroup_settings[name].value;
+
+    } else {
+      // Use defaults.
+      value = schema['default'];
     }
 
-    N.wire.emit('notify', { type: 'info', message: t('message_deleted') });
-    N.wire.emit('navigate.to', { apiPath: 'admin.forum.section.index' });
+    return new Setting(name, schema, value, overriden);
   });
+
+  view.isDirty = ko.computed(function () {
+    return _.any(view.settings, function (setting) {
+      return setting.isDirty();
+    });
+  });
+
+  view.save = function save() {
+    var request = {
+      section_id: data.params.section_id
+    , user_id:    data.params.user_id
+    , settings:   {}
+    };
+
+    _.forEach(view.settings, function (setting) {
+      if (setting.overriden()) {
+        request.settings[setting.name] = { value: setting.value() };
+      } else {
+        request.settings[setting.name] = null;
+      }
+    });
+
+    N.io.rpc('admin.forum.moderator.update', request, function (err) {
+      if (err) {
+        return false; // Invoke standard error handling.
+      }
+
+      _.forEach(view.settings, function (setting) {
+        setting.markClean();
+      });
+
+      N.wire.emit('notify', { type: 'info', message: t('message_saved') });
+    });
+  };
+
+  ko.applyBindings(view, $('#content')[0]);
+  $('#moderator_edit_form').show();
+});
+
+
+N.wire.on('navigate.exit:' + module.apiPath, function page_setup() {
+  view = null;
+  ko.cleanNode($('#content')[0]);
 });

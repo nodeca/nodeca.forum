@@ -1,0 +1,24 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
+
+    h1 #{self.head.title}
+
+    if self.moderators.length > 0
+      ul.section-list
+        each moderator in self.moderators
+          .section-control
+            .section-title
+              a(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}") #{self.users[moderator._id]._uname}
+              a.icon-collapse(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}")
+
+            ul.section-moderator-list.collapse.in(id="moderator_#{moderator._id}")
+              each section in moderator.sections
+                li
+                  a(class=('section-moderator-override-' + section.override_type),
+                    href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator._id }))
+                    = section.title
+    else
+      = self.t('no_moderators')

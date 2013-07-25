@@ -6,21 +6,17 @@ setting_schemas:
       default: true
 
     forum_can_edit_titles:
+      extends: true
       priority: 20
-      type: boolean
-      default: false
 
     forum_can_edit_posts:
+      extends: true
       priority: 30
-      type: boolean
-      default: false
 
     forum_can_delete_threads:
+      extends: true
       priority: 40
-      type: boolean
-      default: false
 
     forum_can_delete_posts:
+      extends: true
       priority: 50
-      type: boolean
-      default: false

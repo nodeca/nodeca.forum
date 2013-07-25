@@ -1,6 +1,7 @@
-- self.add_raw_data('setting_schemas', self.setting_schemas)
-- self.add_raw_data('settings',        self.settings)
-- self.add_raw_data('parent_settings', self.parent_settings)
+- self.add_raw_data('setting_schemas',    self.setting_schemas)
+- self.add_raw_data('settings',           self.settings)
+- self.add_raw_data('parent_settings',    self.parent_settings)
+- self.add_raw_data('usergroup_settings', self.usergroup_settings)
 
 
 #content
@@ -9,13 +10,31 @@
   .main
     != self.partial('@admin.core.blocks.breadcrumbs', { menu: self.runtime.menus.admin, path: self.blocks.breadcrumbs })
 
-    .pull-right
-      if self.is_inherited
-        = self.t('this_is_inherited_moderator')
-      else
-        a(href="#", data-section-id=self.section_id.toString(), data-user-id=self.user_id.toString(), data-on-click="admin.forum.moderator.destroy")
-          = self.t('button_delete')
-
     h1 #{self.head.title}
 
-    != self.partial('@admin.forum.moderator.form')
+    form#moderator_edit_form.form-horizontal(data-bind="submit: save", style="display: none")
+      // ko foreach: settings
+      .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
+        label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
+        .controls
+          .row-fluid
+            .span4.control-value
+              // ko if: 'boolean' === type
+              .switch
+                input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
+                label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
+              // /ko
+
+              // ko if: localizedHelp
+              span.help-block(data-bind="text: localizedHelp")
+              // /ko
+
+            .span4
+              div
+                label.checkbox.inline
+                  input(type="checkbox", data-bind="checked: overriden")
+                  = self.t('checkbox_override')
+      // /ko
+      .form-actions
+        button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
+          = self.t('button_save')

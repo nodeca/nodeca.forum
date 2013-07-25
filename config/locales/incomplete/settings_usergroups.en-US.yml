@@ -4,9 +4,14 @@ i18n:
       core:
         category_names:
           forum: Forum
+          moderator: Moderator
 
         setting_names:
           forum_show: Show Forum
           forum_read_topics: Read Topics
           forum_reply_topics: Reply Topics
           forum_start_topics: Start Topics
+          forum_can_edit_titles: Edit thread titles
+          forum_can_edit_posts: Edit posts
+          forum_can_delete_threads: Delete threads
+          forum_can_delete_posts: Delete posts

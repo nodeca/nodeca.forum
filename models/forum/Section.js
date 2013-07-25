@@ -171,7 +171,8 @@ module.exports = function (N, collectionName) {
 
           section.save(function (err) {
             if (err) {
-              next(err);
+              N.logger.error('%s', err);
+              next();
               return;
             }
             updateDescendants(section, next);
@@ -180,25 +181,48 @@ module.exports = function (N, collectionName) {
       });
     }
 
-    updateDescendants(section, function (err) {
-      if (err) {
-        N.logger.error('%s', err);
-        return;
+    async.series([
+      function (next) {
+        updateDescendants(section, function (err) {
+          if (err) {
+            N.logger.error('%s', err);
+          }
+          next();
+        });
       }
+    , function (next) {
+        var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
 
-      var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
-
-      if (!ForumUsergroupStore) {
-        N.logger.error('Settings store `forum_usergroup` is not registered.');
-        return;
-      }
-
-      ForumUsergroupStore.updateInherited(section._id, function (err) {
-        if (err) {
-          N.logger.error('%s', err);
+        if (!ForumUsergroupStore) {
+          N.logger.error('Settings store `forum_usergroup` is not registered.');
+          next();
+          return;
         }
-      });
-    });
+
+        ForumUsergroupStore.updateInherited(section._id, function (err) {
+          if (err) {
+            N.logger.error('%s', err);
+          }
+          next();
+        });
+      }
+    , function (next) {
+        var ForumModeratorStore = N.settings.getStore('forum_moderator');
+
+        if (!ForumModeratorStore) {
+          N.logger.error('Settings store `forum_moderator` is not registered.');
+          next();
+          return;
+        }
+
+        ForumModeratorStore.updateInherited(section._id, function (err) {
+          if (err) {
+            N.logger.error('%s', err);
+          }
+          next();
+        });
+      }
+    ]);
   });
 
 

@@ -37,9 +37,8 @@ router:
         section_id: /[0-9a-f]+/
         usergroup_id: /[0-9a-f]+/
 
-    admin.forum.moderator.new:
-      "/forum/moderator/{section_id}/new":
-        section_id: /[0-9a-f]+/
+    admin.forum.moderator.index:
+      "/forum/moderator":
 
     admin.forum.moderator.edit:
       "/forum/moderator/{section_id}/{user_id}":

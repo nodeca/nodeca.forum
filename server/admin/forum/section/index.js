@@ -4,50 +4,79 @@
 'use strict';
 
 
-var _ = require('lodash');
+var _     = require('lodash');
+var async = require('async');
 
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
-  N.wire.on(apiPath, function section_index(env, callback) {
+
+  N.wire.before(apiPath, function sections_fetch(env, callback) {
     N.models.forum.Section
         .find()
         .sort('display_order')
-        .select('_id display_order title parent moderator_list')
         .setOptions({ lean: true })
-        .exec(function (err, allSections) {
+        .exec(function (err, sections) {
 
-      if (err) {
-        callback(err);
-        return;
-      }
+      env.data.sections = sections;
+      callback(err);
+    });
+  });
 
-      function buildSectionsTree(parent) {
-        var selectedSections = _.select(allSections, function (section) {
-          // Universal way for equal check on: Null, ObjectId, and String.
-          return String(section.parent || null) === String(parent);
+
+  N.wire.before(apiPath, function moderators_fetch(env, callback) {
+    var ForumModeratorStore = N.settings.getStore('forum_moderator');
+
+    if (!ForumModeratorStore) {
+      callback({
+        code:    N.io.APP_ERROR
+      , message: 'Settings store `forum_moderator` is not registered.'
+      });
+      return;
+    }
+
+    // Register section's moderators for `users_join` hooks.
+    env.data.users = env.data.users || [];
+    
+    async.forEach(env.data.sections, function (section, next) {
+      section.own_moderator_list = [];
+
+      ForumModeratorStore.getModeratorsInfo(section._id, { skipCache: true }, function (err, moderators) {
+        if (err) {
+          next(err);
+          return;
+        }
+
+        _.forEach(moderators, function (moderator) {
+          // Select moderator entries with non-inherited settings.
+          if (moderator.own > 0) {
+            section.own_moderator_list.push(moderator._id);
+            env.data.users.push(moderator._id);
+          }
         });
+        next();
+      });
+    }, callback);
+  });
 
-        _.forEach(selectedSections, function (section) {
-          // Recursively collect descendants.
-          section.children = buildSectionsTree(section._id);
-        });
 
-        return selectedSections;
-      }
-
-      env.response.data.sections = buildSectionsTree(null);
-
-      // Register section's moderators for `users_join` hooks.
-      env.data.users = env.data.users || [];
-
-      _.forEach(allSections, function (section) {
-        env.data.users = env.data.users.concat(section.moderator_list);
+  N.wire.on(apiPath, function section_index(env) {
+    function buildSectionsTree(parent) {
+      var selectedSections = _.select(env.data.sections, function (section) {
+        // Universal way for equal check on: Null, ObjectId, and String.
+        return String(section.parent || null) === String(parent);
       });
 
-      callback();
-    });
+      _.forEach(selectedSections, function (section) {
+        // Recursively collect descendants.
+        section.children = buildSectionsTree(section._id);
+      });
+
+      return selectedSections;
+    }
+
+    env.response.data.sections = buildSectionsTree(null);
   });
 
   N.wire.after(apiPath, function title_set(env) {

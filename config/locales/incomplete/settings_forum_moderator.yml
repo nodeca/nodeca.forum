@@ -4,7 +4,3 @@ i18n:
       core:
         setting_names:
           forum_visible_moderator: Visible moderator
-          forum_can_edit_titles: Edit thread titles
-          forum_can_edit_posts: Edit posts
-          forum_can_delete_threads: Delete threads
-          forum_can_delete_posts: Delete posts

@@ -1,4 +1,4 @@
-// Remove section and all it's descendants from the database.
+// Remove section from the database.
 
 
 'use strict';

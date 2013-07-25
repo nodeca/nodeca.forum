@@ -4,7 +4,7 @@
 var _ = require('lodash');
 
 
-N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
+N.wire.on('navigate.done:' + module.apiPath, function page_setup(data, callback) {
   // Make sections draggable (both section control and children).
   $('.section-control').draggable({
     handle: '.section-handle'
@@ -84,6 +84,15 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
       });
     }
   });
+
+  // Setup new moderator selection modal.
+  N.wire.emit('admin.core.blocks.select_user_modal.setup', null, callback);
+});
+
+
+N.wire.on('navigate.exit:' + module.apiPath, function page_setup(data, callback) {
+  // Teardown new moderator selection modal.
+  N.wire.emit('admin.core.blocks.select_user_modal.teardown', null, callback);
 });
 
 
@@ -110,5 +119,22 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
     // Remove all destroyed elements from DOM.
     $group.prev('.section-placeholder').remove();
     $group.remove();
+  });
+});
+
+
+N.wire.on('admin.forum.section.add_moderator', function section_add_moderator(event) {
+  var $control = $(event.currentTarget).parents('.section-control:first');
+
+  N.wire.emit('admin.core.blocks.select_user_modal.show', {
+    title: t('title_select_new_moderator', {
+      section: $control.data('title')
+    })
+  , callback: function (user) {
+      N.wire.emit('navigate.to', {
+        apiPath: 'admin.forum.moderator.edit'
+      , params: { section_id: $control.data('id'), user_id: user._id }
+      });
+    }
   });
 });
