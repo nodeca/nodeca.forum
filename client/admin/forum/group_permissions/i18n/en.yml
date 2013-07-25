@@ -3,6 +3,5 @@ en-US:
     value_yes: Yes
     value_no: No
     checkbox_override: Override
-    checkbox_force: Force
     button_save: Save
-    message_saved: Permissions saved
+    message_saved: Permissions are saved

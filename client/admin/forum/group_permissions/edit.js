@@ -26,12 +26,14 @@ function Setting(name, schema, value, overriden) {
         // Use overriden.
         return this._value();
 
-      } else if (_.has(N.runtime.page_data.parent_settings, this.name) &&
+      } else if (N.runtime.page_data.parent_settings &&
+                 N.runtime.page_data.parent_settings[this.name] &&
                  _.has(N.runtime.page_data.parent_settings[this.name], 'own')) {
         // Use parent section.
         return N.runtime.page_data.parent_settings[this.name].value;
 
-      } else if (_.has(N.runtime.page_data.usergroup_settings, this.name)) {
+      } else if (N.runtime.page_data.usergroup_settings &&
+                 N.runtime.page_data.usergroup_settings[this.name]) {
         // Use usergroup.
         return N.runtime.page_data.usergroup_settings[this.name].value;
 
@@ -77,12 +79,14 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       // Use overriden.
       value = N.runtime.page_data.settings[name].value;
 
-    } else if (_.has(N.runtime.page_data.parent_settings, name) &&
+    } else if (N.runtime.page_data.parent_settings &&
+               N.runtime.page_data.parent_settings[name] &&
                _.has(N.runtime.page_data.parent_settings[name], 'own')) {
       // Use parent section.
       value = N.runtime.page_data.parent_settings[name].value;
 
-    } else if (_.has(N.runtime.page_data.usergroup_settings, name)) {
+    } else if (N.runtime.page_data.usergroup_settings &&
+               N.runtime.page_data.usergroup_settings[name]) {
       // Use usergroup.
       value = N.runtime.page_data.usergroup_settings[name].value;
 
@@ -115,14 +119,14 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       }
     });
 
-    _.forEach(view.settings, function (setting) {
-      setting.markClean();
-    });
-
     N.io.rpc('admin.forum.group_permissions.update', request, function (err) {
       if (err) {
         return false; // Invoke standard error handling.
       }
+
+      _.forEach(view.settings, function (setting) {
+        setting.markClean();
+      });
 
       N.wire.emit('notify', { type: 'info', message: t('message_saved') });
     });
