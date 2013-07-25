@@ -98,6 +98,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     return new Setting(name, schema, value, overriden);
   });
 
+  // Show "Delete" button only is moderator has saved overriden settings.
+  view.showDeleteButton = ko.observable(_.any(view.settings, function (setting) {
+    return setting.overriden();
+  }));
+
   view.isDirty = ko.computed(function () {
     return _.any(view.settings, function (setting) {
       return setting.isDirty();
@@ -128,7 +133,28 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
         setting.markClean();
       });
 
+      // Show "Delete" button if there are some overriden settings after save.
+      view.showDeleteButton(_.any(view.settings, function (setting) {
+        return setting.overriden();
+      }));
+
       N.wire.emit('notify', { type: 'info', message: t('message_saved') });
+    });
+  };
+
+  view.destroy = function destroy() {
+    var request = {
+      section_id: data.params.section_id
+    , user_id:    data.params.user_id
+    };
+
+    N.io.rpc('admin.forum.moderator.destroy', request, function (err) {
+      if (err) {
+        return false; // Invoke standard error handling.
+      }
+
+      N.wire.emit('notify', { type: 'info', message: t('message_deleted') });
+      N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' });
     });
   };
 

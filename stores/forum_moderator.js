@@ -452,9 +452,47 @@ module.exports = function (N) {
   };
 
 
+  // Remove single moderator entry at section.
+  //
+  ForumModeratorStore.removeModerator = function removeModerator(sectionId, userId, callback) {
+    var self = this;
+
+    N.models.forum.Section.findById(sectionId, function (err, section) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!section) {
+        callback('Forum section ' + sectionId + ' does not exist.');
+        return;
+      }
+
+      if (!section.settings ||
+          !section.settings.forum_moderator ||
+          !_.has(section.settings.forum_moderator, userId)) {
+        callback();
+        return;
+      }
+
+      delete section.settings.forum_moderator[userId];
+      section.markModified('settings');
+
+      section.save(function (err) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        self.updateInherited(section._id, callback);
+      });
+    });
+  };
+
+
   // Remove all setting entries for specific moderator at all sections.
   //
-  ForumModeratorStore.removeUser = function removeAll(userId, callback) {
+  ForumModeratorStore.removeUser = function removeUser(userId, callback) {
     N.models.forum.Section.find({}, function (err, sections) {
       if (err) {
         callback(err);

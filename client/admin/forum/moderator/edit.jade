@@ -12,6 +12,9 @@
 
     h1 #{self.head.title}
 
+    .pull-right(data-bind="visible: showDeleteButton", style="display: none")
+      a(href="#", data-bind="click: destroy") #{self.t('button_delete')}
+
     form#moderator_edit_form.form-horizontal(data-bind="submit: save", style="display: none")
       // ko foreach: settings
       .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
