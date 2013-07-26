@@ -81,17 +81,6 @@ Charlatan.Helpers.category = function () {
 };
 
 Charlatan.Helpers.forum = function (parent) {
-  var moderator_id_list = _.clone(parent.moderator_id_list   || []);
-  var moderator_list    = _.clone(parent.moderator_list      || []);
-  var moderator;
-
-  var moderator_count = Charlatan.Helpers.rand(MAX_MODERATOR_COUNT);
-  for (var i = 0; i < moderator_count; i++) {
-    moderator = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
-    moderator_list.push(moderator);
-    moderator_id_list.push(moderator.id);
-  }
-
   return {
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: Charlatan.Lorem.sentence(),
@@ -100,9 +89,6 @@ Charlatan.Helpers.forum = function (parent) {
 
     parent: parent._id,
     display_order: Charlatan.Incrementer.next('display_order'),
-
-    moderator_id_list: _.uniq(moderator_id_list),
-    moderator_list: _.uniq(moderator_list),
 
     cache: {
       real: {}
@@ -322,7 +308,27 @@ var create_forum = function (category, sub_forum_deep, callback) {
       _.extend(forum.cache.hb, forum.cache.real);
 
       forum.save(cb);
-    }
+    },
+
+    // add moderators
+    function (cb) {
+      var ForumModeratorStore = N.settings.getStore('forum_moderator');
+
+      if (!ForumModeratorStore) {
+        cb('Settings store `forum_moderator` is not registered.');
+        return;
+      }
+
+      async.timesSeries(Charlatan.Helpers.rand(MAX_MODERATOR_COUNT), function (index, next) {
+        var user = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
+
+        ForumModeratorStore.set(
+          { forum_visible_moderator: { value: true } },
+          { forum_id: forum._id, user_id: user._id },
+          next
+        );
+      }, cb);
+    },
   ], function (err) {
     callback(err, forum);
   });
