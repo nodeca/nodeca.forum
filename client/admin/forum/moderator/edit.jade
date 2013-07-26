@@ -12,32 +12,35 @@
 
     h1 #{self.head.title}
 
-    .pull-right(data-bind="visible: showDeleteButton", style="display: none")
-      a(href="#", data-bind="click: destroy") #{self.t('button_delete')}
-
     form#moderator_edit_form.form-horizontal(data-bind="submit: save", style="display: none")
-      // ko foreach: settings
-      .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
-        label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
-        .controls
-          .row-fluid
-            .span4.control-value
-              // ko if: 'boolean' === type
-              .switch
-                input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
-                label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
-              // /ko
+      fieldset
+        .pull-right(data-bind="visible: showRemoveButton")
+          a(href="#", data-bind="click: destroy") #{self.t('button_remove')}
 
-              // ko if: localizedHelp
-              span.help-block(data-bind="text: localizedHelp")
-              // /ko
+        legend #{self.moderator_name}
 
-            .span4
-              div
-                label.checkbox.inline
-                  input(type="checkbox", data-bind="checked: overriden")
-                  = self.t('checkbox_override')
-      // /ko
-      .form-actions
-        button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
-          = self.t('button_save')
+        // ko foreach: settings
+        .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
+          label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
+          .controls
+            .row-fluid
+              .span4.control-value
+                // ko if: 'boolean' === type
+                .switch
+                  input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
+                  label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
+                // /ko
+
+                // ko if: localizedHelp
+                span.help-block(data-bind="text: localizedHelp")
+                // /ko
+
+              .span4
+                div
+                  label.checkbox.inline
+                    input(type="checkbox", data-bind="checked: overriden")
+                    = self.t('checkbox_override')
+        // /ko
+        .form-actions
+          button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
+            = self.t('button_save')

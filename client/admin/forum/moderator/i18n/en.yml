@@ -1,6 +1,9 @@
 en-US:
   index:
     no_moderators: No moderators
+    button_edit: Edit
+    button_remove: Remove
+    confirm_remove: Are you sure?
 
   edit:
     value_yes: Yes
@@ -8,6 +11,7 @@ en-US:
     label_moderator_name: User name
     checkbox_override: Override
     button_save: Save
-    button_delete: Delete
+    button_remove: Remove permissions
+    confirm_remove: Are you sure?
     message_saved: Settings are saved
     message_deleted: Moderator is deleted

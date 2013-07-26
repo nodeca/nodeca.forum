@@ -98,8 +98,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     return new Setting(name, schema, value, overriden);
   });
 
-  // Show "Delete" button only is moderator has saved overriden settings.
-  view.showDeleteButton = ko.observable(_.any(view.settings, function (setting) {
+  // Show "Remove permissions" button only is moderator has saved overriden settings.
+  view.showRemoveButton = ko.observable(_.any(view.settings, function (setting) {
     return setting.overriden();
   }));
 
@@ -134,7 +134,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       });
 
       // Show "Delete" button if there are some overriden settings after save.
-      view.showDeleteButton(_.any(view.settings, function (setting) {
+      view.showRemoveButton(_.any(view.settings, function (setting) {
         return setting.overriden();
       }));
 
@@ -143,6 +143,10 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   };
 
   view.destroy = function destroy() {
+    if (!window.confirm(t('confirm_remove'))) {
+      return;
+    }
+ 
     var request = {
       section_id: data.params.section_id
     , user_id:    data.params.user_id

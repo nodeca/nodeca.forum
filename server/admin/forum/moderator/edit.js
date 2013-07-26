@@ -82,6 +82,9 @@ module.exports = function (N, apiPath) {
     // Setting schemas to build client interface.
     env.response.data.setting_schemas = N.config.setting_schemas.forum_moderator;
 
+    // Expose moderator's full name.
+    env.response.data.moderator_name = env.data.user._uname;
+
     async.parallel([
       //
       // Fetch settings with inheritance info for current edit section.
@@ -133,9 +136,6 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title', {
-      user:    env.data.user._uname
-    , section: env.data.section.title
-    });
+    env.response.data.head.title = env.t('title', { section: env.data.section.title });
   });
 };

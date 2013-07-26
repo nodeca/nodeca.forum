@@ -3,4 +3,4 @@ en-US:
     title: Forum moderators
 
   edit:
-    title: 'Edit moderator "#{user}" at #{section}'
+    title: 'Edit moderator permissions for "#{section}"'
