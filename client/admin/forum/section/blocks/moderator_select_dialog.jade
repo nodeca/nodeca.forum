@@ -1,0 +1,12 @@
+form#moderator_select.modal.hide.fade(autocomplete="off", data-on-submit="admin.forum.section.add_moderator")
+  .modal-header
+    button.close(data-dismiss="modal") &times;
+    h3 #{self.t('title')}
+
+  .modal-body
+    input(type="hidden", name="section_id", value=self.section_id)
+    input(type="text", name="nick", placeholder=self.t('input_nick_placeholder'))
+
+  .modal-footer
+    button.btn(data-dismiss="modal") #{self.t('button_cancel')}
+    button.btn.btn-primary(type="submit") #{self.t('button_accept')}

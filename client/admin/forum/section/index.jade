@@ -49,15 +49,3 @@ mixin render_sections_tree(sections, level)
     h1 #{self.head.title}
 
     mixin render_sections_tree(self.sections, 0)
-
-    form#moderator_select.modal.hide.fade(autocomplete="off", data-on-submit="admin.forum.section.add_moderator")
-      .modal-header
-        button.close(data-dismiss="modal") &times;
-        h3 #{self.t('moderator_select_title')}
-
-      .modal-body
-        input(type="text", name="nick", placeholder=self.t('moderator_select_input_placeholder'))
-
-      .modal-footer
-        button.btn(data-dismiss="modal") #{self.t('moderator_select_button_cancel')}
-        button.btn.btn-primary(type="submit") #{self.t('moderator_select_button_accept')}

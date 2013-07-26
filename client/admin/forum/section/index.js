@@ -4,9 +4,6 @@
 var _ = require('lodash');
 
 
-var MODERATOR_NICK_LOOKUP_DELAY = 500;
-
-
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
   // Make sections draggable (both section control and children).
   $('.section-control').draggable({
@@ -87,49 +84,6 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
       });
     }
   });
-
-  var $moderatorSelect = $('#moderator_select');
-
-  // Initizlize modal.
-  $moderatorSelect.modal({ show: false });
-
-  $moderatorSelect.on('show', function () {
-    $(this).data('sectionId', ''); // Reset section id.
-    $(this).find('input[name=nick]').val(''); // Clear input field.
-  });
-
-  $moderatorSelect.on('shown', function () {
-    $(this).find('input[name=nick]').focus();
-  });
-
-  $moderatorSelect.find('input[name=nick]').typeahead({
-    minLength: 2
-  , source: _.debounce(function (query, process) {
-      var self = this;
-
-      N.io.rpc('admin.core.user_lookup', { nick: query }, function (err, response) {
-        if (err) {
-          return false; // Invoke standard error handling.
-        }
-
-        self.lastSourceData = {};
-
-        _.forEach(response.data.users, function (user) {
-          self.lastSourceData[user.nick] = user;
-        });
-
-        process(_.pluck(response.data.users, 'nick'));
-      });
-    }, MODERATOR_NICK_LOOKUP_DELAY)
-  , matcher: function () {
-      // Server method only returns appropriate users.
-      return true;
-    }
-  , highlighter: function (item) {
-      // Show full name in popup list.
-      return this.lastSourceData[item]._uname;
-    }
-  });
 });
 
 
@@ -161,17 +115,29 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
 
 
 N.wire.on('admin.forum.section.select_moderator', function section_select_moderator(event) {
-  var $sectionControl  = $(event.currentTarget).parents('.section-control:first')
-    , $moderatorSelect = $('#moderator_select');
+  var sectionId = $(event.currentTarget).parents('.section-control:first').data('id');
 
-  $moderatorSelect.modal('show');
-  $moderatorSelect.data('sectionId', $sectionControl.data('id'));
+  // Render dialog window.
+  var $dialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
+
+  require('users.nick_typeahead')($dialog.find('input[name=nick]'));
+
+  $dialog.on('shown', function () {
+    $(this).find('input[name=nick]').focus();
+  });
+
+  $dialog.on('hidden', function () {
+    $(this).remove();
+  });
+
+  // Show dialog.
+  $dialog.appendTo('#content').modal();
 });
 
 
 N.wire.on('admin.forum.section.add_moderator', function section_add_moderator(event) {
-  var $moderatorSelect = $(event.currentTarget)
-    , nick             = $moderatorSelect.find('input[name=nick]').val();
+  var $dialog = $(event.currentTarget)
+    , nick    = $dialog.find('input[name=nick]').val();
 
   N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }, function (err, response) {
     if (err) {
@@ -183,12 +149,12 @@ N.wire.on('admin.forum.section.add_moderator', function section_add_moderator(ev
       return;
     }
 
-    $moderatorSelect.modal('hide');
+    $dialog.modal('hide');
 
     N.wire.emit('navigate.to', {
       apiPath: 'admin.forum.moderator.edit'
     , params: {
-        section_id: $moderatorSelect.data('sectionId')
+        section_id: $dialog.find('input[name=section_id]').val()
       , user_id:    response.data.users[0]._id
       }
     });

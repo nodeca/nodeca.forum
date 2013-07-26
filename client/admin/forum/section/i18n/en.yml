@@ -6,9 +6,4 @@ en-US:
     delete_section: Delete
     message_confim_section_delete: 'Are you sure you want to delete "#{title}" section?'
 
-    moderator_select_title: Select user to become a moderator
-    moderator_select_input_placeholder: Enter nick
-    moderator_select_button_accept: Accept
-    moderator_select_button_cancel: Cancel
-
     error_no_user_with_such_nick: "Can't find user with such nick: #{nick}"
