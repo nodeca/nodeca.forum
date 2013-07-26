@@ -82,6 +82,10 @@ module.exports = function (N, apiPath) {
     // Setting schemas to build client interface.
     env.response.data.setting_schemas = N.config.setting_schemas.forum_usergroup;
 
+    // Translation path for usergroup name.
+    var usergroupI18n = '@admin.users.usergroup_names.' + env.data.usergroup.short_name;
+    env.response.data.usergroup_name = env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : env.data.usergroup.short_name;
+
     async.parallel([
       //
       // Fetch settings with inheritance info for current edit section.
@@ -133,12 +137,6 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.after(apiPath, function title_set(env) {
-    // Translation path for usergroup name.
-    var usergroupI18n = '@admin.users.usergroup_names.' + env.data.usergroup.short_name;
-
-    env.response.data.head.title = env.t('title', {
-      section:   env.data.section.title
-    , usergroup: env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : env.data.usergroup.short_name
-    });
+    env.response.data.head.title = env.t('title', { section: env.data.section.title });
   });
 };

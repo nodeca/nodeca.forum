@@ -35,9 +35,17 @@
                   override_type = override_type + '-inherited'
 
                 li
-                  a(class=('section-usergroup-override-' + override_type),
-                    href=self.link_to('admin.forum.group_permissions.edit', { section_id: section._id, usergroup_id: usergroup._id }))
+                  span(class=('section-usergroup-override-' + override_type))
                     = usergroup.localized_name
+                  |  
+                  a(href=self.link_to('admin.forum.group_permissions.edit', { section_id: section._id, usergroup_id: usergroup._id }))
+                    = self.t('button_edit_permissions')
+                  |  
+                  a(href="#",
+                    data-on-click="admin.forum.group_permissions.destroy",
+                    data-section-id=section._id.toString(),
+                    data-usergroup-id=usergroup._id.toString())
+                    = self.t('button_reset_permissions')
 
           if section.children.length > 0
             ul.section-list.section-children

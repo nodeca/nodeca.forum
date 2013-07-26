@@ -350,6 +350,44 @@ module.exports = function (N) {
   };
 
 
+  // Remove all overriden usergroup settings at specific section.
+  //
+  ForumUsergroupStore.removePermissions = function removePermissions(sectionId, usergroupId, callback) {
+    var self = this;
+
+    N.models.forum.Section.findById(sectionId, function (err, section) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!section) {
+        callback('Forum section ' + sectionId + ' does not exist.');
+        return;
+      }
+
+      if (!section.settings ||
+          !section.settings.forum_usergroup ||
+          !_.has(section.settings.forum_usergroup, usergroupId)) {
+        callback();
+        return;
+      }
+
+      section.settings.forum_usergroup[usergroupId] = {};
+      section.markModified('settings');
+
+      section.save(function (err) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        self.updateInherited(section._id, callback);
+      });
+    });
+  };
+
+
   // Remove all setting entries for specific usergroup.
   //
   ForumUsergroupStore.removeUsergroup = function removeUsergroup(usergroupId, callback) {

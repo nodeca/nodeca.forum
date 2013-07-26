@@ -3,4 +3,4 @@ en-US:
     title: Edit forum section permissions.
 
   edit:
-    title: 'Edit permissions for "#{usergroup}" at #{section}'
+    title: 'Edit usergroup permissions for "#{section}"'

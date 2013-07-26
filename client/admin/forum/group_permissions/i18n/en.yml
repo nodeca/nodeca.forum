@@ -1,4 +1,9 @@
 en-US:
+  index:
+    button_edit_permissions: Edit
+    button_reset_permissions: Reset
+    confirm_reset_permissions: Are you sure?
+
   edit:
     value_yes: Yes
     value_no: No
