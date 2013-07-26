@@ -5,7 +5,7 @@ mixin render_sections_tree(sections, level)
       li.section-placeholder
       li.section-group
         //- Section's own control bar. 
-        .clearfix.section-control(data-id=section._id.toString(), data-title=section.title, data-display-order=section.display_order)
+        .clearfix.section-control(data-id=section._id.toString(), data-display-order=section.display_order)
           a.pull-right.section-delete-button(href="#", data-on-click="admin.forum.section.destroy") #{self.t('delete_section')}
 
           a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
@@ -22,7 +22,7 @@ mixin render_sections_tree(sections, level)
               li.divider
 
             li
-              a(href="#", data-on-click="admin.forum.section.add_moderator")
+              a(href="#", data-on-click="admin.forum.section.select_moderator")
                 = self.t('add_moderator')
 
           //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
@@ -39,8 +39,6 @@ mixin render_sections_tree(sections, level)
 
 
 #content
-  != self.partial('@admin.core.blocks.select_user_modal')
-
   != self.partial('@admin.core.blocks.sidebar_menu', { menu: self.runtime.menus.admin })
 
   .main
@@ -51,3 +49,15 @@ mixin render_sections_tree(sections, level)
     h1 #{self.head.title}
 
     mixin render_sections_tree(self.sections, 0)
+
+    form#moderator_select.modal.hide.fade(autocomplete="off", data-on-submit="admin.forum.section.add_moderator")
+      .modal-header
+        button.close(data-dismiss="modal") &times;
+        h3 #{self.t('moderator_select_title')}
+
+      .modal-body
+        input(type="text", name="nick", placeholder=self.t('moderator_select_input_placeholder'))
+
+      .modal-footer
+        button.btn(data-dismiss="modal") #{self.t('moderator_select_button_cancel')}
+        button.btn.btn-primary(type="submit") #{self.t('moderator_select_button_accept')}
