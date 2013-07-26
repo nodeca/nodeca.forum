@@ -173,14 +173,14 @@ N.wire.on('admin.forum.section.add_moderator', function section_add_moderator(ev
   var $moderatorSelect = $(event.currentTarget)
     , nick             = $moderatorSelect.find('input[name=nick]').val();
 
-  N.io.rpc('admin.core.user_find', { nick: nick }, function (err, response) {
-    if (err && N.io.NOT_FOUND === err.code) {
-      N.wire.emit('notify', t('error_no_user_with_such_nick', { nick: nick }));
-      return;
-    }
-
+  N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }, function (err, response) {
     if (err) {
       return false; // Invoke standard error handling.
+    }
+
+    if (_.isEmpty(response.data.users)) {
+      N.wire.emit('notify', t('error_no_user_with_such_nick', { nick: nick }));
+      return;
     }
 
     $moderatorSelect.modal('hide');
@@ -189,7 +189,7 @@ N.wire.on('admin.forum.section.add_moderator', function section_add_moderator(ev
       apiPath: 'admin.forum.moderator.edit'
     , params: {
         section_id: $moderatorSelect.data('sectionId')
-      , user_id:    response.data.user._id
+      , user_id:    response.data.users[0]._id
       }
     });
   });
