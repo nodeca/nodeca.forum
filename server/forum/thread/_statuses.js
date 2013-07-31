@@ -8,7 +8,7 @@ exports.thread = {
   DELETED_HARD: 4,
   OPEN_HB:      5, // hellbanned (open)
   CLOSED_HB:    6, // hellbanned (closed)
-}
+};
 
 exports.post = {
   VISIBLE:      0,
@@ -16,4 +16,4 @@ exports.post = {
   PENDING:      2,
   DELETED:      3,
   DELETED_HARD: 4,
-}
+};
