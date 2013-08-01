@@ -82,7 +82,7 @@ module.exports.up = function (N, cb) {
       thread.id = 1;
 
       // Stub. This constants should be defined globally
-      thread.state = 0;
+      thread.st = 0;
 
       thread.forum_id = forum.id;
       thread.forum = forum._id;
@@ -98,7 +98,7 @@ module.exports.up = function (N, cb) {
       post.ts = new Date;
 
       // Stub. This constants should be defined globally
-      post.state = 0;
+      post.st = 0;
 
       post.thread_id = thread.id;
       post.thread = thread._id;

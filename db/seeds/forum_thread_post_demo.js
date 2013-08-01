@@ -103,7 +103,7 @@ Charlatan.Helpers.thread = function (forum) {
     id: Charlatan.Incrementer.next('thread'),
 
     // Stub. This constants should be defined globally
-    state:  0,
+    st:  0,
     forum: forum._id,
     forum_id: forum.id,
 
@@ -122,7 +122,7 @@ Charlatan.Helpers.post = function (thread) {
     id: id,
 
     // Stub. This constants should be defined globally
-    state: 0,
+    st: 0,
 
     thread: thread._id,
 
