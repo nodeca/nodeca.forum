@@ -11,5 +11,7 @@ exports.post_in = [
   'fmt',
   'html',
   'user',
-  'ts'
+  'ts',
+  'st',
+  'st_e'
 ];

@@ -22,7 +22,7 @@ var thread_info_out_fields = [
 // settings that would be "exposed" into views
 var settings_expose = [
   'forum_read_topics',
-  'forum_reply_topics'
+  'forum_reply_topics',
 ];
 
 

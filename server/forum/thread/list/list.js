@@ -10,6 +10,16 @@ var _  = require('lodash');
 // collections fields filters
 var fields = require('./_fields.js');
 
+var thread_info_out_fields = [
+  "st",
+  "st_e"
+];
+
+// settings that would be "exposed" into views
+var settings_expose = [
+  'forum_reply_topics'
+];
+
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // thread id
@@ -183,6 +193,12 @@ module.exports = function (N, apiPath) {
 
   });
 
+  // Fill head meta & thread info
+  N.wire.after(apiPath, function fill_meta(env) {
+    var data = env.response.data;
+    var thread = env.data.thread;
+    data.thread = _.extend({}, data.thread, _.pick(thread, thread_info_out_fields));
+  });
 
   // Build response:
   //  - posts list -> posts
@@ -209,6 +225,26 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.stop();
 
     callback();
+  });
+
+  // expose permissions/settings, required for renderer
+  N.wire.after(apiPath, function expose_settings(env, callback) {
+    console.log('Fetch thread public settings-thread');
+    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.puncher.start('Fetch thread public settings');
+
+    env.extras.settings.fetch(settings_expose, function (err, settings) {
+      env.extras.puncher.stop();
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.response.data.settings = _.extend({}, env.response.data.settings, settings);
+
+      callback();
+    });
   });
 
 };

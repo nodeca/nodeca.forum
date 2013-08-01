@@ -6,19 +6,19 @@
 // - PINNED, HB - status_ext contains OPEN/CLOSED/PENDING state
 //
 exports.thread = {
-  OPEN:         0,
-  CLOSED:       1,
-  PINNED:       2,
-  PENDING:      3,
-  DELETED:      4,
-  DELETED_HARD: 5,
-  HB:           6 // hellbanned
+  OPEN:         1,
+  CLOSED:       2,
+  PINNED:       3,
+  PENDING:      4,
+  DELETED:      5,
+  DELETED_HARD: 6,
+  HB:           7 // hellbanned
 };
 
 exports.post = {
-  VISIBLE:      0,
-  HB:           1, // hellbanned
-  PENDING:      2,
-  DELETED:      3,
-  DELETED_HARD: 4,
+  VISIBLE:      1,
+  HB:           2, // hellbanned
+  PENDING:      3,
+  DELETED:      4,
+  DELETED_HARD: 5
 };
