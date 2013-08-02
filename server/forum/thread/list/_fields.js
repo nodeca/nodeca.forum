@@ -13,7 +13,7 @@ exports.post_in = [
   'user',
   'ts',
   'st',
-  'st_e'
+  'ste'
 ];
 
 exports.thread_out = [
@@ -22,5 +22,5 @@ exports.thread_out = [
   'forum_id',
   'title',
   'st',
-  'st_e'
+  'ste'
 ];

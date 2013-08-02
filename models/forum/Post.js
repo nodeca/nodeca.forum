@@ -38,7 +38,7 @@ module.exports = function (N, collectionName) {
   // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
   // constants should be defined globally
   , st              : { type: Number, required: true }
-  , st_e            : Number  // real state, if thread is sticky or hellbanned
+  , ste             : Number  // real state, if thread is sticky or hellbanned
                               // (general `state` is used for fast selects)
   , state_prev      : Number  // previous value, to rollback `delete`
 
