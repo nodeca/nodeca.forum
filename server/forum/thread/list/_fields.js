@@ -15,3 +15,12 @@ exports.post_in = [
   'st',
   'st_e'
 ];
+
+exports.thread_out = [
+  '_id',
+  'id',
+  'forum_id',
+  'title',
+  'st',
+  'st_e'
+];

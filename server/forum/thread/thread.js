@@ -10,22 +10,6 @@ var memoizee  = require('memoizee');
 var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
 
 
-var thread_info_out_fields = [
-  '_id',
-  'id',
-  'forum_id',
-  'title',
-  '_seo_desc'
-];
-
-
-// settings that would be "exposed" into views
-var settings_expose = [
-  'forum_read_topics',
-  'forum_reply_topics',
-];
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // thread id
@@ -216,7 +200,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-
   // Fill head meta & thread info
   N.wire.after(apiPath, function fill_meta(env) {
     var t_params;
@@ -234,8 +217,8 @@ module.exports = function (N, apiPath) {
       data.head.title = env.t('title_with_page', t_params);
     }
 
-    // prepare thread info
-    data.thread = _.pick(thread, thread_info_out_fields);
+    // add thread info, specific for this page (partially filled in `forum.thread.list`)
+    data.thread = _.extend({}, data.thread, _.pick(thread, ['_seo_desc']));
   });
 
 
@@ -243,12 +226,12 @@ module.exports = function (N, apiPath) {
   // We can cache it, because cache size is limited by sections count.
   var fetchForumsBcInfo = memoizee(
     function (ids, callback) {
-      var query = { _id: { $in: ids }};
-      var fields = { '_id': 1, 'id': 1, 'title': 1 };
-
-      Section.find(query).select(fields).sort({ 'level': 1 })
-        .setOptions({ lean: true }).exec(function (err, parents) {
-
+      Section
+        .find({ _id: { $in: ids }})
+        .select('_id id title')
+        .sort({ 'level': 1 })
+        .setOptions({ lean: true })
+        .exec(function (err, parents) {
         callback(err, parents);
       });
     },
@@ -282,24 +265,4 @@ module.exports = function (N, apiPath) {
       callback();
     });
   });
-
-  // expose permissions/settings, required for renderer
-  N.wire.after(apiPath, function expose_settings(env, callback) {
-    env.extras.settings.params.forum_id = env.data.thread.forum;
-    env.extras.puncher.start('Fetch thread public settings');
-
-    env.extras.settings.fetch(settings_expose, function (err, settings) {
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.response.data.settings = _.extend({}, env.response.data.settings, settings);
-
-      callback();
-    });
-  });
-
 };

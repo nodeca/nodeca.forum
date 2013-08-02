@@ -10,15 +10,6 @@ var _  = require('lodash');
 // collections fields filters
 var fields = require('./_fields.js');
 
-var thread_info_out_fields = [
-  "st",
-  "st_e"
-];
-
-// settings that would be "exposed" into views
-var settings_expose = [
-  'forum_reply_topics'
-];
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -193,13 +184,6 @@ module.exports = function (N, apiPath) {
 
   });
 
-  // Fill head meta & thread info
-  N.wire.after(apiPath, function fill_meta(env) {
-    var data = env.response.data;
-    var thread = env.data.thread;
-    data.thread = _.extend({}, data.thread, _.pick(thread, thread_info_out_fields));
-  });
-
   // Build response:
   //  - posts list -> posts
   //  - collect users ids
@@ -227,13 +211,20 @@ module.exports = function (N, apiPath) {
     callback();
   });
 
-  // expose permissions/settings, required for renderer
-  N.wire.after(apiPath, function expose_settings(env, callback) {
-    console.log('Fetch thread public settings-thread');
-    env.extras.settings.params.forum_id = env.data.thread.forum;
-    env.extras.puncher.start('Fetch thread public settings');
 
-    env.extras.settings.fetch(settings_expose, function (err, settings) {
+  // Add thread info
+  N.wire.after(apiPath, function fill_meta(env) {
+    env.response.data.thread = _.extend({}, env.response.data.thread, _.pick(env.data.thread, fields.thread_out));
+  });
+
+
+  // Addpermissions, required to render posts list
+  N.wire.after(apiPath, function expose_settings(env, callback) {
+
+    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.puncher.start('Fetch public posts list settings');
+
+    env.extras.settings.fetch(['forum_reply_topics'], function (err, settings) {
       env.extras.puncher.stop();
 
       if (err) {
@@ -242,7 +233,6 @@ module.exports = function (N, apiPath) {
       }
 
       env.response.data.settings = _.extend({}, env.response.data.settings, settings);
-
       callback();
     });
   });
