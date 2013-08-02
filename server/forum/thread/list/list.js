@@ -10,6 +10,8 @@ var _  = require('lodash');
 // collections fields filters
 var fields = require('./_fields.js');
 
+// thread and post statuses
+var statuses = require('../_statuses.js');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
@@ -213,12 +215,50 @@ module.exports = function (N, apiPath) {
 
 
   // Add thread info
-  N.wire.after(apiPath, function fill_meta(env) {
+  N.wire.after(apiPath, function fill_thread_info(env) {
     env.response.data.thread = _.extend({}, env.response.data.thread, _.pick(env.data.thread, fields.thread_out));
   });
 
+  // Sanitize response info. We should not show hellbanned status to users
+  // that cannot view hellbanned content. In this case we use 'ste' status instead.
+  N.wire.after(apiPath, function sanitize_statuses(env, callback) {
 
-  // Addpermissions, required to render posts list
+    env.extras.puncher.start("Fetch 'can_see_hellbanned' for statuses sanitizer");
+
+    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+      env.extras.puncher.stop();
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (settings.can_see_hellbanned) {
+        callback();
+        return;
+      }
+
+      //sanitize thread statuses
+      var thread = env.response.data.thread;
+      if (thread.st === statuses.thread.HB) {
+        thread.st = thread.ste;
+        delete thread.ste;
+      }
+
+      //sanitize post statuses
+      var posts = env.response.data.posts;
+      posts.forEach(function (post) {
+        if (post.st === statuses.thread.HB) {
+          post.st = post.ste;
+          delete post.ste;
+        }
+      });
+
+      callback();
+    });
+  });
+
+  // Add permissions, required to render posts list
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
     env.extras.settings.params.forum_id = env.data.thread.forum;
