@@ -1,41 +1,48 @@
 //- Helper to render single section control bar with children list.
 mixin render_sections_tree(sections, level)
-  ul.section-list.section-draggable(class=(level > 0 ? 'section-children' : ''))
+  ul.aforum-index__slist
     each section in sections
-      li.section-placeholder
-      li.section-group
+      li.aforum-index__placeholder._placeholder
+      li.aforum-index__slist-item._section-container
         //- Section's own control bar. 
-        .clearfix.section-control(data-id=section._id.toString(), data-display-order=section.display_order)
-          a.pull-right.section-delete-button(href="#", data-on-click="admin.forum.section.destroy") #{self.t('delete_section')}
+        .aforum-index__section._section(data-id=String(section._id), data-display-order=section.display_order)
+          .pull-right
+            span.aforum-index__section-mods.dropdown
+              a.dropdown-toggle(data-toggle="dropdown")
+                = self.t('moderators_info', { count: section.own_moderator_list.length })
+              span.caret
 
-          a.pull-right.dropdown-toggle.section-moderators-list(data-toggle="dropdown")
-            = self.t('moderators_info', { count: section.own_moderator_list.length })
-            span.caret
+              ul.pull-right.dropdown-menu
+                each moderator_id in section.own_moderator_list
+                  li
+                    a(href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator_id }))
+                      = self.users[moderator_id]._uname
 
-          ul.pull-right.dropdown-menu
-            each moderator_id in section.own_moderator_list
-              li
-                a(href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator_id }))
-                  = self.users[moderator_id]._uname
+                if 0 !== section.own_moderator_list.length
+                  li.divider
 
-            if 0 !== section.own_moderator_list.length
-              li.divider
+                li
+                  a(href="#", data-on-click="admin.forum.section.select_moderator_nick")
+                    = self.t('add_moderator')
 
-            li
-              a(href="#", data-on-click="admin.forum.section.select_moderator")
-                = self.t('add_moderator')
+            a.aforum-index__section-delete(
+              href="#",
+              data-on-click="admin.forum.section.destroy",
+              data-id=String(section._id),
+              data-title=section.title
+            ) #{self.t('delete_section')}
 
-          //- U+21F5 (DOWNWARDS ARROW LEFTWARDS OF UPWARDS ARROW)
-          .pull-left.section-handle.section-drag-mark ⇵
+          .aforum-index__section-info
+            i.aforum-index__sorter.icon-sorter._sorter
 
-          a.section-title(href=self.link_to('admin.forum.section.edit', { _id: section._id }))
-            = section.title
+            a.aforum-index__section-title(href=self.link_to('admin.forum.section.edit', { _id: section._id }))
+              = section.title
 
         //- Section's children list.
         mixin render_sections_tree(section.children, level + 1)
 
     //- Tail placeholder.
-    li.section-placeholder
+    li.aforum-index__placeholder._placeholder
 
 
 #content
@@ -48,4 +55,5 @@ mixin render_sections_tree(sections, level)
 
     h1 #{self.head.title}
 
-    mixin render_sections_tree(self.sections, 0)
+    .aforum-index__scontent._container
+      mixin render_sections_tree(self.sections, 0)

@@ -1,44 +1,62 @@
-.section-list
+@import "nodeca.core/client/common/_variables"
+
+.aforum-index__slist
   list-style: none
 
-.section-dragging
-  opacity: 0.3
+.aforum-index__scontent > .aforum-index__slist
+  border-left 1px solid grayLightest
+  padding-left 5px
+  margin-left 0
 
-.section-control
-  margin: 3px 0px
-  padding: 5px
-  background-color: #EFEFEF
-  border: solid 1px #EAEAEA
-  border-radius: 5px
+//
+// Section line
+//
+
+.aforum-index__section
+  padding: 5px 15px 5px 5px
+  margin-bottom 3px
+  background-color grayLightest
+  border-radius 3px
   &:hover
-    background-color: #E2E2E2
+    background-color grayLighter
 
-.section-drag-mark
-  color: #808080
+.aforum-index__sorter
+  opacity .2
   user-select: none
   cursor: move
+  margin-right 7px
+  &:before
+    margin-right 0
 
-.section-moderators-list
-  width: 200px
-  text-align: right
+.aforum-index__section-mods
+  margin-left 20px
 
-.section-delete-button
-  width: 100px
-  text-align: center
+.aforum-index__section-delete
+  margin-left 20px
 
-.section-children
-  margin-left: 50px
+// Hidden placeholder for drag operations
+//
+.aforum-index__placeholder
+  margin-top 3px
+  margin-bottom 3px
+  height 25px
+  background-color white
+  border dashed 2px grayLighter
+  border-radius 2px
+  display none
 
-.section-placeholder
-  margin-top: 3px
-  margin-bottom: 3px
-  height: 25px
-  background-color: #FAFAFA
-  border: dashed 2px #E8E8E8
-  border-radius: 5px
-  display: none
+//
+// Modifiers for drag (sort) operation
+//
 
-.section-placeholder-hover
-  background-color: #FFFB91
-  border-style: solid
-  border-color: #FFF947
+.aforum-index__placeholder._hovered
+  border-style solid
+
+.aforum-index__slist-item._dragged
+  opacity: 0.5
+
+//.aforum-index__scontent
+//  posision relative
+
+.aforum-index__scontent .ui-draggable-dragging
+  width 50%
