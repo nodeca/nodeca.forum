@@ -200,8 +200,8 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function check_and_set_page_info(env, callback) {
     // FIXME replace state hardcode
-    var VISIBLE_STATE = 0;
-    var DELETED_STATE = 1;
+    //var VISIBLE_STATE = 0;
+    //var DELETED_STATE = 1;
 
     var sort = {};
     var start;
@@ -228,7 +228,7 @@ module.exports = function (N, apiPath) {
 
         // Fetch IDs of "visible" threads interval
         Thread.find({ forum_id: env.params.id })
-            .where('state').equals(VISIBLE_STATE)
+            //.where('state').equals(VISIBLE_STATE)
             .select('_id cache.real.last_ts').sort(sort).skip(start)
             .limit(threads_per_page + 1).setOptions({ lean: true })
             .exec(function (err, visible_threads) {
@@ -276,7 +276,7 @@ module.exports = function (N, apiPath) {
           if (ids.length > threads_per_page) { ids.pop(); }
 
           // Fetch IDs of "hidden" threads (use coverage index)
-          Thread.find({ forum_id: env.params.id })
+          /*Thread.find({ forum_id: env.params.id })
               .where('state').equals(DELETED_STATE)
               .where('cache.real.last_ts')
                 .lt(_.first(visible_threads).cache.real.last_ts)
@@ -294,7 +294,8 @@ module.exports = function (N, apiPath) {
               ids.push(thread._id);
             });
             next();
-          });
+          });*/
+          next();
         });
       },
       function (next) {
