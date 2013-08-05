@@ -14,6 +14,8 @@ var _         = require('lodash');
 var async     = require('async');
 var Charlatan = require('charlatan');
 
+// thread and post statuses
+var statuses = require('../../server/forum/thread/_statuses.js');
 
 var Category;
 var Forum;
@@ -102,8 +104,7 @@ Charlatan.Helpers.thread = function (forum) {
 
     id: Charlatan.Incrementer.next('thread'),
 
-    // Stub. This constants should be defined globally
-    st:  0,
+    st: statuses.thread.OPEN,
     forum: forum._id,
     forum_id: forum.id,
 
@@ -121,8 +122,7 @@ Charlatan.Helpers.post = function (thread) {
 
     id: id,
 
-    // Stub. This constants should be defined globally
-    st: 0,
+    st: statuses.post.VISIBLE,
 
     thread: thread._id,
 

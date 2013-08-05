@@ -4,6 +4,8 @@
 var _     = require('lodash');
 var async = require('async');
 
+// thread and post statuses
+var statuses = require('../../server/forum/thread/_statuses.js');
 
 module.exports.up = function (N, cb) {
   var models = N.models;
@@ -81,8 +83,7 @@ module.exports.up = function (N, cb) {
       thread.title = 'Demo post';
       thread.id = 1;
 
-      // Stub. This constants should be defined globally
-      thread.st = 0;
+      thread.st = statuses.thread.OPEN;
 
       thread.forum_id = forum.id;
       thread.forum = forum._id;
@@ -98,7 +99,7 @@ module.exports.up = function (N, cb) {
       post.ts = new Date;
 
       // Stub. This constants should be defined globally
-      post.st = 0;
+      post.st = statuses.post.VISIBLE;
 
       post.thread_id = thread.id;
       post.thread = thread._id;
