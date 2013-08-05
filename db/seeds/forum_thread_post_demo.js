@@ -323,7 +323,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
         var user = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
 
         ForumModeratorStore.set(
-          { forum_visible_moderator: { value: true } },
+          { forum_mod_visible: { value: true } },
           { forum_id: forum._id, user_id: user._id },
           next
         );

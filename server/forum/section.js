@@ -61,18 +61,16 @@ var forum_info_out_fields = [
 var settings_fetch = [
   'posts_per_page',
   'threads_per_page',
-  'forum_show',
-  'forum_read_topics',
-  'forum_reply_topics',
-  'forum_start_topics'
+  'forum_can_view',
+  'forum_can_reply',
+  'forum_can_start_topics'
 ];
 
 
 // settings that would be "exposed" into views
 var settings_expose = [
-  'forum_read_topics',
-  'forum_reply_topics',
-  'forum_start_topics'
+  'forum_can_reply',
+  'forum_can_start_topics'
 ];
 
 
@@ -152,7 +150,7 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.before(apiPath, function section_check_permissions(env, callback) {
-    if (!env.data.settings.forum_show) {
+    if (!env.data.settings.forum_can_view) {
       callback(N.io.NOT_AUTHORIZED);
       return;
     }
@@ -370,7 +368,7 @@ module.exports = function (N, apiPath) {
 
   // removes sub-forums for which user has no rights to access:
   //
-  //  - forum_show
+  //  - forum_can_view
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
     var filtered_sections = [];
@@ -390,7 +388,7 @@ module.exports = function (N, apiPath) {
       env.data.sections.forEach(function (section) {
         var o = results[section._id];
 
-        if (o && o.forum_show) {
+        if (o && o.forum_can_view) {
           filtered_sections.push(section);
         }
       });

@@ -1,17 +1,13 @@
 setting_schemas:
   forum_usergroup:
-    forum_show:
+    forum_can_view:
       extends: true
       priority: 10
 
-    forum_read_topics:
+    forum_can_reply:
       extends: true
       priority: 20
 
-    forum_reply_topics:
+    forum_can_start_topics:
       extends: true
       priority: 30
-
-    forum_start_topics:
-      extends: true
-      priority: 40

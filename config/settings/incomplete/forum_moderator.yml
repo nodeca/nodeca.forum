@@ -1,22 +1,22 @@
 setting_schemas:
   forum_moderator:
-    forum_visible_moderator:
-      priority: 10
+    forum_mod_visible:
+      priority: 500
       type: boolean
       default: true
 
-    forum_can_edit_titles:
+    forum_mod_can_edit_titles:
       extends: true
-      priority: 20
+      priority: 510
 
-    forum_can_edit_posts:
+    forum_mod_can_edit_posts:
       extends: true
-      priority: 30
+      priority: 520
 
-    forum_can_delete_threads:
+    forum_mod_can_delete_threads:
       extends: true
-      priority: 40
+      priority: 530
 
-    forum_can_delete_posts:
+    forum_mod_can_delete_posts:
       extends: true
-      priority: 50
+      priority: 540

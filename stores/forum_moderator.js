@@ -415,8 +415,8 @@ module.exports = function (N) {
         // `moderator_id_list` section fields.
         var visibleModeratorIds = _.select(allModeratorIds, function (userId) {
           return section.settings.forum_moderator[userId] &&
-                 section.settings.forum_moderator[userId].forum_visible_moderator &&
-                 section.settings.forum_moderator[userId].forum_visible_moderator.value;
+                 section.settings.forum_moderator[userId].forum_mod_visible &&
+                 section.settings.forum_moderator[userId].forum_mod_visible.value;
         });
 
         // Fetch users numeric ids to compose `moderator_id_list`.

@@ -72,7 +72,7 @@ module.exports = function (N, apiPath) {
 
   // removes sections for which user has no rights to access:
   //
-  //  - forum_show
+  //  - forum_can_view
   //
   N.wire.after(apiPath, function clean_sections(env, callback) {
 
@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
       env.data.sections.forEach(function (section) {
         var o = results[section._id];
 
-        if (o && o.forum_show) {
+        if (o && o.forum_can_view) {
           filtered_sections.push(section);
         }
       });

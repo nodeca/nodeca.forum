@@ -38,7 +38,7 @@ article#content.forum-topic-root
             .btn-group.pull-right
               a.btn.icon-track.tip(href='#', title=self.t('thread_subscribe')) 24
 
-          - if (self.settings.forum_reply_topics && (self.thread.st === status.thread.OPEN || self.thread.ste === status.thread.OPEN))
+          - if (self.settings.forum_can_reply && (self.thread.st === status.thread.OPEN || self.thread.ste === status.thread.OPEN))
             .btn-group.pull-right
               a.btn.btn-primary(href='#')= self.t('post_add')
 

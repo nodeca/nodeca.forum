@@ -3,15 +3,14 @@ i18n:
     admin:
       core:
         category_names:
-          forum: Forum
-          moderator: Forum moderators
+          perm_forum: Forum
+          perm_moderator: Forum moderation
 
         setting_names:
-          forum_show: Show Forum
-          forum_read_topics: Read Topics
-          forum_reply_topics: Reply Topics
-          forum_start_topics: Start Topics
-          forum_can_edit_titles: Edit thread titles
-          forum_can_edit_posts: Edit posts
-          forum_can_delete_threads: Delete threads
-          forum_can_delete_posts: Delete posts
+          forum_can_view: Show Forum
+          forum_can_reply: Reply Topics
+          forum_can_start_topics: Start Topics
+          forum_mod_can_edit_titles: Edit thread titles
+          forum_mod_can_edit_posts: Edit posts
+          forum_mod_can_delete_threads: Delete threads
+          forum_mod_can_delete_posts: Delete posts

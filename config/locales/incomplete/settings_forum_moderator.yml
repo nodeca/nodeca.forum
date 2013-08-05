@@ -3,4 +3,4 @@ i18n:
     admin:
       core:
         setting_names:
-          forum_visible_moderator: Visible moderator
+          forum_mod_visible: Visible moderator

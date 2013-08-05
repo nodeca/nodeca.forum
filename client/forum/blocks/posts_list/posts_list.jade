@@ -31,7 +31,7 @@
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
-          - if (self.settings.forum_reply_topics && (self.thread.st === status.thread.OPEN || self.thread.st === status.thread.OPEN))
+          - if (self.settings.forum_can_reply && (self.thread.st === status.thread.OPEN || self.thread.st === status.thread.OPEN))
             li.forum-post__control-item
               a.forum-post__action-link.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
           li.forum-post__control-item

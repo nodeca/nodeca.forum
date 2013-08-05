@@ -74,7 +74,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.forum_id = env.data.thread.forum;
     env.extras.puncher.start('Fetch settings');
 
-    env.extras.settings.fetch(['forum_show', 'forum_read_topics'], function (err, settings) {
+    env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
       env.extras.puncher.stop();
 
       if (err) {
@@ -82,12 +82,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (!settings.forum_show) {
-        callback(N.io.NOT_AUTHORIZED);
-        return;
-      }
-
-      if (!settings.forum_read_topics) {
+      if (!settings.forum_can_view) {
         callback(N.io.NOT_AUTHORIZED);
         return;
       }
@@ -264,7 +259,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.forum_id = env.data.thread.forum;
     env.extras.puncher.start('Fetch public posts list settings');
 
-    env.extras.settings.fetch(['forum_reply_topics'], function (err, settings) {
+    env.extras.settings.fetch(['forum_can_reply'], function (err, settings) {
       env.extras.puncher.stop();
 
       if (err) {
