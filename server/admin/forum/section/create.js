@@ -44,7 +44,7 @@ module.exports = function (N, apiPath) {
 
         N.models.forum.Section
             .findById(newSection.parent)
-            .select('_id id parent_list parent_id_list level')
+            .select('_id id parent_list level')
             .setOptions({ lean: true })
             .exec(function (err, parentSection) {
 

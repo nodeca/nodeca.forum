@@ -45,7 +45,6 @@ module.exports = function (N, collectionName) {
   , parent          : Schema.ObjectId
   , parent_id       : Number
   , parent_list     : [Schema.ObjectId]
-  , parent_id_list  : [Number]
 
   , level           : { type: Number, 'default': 0 }
 
@@ -96,7 +95,7 @@ module.exports = function (N, collectionName) {
   // Hooks
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Compute `parent_list`, `parent_id`, `parent_id_list`, and `level` fields before save.
+  // Compute `parent_list`, `parent_id`, and `level` fields before save.
   //
   Section.pre('save', function (next) {
     var self = this;
@@ -114,7 +113,6 @@ module.exports = function (N, collectionName) {
     if (!self.parent) {
       self.parent_list    = [];
       self.parent_id      = null;
-      self.parent_id_list = [];
       self.level          = 0;
       next();
       return;
@@ -122,7 +120,7 @@ module.exports = function (N, collectionName) {
 
     N.models.forum.Section
         .findById(self.parent)
-        .select('_id id parent_list parent_id_list level')
+        .select('_id id parent_list level')
         .exec(function (err, parentSection) {
 
       if (err) {
@@ -137,14 +135,12 @@ module.exports = function (N, collectionName) {
 
       self.parent_list    = parentSection.parent_list.concat(parentSection._id);
       self.parent_id      = parentSection.id;
-      self.parent_id_list = parentSection.parent_id_list.concat(parentSection.id);
       self.level          = parentSection.level + 1;
       next();
     });
   });
 
-  // Update all subforum's data for saved section: `parent_id`, `parent_list`,
-  // `parent_id_list`, and `level`.
+  // Update all subforum's data for saved section: `parent_id`, `parent_list` and `level`.
   // Update all inherited settings (permissions) for subforums.
   //
   Section.post('save', function (section) {
@@ -164,7 +160,6 @@ module.exports = function (N, collectionName) {
         async.forEach(sections, function (section, next) {
           section.parent_list    = parentSection.parent_list.concat(parentSection._id);
           section.parent_id      = parentSection.id;
-          section.parent_id_list = parentSection.parent_id_list.concat(parentSection.id);
           section.level          = parentSection.level + 1;
 
           section.save(function (err) {
