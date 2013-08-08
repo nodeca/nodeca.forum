@@ -156,7 +156,7 @@ module.exports = function (N, apiPath) {
 
     // Unlike threads list, we can use simplified fetch,
     // because posts are always ordered by id - no need to sort by timestamp
-    Post.find({ thread_id: env.params.id }).select('_id').sort('ts').skip(start)
+    Post.find({ thread: env.data.thread._id }).select('_id').sort('ts').skip(start)
         .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
 
       env.extras.puncher.stop(!!docs ? { count: docs.length } : null);
@@ -179,7 +179,7 @@ module.exports = function (N, apiPath) {
       // FIXME modify state condition (deleted and etc) if user has permission
       // If no hidden posts - no conditions needed, just select by IDs
 
-      query = Post.find({ thread_id: env.params.id }).where('_id').gte(_.first(docs)._id);
+      query = Post.find({ thread: env.data.thread._id }).where('_id').gte(_.first(docs)._id);
       if (docs.length <= posts_per_page) {
         query.lte(_.last(docs)._id);
       }

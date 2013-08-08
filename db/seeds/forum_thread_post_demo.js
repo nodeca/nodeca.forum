@@ -117,13 +117,8 @@ Charlatan.Helpers.post = function (thread) {
     fmt:  'txt',
 
     st: statuses.post.VISIBLE,
-
     thread: thread._id,
-
     forum: thread.forum,
-
-    thread_id: thread.id,
-    forum_id: thread.forum_id,
 
     user: Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)],
 

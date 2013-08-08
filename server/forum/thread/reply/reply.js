@@ -171,10 +171,7 @@ module.exports = function (N, apiPath) {
       post.state = 0;
 
       post.forum = thread.forum;
-      post.forum_id = thread.forum_id;
-
       post.thread = thread._id;
-      post.thread_id = thread.id;
 
       // TODO: Set post.user
 

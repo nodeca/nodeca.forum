@@ -9,9 +9,7 @@ module.exports = function (N, collectionName) {
 
   var Post = new Schema({
     thread          : Schema.ObjectId
-  , thread_id       : Number
   , forum           : Schema.ObjectId
-  , forum_id        : Number
 
     // Related post for replies
   , to              : Schema.ObjectId

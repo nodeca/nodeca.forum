@@ -100,12 +100,8 @@ module.exports.up = function (N, cb) {
       // Stub. This constants should be defined globally
       post.st = statuses.post.VISIBLE;
 
-      post.thread_id = thread.id;
       post.thread = thread._id;
-
-      post.forum_id = forum.id;
       post.forum = forum._id;
-
       post.user = user;
 
       post.save(callback);
