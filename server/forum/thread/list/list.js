@@ -211,7 +211,16 @@ module.exports = function (N, apiPath) {
 
   // Add thread info
   N.wire.after(apiPath, function fill_thread_info(env) {
-    env.response.data.thread = _.extend({}, env.response.data.thread, _.pick(env.data.thread, fields.thread_out));
+    env.response.data.thread = _.extend({}, env.response.data.thread,
+      _.pick(env.data.thread, [
+        '_id',
+        'id',
+        'forum_id',
+        'title',
+        'st',
+        'ste'
+      ])
+    );
   });
 
   // Sanitize response info. We should not show hellbanned status to users
