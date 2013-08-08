@@ -132,49 +132,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch posts per page setting
-  N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
-    env.extras.puncher.start('Fetch posts per page setting');
-
-    env.extras.settings.fetch(['posts_per_page'], function (err, settings) {
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.posts_per_page = settings.posts_per_page;
-      callback();
-    });
-  });
-
-
-  // Fill page data or redirect to last page, if requested > available
-  N.wire.before(apiPath, function check_and_set_page_info(env) {
-    var per_page = env.data.posts_per_page,
-        max      = Math.ceil(env.data.thread.cache.real.post_count / per_page),
-        current  = parseInt(env.params.page, 10);
-
-    if (current > max) {
-      // Requested page is BIGGER than maximum - redirect to the last one
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          "Location": N.runtime.router.linkTo('forum.thread', {
-            forum_id: env.params.forum_id,
-            id:       env.params.id,
-            page:     max
-          })
-        }
-      };
-    }
-
-    // requested page is OK. propose data for pagination
-    env.response.data.page = { max: max, current: current };
-  });
-
-
   //
   // Just subcall forum.thread.list, that enchances `env`
   //
