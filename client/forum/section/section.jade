@@ -17,8 +17,9 @@ article#content.forum-threads-root
         .container
           .btn-toolbar.controlbar.clearfix
             .btn-group.pull-left
+              - var parent_forum_hid = self.blocks.breadcrumbs[self.blocks.breadcrumbs.length - 2].params.id
               a.btn.btn-icon-only.icon-back(
-                href=self.link_to('forum.section', { id: self.forum.parent_id }))
+                href=self.link_to('forum.section', { id: parent_forum_hid }))
 
             - if (self.threads && self.threads.length && self.page.max > 1)
               - var link_params = { id: self.forum.id }

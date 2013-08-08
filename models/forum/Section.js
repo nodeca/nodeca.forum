@@ -43,7 +43,6 @@ module.exports = function (N, collectionName) {
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
-  , parent_id       : Number
   , parent_list     : [Schema.ObjectId]
 
   , level           : { type: Number, 'default': 0 }
@@ -95,7 +94,7 @@ module.exports = function (N, collectionName) {
   // Hooks
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Compute `parent_list`, `parent_id`, and `level` fields before save.
+  // Compute `parent_list` and `level` fields before save.
   //
   Section.pre('save', function (next) {
     var self = this;
@@ -112,7 +111,6 @@ module.exports = function (N, collectionName) {
 
     if (!self.parent) {
       self.parent_list    = [];
-      self.parent_id      = null;
       self.level          = 0;
       next();
       return;
@@ -134,13 +132,12 @@ module.exports = function (N, collectionName) {
       }
 
       self.parent_list    = parentSection.parent_list.concat(parentSection._id);
-      self.parent_id      = parentSection.id;
       self.level          = parentSection.level + 1;
       next();
     });
   });
 
-  // Update all subforum's data for saved section: `parent_id`, `parent_list` and `level`.
+  // Update all subforum's data for saved section: `parent_list` and `level`.
   // Update all inherited settings (permissions) for subforums.
   //
   Section.post('save', function (section) {
@@ -159,7 +156,6 @@ module.exports = function (N, collectionName) {
 
         async.forEach(sections, function (section, next) {
           section.parent_list    = parentSection.parent_list.concat(parentSection._id);
-          section.parent_id      = parentSection.id;
           section.level          = parentSection.level + 1;
 
           section.save(function (err) {
