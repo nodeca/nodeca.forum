@@ -14,7 +14,6 @@ module.exports = function (N, collectionName) {
     , post_count        : { type: Number, 'default': 0 }
 
     , last_post         : Schema.ObjectId
-    , last_post_id      : Number
     , last_thread       : Schema.ObjectId
     , last_thread_id    : Number
     , last_thread_title : String
@@ -26,7 +25,6 @@ module.exports = function (N, collectionName) {
     , post_count        : { type: Number, 'default': 0 }
 
     , last_post         : Schema.ObjectId
-    , last_post_id      : Number
     , last_thread       : Schema.ObjectId
     , last_thread_id    : Number
     , last_thread_title : String

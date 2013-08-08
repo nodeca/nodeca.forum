@@ -39,7 +39,7 @@ ul.forum-sections
         - if (last_thread)
           ul.forum-section__lpost.span3.hidden-phone
             li.forum-section__lpost-title
-              a.forum-section__lpost-title-link(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+forum.cache.real.last_post_id) #{forum.cache.real.last_thread_title}
+              a.forum-section__lpost-title-link(href=self.link_to('forum.thread', {id: last_thread, forum_id: forum.id}) +'#'+String(forum.cache.real.last_post)) #{forum.cache.real.last_thread_title}
             - if (self.users[last_user])
               li.forum-section__lpost-user
                 = self.t('topic_by') 

@@ -95,7 +95,6 @@ module.exports.up = function (N, cb) {
     function (callback) {
       post.text = 'Welcome to nodeca forum';
       post.fmt =  'txt';
-      post.id = 1;
       post.ts = new Date;
 
       // Stub. This constants should be defined globally
@@ -115,7 +114,6 @@ module.exports.up = function (N, cb) {
     // update forum dependent info
     function (callback) {
       forum.cache.real.last_post = post._id;
-      forum.cache.real.last_post_id = post.id;
       forum.cache.real.last_user = user;
       forum.cache.real.last_ts = post.ts;
 
@@ -136,9 +134,6 @@ module.exports.up = function (N, cb) {
 
       thread.cache.real.first_post = post._id;
       thread.cache.real.last_post = post._id;
-
-      thread.cache.real.first_post_id = post.id;
-      thread.cache.real.last_post_id = post.id;
 
       thread.cache.real.first_user = user;
       thread.cache.real.last_user = user;

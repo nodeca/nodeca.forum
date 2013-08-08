@@ -8,10 +8,7 @@ var Schema   = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   var Post = new Schema({
-    // user-friendly id (autoincremented)
-    id              : { type: Number, required: true, min: 1, index: true }
-
-  , thread          : Schema.ObjectId
+    thread          : Schema.ObjectId
   , thread_id       : Number
   , forum           : Schema.ObjectId
   , forum_id        : Number

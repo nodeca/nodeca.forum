@@ -38,7 +38,6 @@ var CATEGORY_ID_SHIFT = 3;
 var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
 var DISPLAY_ORDER_SHIFT = 2;
 var THREAD_ID_SHIFT = 2;
-var POST_ID_SHIFT = 2;
 var USER_ID_SHIFT = 2;
 
 // cache usergroups ids
@@ -51,7 +50,6 @@ Charlatan.Incrementer = {
   forum_shift: FORUM_ID_SHIFT,
   display_order_shift: DISPLAY_ORDER_SHIFT,
   thread_shift: THREAD_ID_SHIFT,
-  post_shift: POST_ID_SHIFT,
   user_shift: USER_ID_SHIFT
 };
 
@@ -113,14 +111,10 @@ Charlatan.Helpers.thread = function (forum) {
 };
 
 Charlatan.Helpers.post = function (thread) {
-  var id = Charlatan.Incrementer.next('post');
-
-  var ts =  new Date(2010, 0, id);
+  var ts =  new Date(2010, 0, 0);
   return {
     text: Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join(' '),
     fmt:  'txt',
-
-    id: id,
 
     st: statuses.post.VISIBLE,
 
@@ -220,12 +214,10 @@ var create_thread = function (forum, callback) {
       thread.cache.real.post_count = post_count;
 
       thread.cache.real.first_post = first_post._id;
-      thread.cache.real.first_post_id = first_post.id;
       thread.cache.real.first_ts = first_post.ts;
       thread.cache.real.first_user = first_post.user;
 
       thread.cache.real.last_post = last_post._id;
-      thread.cache.real.last_post_id = last_post.id;
       thread.cache.real.last_ts = last_post.ts;
       thread.cache.real.last_user = last_post.user;
 
@@ -299,7 +291,6 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
       var thread_real = last_thread.cache.real;
       forum.cache.real.last_post = thread_real.last_post;
-      forum.cache.real.last_post_id = thread_real.last_post_id;
       forum.cache.real.last_ts = thread_real.last_ts;
       forum.cache.real.last_user = thread_real.last_user;
 

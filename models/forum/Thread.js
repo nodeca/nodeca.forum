@@ -17,12 +17,10 @@ module.exports = function (N, collectionName) {
 
       // First post
     , first_post      : Schema.ObjectId
-    , first_post_id   : Number
     , first_user      : Schema.ObjectId
     , first_ts        : Date
       // Last post
     , last_post       : Schema.ObjectId
-    , last_post_id    : Number
     , last_user       : Schema.ObjectId
     , last_ts         : Date
     }
@@ -33,12 +31,10 @@ module.exports = function (N, collectionName) {
 
       // First post
     , first_post      : Schema.ObjectId
-    , first_post_id   : Number
     , first_user      : Schema.ObjectId
     , first_ts        : Date
       // Last post
     , last_post       : Schema.ObjectId
-    , last_post_id    : Number
     , last_user       : Schema.ObjectId
     , last_ts         : Date
     }

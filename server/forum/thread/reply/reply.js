@@ -167,7 +167,6 @@ module.exports = function (N, apiPath) {
 
       post.text = env.params.text;
       post.fmt = env.params.format;
-      post.id = 1; // TODO: generate user friendly id
       post.ip = env.request.ip;
       post.state = 0;
 
