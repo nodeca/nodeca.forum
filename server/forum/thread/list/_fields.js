@@ -4,7 +4,6 @@
 
 exports.post_in = [
   '_id',
-  'id',
   'to',
   'attach_list',
   'text',
