@@ -324,7 +324,7 @@ N.wire.on('forum.thread.append_next_page', function (event) {
 
       $button.attr('href', N.runtime.router.linkTo('forum.thread', {
         id:       locals.thread.id
-      , forum_id: locals.thread.forum_id
+      , forum_id: locals.forum.id
       , page:     locals.page.current + 1
       }));
 
@@ -336,7 +336,7 @@ N.wire.on('forum.thread.append_next_page', function (event) {
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
           route:    'forum.thread'
-        , params:   { id: locals.thread.id, forum_id: locals.thread.forum_id }
+        , params:   { id: locals.thread.id, forum_id: locals.forum.id }
         , current:  locals.page.current
         , max_page: locals.page.max
         })

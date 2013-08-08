@@ -19,7 +19,7 @@
     .forum-post__aside
       - if (self.users[post.user])
         a.forum-post__userpic(href='#')
-          img.av-l(alt='#{self.users[post.user]._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{self.users[post.user].id}')
+          img.av-l(alt='#{self.users[post.user]._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{self.users[post.user].id}' + '/')
       - else
         .av-l
     .forum-post__content

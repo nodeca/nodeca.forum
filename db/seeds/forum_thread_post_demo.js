@@ -104,7 +104,6 @@ Charlatan.Helpers.thread = function (forum) {
 
     st: statuses.thread.OPEN,
     forum: forum._id,
-    forum_id: forum.id,
 
     views_count: Charlatan.Helpers.rand(1000)
   };

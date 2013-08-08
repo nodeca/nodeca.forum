@@ -15,10 +15,10 @@ article#content.forum-topic-root
         .btn-toolbar.controlbar.clearfix
           .btn-group.pull-left
             a.btn.btn-icon-only.icon-back(
-              href=self.link_to('forum.section', { id: self.thread.forum_id }))
+              href=self.link_to('forum.section', { id: self.forum.id }))
 
           - if (self.page.max > 1)
-            - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id }
+            - var link_params = { id: self.thread.id, forum_id: self.forum.id }
             .btn-group.pull-left.hidden-phone-vert._pagination
               != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
@@ -43,13 +43,13 @@ article#content.forum-topic-root
               a.btn.btn-primary(href='#')= self.t('post_add')
 
   #postlist.forum-postlist(
-    data-forum_id=self.thread.forum_id,
+    data-forum_id=self.forum.id,
     data-thread_id=self.thread.id
   )
-    != self.partial('@forum.blocks.posts_list', { thread: self.thread, posts: self.posts, users: self.users, settings: self.settings })
+    != self.partial('@forum.blocks.posts_list', { forum: self.forum, thread: self.thread, posts: self.posts, users: self.users, settings: self.settings })
 
   //- Button "More Threads"
-  - var link_params = { id: self.thread.id, forum_id: self.thread.forum_id, page: self.page.current + 1 };
+  - var link_params = { id: self.thread.id, forum_id: self.forum.id, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
   a.forum-thread__more-link.btn.btn-block.icon-more(
     class=btn_more_state,

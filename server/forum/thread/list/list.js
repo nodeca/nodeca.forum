@@ -30,6 +30,7 @@ module.exports = function (N, apiPath) {
 
 
   // shortcuts
+  var Section = N.models.forum.Section;
   var Thread = N.models.forum.Thread;
   var Post = N.models.forum.Post;
 
@@ -63,6 +64,40 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.thread = thread;
+      callback();
+    });
+  });
+
+
+  // fetch forum info
+  N.wire.before(apiPath, function fetch_forum_info(env, callback) {
+
+    // If section already fetched (in parent request, for example),
+    // skip this step.
+    if (env.data.section) {
+      callback();
+      return;
+    }
+
+    env.extras.puncher.start('Forum info prefetch');
+
+    Section.findOne({ _id: env.data.thread.forum }).setOptions({ lean: true })
+        .exec(function (err, forum) {
+
+      env.extras.puncher.stop();
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      // No forum -> thread with missed parent, return "Not Found" too
+      if (!forum) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.section = forum;
       callback();
     });
   });
@@ -239,13 +274,23 @@ module.exports = function (N, apiPath) {
       _.pick(env.data.thread, [
         '_id',
         'id',
-        'forum_id',
         'title',
         'st',
         'ste'
       ])
     );
   });
+
+  // Add forum info
+  N.wire.after(apiPath, function fill_thread_info(env) {
+    env.response.data.forum = _.extend({}, env.response.data.forum,
+      _.pick(env.data.section, [
+        //'_id',
+        'id'
+      ])
+    );
+  });
+
 
   // Sanitize response info. We should not show hellbanned status to users
   // that cannot view hellbanned content. In this case we use 'ste' status instead.

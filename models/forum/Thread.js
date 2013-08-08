@@ -50,7 +50,6 @@ module.exports = function (N, collectionName) {
   , prefix          : Schema.ObjectId
 
   , forum           : Schema.ObjectId
-  , forum_id        : Number
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally

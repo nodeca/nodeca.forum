@@ -64,13 +64,11 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // fetch forum info & redirect if needed
+  // fetch forum info
   N.wire.before(apiPath, function fetch_forum_info(env, callback) {
 
-    env.extras.puncher.start('Forum(parent) info prefetch');
+    env.extras.puncher.start('Forum info prefetch');
 
-    // `params.forum_id` can be wrong (old link to moved thread)
-    // Use real id from fetched thread
     Section.findOne({ _id: env.data.thread.forum }).setOptions({ lean: true })
         .exec(function (err, forum) {
 
@@ -87,24 +85,26 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // If params.forum_id defined, and not correct - redirect to proper location
-      if (env.params.forum_id && (forum.id !== +env.params.forum_id)) {
-        callback({
-          code: N.io.REDIRECT,
-          head: {
-            'Location': N.runtime.router.linkTo('forum.section', {
-              id:       env.data.thread.id,
-              forum_id: forum.id,
-              page:     env.params.page || 1
-            })
-          }
-        });
-        return;
-      }
-
       env.data.section = forum;
       callback();
     });
+  });
+
+  // `params.forum_id` can be wrong (old link to moved thread)
+  // If params.forum_id defined, and not correct - redirect to proper location
+  N.wire.before(apiPath, function fix_forum_id(env) {
+    if (env.params.forum_id && (env.data.section.id !== +env.params.forum_id)) {
+      return {
+        code: N.io.REDIRECT,
+        head: {
+          'Location': N.runtime.router.linkTo('forum.section', {
+            id:       env.data.thread.id,
+            forum_id: env.data.section.id,
+            page:     env.params.page || 1
+          })
+        }
+      };
+    }
   });
 
 

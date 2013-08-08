@@ -56,7 +56,7 @@ article#content.forum-threads-root
 
     - if (self.threads && self.threads.length)
       #topiclist.forum-topiclines
-        != self.partial('@forum.blocks.threads_list', { threads: self.threads, users: self.users })
+        != self.partial('@forum.blocks.threads_list', { forum: self.forum, threads: self.threads, users: self.users })
 
       //- Button "More Threads"
       - var link_params = { id: self.forum.id, page: self.page.current + 1 };

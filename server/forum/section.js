@@ -17,7 +17,6 @@ var threads_in_fields = [
   'id',
   'title',
   'prefix',
-  'forum_id',
   'views_count',
   'cache'
 ];
@@ -224,7 +223,7 @@ module.exports = function (N, apiPath) {
         start = (env.params.page - 1) * threads_per_page;
 
         // Fetch IDs of "visible" threads interval
-        Thread.find({ forum_id: env.params.id })
+        Thread.find({ forum: env.data.section._id })
             //.where('state').equals(VISIBLE_STATE)
             .select('_id cache.real.last_ts').sort(sort).skip(start)
             .limit(threads_per_page + 1).setOptions({ lean: true })
@@ -273,7 +272,7 @@ module.exports = function (N, apiPath) {
           if (ids.length > threads_per_page) { ids.pop(); }
 
           // Fetch IDs of "hidden" threads (use coverage index)
-          /*Thread.find({ forum_id: env.params.id })
+          /*Thread.find({ forum: env.data.section._id })
               .where('state').equals(DELETED_STATE)
               .where('cache.real.last_ts')
                 .lt(_.first(visible_threads).cache.real.last_ts)
