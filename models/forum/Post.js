@@ -35,7 +35,6 @@ module.exports = function (N, collectionName) {
   , st              : { type: Number, required: true }
   , ste             : Number  // real state, if thread is sticky or hellbanned
                               // (general `state` is used for fast selects)
-  , state_prev      : Number  // previous value, to rollback `delete`
 
   , attach_list     : [Schema.ObjectId]
   });
