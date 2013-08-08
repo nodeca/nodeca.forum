@@ -7,7 +7,9 @@ en-US:
   thread_history: History
   thread_approve: Approve
   thread_merge: Merge
+
   post_add: Add reply
   more_posts: More posts
+  title_with_page: "#{title} - page #{page}"
 
   error_no_more_posts: Ups! No more posts in this thread.

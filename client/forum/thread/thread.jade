@@ -54,4 +54,6 @@ article#content.forum-topic-root
   a.forum-thread__more-link.btn.btn-block.icon-more(
     class=btn_more_state,
     href=self.link_to(self.apiPath, link_params),
+    data-page=self.page.current+1,
+    data-thread=self.thread.id,
     data-on-click="forum.thread.append_next_page")= self.t('more_posts')

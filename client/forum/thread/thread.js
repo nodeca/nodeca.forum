@@ -13,9 +13,6 @@ var Editor;
 
 var threadInfo = {};
 
-// Page params - forum_id, thread_id & page
-var params = {};
-
 // Editor state
 var eState = {};
 
@@ -181,15 +178,7 @@ N.wire.on('forum.post.reply.cancel', function () {
   });
 });
 
-N.wire.on('navigate.done:' + module.apiPath, function (config) {
-  // Save page params for futher use
-  params = config.params;
-
-  // FIXME
-  params.id = +params.id;
-  params.forum_id = +params.forum_id;
-  params.page = +params.page;
-
+N.wire.on('navigate.done:' + module.apiPath, function (/*config*/) {
   var $postlist = $('#postlist');
 
   threadInfo.id = $postlist.data('thread_id');
@@ -294,11 +283,24 @@ N.wire.before('navigate.exit:' + module.apiPath, function () {
 
 N.wire.on('forum.thread.append_next_page', function (event) {
   var $button = $(event.currentTarget);
+  var new_url = $button.attr('href');
 
   N.io.rpc(
     'forum.thread.list',
-    { id: params.id, page: params.page + 1 },
+    { id: $button.data('thread'), page: $button.data('page') },
     function (err, res) {
+
+      // Process errors
+      if (err) {
+        // Do redirect, if happened
+        if (err.code === N.io.REDIRECT) {
+          N.wire.emit('navigate.to', err.head.Location);
+          return;
+        }
+        // Notify user in other case
+        return false;
+      }
+
       var locals = res.data;
 
       // if no posts - just disable 'More' button
@@ -311,29 +313,43 @@ N.wire.on('forum.thread.append_next_page', function (event) {
         return;
       }
 
-      params.page = params.page + 1;
+      locals.show_page_number = locals.page.current;
 
-      locals.thread = { id: params.id };
-      locals.show_page_number = params.page;
-
-      var $result = $(N.runtime.render('forum.blocks.posts_list', res.data));
+      // render & inject posts list
+      var $result = $(N.runtime.render('forum.blocks.posts_list', locals));
       $('#postlist > :last').after($result);
 
+      // update button data & state
+      $button.data('page', locals.page.current + 1);
+
       $button.attr('href', N.runtime.router.linkTo('forum.thread', {
-        id:       params.id
-      , forum_id: params.forum_id
-      , page:     params.page + 1
+        id:       locals.thread.id
+      , forum_id: locals.thread.forum_id
+      , page:     locals.page.current + 1
       }));
+
+      if (locals.page.current === locals.page.max) {
+        $button.addClass('hidden');
+      }
 
       // update pager
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
           route:    'forum.thread'
-        , params:   params
-        , current:  params.page
-        , max_page: 10
+        , params:   { id: locals.thread.id, forum_id: locals.thread.forum_id }
+        , current:  locals.page.current
+        , max_page: locals.page.max
         })
       );
+
+      // update history / url / title
+      N.wire.emit('navigate.replace', {
+        href: new_url,
+        title: t('title_with_page', {
+          title: locals.thread.title,
+          page: locals.page.current
+        })
+      });
     }
   );
 
