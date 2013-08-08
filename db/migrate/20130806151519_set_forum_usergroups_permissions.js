@@ -20,9 +20,7 @@ module.exports.up = function (N, cb) {
 
           group.raw_settings = _.extend({}, group.raw_settings, {
             forum_can_reply: { value: true },
-            forum_can_start_topics: { value: true },
-
-            forum_mod_visible: { value: true }
+            forum_can_start_topics: { value: true }
           });
           group.save(callback);
         });
