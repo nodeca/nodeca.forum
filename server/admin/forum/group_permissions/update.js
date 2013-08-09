@@ -6,8 +6,8 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_id:   { type: 'string', required: true }
-  , usergroup_id: { type: 'string', required: true }
+    section_id:   { type: 'string', required: true, pattern: /^[0-9a-fA-F]{24}$/ }
+  , usergroup_id: { type: 'string', required: true, pattern: /^[0-9a-fA-F]{24}$/ }
   , settings: {
       type: 'object'
     , required: true

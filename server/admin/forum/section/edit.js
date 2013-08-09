@@ -6,7 +6,7 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    _id: { type: 'string', required: true }
+    _id: { type: 'string', required: true, pattern: /^[0-9a-fA-F]{24}$/ }
   });
 
   N.wire.on(apiPath, function section_edit(env, callback) {
