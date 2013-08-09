@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        SectionModeratorStore.set(env.params.settings, { forum_id: section._id, user_id: user._id }, callback);
+        SectionModeratorStore.set(env.params.settings, { section_id: section._id, user_id: user._id }, callback);
       });
     });
   });

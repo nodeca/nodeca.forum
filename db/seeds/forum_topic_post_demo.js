@@ -2,10 +2,10 @@
 
 
 /*
- * This seed create data for demo forum:
- *   3 category, each category contain 10 forums
- *   last forum in 3rd category is empty
- *   first forum contain 200 topics, all others only one
+ * This seed create data for demo section:
+ *   3 category, each category contain 10 sections
+ *   last section in 3rd category is empty
+ *   first section contain 200 topics, all others only one
  *   first topic in first topic contain 100 post, all others only one
  *
  */
@@ -18,7 +18,7 @@ var Charlatan = require('charlatan');
 var statuses = require('../../server/forum/topic/_statuses.js');
 
 var Category;
-var Forum;
+var Section;
 var Topic;
 var Post;
 var User;
@@ -26,16 +26,16 @@ var UserGroup;
 
 
 var CATEGORY_COUNT = 3;
-var FORUM_COUNT  = 10;
-var SUB_FORUM_DEEP = 1;
-var TOPIC_COUNT_IN_BIG_FORUM  = 200;
+var SECTION_COUNT  = 10;
+var SUB_SECTION_DEEP = 1;
+var TOPIC_COUNT_IN_BIG_SECTION  = 200;
 var POST_COUNT_IN_BIG_TOPIC  = 100;
 var USER_COUNT = 200;
 var MAX_MODERATOR_COUNT = 3;
-var MAX_SUB_FORUM_COUNT = 3;
+var MAX_SUB_SECTION_COUNT = 3;
 
 var CATEGORY_ID_SHIFT = 3;
-var FORUM_HID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
+var SECTION_HID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
 var DISPLAY_ORDER_SHIFT = 2;
 var TOPIC_HID_SHIFT = 2;
 var USER_HID_SHIFT = 2;
@@ -47,7 +47,7 @@ var usergroups_cache = {};
 // add numeric id generator
 Charlatan.Incrementer = {
   category_shift: CATEGORY_ID_SHIFT,
-  forum_shift: FORUM_HID_SHIFT,
+  section_shift: SECTION_HID_SHIFT,
   display_order_shift: DISPLAY_ORDER_SHIFT,
   topic_shift: TOPIC_HID_SHIFT,
   user_shift: USER_HID_SHIFT
@@ -68,7 +68,7 @@ Charlatan.Incrementer.next = function (type) {
 
 Charlatan.users = [];
 
-// add helpers for categorys,forums, topics and posts
+// add helpers for categorys,sections, topics and posts
 Charlatan.Helpers.category = function () {
   return {
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
@@ -80,12 +80,12 @@ Charlatan.Helpers.category = function () {
   };
 };
 
-Charlatan.Helpers.forum = function (parent) {
+Charlatan.Helpers.section = function (parent) {
   return {
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: Charlatan.Lorem.sentence(),
 
-    id: Charlatan.Incrementer.next('forum'),
+    id: Charlatan.Incrementer.next('section'),
 
     parent: parent._id,
     display_order: Charlatan.Incrementer.next('display_order'),
@@ -96,14 +96,14 @@ Charlatan.Helpers.forum = function (parent) {
   };
 };
 
-Charlatan.Helpers.topic = function (forum) {
+Charlatan.Helpers.topic = function (section) {
   return {
     title: Charlatan.Lorem.sentence().slice(0, -1),
 
     hid: Charlatan.Incrementer.next('topic'),
 
     st: statuses.topic.OPEN,
-    forum: forum._id,
+    section: section._id,
 
     views_count: Charlatan.Helpers.rand(1000)
   };
@@ -117,7 +117,7 @@ Charlatan.Helpers.post = function (topic) {
 
     st: statuses.post.VISIBLE,
     topic: topic._id,
-    forum: topic.forum,
+    section: topic.section,
 
     user: Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)],
 
@@ -149,7 +149,7 @@ Charlatan.Helpers.user = function () {
 };
 
 var is_big_topic = true;
-var is_big_forum = true;
+var is_big_section = true;
 
 
 var create_post = function (topic, callback) {
@@ -167,7 +167,7 @@ var create_post = function (topic, callback) {
   });
 };
 
-var create_topic = function (forum, callback) {
+var create_topic = function (section, callback) {
   var first_post;
   var last_post;
   var post_count;
@@ -179,7 +179,7 @@ var create_topic = function (forum, callback) {
     post_count = 1;
   }
 
-  var topic = new Topic(Charlatan.Helpers.topic(forum));
+  var topic = new Topic(Charlatan.Helpers.topic(section));
 
   async.series([
     function (cb) {
@@ -224,32 +224,32 @@ var create_topic = function (forum, callback) {
   });
 };
 
-var create_forum = function (category, sub_forum_deep, callback) {
+var create_section = function (category, sub_section_deep, callback) {
   var last_topic;
   var post_count = 0;
   var topic_count;
 
-  var sub_forum_list = [];
-  var sub_forum_id_list = [];
+  var sub_section_list = [];
+  var sub_section_id_list = [];
 
-  if (is_big_forum) {
-    is_big_forum = false;
-    topic_count = TOPIC_COUNT_IN_BIG_FORUM;
+  if (is_big_section) {
+    is_big_section = false;
+    topic_count = TOPIC_COUNT_IN_BIG_SECTION;
   } else {
     topic_count = 1;
   }
 
-  var forum = new Forum(Charlatan.Helpers.forum(category));
+  var section = new Section(Charlatan.Helpers.section(category));
 
   async.series([
     function (cb) {
-      forum.save(cb);
+      section.save(cb);
     },
 
     // create topics
     function (cb) {
       async.forEachSeries(_.range(topic_count), function (current_topic, next_topic) {
-        create_topic(forum, function (err, topic) {
+        create_topic(section, function (err, topic) {
           if (err) {
             next_topic(err);
             return;
@@ -261,38 +261,38 @@ var create_forum = function (category, sub_forum_deep, callback) {
       }, cb);
     },
 
-    // add sub-forums
+    // add sub-sections
     function (cb) {
-      if (!sub_forum_deep || Charlatan.Helpers.rand(3) === 2) {
+      if (!sub_section_deep || Charlatan.Helpers.rand(3) === 2) {
         cb();
         return;
       }
-      var sub_forum_count = Charlatan.Helpers.rand(MAX_SUB_FORUM_COUNT);
-      async.forEach(_.range(sub_forum_count), function (current_forum, next_forum) {
-        create_forum(forum, sub_forum_deep - 1, function (err, sub_forum) {
-          sub_forum_list.push(sub_forum._id);
-          sub_forum_id_list.push(sub_forum.id);
-          next_forum(err);
+      var sub_section_count = Charlatan.Helpers.rand(MAX_SUB_SECTION_COUNT);
+      async.forEach(_.range(sub_section_count), function (current_section, next_section) {
+        create_section(section, sub_section_deep - 1, function (err, sub_section) {
+          sub_section_list.push(sub_section._id);
+          sub_section_id_list.push(sub_section.id);
+          next_section(err);
         });
       }, cb);
     },
 
-    // update forum dependent info
+    // update section dependent info
     function (cb) {
-      forum.cache.real.last_topic = last_topic._id;
-      forum.cache.real.last_topic_hid = last_topic.hid;
-      forum.cache.real.last_topic_title = last_topic.title;
+      section.cache.real.last_topic = last_topic._id;
+      section.cache.real.last_topic_hid = last_topic.hid;
+      section.cache.real.last_topic_title = last_topic.title;
 
       var topic_real = last_topic.cache.real;
-      forum.cache.real.last_post = topic_real.last_post;
-      forum.cache.real.last_ts = topic_real.last_ts;
-      forum.cache.real.last_user = topic_real.last_user;
+      section.cache.real.last_post = topic_real.last_post;
+      section.cache.real.last_ts = topic_real.last_ts;
+      section.cache.real.last_user = topic_real.last_user;
 
-      forum.cache.real.post_count = post_count;
-      forum.cache.real.topic_count = topic_count;
-      _.extend(forum.cache.hb, forum.cache.real);
+      section.cache.real.post_count = post_count;
+      section.cache.real.topic_count = topic_count;
+      _.extend(section.cache.hb, section.cache.real);
 
-      forum.save(cb);
+      section.save(cb);
     },
 
     // add moderators
@@ -309,13 +309,13 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
         SectionModeratorStore.set(
           { forum_mod_visible: { value: true } },
-          { forum_id: forum._id, user_id: user._id },
+          { section_id: section._id, user_id: user._id },
           next
         );
       }, cb);
     },
   ], function (err) {
-    callback(err, forum);
+    callback(err, section);
   });
 };
 
@@ -331,10 +331,10 @@ var create_categories = function (callback) {
         return;
       }
 
-      // create forums
-      async.forEachSeries(_.range(FORUM_COUNT), function (current_forum, next_forum) {
-        create_forum(category, SUB_FORUM_DEEP, function (err/*, forum */) {
-          next_forum(err);
+      // create sections
+      async.forEachSeries(_.range(SECTION_COUNT), function (current_section, next_section) {
+        create_section(category, SUB_SECTION_DEEP, function (err/*, section */) {
+          next_section(err);
         });
       }, next_category);
     });
@@ -343,15 +343,15 @@ var create_categories = function (callback) {
       callback(err);
       return;
     }
-    // Added empty forum to last category
-    var forum = new Forum(Charlatan.Helpers.forum(category));
-    forum.save(callback);
+    // Added empty section to last category
+    var section = new Section(Charlatan.Helpers.section(category));
+    section.save(callback);
   });
 };
 
 module.exports = function (N, callback) {
   Category  = N.models.forum.Section;
-  Forum     = N.models.forum.Section;
+  Section     = N.models.forum.Section;
   Topic    = N.models.forum.Topic;
   Post      = N.models.forum.Post;
   User      = N.models.users.User;

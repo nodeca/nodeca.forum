@@ -9,7 +9,7 @@ module.exports = function (N, collectionName) {
 
   var Post = new Schema({
     topic          : Schema.ObjectId
-  , forum           : Schema.ObjectId
+  , section        : Schema.ObjectId
 
     // Related post for replies
   , to              : Schema.ObjectId
@@ -50,11 +50,11 @@ module.exports = function (N, collectionName) {
   , _id: 1
   });
 
-  // Get user posts, with restriction by status & forums list
+  // Get user posts, with restriction by status & sections list
   Post.index({
     user: 1
   , state: 1
-  , forum: 1
+  , section: 1
   , _id: -1
   });
 

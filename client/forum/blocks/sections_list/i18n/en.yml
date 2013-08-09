@@ -1,5 +1,5 @@
 en-US:
   topic_by: "by "
   moderators: "((moderator|moderators))"
-  forum_topics: " ((topic|topics))"
-  forum_posts: " ((post|posts))"
+  section_topics: " ((topic|topics))"
+  section_posts: " ((post|posts))"

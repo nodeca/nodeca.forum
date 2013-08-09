@@ -2,15 +2,15 @@ article#content.forum-topics-root
   != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
   header.page-head
-    h1.page-head__title(itemprop='name')= self.forum.title
+    h1.page-head__title(itemprop='name')= self.section.title
     p.page-head__descr(itemprop='description')
-      | #{self.forum.description}
+      | #{self.section.description}
 
-  //- Subforums, if exist
+  //- Subsections, if exist
   - if (self.sections && self.sections.length)
     != self.partial('@forum.blocks.sections_list', { subsections: self.sections, users: self.users })
 
-  - if (self.forum.is_category === false)
+  - if (self.section.is_category === false)
     //- Toolbar with pagination & controls
     nav.controlbar-keeper
       #floatbar
@@ -22,7 +22,7 @@ article#content.forum-topics-root
                 href=self.link_to('forum.section', { id: parent_forum_hid }))
 
             - if (self.topics && self.topics.length && self.page.max > 1)
-              - var link_params = { id: self.forum.id }
+              - var link_params = { id: self.section.id }
               .btn-group.pull-left.hidden-phone-vert._pagination
                 != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
@@ -56,10 +56,10 @@ article#content.forum-topics-root
 
     - if (self.topics && self.topics.length)
       #topiclist.forum-topiclines
-        != self.partial('@forum.blocks.topics_list', { forum: self.forum, topics: self.topics, users: self.users })
+        != self.partial('@forum.blocks.topics_list', { section: self.section, topics: self.topics, users: self.users })
 
       //- Button "More Topics"
-      - var link_params = { id: self.forum.id, page: self.page.current + 1 };
+      - var link_params = { id: self.section.id, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
       a.forum-section__more-link.btn.btn-block.icon-more(
         class=btn_more_state,

@@ -65,7 +65,7 @@ module.exports = function (N, apiPath) {
       async.forEach(env.data.usergroups, function (usergroup, nextGroup) {
         SectionUsergroupStore.get(
           SectionUsergroupStore.keys
-        , { forum_id: section._id, usergroup_ids: [ usergroup._id ] }
+        , { section_id: section._id, usergroup_ids: [ usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, settings) {
           if (err) {

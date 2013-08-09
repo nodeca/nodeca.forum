@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        SectionUsergroupStore.set(env.params.settings, { forum_id: section._id, usergroup_id: usergroup._id }, callback);
+        SectionUsergroupStore.set(env.params.settings, { section_id: section._id, usergroup_id: usergroup._id }, callback);
       });
     });
   });

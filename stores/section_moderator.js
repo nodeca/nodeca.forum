@@ -1,4 +1,4 @@
-// Per-forum moderator setting store. Example structure:
+// Per-section moderator setting store. Example structure:
 //
 //   Section:
 //     ... // section fields like _id, title, etc
@@ -54,7 +54,7 @@ module.exports = function (N) {
   var SectionModeratorStore = N.settings.createStore({
     //
     // params:
-    //   forum_id - ObjectId
+    //   section_id - ObjectId
     //   user_id  - ObjectId
     //
     // options:
@@ -70,8 +70,8 @@ module.exports = function (N) {
     get: function (keys, params, options, callback) {
       var self = this;
 
-      if (!params.forum_id) {
-        callback('`forum_id` parameter is required for getting settings from `section_moderator` store.');
+      if (!params.section_id) {
+        callback('`section_id` parameter is required for getting settings from `section_moderator` store.');
         return;
       }
 
@@ -82,14 +82,14 @@ module.exports = function (N) {
 
       var fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
 
-      fetch(params.forum_id, function (err, section) {
+      fetch(params.section_id, function (err, section) {
         if (err) {
           callback(err);
           return;
         }
 
         if (!section) {
-          callback('Forum section ' + params.forum_id + ' does not exist.');
+          callback('Forum section ' + params.section_id + ' does not exist.');
           return;
         }
 
@@ -129,14 +129,14 @@ module.exports = function (N) {
     }
     //
     // params:
-    //   forum_id - ObjectId
+    //   section_id - ObjectId
     //   user_id  - ObjectId
     //
   , set: function (settings, params, callback) {
       var self = this;
 
-      if (!params.forum_id) {
-        callback('`forum_id` parameter is required for saving settings into `section_moderator` store.');
+      if (!params.section_id) {
+        callback('`section_id` parameter is required for saving settings into `section_moderator` store.');
         return;
       }
 
@@ -145,14 +145,14 @@ module.exports = function (N) {
         return;
       }
 
-      N.models.forum.Section.findById(params.forum_id, function (err, section) {
+      N.models.forum.Section.findById(params.section_id, function (err, section) {
         if (err) {
           callback(err);
           return;
         }
 
         if (!section) {
-          callback('Forum section ' + params.forum_id + ' does not exist.');
+          callback('Forum section ' + params.section_id + ' does not exist.');
           return;
         }
 

@@ -36,7 +36,7 @@ module.exports = function (N, apiPath) {
         }
 
         // Count user posts of section to destroy.
-        N.models.forum.Post.count({ forum: section._id }, function (err, postsCount) {
+        N.models.forum.Post.count({ section: section._id }, function (err, postsCount) {
           if (err) {
             callback(err);
             return;

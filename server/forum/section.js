@@ -1,4 +1,4 @@
-// Show topics list (forum)
+// Show topics list (section)
 //
 "use strict";
 
@@ -22,7 +22,7 @@ var topics_in_fields = [
 ];
 
 
-var subforums_in_fields = [
+var subsections_in_fields = [
   '_id',
   'id',
   'title',
@@ -36,7 +36,7 @@ var subforums_in_fields = [
 ];
 
 
-var subforums_out_fields = [
+var subsections_out_fields = [
   '_id',
   'id',
   'title',
@@ -47,7 +47,7 @@ var subforums_out_fields = [
 ];
 
 
-var forum_info_out_fields = [
+var section_info_out_fields = [
   'id',
   'title',
   'description',
@@ -76,7 +76,7 @@ var settings_expose = [
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    // forum id
+    // section id
     id: {
       type: "integer",
       minimum: 1,
@@ -95,14 +95,14 @@ module.exports = function (N, apiPath) {
   var Topic = N.models.forum.Topic;
 
 
-  // Prefetch forum to simplify permisson check.
-  // Check that forum exists.
+  // Prefetch section to simplify permisson check.
+  // Check that section exists.
   //
-  N.wire.before(apiPath, function prefetch_forum(env, callback) {
+  N.wire.before(apiPath, function prefetch_section(env, callback) {
     env.extras.puncher.start('Forum info prefetch');
 
     Section.findOne({ id: env.params.id }).setOptions({ lean: true })
-        .exec(function (err, forum) {
+        .exec(function (err, section) {
 
       env.extras.puncher.stop();
 
@@ -111,20 +111,20 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No forum -> "Not Found" status
-      if (!forum) {
+      // No section -> "Not Found" status
+      if (!section) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      env.data.section = forum;
+      env.data.section = section;
       callback();
     });
   });
 
 
   N.wire.before(apiPath, function section_get_settings(env, callback) {
-    env.extras.settings.params.forum_id = env.data.section._id;
+    env.extras.settings.params.section_id = env.data.section._id;
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(settings_fetch, function (err, settings) {
@@ -166,7 +166,7 @@ module.exports = function (N, apiPath) {
         max      = Math.ceil(env.data.section.cache.real.topic_count / per_page),
         current  = parseInt(env.params.page, 10);
 
-    // forum might have only subforums and no topics,
+    // section might have only subsections and no topics,
     // so check requested page vlidity only when max >= 1
     if (max && current > max) {
       // Requested page is BIGGER than maximum - redirect to the last one
@@ -192,7 +192,7 @@ module.exports = function (N, apiPath) {
   //
   // ##### params
   //
-  // - `id`   forum id
+  // - `id`   section id
   //
   N.wire.on(apiPath, function check_and_set_page_info(env, callback) {
     // FIXME replace state hardcode
@@ -223,7 +223,7 @@ module.exports = function (N, apiPath) {
         start = (env.params.page - 1) * topics_per_page;
 
         // Fetch IDs of "visible" topics interval
-        Topic.find({ forum: env.data.section._id })
+        Topic.find({ section: env.data.section._id })
             //.where('state').equals(VISIBLE_STATE)
             .select('_id cache.real.last_ts').sort(sort).skip(start)
             .limit(topics_per_page + 1).setOptions({ lean: true })
@@ -250,7 +250,7 @@ module.exports = function (N, apiPath) {
               return;
             }
 
-            // category or forum without topics
+            // category or section without topics
             env.data.topics = [];
 
             next();
@@ -272,7 +272,7 @@ module.exports = function (N, apiPath) {
           if (ids.length > topics_per_page) { ids.pop(); }
 
           // Fetch IDs of "hidden" topics (use coverage index)
-          /*Topic.find({ forum: env.data.section._id })
+          /*Topic.find({ section: env.data.section._id })
               .where('state').equals(DELETED_STATE)
               .where('cache.real.last_ts')
                 .lt(_.first(visible_topics).cache.real.last_ts)
@@ -326,20 +326,20 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch sub-forums (only on first page)
+  // fetch sub-sections (only on first page)
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
     var max_level;
     var query;
 
     env.data.sections = [];
-    // subforums fetched only on first page
+    // subsections fetched only on first page
     if (env.params.page > 1) {
       callback();
       return;
     }
 
-    env.extras.puncher.start('Get subforums');
+    env.extras.puncher.start('Get subsections');
 
     max_level = env.data.section.level + 2; // need two next levels
     query = {
@@ -348,7 +348,7 @@ module.exports = function (N, apiPath) {
     };
 
     Section.find(query).sort('display_order').setOptions({ lean: true })
-        .select(subforums_in_fields.join(' '))
+        .select(subsections_in_fields.join(' '))
         .exec(function (err, sections) {
 
       env.extras.puncher.stop({ count: sections.length });
@@ -364,7 +364,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // removes sub-forums for which user has no rights to access:
+  // removes sub-sections for which user has no rights to access:
   //
   //  - forum_can_view
   //
@@ -373,7 +373,7 @@ module.exports = function (N, apiPath) {
     var sections          = env.data.sections.map(function (s) { return s._id; });
     var usergroups        = env.extras.settings.params.usergroup_ids;
 
-    env.extras.puncher.start('Filter sub-forums');
+    env.extras.puncher.start('Filter sub-sections');
 
     fetch_sections_visibility(sections, usergroups, function (err, results) {
       env.extras.puncher.stop({ count: filtered_sections.length });
@@ -397,14 +397,14 @@ module.exports = function (N, apiPath) {
   });
 
   // Build response:
-  //  - forums list -> filtered tree
+  //  - sections list -> filtered tree
   //  - collect users ids (last posters / moderators / topics authors + last)
   //  - topics
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
-    var root, max_subforum_level;
+    var root, max_subsection_level;
 
-    env.extras.puncher.start('Post-process forums/topics/users');
+    env.extras.puncher.start('Post-process sections/topics/users');
 
     //
     // Process sections
@@ -419,12 +419,12 @@ module.exports = function (N, apiPath) {
 
 
     env.data.users = env.data.users || [];
-    max_subforum_level = env.data.section.level + 2;
+    max_subsection_level = env.data.section.level + 2;
 
-    // collect users from subforums
+    // collect users from subsections
     env.data.sections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
-      if (doc.level < max_subforum_level) {
+      if (doc.level < max_subsection_level) {
         if (!!doc.moderator_list) {
           doc.moderator_list.forEach(function (user) {
             env.data.users.push(user);
@@ -447,7 +447,7 @@ module.exports = function (N, apiPath) {
     env.data.sections.forEach(function (doc) {
       for (var attr in doc) {
         if (doc.hasOwnProperty(attr) &&
-            subforums_out_fields.indexOf(attr) === -1) {
+            subsections_out_fields.indexOf(attr) === -1) {
           delete(doc[attr]);
         }
       }
@@ -496,24 +496,24 @@ module.exports = function (N, apiPath) {
     var query, fields, t_params;
 
     var data = env.response.data;
-    var forum = env.data.section;
+    var section = env.data.section;
 
     if (env.session && env.session.hb) {
-      forum.cache.real = forum.cache.hb;
+      section.cache.real = section.cache.hb;
     }
 
     // prepare page title
-    data.head.title = forum.title;
+    data.head.title = section.title;
     if (env.params.page > 1) {
-      t_params = { title: forum.title, page: env.params.page };
+      t_params = { title: section.title, page: env.params.page };
       data.head.title = env.t('title_with_page', t_params);
     }
 
-    // prepare forum info
-    data.forum  = _.pick(forum, forum_info_out_fields);
+    // prepare section info
+    data.section  = _.pick(section, section_info_out_fields);
 
     // fetch breadcrumbs data
-    query = { _id: { $in: forum.parent_list } };
+    query = { _id: { $in: section.parent_list } };
     fields = { '_id': 1, 'id': 1, 'title': 1 };
 
     env.extras.puncher.start('Build breadcrumbs');
@@ -527,7 +527,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      parents.push(forum);
+      parents.push(section);
       data.blocks = data.blocks || {};
       data.blocks.breadcrumbs = forum_breadcrumbs(env, parents);
 

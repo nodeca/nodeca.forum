@@ -49,7 +49,7 @@ module.exports = function (N, collectionName) {
     // prefix id/cache
   , prefix          : Schema.ObjectId
 
-  , forum           : Schema.ObjectId
+  , section           : Schema.ObjectId
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
@@ -77,17 +77,17 @@ module.exports = function (N, collectionName) {
 
   // Main one, used for topics list
   Topic.index({
-    forum: 1
+    section: 1
   , state: 1
   , prefix: 1     // remove, if no prefixes needed
   , _id: -1
   });
 
-  // Get user topics, with restriction by status & forums list
+  // Get user topics, with restriction by status & sections list
   Topic.index({
     first_user: 1
   , state: 1
-  , forum: 1
+  , section: 1
   , _id: -1
   });
 

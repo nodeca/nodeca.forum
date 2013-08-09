@@ -69,8 +69,8 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch forum info
-  N.wire.before(apiPath, function fetch_forum_info(env, callback) {
+  // fetch section info
+  N.wire.before(apiPath, function fetch_section_info(env, callback) {
 
     // If section already fetched (in parent request, for example),
     // skip this step.
@@ -81,8 +81,8 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Forum info prefetch');
 
-    Section.findOne({ _id: env.data.topic.forum }).setOptions({ lean: true })
-        .exec(function (err, forum) {
+    Section.findOne({ _id: env.data.topic.section }).setOptions({ lean: true })
+        .exec(function (err, section) {
 
       env.extras.puncher.stop();
 
@@ -91,13 +91,13 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No forum -> topic with missed parent, return "Not Found" too
-      if (!forum) {
+      // No section -> topic with missed parent, return "Not Found" too
+      if (!section) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      env.data.section = forum;
+      env.data.section = section;
       callback();
     });
   });
@@ -106,7 +106,7 @@ module.exports = function (N, apiPath) {
   // check access permissions
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
-    env.extras.settings.params.forum_id = env.data.topic.forum;
+    env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
@@ -156,8 +156,8 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          "Location": N.runtime.router.linkTo('forum.topic', {
-            forum_id: env.data.topic.forum_id,
+          "Location": N.runtime.router.linkTo('section.topic', {
+            section_id: env.data.topic.section_id,
             id:       env.params.id,
             page:     max
           })
@@ -281,9 +281,9 @@ module.exports = function (N, apiPath) {
     );
   });
 
-  // Add forum info
+  // Add section info
   N.wire.after(apiPath, function fill_topic_info(env) {
-    env.response.data.forum = _.extend({}, env.response.data.forum,
+    env.response.data.section = _.extend({}, env.response.data.section,
       _.pick(env.data.section, [
         //'_id',
         'id'
@@ -334,7 +334,7 @@ module.exports = function (N, apiPath) {
   // Add permissions, required to render posts list
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
-    env.extras.settings.params.forum_id = env.data.topic.forum;
+    env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('Fetch public posts list settings');
 
     env.extras.settings.fetch(['forum_can_reply'], function (err, settings) {

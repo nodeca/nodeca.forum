@@ -52,7 +52,7 @@ module.exports = function (N, collectionName) {
   , moderator_list    : [Schema.ObjectId]
 
     // Options
-  , is_category     : { type: Boolean, 'default': false } // subforum or category
+  , is_category     : { type: Boolean, 'default': false } // subsection or category
   , is_enabled      : { type: Boolean, 'default': true }  // hiden inactive
   , is_writeble     : { type: Boolean, 'default': true} // read-only archive
   , is_searcheable  : { type: Boolean, 'default': true }
@@ -82,7 +82,7 @@ module.exports = function (N, collectionName) {
   , _id: -1
   });
 
-  // build tree in forum page
+  // build tree in section page
   Section.index({
     level: 1
   , parent_list: 1
@@ -137,8 +137,8 @@ module.exports = function (N, collectionName) {
     });
   });
 
-  // Update all subforum's data for saved section: `parent_list` and `level`.
-  // Update all inherited settings (permissions) for subforums.
+  // Update all subsection's data for saved section: `parent_list` and `level`.
+  // Update all inherited settings (permissions) for subsections.
   //
   Section.post('save', function (section) {
 

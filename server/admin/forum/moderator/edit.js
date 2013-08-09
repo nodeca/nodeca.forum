@@ -92,7 +92,7 @@ module.exports = function (N, apiPath) {
       function (next) {
         SectionModeratorStore.get(
           SectionModeratorStore.keys
-        , { forum_id: env.data.section._id, user_id: env.data.user._id }
+        , { section_id: env.data.section._id, user_id: env.data.user._id }
         , { skipCache: true, extended: true }
         , function (err, editSettings) {
           env.response.data.settings = editSettings;
@@ -111,7 +111,7 @@ module.exports = function (N, apiPath) {
 
         SectionModeratorStore.get(
           SectionModeratorStore.keys
-        , { forum_id: env.data.section.parent, user_id: env.data.user._id }
+        , { section_id: env.data.section.parent, user_id: env.data.user._id }
         , { skipCache: true, extended: true }
         , function (err, parentSettings) {
           env.response.data.parent_settings = parentSettings;

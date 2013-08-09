@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
       function (next) {
         SectionUsergroupStore.get(
           SectionUsergroupStore.keys
-        , { forum_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
+        , { section_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, editSettings) {
           env.response.data.settings = editSettings;
@@ -112,7 +112,7 @@ module.exports = function (N, apiPath) {
 
         SectionUsergroupStore.get(
           SectionUsergroupStore.keys
-        , { forum_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
+        , { section_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, parentSettings) {
           env.response.data.parent_settings = parentSettings;

@@ -11,7 +11,7 @@ module.exports.up = function (N, cb) {
   var models = N.models;
 
   var category = new models.forum.Section();
-  var forum    = new models.forum.Section();
+  var section    = new models.forum.Section();
   var topic   = new models.forum.Topic();
   var post     = new models.forum.Post();
 
@@ -66,16 +66,16 @@ module.exports.up = function (N, cb) {
       category.save(callback);
     },
 
-    // create basic forum record
+    // create basic section record
     function (callback) {
-      forum.title = 'Demo forum';
-      forum.description = 'Description for demo forum';
+      section.title = 'Demo forum';
+      section.description = 'Description for demo forum';
 
-      forum.id = 2;
-      forum.parent = category._id;
-      forum.display_order = category.display_order + 1;
+      section.id = 2;
+      section.parent = category._id;
+      section.display_order = category.display_order + 1;
 
-      forum.save(callback);
+      section.save(callback);
     },
 
     // create basic topic record
@@ -85,8 +85,8 @@ module.exports.up = function (N, cb) {
 
       topic.st = statuses.topic.OPEN;
 
-      topic.forum_id = forum.id;
-      topic.forum = forum._id;
+      topic.section_id = section.id;
+      topic.section = section._id;
 
       topic.save(callback);
     },
@@ -101,27 +101,27 @@ module.exports.up = function (N, cb) {
       post.st = statuses.post.VISIBLE;
 
       post.topic = topic._id;
-      post.forum = forum._id;
+      post.section = section._id;
       post.user = user;
 
       post.save(callback);
     },
 
-    // update forum dependent info
+    // update section dependent info
     function (callback) {
-      forum.cache.real.last_post = post._id;
-      forum.cache.real.last_user = user;
-      forum.cache.real.last_ts = post.ts;
+      section.cache.real.last_post = post._id;
+      section.cache.real.last_user = user;
+      section.cache.real.last_ts = post.ts;
 
-      forum.cache.real.last_topic = topic._id;
-      forum.cache.real.last_topic_hid = topic.hid;
-      forum.cache.real.last_topic_title = topic.title;
+      section.cache.real.last_topic = topic._id;
+      section.cache.real.last_topic_hid = topic.hid;
+      section.cache.real.last_topic_title = topic.title;
 
-      forum.cache.real.topic_count = 1;
-      forum.cache.real.post_count = 1;
+      section.cache.real.topic_count = 1;
+      section.cache.real.post_count = 1;
 
-      _.extend(forum.cache.hb, forum.cache.real);
-      forum.save(callback);
+      _.extend(section.cache.hb, section.cache.real);
+      section.save(callback);
     },
 
     // update topic dependent info

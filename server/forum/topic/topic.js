@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
       minimum: 1,
       required: true
     },
-    forum_id: {
+    section_id: {
       type: "integer",
       minimum: 1,
       required: true
@@ -64,13 +64,13 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // fetch forum info
-  N.wire.before(apiPath, function fetch_forum_info(env, callback) {
+  // fetch section info
+  N.wire.before(apiPath, function fetch_section_info(env, callback) {
 
     env.extras.puncher.start('Forum info prefetch');
 
-    Section.findOne({ _id: env.data.topic.forum }).setOptions({ lean: true })
-        .exec(function (err, forum) {
+    Section.findOne({ _id: env.data.topic.section }).setOptions({ lean: true })
+        .exec(function (err, section) {
 
       env.extras.puncher.stop();
 
@@ -79,27 +79,27 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No forum -> topic with missed parent, return "Not Found" too
-      if (!forum) {
+      // No section -> topic with missed parent, return "Not Found" too
+      if (!section) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      env.data.section = forum;
+      env.data.section = section;
       callback();
     });
   });
 
-  // `params.forum_id` can be wrong (old link to moved topic)
-  // If params.forum_id defined, and not correct - redirect to proper location
-  N.wire.before(apiPath, function fix_forum_id(env) {
-    if (env.params.forum_id && (env.data.section.id !== +env.params.forum_id)) {
+  // `params.section_id` can be wrong (old link to moved topic)
+  // If params.section_id defined, and not correct - redirect to proper location
+  N.wire.before(apiPath, function fix_section_id(env) {
+    if (env.params.section_id && (env.data.section.id !== +env.params.section_id)) {
       return {
         code: N.io.REDIRECT,
         head: {
           'Location': N.runtime.router.linkTo('forum.section', {
             hid:       env.data.topic.hid,
-            forum_id: env.data.section.id,
+            section_id: env.data.section.id,
             page:     env.params.page || 1
           })
         }
@@ -111,7 +111,7 @@ module.exports = function (N, apiPath) {
   // check access permissions
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
-    env.extras.settings.params.forum_id = env.data.topic.forum;
+    env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
@@ -133,7 +133,7 @@ module.exports = function (N, apiPath) {
 
 
   //
-  // Just subcall forum.topic.list, that enchances `env`
+  // Just subcall section.topic.list, that enchances `env`
   //
 
   N.wire.on(apiPath, function get_posts(env, callback) {
@@ -196,19 +196,19 @@ module.exports = function (N, apiPath) {
 
   // build breadcrumbs
   N.wire.after(apiPath, function fill_breadcrumbs(env, callback) {
-    var forum = env.data.section;
+    var section = env.data.section;
     var data = env.response.data;
 
     env.extras.puncher.start('Build breadcrumbs');
 
-    fetchForumsBcInfo(forum.parent_list, function (err, parents) {
+    fetchForumsBcInfo(section.parent_list, function (err, parents) {
       if (err) {
         env.extras.puncher.stop();
         callback(err);
         return;
       }
 
-      parents.push(forum);
+      parents.push(section);
       data.blocks = data.blocks || {};
       data.blocks.breadcrumbs = forum_breadcrumbs(env, parents);
 

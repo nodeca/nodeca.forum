@@ -15,7 +15,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
       $button.addClass('hidden');
     } else {
       $button.attr('href', N.runtime.router.linkTo('forum.section', {
-        id:   locals.forum.id,
+        id:   locals.section.id,
         page: locals.page.current + 1
       }));
     }
@@ -27,7 +27,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
     $('._pagination').html(
       N.runtime.render('common.blocks.pagination', {
         route:    'forum.section',
-        params:   locals.forum,
+        params:   locals.section,
         current:  locals.page.current,
         max_page: locals.page.max
       })
