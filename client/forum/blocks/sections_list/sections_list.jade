@@ -3,6 +3,7 @@
 ul.forum-sections
   - each section in self.subsections
     - last_topic = section.cache.real.last_topic_hid || null
+    - console.log(last_topic)
     - last_user = section.cache.real.last_user || null
     - last_ts = section.cache.real.last_ts || null
     li.forum-section
@@ -39,7 +40,7 @@ ul.forum-sections
         - if (last_topic)
           ul.forum-section__lpost.span3.hidden-phone
             li.forum-section__lpost-title
-              a.forum-section__lpost-title-link(href=self.link_to('forum.topic', { id: last_topic, section_id: section.id }) +'#'+String(section.cache.real.last_post)) #{section.cache.real.last_topic_title}
+              a.forum-section__lpost-title-link(href=self.link_to('forum.topic', { hid: last_topic, section_id: section.id }) +'#'+String(section.cache.real.last_post)) #{section.cache.real.last_topic_title}
             - if (self.users[last_user])
               li.forum-section__lpost-user
                 = self.t('topic_by')

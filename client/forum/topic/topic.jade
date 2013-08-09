@@ -46,12 +46,12 @@ article#content.forum-topic-root
     data-section_id=self.section.id,
     data-topic_hid=self.topic.hid
   )
-    != self.partial('@section.blocks.posts_list', { section: self.section, topic: self.topic, posts: self.posts, users: self.users, settings: self.settings })
+    != self.partial('@forum.blocks.posts_list', { section: self.section, topic: self.topic, posts: self.posts, users: self.users, settings: self.settings })
 
   //- Button "More Topics"
   - var link_params = { hid: self.topic.hid, section_id: self.section.id, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-  a.section-topic__more-link.btn.btn-block.icon-more(
+  a.forum-topic__more-link.btn.btn-block.icon-more(
     class=btn_more_state,
     href=self.link_to(self.apiPath, link_params),
     data-page=self.page.current+1,
