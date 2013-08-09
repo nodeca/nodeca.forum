@@ -13,7 +13,7 @@ var _ = require('lodash');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    _id:            { type: 'string',           required: true  }
+    _id:            { type: 'string',           required: true, pattern: /^[0-9a-fA-F]{24}$/  }
   , parent:         { type: ['null', 'string'], required: false }
   , display_order:  { type: 'number',           required: false }
   , title:          { type: 'string',           required: false }

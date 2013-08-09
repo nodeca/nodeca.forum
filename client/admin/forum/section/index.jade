@@ -22,7 +22,7 @@ mixin render_sections_tree(sections, level)
                   li.divider
 
                 li
-                  a(href="#", data-on-click="admin.forum.section.select_moderator_nick")
+                  a(href="#", data-on-click="admin.forum.section.select_moderator_nick", data-section_id=String(section._id))
                     = self.t('add_moderator')
 
             a.aforum-index__section-delete(

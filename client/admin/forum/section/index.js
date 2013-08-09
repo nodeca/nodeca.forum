@@ -118,7 +118,7 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
 
 
 N.wire.on('admin.forum.section.select_moderator_nick', function section_select_moderator(event) {
-  var sectionId = $(event.currentTarget).parents('.section-control:first').data('id');
+  var sectionId = $(event.currentTarget).data('section_id');
 
   // Render dialog window.
   var $dialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
