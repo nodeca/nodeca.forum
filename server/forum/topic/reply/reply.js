@@ -16,7 +16,7 @@ var posts_in_fields = [
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    thread_id: {
+    topic_id: {
       type: "integer",
       required: true
     },
@@ -36,15 +36,15 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  var Thread = N.models.forum.Thread;
+  var Topic = N.models.forum.Topic;
   var Post = N.models.forum.Post;
 
-  // fetch thread info to simplify permisson check
-  N.wire.before(apiPath, function fetch_thread(env, callback) {
-    env.extras.puncher.start('Thread info prefetch (reply)');
+  // fetch topic info to simplify permisson check
+  N.wire.before(apiPath, function fetch_topic(env, callback) {
+    env.extras.puncher.start('Topic info prefetch (reply)');
 
-    Thread.findOne({ id: env.params.thread_id }).setOptions({ lean: true })
-        .exec(function (err, thread) {
+    Topic.findOne({ id: env.params.topic_id }).setOptions({ lean: true })
+        .exec(function (err, topic) {
 
       env.extras.puncher.stop();
 
@@ -53,15 +53,15 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (!thread) {
+      if (!topic) {
         callback({
           code: N.io.BAD_REQUIEST,
-          message: env.t('error_invalid_thread', env.params)
+          message: env.t('error_invalid_topic', env.params)
         });
         return;
       }
 
-      env.data.thread = thread;
+      env.data.topic = topic;
       callback();
     });
   });
@@ -136,7 +136,7 @@ module.exports = function (N, apiPath) {
   // Request handler
   //
   N.wire.on(apiPath, function save_new_post(env, callback) {
-    var thread = env.data.thread,
+    var topic = env.data.topic,
         parent_post_id = env.data.parent_post_id,
         post;
 
@@ -170,8 +170,8 @@ module.exports = function (N, apiPath) {
       post.ip = env.request.ip;
       post.state = 0;
 
-      post.forum = thread.forum;
-      post.thread = thread._id;
+      post.forum = topic.forum;
+      post.topic = topic._id;
 
       // TODO: Set post.user
 

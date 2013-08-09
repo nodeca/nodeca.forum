@@ -1,0 +1,15 @@
+en-US:
+  topic_subscribe: Subscribe to new posts notification
+  topic_delete: Delete
+  topic_close: Close
+  topic_pin: Pin
+  topic_unpin: Unpin
+  topic_history: History
+  topic_approve: Approve
+  topic_merge: Merge
+
+  post_add: Add reply
+  more_posts: More posts
+  title_with_page: "#{title} - page #{page}"
+
+  error_no_more_posts: Ups! No more posts in this topic.

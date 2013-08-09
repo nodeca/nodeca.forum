@@ -1,4 +1,4 @@
-// Show posts list (thread)
+// Show posts list (topic)
 //
 "use strict";
 
@@ -12,7 +12,7 @@ var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    // thread id
+    // topic id
     id: {
       type: "integer",
       minimum: 1,
@@ -33,18 +33,18 @@ module.exports = function (N, apiPath) {
 
   // shortcuts
   var Section = N.models.forum.Section;
-  var Thread = N.models.forum.Thread;
+  var Topic = N.models.forum.Topic;
 
 
-  // Fetch thread info & check that thread exists.
+  // Fetch topic info & check that topic exists.
   // Make sure, that fields are not filtered, because
   // data are reused in subrequest
-  N.wire.before(apiPath, function fetch_thread_info(env, callback) {
+  N.wire.before(apiPath, function fetch_topic_info(env, callback) {
 
-    env.extras.puncher.start('Thread info prefetch');
+    env.extras.puncher.start('Topic info prefetch');
 
-    Thread.findOne({ id: env.params.id }).setOptions({ lean: true })
-        .exec(function (err, thread) {
+    Topic.findOne({ id: env.params.id }).setOptions({ lean: true })
+        .exec(function (err, topic) {
 
       env.extras.puncher.stop();
 
@@ -53,13 +53,13 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No thread -> "Not Found" status
-      if (!thread) {
+      // No topic -> "Not Found" status
+      if (!topic) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      env.data.thread = thread;
+      env.data.topic = topic;
       callback();
     });
   });
@@ -69,7 +69,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Forum info prefetch');
 
-    Section.findOne({ _id: env.data.thread.forum }).setOptions({ lean: true })
+    Section.findOne({ _id: env.data.topic.forum }).setOptions({ lean: true })
         .exec(function (err, forum) {
 
       env.extras.puncher.stop();
@@ -79,7 +79,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No forum -> thread with missed parent, return "Not Found" too
+      // No forum -> topic with missed parent, return "Not Found" too
       if (!forum) {
         callback(N.io.NOT_FOUND);
         return;
@@ -90,7 +90,7 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // `params.forum_id` can be wrong (old link to moved thread)
+  // `params.forum_id` can be wrong (old link to moved topic)
   // If params.forum_id defined, and not correct - redirect to proper location
   N.wire.before(apiPath, function fix_forum_id(env) {
     if (env.params.forum_id && (env.data.section.id !== +env.params.forum_id)) {
@@ -98,7 +98,7 @@ module.exports = function (N, apiPath) {
         code: N.io.REDIRECT,
         head: {
           'Location': N.runtime.router.linkTo('forum.section', {
-            id:       env.data.thread.id,
+            id:       env.data.topic.id,
             forum_id: env.data.section.id,
             page:     env.params.page || 1
           })
@@ -111,7 +111,7 @@ module.exports = function (N, apiPath) {
   // check access permissions
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
-    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.settings.params.forum_id = env.data.topic.forum;
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
@@ -133,7 +133,7 @@ module.exports = function (N, apiPath) {
 
 
   //
-  // Just subcall forum.thread.list, that enchances `env`
+  // Just subcall forum.topic.list, that enchances `env`
   //
 
   N.wire.on(apiPath, function get_posts(env, callback) {
@@ -143,7 +143,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Fetch posts');
 
-    N.wire.emit('server:forum.thread.list', env, function (err) {
+    N.wire.emit('server:forum.topic.list', env, function (err) {
       env.extras.puncher.stop();
 
       env.params = _params;
@@ -152,25 +152,25 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill head meta & thread info
+  // Fill head meta & topic info
   N.wire.after(apiPath, function fill_meta(env) {
     var t_params;
     var data = env.response.data;
-    var thread = env.data.thread;
+    var topic = env.data.topic;
 
     if (env.session && env.session.hb) {
-      thread.cache.real = thread.cache.hb;
+      topic.cache.real = topic.cache.hb;
     }
 
     // prepare page title
-    data.head.title = thread.title;
+    data.head.title = topic.title;
     if (env.params.page > 1) {
-      t_params = { title: thread.title, page: env.params.page };
+      t_params = { title: topic.title, page: env.params.page };
       data.head.title = env.t('title_with_page', t_params);
     }
 
-    // add thread info, specific for this page (partially filled in `forum.thread.list`)
-    data.thread = _.extend({}, data.thread, _.pick(thread, ['_seo_desc']));
+    // add topic info, specific for this page (partially filled in `forum.topic.list`)
+    data.topic = _.extend({}, data.topic, _.pick(topic, ['_seo_desc']));
   });
 
 

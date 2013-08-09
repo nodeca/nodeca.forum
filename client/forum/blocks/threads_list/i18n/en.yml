@@ -1,5 +1,0 @@
-en-US:
-  page_separator: "page #{page}"
-  thread_replies: " ((reply|replies))"
-  thread_views: " ((view|views))"
-  thread_preview: Preview

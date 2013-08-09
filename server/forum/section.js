@@ -1,4 +1,4 @@
-// Show threads list (forum)
+// Show topics list (forum)
 //
 "use strict";
 
@@ -12,7 +12,7 @@ var to_tree = require('../../lib/to_tree.js');
 var fetch_sections_visibility = require('../../lib/fetch_sections_visibility');
 
 
-var threads_in_fields = [
+var topics_in_fields = [
   '_id',
   'id',
   'title',
@@ -58,7 +58,7 @@ var forum_info_out_fields = [
 // settings that needs to be fetched
 var settings_fetch = [
   'posts_per_page',
-  'threads_per_page',
+  'topics_per_page',
   'forum_can_view',
   'forum_can_reply',
   'forum_can_start_topics'
@@ -92,7 +92,7 @@ module.exports = function (N, apiPath) {
 
   // shortcuts
   var Section = N.models.forum.Section;
-  var Thread = N.models.forum.Thread;
+  var Topic = N.models.forum.Topic;
 
 
   // Prefetch forum to simplify permisson check.
@@ -162,11 +162,11 @@ module.exports = function (N, apiPath) {
   // requested page is bigger than max available
   //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
-    var per_page = env.data.settings.threads_per_page,
-        max      = Math.ceil(env.data.section.cache.real.thread_count / per_page),
+    var per_page = env.data.settings.topics_per_page,
+        max      = Math.ceil(env.data.section.cache.real.topic_count / per_page),
         current  = parseInt(env.params.page, 10);
 
-    // forum might have only subforums and no threads,
+    // forum might have only subforums and no topics,
     // so check requested page vlidity only when max >= 1
     if (max && current > max) {
       // Requested page is BIGGER than maximum - redirect to the last one
@@ -188,7 +188,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch and prepare threads
+  // fetch and prepare topics
   //
   // ##### params
   //
@@ -204,12 +204,12 @@ module.exports = function (N, apiPath) {
     var query;
     var ids = [];
 
-    var threads_per_page = env.data.settings.threads_per_page;
+    var topics_per_page = env.data.settings.topics_per_page;
 
     env.response.data.show_page_number = false;
 
-    env.extras.puncher.start('Get threads');
-    env.extras.puncher.start('Thread ids prefetch');
+    env.extras.puncher.start('Get topics');
+    env.extras.puncher.start('Topic ids prefetch');
 
     if (env.session && env.session.hb) {
       sort['cache.hb.last_ts'] = -1;
@@ -219,24 +219,24 @@ module.exports = function (N, apiPath) {
 
     async.series([
       function (next) {
-        // FIXME add state condition to select only visible threads
-        start = (env.params.page - 1) * threads_per_page;
+        // FIXME add state condition to select only visible topics
+        start = (env.params.page - 1) * topics_per_page;
 
-        // Fetch IDs of "visible" threads interval
-        Thread.find({ forum: env.data.section._id })
+        // Fetch IDs of "visible" topics interval
+        Topic.find({ forum: env.data.section._id })
             //.where('state').equals(VISIBLE_STATE)
             .select('_id cache.real.last_ts').sort(sort).skip(start)
-            .limit(threads_per_page + 1).setOptions({ lean: true })
-            .exec(function (err, visible_threads) {
+            .limit(topics_per_page + 1).setOptions({ lean: true })
+            .exec(function (err, visible_topics) {
 
-          env.extras.puncher.stop({ count: visible_threads.length });
+          env.extras.puncher.stop({ count: visible_topics.length });
 
           if (err) {
             next(err);
             return;
           }
 
-          if (!visible_threads.length) {
+          if (!visible_topics.length) {
             // properly close puncher scope on early interrupt
             env.extras.puncher.stop();
 
@@ -244,22 +244,22 @@ module.exports = function (N, apiPath) {
               // When user requests page that is out of possible range we redirect
               // them during before filter (see above).
               //
-              // But very rarely, cached threads counter can be out of sync.
+              // But very rarely, cached topics counter can be out of sync.
               // In this case return 404 for empty result.
               next(N.io.NOT_FOUND);
               return;
             }
 
-            // category or forum without threads
-            env.data.threads = [];
+            // category or forum without topics
+            env.data.topics = [];
 
             next();
             return;
           }
 
           // collect ids
-          ids = visible_threads.map(function (thread) {
-            return thread._id;
+          ids = visible_topics.map(function (topic) {
+            return topic._id;
           });
 
           // FIXME need real check permission
@@ -268,26 +268,26 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          // delete last ID, if successefuly fetched (threads_per_page+1)
-          if (ids.length > threads_per_page) { ids.pop(); }
+          // delete last ID, if successefuly fetched (topics_per_page+1)
+          if (ids.length > topics_per_page) { ids.pop(); }
 
-          // Fetch IDs of "hidden" threads (use coverage index)
-          /*Thread.find({ forum: env.data.section._id })
+          // Fetch IDs of "hidden" topics (use coverage index)
+          /*Topic.find({ forum: env.data.section._id })
               .where('state').equals(DELETED_STATE)
               .where('cache.real.last_ts')
-                .lt(_.first(visible_threads).cache.real.last_ts)
-                .gt(_.last(visible_threads).cache.real.last_ts)
+                .lt(_.first(visible_topics).cache.real.last_ts)
+                .gt(_.last(visible_topics).cache.real.last_ts)
               .select('_id').sort(sort)
               .setOptions({ lean: true })
-              .exec(function (err, deleted_threads) {
+              .exec(function (err, deleted_topics) {
 
             if (err) {
               next(err);
               return;
             }
-            // append ids of deleted threads
-            deleted_threads.forEach(function (thread) {
-              ids.push(thread._id);
+            // append ids of deleted topics
+            deleted_topics.forEach(function (topic) {
+              ids.push(topic._id);
             });
             next();
           });*/
@@ -299,18 +299,18 @@ module.exports = function (N, apiPath) {
           next();
           return;
         }
-        env.extras.puncher.start('Get threads by _id list');
+        env.extras.puncher.start('Get topics by _id list');
 
         // FIXME modify state condition (deleted and etc) if user has permission
-        // If no hidden threads - no conditions needed, just select by IDs
-        query = Thread.find().where('_id').in(ids).sort(sort);
+        // If no hidden topics - no conditions needed, just select by IDs
+        query = Topic.find().where('_id').in(ids).sort(sort);
 
-        // Select all allowed threads in calculated
+        // Select all allowed topics in calculated
         // interval: visible + deleted and others (if allowed by permissions)
-        query.select(threads_in_fields.join(' ')).sort(sort)
-            .setOptions({ lean: true }).exec(function (err, threads) {
+        query.select(topics_in_fields.join(' ')).sort(sort)
+            .setOptions({ lean: true }).exec(function (err, topics) {
 
-          env.extras.puncher.stop({ count: threads.length });
+          env.extras.puncher.stop({ count: topics.length });
           env.extras.puncher.stop();
 
           if (err) {
@@ -318,7 +318,7 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          env.data.threads = threads;
+          env.data.topics = topics;
           next();
         });
       }
@@ -398,13 +398,13 @@ module.exports = function (N, apiPath) {
 
   // Build response:
   //  - forums list -> filtered tree
-  //  - collect users ids (last posters / moderators / threads authors + last)
-  //  - threads
+  //  - collect users ids (last posters / moderators / topics authors + last)
+  //  - topics
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
     var root, max_subforum_level;
 
-    env.extras.puncher.start('Post-process forums/threads/users');
+    env.extras.puncher.start('Post-process forums/topics/users');
 
     //
     // Process sections
@@ -456,11 +456,11 @@ module.exports = function (N, apiPath) {
 
 
     //
-    // Process threads
+    // Process topics
     //
 
     if (env.session && env.session.hb) {
-      env.data.threads = env.data.threads.map(function (doc) {
+      env.data.topics = env.data.topics.map(function (doc) {
         doc.cache.real = doc.cache.hb;
         return doc;
       });
@@ -468,14 +468,14 @@ module.exports = function (N, apiPath) {
 
     // calculate pages number
     var posts_per_page = env.data.settings.posts_per_page;
-    env.data.threads.forEach(function (doc) {
+    env.data.topics.forEach(function (doc) {
       doc._pages_count = Math.ceil(doc.cache.real.post_count / posts_per_page);
     });
 
-    env.response.data.threads = env.data.threads;
+    env.response.data.topics = env.data.topics;
 
-    // collect users from threads
-    env.data.threads.forEach(function (doc) {
+    // collect users from topics
+    env.data.topics.forEach(function (doc) {
       if (doc.cache.real.first_user) {
         env.data.users.push(doc.cache.real.first_user);
       }

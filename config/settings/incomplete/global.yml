@@ -7,7 +7,7 @@ setting_groups:
 
 setting_schemas:
   global:
-    threads_per_page:
+    topics_per_page:
       type: number
       group_key: forum_general
       category_key: forum
@@ -16,5 +16,5 @@ setting_schemas:
     posts_per_page:
       type: number
       group_key: forum_general
-      category_key: thread
+      category_key: topic
       default: 25

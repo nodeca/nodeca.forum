@@ -1,4 +1,4 @@
-- var status = { thread: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 }, post: { VISIBLE: 1, HB: 2, PENDING: 3, DELETED: 4, DELETED_HARD: 5 } }
+- var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 }, post: { VISIBLE: 1, HB: 2, PENDING: 3, DELETED: 4, DELETED_HARD: 5 } }
 
 - if (self.show_page_number)
   .forum-postlist__separator= self.t('page_separator', { page: self.show_page_number })
@@ -8,7 +8,7 @@
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
         time.forum-post__time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
-        - var _post_anchor = self.link_to('forum.thread', self.thread) + '#post' + String(post._id);
+        - var _post_anchor = self.link_to('forum.topic', self.topic) + '#post' + String(post._id);
         a.forum-post__link.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left
@@ -31,7 +31,7 @@
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
-          - if (self.settings.forum_can_reply && (self.thread.st === status.thread.OPEN || self.thread.st === status.thread.OPEN))
+          - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
             li.forum-post__control-item
               a.forum-post__action-link.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
           li.forum-post__control-item

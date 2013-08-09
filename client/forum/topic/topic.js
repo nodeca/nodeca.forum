@@ -1,4 +1,4 @@
-// Forum Thread page logic
+// Forum Topic page logic
 //
 
 'use strict';
@@ -11,7 +11,7 @@ var draft = require('../_draft');
 // Editor class (CommonJS module), lazy-loaded
 var Editor;
 
-var threadInfo = {};
+var topicInfo = {};
 
 // Editor state
 var eState = {};
@@ -76,12 +76,12 @@ N.wire.on('forum.post.reply', function (event) {
     eState.type = 'post-reply';
     eState.parent_post_id = parent_post_id;
 
-    // draft id = 'forum:reply:<forum_id>:<thread_id>:<post_id>'
-    eState.draft_id = 'forum:reply:' + threadInfo.forum_id + ':' +
-      threadInfo.id + ':' + parent_post_id;
+    // draft id = 'forum:reply:<forum_id>:<topic_id>:<post_id>'
+    eState.draft_id = 'forum:reply:' + topicInfo.forum_id + ':' +
+      topicInfo.id + ':' + parent_post_id;
 
     // Create editing form instance
-    eState.$form = $(N.runtime.render('forum.thread.reply'));
+    eState.$form = $(N.runtime.render('forum.topic.reply'));
     eState.$form.hide();
 
     var $parent_post;
@@ -116,7 +116,7 @@ N.wire.on('forum.post.reply', function (event) {
 N.wire.on('forum.post.reply.save', function () {
   // Save reply on server
   var post = {
-    thread_id: threadInfo.id,
+    topic_id: topicInfo.id,
     format: 'txt',
     text: eState.editor.value()
   };
@@ -129,13 +129,13 @@ N.wire.on('forum.post.reply.save', function () {
     post._id = eState.post_id;
   }
 
-  N.io.rpc('forum.thread.reply', post, function (err, env) {
+  N.io.rpc('forum.topic.reply', post, function (err, env) {
     if (err) {
       return;
     }
 
     var locals = {
-      thread: threadInfo,
+      topic: topicInfo,
       posts: env.data.posts,
       users: env.data.users
     };
@@ -181,15 +181,15 @@ N.wire.on('forum.post.reply.cancel', function () {
 N.wire.on('navigate.done:' + module.apiPath, function (/*config*/) {
   var $postlist = $('#postlist');
 
-  threadInfo.id = $postlist.data('thread_id');
-  threadInfo.forum_id = $postlist.data('forum_id');
+  topicInfo.id = $postlist.data('topic_id');
+  topicInfo.forum_id = $postlist.data('forum_id');
 
 });
 
 // on page exit via link click
 //
 N.wire.on('navigate.exit:' + module.apiPath, function () {
-  threadInfo = {};
+  topicInfo = {};
 
   if (eState.$form && eState.editor.isDirty() && 'post-reply' === eState.type) {
     saveDraft();
@@ -230,7 +230,7 @@ N.wire.on('forum.post.edit', function (event) {
     eState.post_id = post_id;
 
     // Create editing form instance
-    eState.$form = $(N.runtime.render('forum.thread.reply', {
+    eState.$form = $(N.runtime.render('forum.topic.reply', {
       type: eState.type
     }));
     eState.$form.hide();
@@ -281,13 +281,13 @@ N.wire.before('navigate.exit:' + module.apiPath, function () {
 ////////////////////////////////////////////////////////////////////////////////
 // "More posts" button logic
 
-N.wire.on('forum.thread.append_next_page', function (event) {
+N.wire.on('forum.topic.append_next_page', function (event) {
   var $button = $(event.currentTarget);
   var new_url = $button.attr('href');
 
   N.io.rpc(
-    'forum.thread.list',
-    { id: $button.data('thread'), page: $button.data('page') },
+    'forum.topic.list',
+    { id: $button.data('topic'), page: $button.data('page') },
     function (err, res) {
 
       // Process errors
@@ -322,8 +322,8 @@ N.wire.on('forum.thread.append_next_page', function (event) {
       // update button data & state
       $button.data('page', locals.page.current + 1);
 
-      $button.attr('href', N.runtime.router.linkTo('forum.thread', {
-        id:       locals.thread.id
+      $button.attr('href', N.runtime.router.linkTo('forum.topic', {
+        id:       locals.topic.id
       , forum_id: locals.forum.id
       , page:     locals.page.current + 1
       }));
@@ -335,8 +335,8 @@ N.wire.on('forum.thread.append_next_page', function (event) {
       // update pager
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
-          route:    'forum.thread'
-        , params:   { id: locals.thread.id, forum_id: locals.forum.id }
+          route:    'forum.topic'
+        , params:   { id: locals.topic.id, forum_id: locals.forum.id }
         , current:  locals.page.current
         , max_page: locals.page.max
         })
@@ -346,7 +346,7 @@ N.wire.on('forum.thread.append_next_page', function (event) {
       N.wire.emit('navigate.replace', {
         href: new_url,
         title: t('title_with_page', {
-          title: locals.thread.title,
+          title: locals.topic.title,
           page: locals.page.current
         })
       });

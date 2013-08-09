@@ -11,8 +11,8 @@ router:
           default: 1
 
 
-    forum.thread:
-      "/f{forum_id}/thread{id}(/page{page})":
+    forum.topic:
+      "/f{forum_id}/topic{id}(/page{page})":
         forum_id: /\d+/
         id: /\d+/
         page:

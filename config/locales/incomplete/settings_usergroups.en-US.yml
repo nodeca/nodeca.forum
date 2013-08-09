@@ -10,7 +10,7 @@ i18n:
           forum_can_view: Show Forum
           forum_can_reply: Reply Topics
           forum_can_start_topics: Start Topics
-          forum_mod_can_edit_titles: Edit thread titles
+          forum_mod_can_edit_titles: Edit topic titles
           forum_mod_can_edit_posts: Edit posts
-          forum_mod_can_delete_threads: Delete threads
+          forum_mod_can_delete_topics: Delete topics
           forum_mod_can_delete_posts: Delete posts

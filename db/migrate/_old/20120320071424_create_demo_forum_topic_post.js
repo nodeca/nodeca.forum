@@ -4,15 +4,15 @@
 var _     = require('lodash');
 var async = require('async');
 
-// thread and post statuses
-var statuses = require('../../server/forum/thread/_statuses.js');
+// topic and post statuses
+var statuses = require('../../server/forum/topic/_statuses.js');
 
 module.exports.up = function (N, cb) {
   var models = N.models;
 
   var category = new models.forum.Section();
   var forum    = new models.forum.Section();
-  var thread   = new models.forum.Thread();
+  var topic   = new models.forum.Topic();
   var post     = new models.forum.Post();
 
   var user     = new models.users.User();
@@ -78,17 +78,17 @@ module.exports.up = function (N, cb) {
       forum.save(callback);
     },
 
-    // create basic thread record
+    // create basic topic record
     function (callback) {
-      thread.title = 'Demo post';
-      thread.id = 1;
+      topic.title = 'Demo post';
+      topic.id = 1;
 
-      thread.st = statuses.thread.OPEN;
+      topic.st = statuses.topic.OPEN;
 
-      thread.forum_id = forum.id;
-      thread.forum = forum._id;
+      topic.forum_id = forum.id;
+      topic.forum = forum._id;
 
-      thread.save(callback);
+      topic.save(callback);
     },
 
     // create basic post record
@@ -100,7 +100,7 @@ module.exports.up = function (N, cb) {
       // Stub. This constants should be defined globally
       post.st = statuses.post.VISIBLE;
 
-      post.thread = thread._id;
+      post.topic = topic._id;
       post.forum = forum._id;
       post.user = user;
 
@@ -113,32 +113,32 @@ module.exports.up = function (N, cb) {
       forum.cache.real.last_user = user;
       forum.cache.real.last_ts = post.ts;
 
-      forum.cache.real.last_thread = thread._id;
-      forum.cache.real.last_thread_id = thread.id;
-      forum.cache.real.last_thread_title = thread.title;
+      forum.cache.real.last_topic = topic._id;
+      forum.cache.real.last_topic_id = topic.id;
+      forum.cache.real.last_topic_title = topic.title;
 
-      forum.cache.real.thread_count = 1;
+      forum.cache.real.topic_count = 1;
       forum.cache.real.post_count = 1;
 
       _.extend(forum.cache.hb, forum.cache.real);
       forum.save(callback);
     },
 
-    // update thread dependent info
+    // update topic dependent info
     function (callback) {
-      thread.cache.real.post_count = 1;
+      topic.cache.real.post_count = 1;
 
-      thread.cache.real.first_post = post._id;
-      thread.cache.real.last_post = post._id;
+      topic.cache.real.first_post = post._id;
+      topic.cache.real.last_post = post._id;
 
-      thread.cache.real.first_user = user;
-      thread.cache.real.last_user = user;
+      topic.cache.real.first_user = user;
+      topic.cache.real.last_user = user;
 
-      thread.cache.real.first_ts = post.ts;
-      thread.cache.real.last_ts = post.ts;
+      topic.cache.real.first_ts = post.ts;
+      topic.cache.real.last_ts = post.ts;
 
-      _.extend(thread.cache.hb, thread.cache.real);
-      thread.save(callback);
+      _.extend(topic.cache.hb, topic.cache.real);
+      topic.save(callback);
     }
   ], cb);
 };

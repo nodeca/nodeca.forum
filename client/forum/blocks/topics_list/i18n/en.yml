@@ -1,0 +1,5 @@
+en-US:
+  page_separator: "page #{page}"
+  topic_replies: " ((reply|replies))"
+  topic_views: " ((view|views))"
+  topic_preview: Preview

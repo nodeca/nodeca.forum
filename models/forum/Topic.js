@@ -41,7 +41,7 @@ module.exports = function (N, collectionName) {
   };
 
 
-  var Thread = new Schema({
+  var Topic = new Schema({
     title           : { type: String, required: true }
     // user-friendly id (autoincremented)
   , id              : { type: Number, required: true, min: 1, index: true }
@@ -54,13 +54,13 @@ module.exports = function (N, collectionName) {
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
   , st              : { type: Number, required: true }
-  , ste             : Number  // real state, if thread is sticky or hellbanned
+  , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
 
     // Tags
   , tags_id_list    : [Number]
 
-    // "Similar" threads cache
+    // "Similar" topics cache
   , similar         : [Schema.ObjectId]
 
     // Cache
@@ -75,16 +75,16 @@ module.exports = function (N, collectionName) {
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Main one, used for threads list
-  Thread.index({
+  // Main one, used for topics list
+  Topic.index({
     forum: 1
   , state: 1
   , prefix: 1     // remove, if no prefixes needed
   , _id: -1
   });
 
-  // Get user threads, with restriction by status & forums list
-  Thread.index({
+  // Get user topics, with restriction by status & forums list
+  Topic.index({
     first_user: 1
   , state: 1
   , forum: 1
@@ -92,11 +92,11 @@ module.exports = function (N, collectionName) {
   });
 
 
-  N.wire.on("init:models", function emit_init_Thread(__, callback) {
-    N.wire.emit("init:models." + collectionName, Thread, callback);
+  N.wire.on("init:models", function emit_init_Topic(__, callback) {
+    N.wire.emit("init:models." + collectionName, Topic, callback);
   });
 
-  N.wire.on("init:models." + collectionName, function init_model_Thread(schema) {
+  N.wire.on("init:models." + collectionName, function init_model_Topic(schema) {
     N.models[collectionName] = Mongoose.model(collectionName, schema);
   });
 };

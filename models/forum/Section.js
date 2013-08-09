@@ -10,24 +10,24 @@ module.exports = function (N, collectionName) {
 
   var cache = {
     real: {
-      thread_count      : { type: Number, 'default': 0 }
+      topic_count      : { type: Number, 'default': 0 }
     , post_count        : { type: Number, 'default': 0 }
 
     , last_post         : Schema.ObjectId
-    , last_thread       : Schema.ObjectId
-    , last_thread_id    : Number
-    , last_thread_title : String
+    , last_topic       : Schema.ObjectId
+    , last_topic_id    : Number
+    , last_topic_title : String
     , last_user         : Schema.ObjectId
     , last_ts           : Date
     }
   , hb: {
-      thread_count      : { type: Number, 'default': 0 }
+      topic_count      : { type: Number, 'default': 0 }
     , post_count        : { type: Number, 'default': 0 }
 
     , last_post         : Schema.ObjectId
-    , last_thread       : Schema.ObjectId
-    , last_thread_id    : Number
-    , last_thread_title : String
+    , last_topic       : Schema.ObjectId
+    , last_topic_id    : Number
+    , last_topic_title : String
     , last_user         : Schema.ObjectId
     , last_ts           : Date
     }

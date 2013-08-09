@@ -5,8 +5,8 @@
  * This seed create data for demo forum:
  *   3 category, each category contain 10 forums
  *   last forum in 3rd category is empty
- *   first forum contain 200 threads, all others only one
- *   first thread in first thread contain 100 post, all others only one
+ *   first forum contain 200 topics, all others only one
+ *   first topic in first topic contain 100 post, all others only one
  *
  */
 
@@ -14,12 +14,12 @@ var _         = require('lodash');
 var async     = require('async');
 var Charlatan = require('charlatan');
 
-// thread and post statuses
-var statuses = require('../../server/forum/thread/_statuses.js');
+// topic and post statuses
+var statuses = require('../../server/forum/topic/_statuses.js');
 
 var Category;
 var Forum;
-var Thread;
+var Topic;
 var Post;
 var User;
 var UserGroup;
@@ -28,8 +28,8 @@ var UserGroup;
 var CATEGORY_COUNT = 3;
 var FORUM_COUNT  = 10;
 var SUB_FORUM_DEEP = 1;
-var THREAD_COUNT_IN_BIG_FORUM  = 200;
-var POST_COUNT_IN_BIG_THREAD  = 100;
+var TOPIC_COUNT_IN_BIG_FORUM  = 200;
+var POST_COUNT_IN_BIG_TOPIC  = 100;
 var USER_COUNT = 200;
 var MAX_MODERATOR_COUNT = 3;
 var MAX_SUB_FORUM_COUNT = 3;
@@ -37,7 +37,7 @@ var MAX_SUB_FORUM_COUNT = 3;
 var CATEGORY_ID_SHIFT = 3;
 var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
 var DISPLAY_ORDER_SHIFT = 2;
-var THREAD_ID_SHIFT = 2;
+var TOPIC_ID_SHIFT = 2;
 var USER_ID_SHIFT = 2;
 
 // cache usergroups ids
@@ -49,7 +49,7 @@ Charlatan.Incrementer = {
   category_shift: CATEGORY_ID_SHIFT,
   forum_shift: FORUM_ID_SHIFT,
   display_order_shift: DISPLAY_ORDER_SHIFT,
-  thread_shift: THREAD_ID_SHIFT,
+  topic_shift: TOPIC_ID_SHIFT,
   user_shift: USER_ID_SHIFT
 };
 
@@ -68,7 +68,7 @@ Charlatan.Incrementer.next = function (type) {
 
 Charlatan.users = [];
 
-// add helpers for categorys,forums, threads and posts
+// add helpers for categorys,forums, topics and posts
 Charlatan.Helpers.category = function () {
   return {
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
@@ -96,28 +96,28 @@ Charlatan.Helpers.forum = function (parent) {
   };
 };
 
-Charlatan.Helpers.thread = function (forum) {
+Charlatan.Helpers.topic = function (forum) {
   return {
     title: Charlatan.Lorem.sentence().slice(0, -1),
 
-    id: Charlatan.Incrementer.next('thread'),
+    id: Charlatan.Incrementer.next('topic'),
 
-    st: statuses.thread.OPEN,
+    st: statuses.topic.OPEN,
     forum: forum._id,
 
     views_count: Charlatan.Helpers.rand(1000)
   };
 };
 
-Charlatan.Helpers.post = function (thread) {
+Charlatan.Helpers.post = function (topic) {
   var ts =  new Date(2010, 0, 0);
   return {
     text: Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join(' '),
     fmt:  'txt',
 
     st: statuses.post.VISIBLE,
-    thread: thread._id,
-    forum: thread.forum,
+    topic: topic._id,
+    forum: topic.forum,
 
     user: Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)],
 
@@ -148,12 +148,12 @@ Charlatan.Helpers.user = function () {
   };
 };
 
-var is_big_thread = true;
+var is_big_topic = true;
 var is_big_forum = true;
 
 
-var create_post = function (thread, callback) {
-  var post = new Post(Charlatan.Helpers.post(thread));
+var create_post = function (topic, callback) {
+  var post = new Post(Charlatan.Helpers.post(topic));
 
   post.save(function (err, post) {
     if (err) {
@@ -167,28 +167,28 @@ var create_post = function (thread, callback) {
   });
 };
 
-var create_thread = function (forum, callback) {
+var create_topic = function (forum, callback) {
   var first_post;
   var last_post;
   var post_count;
 
-  if (is_big_thread) {
-    is_big_thread = false;
-    post_count = POST_COUNT_IN_BIG_THREAD;
+  if (is_big_topic) {
+    is_big_topic = false;
+    post_count = POST_COUNT_IN_BIG_TOPIC;
   } else {
     post_count = 1;
   }
 
-  var thread = new Thread(Charlatan.Helpers.thread(forum));
+  var topic = new Topic(Charlatan.Helpers.topic(forum));
 
   async.series([
     function (cb) {
-      thread.save(cb);
+      topic.save(cb);
     },
     // create posts
     function (cb) {
       async.forEachSeries(_.range(post_count), function (current_post, next_post) {
-        create_post(thread, function (err, post) {
+        create_post(topic, function (err, post) {
           if (err) {
             next_post(err);
             return;
@@ -203,40 +203,40 @@ var create_thread = function (forum, callback) {
         });
       }, cb);
     },
-    // update thread
+    // update topic
     function (cb) {
-      thread.cache.real.post_count = post_count;
+      topic.cache.real.post_count = post_count;
 
-      thread.cache.real.first_post = first_post._id;
-      thread.cache.real.first_ts = first_post.ts;
-      thread.cache.real.first_user = first_post.user;
+      topic.cache.real.first_post = first_post._id;
+      topic.cache.real.first_ts = first_post.ts;
+      topic.cache.real.first_user = first_post.user;
 
-      thread.cache.real.last_post = last_post._id;
-      thread.cache.real.last_ts = last_post.ts;
-      thread.cache.real.last_user = last_post.user;
+      topic.cache.real.last_post = last_post._id;
+      topic.cache.real.last_ts = last_post.ts;
+      topic.cache.real.last_user = last_post.user;
 
-      _.extend(thread.cache.hb, thread.cache.real);
+      _.extend(topic.cache.hb, topic.cache.real);
 
-      thread.save(cb);
+      topic.save(cb);
     }
   ], function (err) {
-    callback(err, thread);
+    callback(err, topic);
   });
 };
 
 var create_forum = function (category, sub_forum_deep, callback) {
-  var last_thread;
+  var last_topic;
   var post_count = 0;
-  var thread_count;
+  var topic_count;
 
   var sub_forum_list = [];
   var sub_forum_id_list = [];
 
   if (is_big_forum) {
     is_big_forum = false;
-    thread_count = THREAD_COUNT_IN_BIG_FORUM;
+    topic_count = TOPIC_COUNT_IN_BIG_FORUM;
   } else {
-    thread_count = 1;
+    topic_count = 1;
   }
 
   var forum = new Forum(Charlatan.Helpers.forum(category));
@@ -246,17 +246,17 @@ var create_forum = function (category, sub_forum_deep, callback) {
       forum.save(cb);
     },
 
-    // create threads
+    // create topics
     function (cb) {
-      async.forEachSeries(_.range(thread_count), function (current_thread, next_thread) {
-        create_thread(forum, function (err, thread) {
+      async.forEachSeries(_.range(topic_count), function (current_topic, next_topic) {
+        create_topic(forum, function (err, topic) {
           if (err) {
-            next_thread(err);
+            next_topic(err);
             return;
           }
-          last_thread = thread;
-          post_count += thread.cache.real.post_count;
-          next_thread();
+          last_topic = topic;
+          post_count += topic.cache.real.post_count;
+          next_topic();
         });
       }, cb);
     },
@@ -279,17 +279,17 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
     // update forum dependent info
     function (cb) {
-      forum.cache.real.last_thread = last_thread._id;
-      forum.cache.real.last_thread_id = last_thread.id;
-      forum.cache.real.last_thread_title = last_thread.title;
+      forum.cache.real.last_topic = last_topic._id;
+      forum.cache.real.last_topic_id = last_topic.id;
+      forum.cache.real.last_topic_title = last_topic.title;
 
-      var thread_real = last_thread.cache.real;
-      forum.cache.real.last_post = thread_real.last_post;
-      forum.cache.real.last_ts = thread_real.last_ts;
-      forum.cache.real.last_user = thread_real.last_user;
+      var topic_real = last_topic.cache.real;
+      forum.cache.real.last_post = topic_real.last_post;
+      forum.cache.real.last_ts = topic_real.last_ts;
+      forum.cache.real.last_user = topic_real.last_user;
 
       forum.cache.real.post_count = post_count;
-      forum.cache.real.thread_count = thread_count;
+      forum.cache.real.topic_count = topic_count;
       _.extend(forum.cache.hb, forum.cache.real);
 
       forum.save(cb);
@@ -352,7 +352,7 @@ var create_categories = function (callback) {
 module.exports = function (N, callback) {
   Category  = N.models.forum.Section;
   Forum     = N.models.forum.Section;
-  Thread    = N.models.forum.Thread;
+  Topic    = N.models.forum.Topic;
   Post      = N.models.forum.Post;
   User      = N.models.users.User;
   UserGroup = N.models.users.UserGroup;

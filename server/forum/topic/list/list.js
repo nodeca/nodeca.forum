@@ -1,5 +1,5 @@
 // Fetch pure posts data. Used:
-// - from thread page, as sub-request
+// - from topic page, as sub-request
 // - from ajax, to "append next page"
 //
 "use strict";
@@ -10,12 +10,12 @@ var _  = require('lodash');
 // collections fields filters
 var fields = require('./_fields.js');
 
-// thread and post statuses
+// topic and post statuses
 var statuses = require('../_statuses.js');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    // thread id
+    // topic id
     id: {
       type: "integer",
       minimum: 1,
@@ -31,24 +31,24 @@ module.exports = function (N, apiPath) {
 
   // shortcuts
   var Section = N.models.forum.Section;
-  var Thread = N.models.forum.Thread;
+  var Topic = N.models.forum.Topic;
   var Post = N.models.forum.Post;
 
 
-  // fetch thread info & check that thread exists
-  N.wire.before(apiPath, function fetch_thread_info(env, callback) {
+  // fetch topic info & check that topic exists
+  N.wire.before(apiPath, function fetch_topic_info(env, callback) {
 
-    // If thread already fetched (in parent request, for example),
+    // If topic already fetched (in parent request, for example),
     // skip this step.
-    if (env.data.thread) {
+    if (env.data.topic) {
       callback();
       return;
     }
 
-    env.extras.puncher.start('Thread info prefetch');
+    env.extras.puncher.start('Topic info prefetch');
 
-    Thread.findOne({ id: env.params.id }).setOptions({ lean: true })
-        .exec(function (err, thread) {
+    Topic.findOne({ id: env.params.id }).setOptions({ lean: true })
+        .exec(function (err, topic) {
 
       env.extras.puncher.stop();
 
@@ -57,13 +57,13 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No thread -> "Not Found" status
-      if (!thread) {
+      // No topic -> "Not Found" status
+      if (!topic) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      env.data.thread = thread;
+      env.data.topic = topic;
       callback();
     });
   });
@@ -81,7 +81,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Forum info prefetch');
 
-    Section.findOne({ _id: env.data.thread.forum }).setOptions({ lean: true })
+    Section.findOne({ _id: env.data.topic.forum }).setOptions({ lean: true })
         .exec(function (err, forum) {
 
       env.extras.puncher.stop();
@@ -91,7 +91,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // No forum -> thread with missed parent, return "Not Found" too
+      // No forum -> topic with missed parent, return "Not Found" too
       if (!forum) {
         callback(N.io.NOT_FOUND);
         return;
@@ -106,7 +106,7 @@ module.exports = function (N, apiPath) {
   // check access permissions
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
-    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.settings.params.forum_id = env.data.topic.forum;
     env.extras.puncher.start('Fetch settings');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
@@ -148,7 +148,7 @@ module.exports = function (N, apiPath) {
   // Fill page data or redirect to last page, if requested > available
   N.wire.before(apiPath, function check_and_set_page_info(env) {
     var per_page = env.data.posts_per_page,
-        max      = Math.ceil(env.data.thread.cache.real.post_count / per_page),
+        max      = Math.ceil(env.data.topic.cache.real.post_count / per_page),
         current  = parseInt(env.params.page, 10);
 
     if (current > max) {
@@ -156,8 +156,8 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          "Location": N.runtime.router.linkTo('forum.thread', {
-            forum_id: env.data.thread.forum_id,
+          "Location": N.runtime.router.linkTo('forum.topic', {
+            forum_id: env.data.topic.forum_id,
             id:       env.params.id,
             page:     max
           })
@@ -173,7 +173,7 @@ module.exports = function (N, apiPath) {
   //
   // ##### params
   //
-  // - `id`         thread id
+  // - `id`         topic id
   // - `page`       page number
   //
   N.wire.on(apiPath, function (env, callback) {
@@ -189,9 +189,9 @@ module.exports = function (N, apiPath) {
 
     start = (env.params.page - 1) * posts_per_page;
 
-    // Unlike threads list, we can use simplified fetch,
+    // Unlike topics list, we can use simplified fetch,
     // because posts are always ordered by id - no need to sort by timestamp
-    Post.find({ thread: env.data.thread._id }).select('_id').sort('ts').skip(start)
+    Post.find({ topic: env.data.topic._id }).select('_id').sort('ts').skip(start)
         .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
 
       env.extras.puncher.stop(!!docs ? { count: docs.length } : null);
@@ -203,7 +203,7 @@ module.exports = function (N, apiPath) {
 
       // No page -> return empty data, without trying to fetch posts
       if (!docs.length) {
-        // Very rarely, user can request next page, when moderator deleted thread tail.
+        // Very rarely, user can request next page, when moderator deleted topic tail.
         env.data.posts = [];
         callback();
         return;
@@ -214,7 +214,7 @@ module.exports = function (N, apiPath) {
       // FIXME modify state condition (deleted and etc) if user has permission
       // If no hidden posts - no conditions needed, just select by IDs
 
-      query = Post.find({ thread: env.data.thread._id }).where('_id').gte(_.first(docs)._id);
+      query = Post.find({ topic: env.data.topic._id }).where('_id').gte(_.first(docs)._id);
       if (docs.length <= posts_per_page) {
         query.lte(_.last(docs)._id);
       }
@@ -268,10 +268,10 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Add thread info
-  N.wire.after(apiPath, function fill_thread_info(env) {
-    env.response.data.thread = _.extend({}, env.response.data.thread,
-      _.pick(env.data.thread, [
+  // Add topic info
+  N.wire.after(apiPath, function fill_topic_info(env) {
+    env.response.data.topic = _.extend({}, env.response.data.topic,
+      _.pick(env.data.topic, [
         '_id',
         'id',
         'title',
@@ -282,7 +282,7 @@ module.exports = function (N, apiPath) {
   });
 
   // Add forum info
-  N.wire.after(apiPath, function fill_thread_info(env) {
+  N.wire.after(apiPath, function fill_topic_info(env) {
     env.response.data.forum = _.extend({}, env.response.data.forum,
       _.pick(env.data.section, [
         //'_id',
@@ -311,17 +311,17 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      //sanitize thread statuses
-      var thread = env.response.data.thread;
-      if (thread.st === statuses.thread.HB) {
-        thread.st = thread.ste;
-        delete thread.ste;
+      //sanitize topic statuses
+      var topic = env.response.data.topic;
+      if (topic.st === statuses.topic.HB) {
+        topic.st = topic.ste;
+        delete topic.ste;
       }
 
       //sanitize post statuses
       var posts = env.response.data.posts;
       posts.forEach(function (post) {
-        if (post.st === statuses.thread.HB) {
+        if (post.st === statuses.topic.HB) {
           post.st = post.ste;
           delete post.ste;
         }
@@ -334,7 +334,7 @@ module.exports = function (N, apiPath) {
   // Add permissions, required to render posts list
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
-    env.extras.settings.params.forum_id = env.data.thread.forum;
+    env.extras.settings.params.forum_id = env.data.topic.forum;
     env.extras.puncher.start('Fetch public posts list settings');
 
     env.extras.settings.fetch(['forum_can_reply'], function (err, settings) {

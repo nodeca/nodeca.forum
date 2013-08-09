@@ -1,7 +1,7 @@
 en-US:
-  no_threads: No threads yet.
-  thread_create: New topic
-  more_threads: More threads
+  no_topics: No topics yet.
+  topic_create: New topic
+  more_topics: More topics
   section_mark_read_tip: Mark all read
   section_subscribe: Subscribe to new topics notification
   section_announce: Announce

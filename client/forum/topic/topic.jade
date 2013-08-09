@@ -1,0 +1,59 @@
+- var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 } }
+
+article#content.forum-topic-root
+  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
+
+  header.page-head
+    h1.page-head__title(itemprop='name')= self.topic.title
+    - if (self.topic._seo_desc)
+      p.page-head__descr(itemprop='description')
+        | #{self.topic._seo_desc}
+
+  nav.controlbar-keeper
+    #floatbar
+      .container
+        .btn-toolbar.controlbar.clearfix
+          .btn-group.pull-left
+            a.btn.btn-icon-only.icon-back(
+              href=self.link_to('forum.section', { id: self.forum.id }))
+
+          - if (self.page.max > 1)
+            - var link_params = { id: self.topic.id, forum_id: self.forum.id }
+            .btn-group.pull-left.hidden-phone-vert._pagination
+              != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
+
+          .btn-group.pull-right
+            a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
+              span.caret
+            ul.dropdown-menu
+              li: a(href='#')= self.t('topic_delete')
+              li: a(href='#')= self.t('topic_close')
+              li.divider
+              li: a(href='#')= self.t('topic_pin')
+              li: a(href='#')= self.t('topic_history')
+              li: a(href='#')= self.t('topic_approve')
+              li: a(href='#')= self.t('topic_merge')
+
+          - if (self.runtime.is_member)
+            .btn-group.pull-right
+              a.btn.icon-track.tip(href='#', title=self.t('topic_subscribe')) 24
+
+          - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN))
+            .btn-group.pull-right
+              a.btn.btn-primary(href='#')= self.t('post_add')
+
+  #postlist.forum-postlist(
+    data-forum_id=self.forum.id,
+    data-topic_id=self.topic.id
+  )
+    != self.partial('@forum.blocks.posts_list', { forum: self.forum, topic: self.topic, posts: self.posts, users: self.users, settings: self.settings })
+
+  //- Button "More Topics"
+  - var link_params = { id: self.topic.id, forum_id: self.forum.id, page: self.page.current + 1 };
+  - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
+  a.forum-topic__more-link.btn.btn-block.icon-more(
+    class=btn_more_state,
+    href=self.link_to(self.apiPath, link_params),
+    data-page=self.page.current+1,
+    data-topic=self.topic.id,
+    data-on-click="forum.topic.append_next_page")= self.t('more_posts')

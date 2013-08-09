@@ -8,7 +8,7 @@ var Schema   = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   var Post = new Schema({
-    thread          : Schema.ObjectId
+    topic          : Schema.ObjectId
   , forum           : Schema.ObjectId
 
     // Related post for replies
@@ -33,7 +33,7 @@ module.exports = function (N, collectionName) {
   // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
   // constants should be defined globally
   , st              : { type: Number, required: true }
-  , ste             : Number  // real state, if thread is sticky or hellbanned
+  , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
 
   , attach_list     : [Schema.ObjectId]
@@ -45,7 +45,7 @@ module.exports = function (N, collectionName) {
   // Get posts with restriction by status & pagination
   // !!! Use _id instead of ts
   Post.index({
-    thread: 1
+    topic: 1
   , state: 1
   , _id: 1
   });

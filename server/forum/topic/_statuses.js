@@ -1,11 +1,11 @@
-// Thread & post statuses
+// Topic & post statuses
 
-// Thread statuses are optimized for paged fetches & indexes
+// Topic statuses are optimized for paged fetches & indexes
 // Some statises can have extended info in additionsl field:
 //
 // - PINNED, HB - status_ext contains OPEN/CLOSED/PENDING state
 //
-exports.thread = {
+exports.topic = {
   OPEN:         1,
   CLOSED:       2,
   PINNED:       3,

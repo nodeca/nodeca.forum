@@ -9,7 +9,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
 
     locals.show_page_number = locals.page.current;
 
-    // Hide "More threads" button if there are no more pages.
+    // Hide "More Topics" button if there are no more pages.
     // Or update the button's link to the next page.
     if (locals.page.current === locals.page.max) {
       $button.addClass('hidden');
@@ -20,7 +20,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
       }));
     }
 
-    $result = $(N.runtime.render('forum.blocks.threads_list', locals)).hide();
+    $result = $(N.runtime.render('forum.blocks.topics_list', locals)).hide();
     $('#topiclist > :last').after($result);
 
     // update pager

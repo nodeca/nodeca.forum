@@ -30,7 +30,7 @@ setting_schemas:
       type: boolean
       default: false
 
-    forum_mod_can_delete_threads:
+    forum_mod_can_delete_topics:
       priority: 520
       category_key: perm_moderator
       type: boolean

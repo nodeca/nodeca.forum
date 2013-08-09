@@ -8,8 +8,8 @@ i18n:
 
         category_names:
           forum: Forum
-          thread: Thread
+          topic: Topic
 
         setting_names:
-          threads_per_page: Threads per page
+          topics_per_page: Topics per page
           posts_per_page: Posts per page

@@ -7,25 +7,25 @@ include ../pagination_micro/pagination_micro
 - if (self.page)
   .forum-topicline__separator= self.t('page_separator', { page: self.show_page_number })
 
-- each thread in self.threads
-  - fp_user = thread.cache.real.first_user
-  - lp_user = thread.cache.real.last_user
-  - fp_ts   = thread.cache.real.first_ts
-  - lp_ts   = thread.cache.real.last_ts
+- each topic in self.topics
+  - fp_user = topic.cache.real.first_user
+  - lp_user = topic.cache.real.last_user
+  - fp_ts   = topic.cache.real.first_ts
+  - lp_ts   = topic.cache.real.last_ts
   .forum-topicline
     .row
       .forum-topicline__summary.span7
         h2.forum-topicline__title
-          a.forum-topicline__title-link(href=self.link_to('forum.thread', { id: thread.id, forum_id: self.forum.id }))= thread.title
-        //a.mark-i-attach._tip(href="#")=thread.attach_count
-        - if (thread._pages_count > 1)
+          a.forum-topicline__title-link(href=self.link_to('forum.topic', { id: topic.id, forum_id: self.forum.id }))= topic.title
+        //a.mark-i-attach._tip(href="#")=topic.attach_count
+        - if (topic._pages_count > 1)
           //- micro-pagination
-          - var route_params = { id: thread.id, forum_id: self.forum.id }
-          mixin pagination_micro('forum.thread', route_params, thread._pages_count)
+          - var route_params = { id: topic.id, forum_id: self.forum.id }
+          mixin pagination_micro('forum.topic', route_params, topic._pages_count)
 
 
         .forum-topicline__meta
-          a.forum-topicline__preview-link.icon-more(href='#')= self.t('thread_preview')
+          a.forum-topicline__preview-link.icon-more(href='#')= self.t('topic_preview')
           - if (self.users[fp_user])
             a.forum-topicline__author._ucard-popover(
               href=self.link_to('users.member', self.users[fp_user]),
@@ -33,14 +33,14 @@ include ../pagination_micro/pagination_micro
           time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
       ul.forum-topicline__counters.span2.hidden-phone
-        - replies = thread.cache.real.post_count - 1;
-        - views   = thread.views_count;
+        - replies = topic.cache.real.post_count - 1;
+        - views   = topic.views_count;
         li.forum-topicline__counter-item
           span.forum-topicline__counter-val #{replies}
-          = self.t('thread_replies', { count: replies })
+          = self.t('topic_replies', { count: replies })
         li.forum-topicline__counter-item
           span.forum-topicline__counter-val  #{views}
-          = self.t('thread_views', { count: views })
+          = self.t('topic_views', { count: views })
 
       ul.forum-topicline__lpost.span3.hidden-phone
         li.forum-topicline__lpost-time
