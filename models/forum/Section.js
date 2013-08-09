@@ -67,7 +67,7 @@ module.exports = function (N, collectionName) {
     // Cache
   , cache           : cache
 
-    // Setting storage. Only `forum_usergroup` settings store should access this.
+    // Setting storage. Only `section_usergroup` settings store should access this.
   , settings        : { type: Schema.Types.Mixed, 'default': {} }
   });
 
@@ -180,15 +180,15 @@ module.exports = function (N, collectionName) {
         });
       }
     , function (next) {
-        var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+        var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
-        if (!ForumUsergroupStore) {
-          N.logger.error('Settings store `forum_usergroup` is not registered.');
+        if (!SectionUsergroupStore) {
+          N.logger.error('Settings store `section_usergroup` is not registered.');
           next();
           return;
         }
 
-        ForumUsergroupStore.updateInherited(section._id, function (err) {
+        SectionUsergroupStore.updateInherited(section._id, function (err) {
           if (err) {
             N.logger.error('%s', err);
           }
@@ -196,15 +196,15 @@ module.exports = function (N, collectionName) {
         });
       }
     , function (next) {
-        var ForumModeratorStore = N.settings.getStore('forum_moderator');
+        var SectionModeratorStore = N.settings.getStore('section_moderator');
 
-        if (!ForumModeratorStore) {
-          N.logger.error('Settings store `forum_moderator` is not registered.');
+        if (!SectionModeratorStore) {
+          N.logger.error('Settings store `section_moderator` is not registered.');
           next();
           return;
         }
 
-        ForumModeratorStore.updateInherited(section._id, function (err) {
+        SectionModeratorStore.updateInherited(section._id, function (err) {
           if (err) {
             N.logger.error('%s', err);
           }

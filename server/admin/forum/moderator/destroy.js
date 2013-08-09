@@ -11,16 +11,16 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function moderator_destroy(env, callback) {
-    var ForumModeratorStore = N.settings.getStore('forum_moderator');
+    var SectionModeratorStore = N.settings.getStore('section_moderator');
 
-    if (!ForumModeratorStore) {
+    if (!SectionModeratorStore) {
       callback({
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_moderator` is not registered.'
+      , message: 'Settings store `section_moderator` is not registered.'
       });
       return;
     }
 
-    ForumModeratorStore.removeModerator(env.params.section_id, env.params.user_id, callback);
+    SectionModeratorStore.removeModerator(env.params.section_id, env.params.user_id, callback);
   });
 };

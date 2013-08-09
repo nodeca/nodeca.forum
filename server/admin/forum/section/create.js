@@ -23,10 +23,10 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function section_create(env, callback) {
-    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+    var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
-    if (!ForumUsergroupStore) {
-      callback({ code: N.io.APP_ERROR, message: 'Settings store `forum_usergroup` is not registered.' });
+    if (!SectionUsergroupStore) {
+      callback({ code: N.io.APP_ERROR, message: 'Settings store `section_usergroup` is not registered.' });
       return;
     }
 

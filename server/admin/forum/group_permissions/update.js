@@ -22,12 +22,12 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function group_permissions_update(env, callback) {
-    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+    var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
-    if (!ForumUsergroupStore) {
+    if (!SectionUsergroupStore) {
       callback({
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_usergroup` is not registered.'
+      , message: 'Settings store `section_usergroup` is not registered.'
       });
       return;
     }
@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        ForumUsergroupStore.set(env.params.settings, { forum_id: section._id, usergroup_id: usergroup._id }, callback);
+        SectionUsergroupStore.set(env.params.settings, { forum_id: section._id, usergroup_id: usergroup._id }, callback);
       });
     });
   });

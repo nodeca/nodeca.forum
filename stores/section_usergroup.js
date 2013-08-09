@@ -4,7 +4,7 @@
 //     ... // section fields like _id, title, etc
 //
 //     settings:
-//       forum_usergroup:
+//       section_usergroup:
 //         '51f0837dfd9fe55d2f000002': // user id
 //           setting_key1: { value: Mixed, own: Boolean }
 //           setting_key2: { value: Mixed, own: Boolean }
@@ -51,7 +51,7 @@ module.exports = function (N) {
   });
 
 
-  var ForumUsergroupStore = N.settings.createStore({
+  var SectionUsergroupStore = N.settings.createStore({
     //
     // params:
     //   forum_id      - ObjectId
@@ -71,12 +71,12 @@ module.exports = function (N) {
       var self = this;
 
       if (!params.forum_id) {
-        callback('`forum_id` parameter is required for getting settings from `forum_usergroup` store.');
+        callback('`forum_id` parameter is required for getting settings from `section_usergroup` store.');
         return;
       }
 
       if (!_.isArray(params.usergroup_ids) || _.isEmpty(params.usergroup_ids)) {
-        callback('`usergroup_ids` parameter required to be non-empty array for getting settings from `forum_usergroup` store.');
+        callback('`usergroup_ids` parameter required to be non-empty array for getting settings from `section_usergroup` store.');
         return;
       }
 
@@ -102,9 +102,9 @@ module.exports = function (N) {
           // settings to fallback to another store if possible.
           _.forEach(params.usergroup_ids, function (usergroupId) {
             if (!section.settings ||
-                !section.settings.forum_usergroup ||
-                !section.settings.forum_usergroup[usergroupId] ||
-                !section.settings.forum_usergroup[usergroupId][settingName]) {
+                !section.settings.section_usergroup ||
+                !section.settings.section_usergroup[usergroupId] ||
+                !section.settings.section_usergroup[usergroupId][settingName]) {
 
               // Use empty value instead.
               settings.push({
@@ -114,7 +114,7 @@ module.exports = function (N) {
               return;
             }
 
-            var setting = section.settings.forum_usergroup[usergroupId][settingName];
+            var setting = section.settings.section_usergroup[usergroupId][settingName];
 
             // For extended mode - get copy of whole setting object.
             // For normal mode - get copy of only value field.
@@ -143,12 +143,12 @@ module.exports = function (N) {
       var self = this;
 
       if (!params.forum_id) {
-        callback('`forum_id` parameter is required for saving settings into `forum_usergroup` store.');
+        callback('`forum_id` parameter is required for saving settings into `section_usergroup` store.');
         return;
       }
 
       if (!params.usergroup_id) {
-        callback('`usergroup_id` parameter required for saving settings into `forum_usergroup` store.');
+        callback('`usergroup_id` parameter required for saving settings into `section_usergroup` store.');
         return;
       }
 
@@ -167,24 +167,24 @@ module.exports = function (N) {
           section.settings = {};
         }
 
-        if (!section.settings.forum_usergroup) {
-          section.settings.forum_usergroup = {};
+        if (!section.settings.section_usergroup) {
+          section.settings.section_usergroup = {};
         }
 
-        if (!section.settings.forum_usergroup[params.usergroup_id]) {
-          section.settings.forum_usergroup[params.usergroup_id] = {};
+        if (!section.settings.section_usergroup[params.usergroup_id]) {
+          section.settings.section_usergroup[params.usergroup_id] = {};
         }
  
         _.forEach(settings, function (setting, key) {
           if (null !== setting) {
             // NOTE: It's no need to put `force` flag into the database, since
             // this store always implies `force` at `Store#get`.
-            section.settings.forum_usergroup[params.usergroup_id][key] = {
+            section.settings.section_usergroup[params.usergroup_id][key] = {
               value: setting.value
             , own:   true
             };
           } else {
-            delete section.settings.forum_usergroup[params.usergroup_id][key];
+            delete section.settings.section_usergroup[params.usergroup_id][key];
           }
         });
 
@@ -206,7 +206,7 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  ForumUsergroupStore.updateInherited = function updateInherited(sectionId, callback) {
+  SectionUsergroupStore.updateInherited = function updateInherited(sectionId, callback) {
     var self = this;
 
     if (_.isFunction(sectionId)) {
@@ -264,11 +264,11 @@ module.exports = function (N) {
 
         // Setting exists, and it is not inherited from another section.
         if (section.settings &&
-            section.settings.forum_usergroup &&
-            section.settings.forum_usergroup[usergroupId] &&
-            section.settings.forum_usergroup[usergroupId][settingName] &&
-            section.settings.forum_usergroup[usergroupId][settingName].own) {
-          return section.settings.forum_usergroup[usergroupId][settingName];
+            section.settings.section_usergroup &&
+            section.settings.section_usergroup[usergroupId] &&
+            section.settings.section_usergroup[usergroupId][settingName] &&
+            section.settings.section_usergroup[usergroupId][settingName].own) {
+          return section.settings.section_usergroup[usergroupId][settingName];
         }
 
         // Recursively walk through ancestors sequence.
@@ -313,17 +313,17 @@ module.exports = function (N) {
                 section.settings = {};
               }
 
-              if (!section.settings.forum_usergroup) {
-                section.settings.forum_usergroup = {};
+              if (!section.settings.section_usergroup) {
+                section.settings.section_usergroup = {};
               }
 
-              if (!section.settings.forum_usergroup[usergroup._id]) {
-                section.settings.forum_usergroup[usergroup._id] = {};
+              if (!section.settings.section_usergroup[usergroup._id]) {
+                section.settings.section_usergroup[usergroup._id] = {};
               }
 
               // Do not touch own settings. We only update inherited settings.
-              if (section.settings.forum_usergroup[usergroup._id][settingName] &&
-                  section.settings.forum_usergroup[usergroup._id][settingName].own) {
+              if (section.settings.section_usergroup[usergroup._id][settingName] &&
+                  section.settings.section_usergroup[usergroup._id][settingName].own) {
                 return;
               }
 
@@ -331,13 +331,13 @@ module.exports = function (N) {
 
               if (setting) {
                 // Set/update inherited setting.
-                section.settings.forum_usergroup[usergroup._id][settingName] = {
+                section.settings.section_usergroup[usergroup._id][settingName] = {
                   value: setting.value
                 , own:   false
                 };
               } else {
                 // Drop deprected inherited setting.
-                delete section.settings.forum_usergroup[usergroup._id][settingName];
+                delete section.settings.section_usergroup[usergroup._id][settingName];
               }
             });
           });
@@ -352,7 +352,7 @@ module.exports = function (N) {
 
   // Remove all overriden usergroup settings at specific section.
   //
-  ForumUsergroupStore.removePermissions = function removePermissions(sectionId, usergroupId, callback) {
+  SectionUsergroupStore.removePermissions = function removePermissions(sectionId, usergroupId, callback) {
     var self = this;
 
     N.models.forum.Section.findById(sectionId, function (err, section) {
@@ -367,13 +367,13 @@ module.exports = function (N) {
       }
 
       if (!section.settings ||
-          !section.settings.forum_usergroup ||
-          !_.has(section.settings.forum_usergroup, usergroupId)) {
+          !section.settings.section_usergroup ||
+          !_.has(section.settings.section_usergroup, usergroupId)) {
         callback();
         return;
       }
 
-      section.settings.forum_usergroup[usergroupId] = {};
+      section.settings.section_usergroup[usergroupId] = {};
       section.markModified('settings');
 
       section.save(function (err) {
@@ -390,7 +390,7 @@ module.exports = function (N) {
 
   // Remove all setting entries for specific usergroup.
   //
-  ForumUsergroupStore.removeUsergroup = function removeUsergroup(usergroupId, callback) {
+  SectionUsergroupStore.removeUsergroup = function removeUsergroup(usergroupId, callback) {
     N.models.forum.Section.find({}, function (err, sections) {
       if (err) {
         callback(err);
@@ -399,13 +399,13 @@ module.exports = function (N) {
 
       async.forEach(sections, function (section, next) {
         if (!section.settings ||
-            !section.settings.forum_usergroup ||
-            !_.has(section.settings.forum_usergroup, usergroupId)) {
+            !section.settings.section_usergroup ||
+            !_.has(section.settings.section_usergroup, usergroupId)) {
           next();
           return;
         }
 
-        delete section.settings.forum_usergroup[usergroupId];
+        delete section.settings.section_usergroup[usergroupId];
         section.markModified('settings');
         section.save(next);
       }, callback);
@@ -413,5 +413,5 @@ module.exports = function (N) {
   };
 
 
-  return ForumUsergroupStore;
+  return SectionUsergroupStore;
 };

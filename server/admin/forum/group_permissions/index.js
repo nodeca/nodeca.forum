@@ -12,11 +12,11 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  N.wire.before(apiPath, function forum_usergroup_store_check() {
-    if (!N.settings.getStore('forum_usergroup')) {
+  N.wire.before(apiPath, function section_usergroup_store_check() {
+    if (!N.settings.getStore('section_usergroup')) {
       return {
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_usergroup` is not registered.'
+      , message: 'Settings store `section_usergroup` is not registered.'
       };
     }
   });
@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.on(apiPath, function group_permissions_index(env, callback) {
-    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+    var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     // Set localized name for each usergroup.
     _.forEach(env.data.usergroups, function (usergroup) {
@@ -63,8 +63,8 @@ module.exports = function (N, apiPath) {
       section.inherited_settings_count = {};
 
       async.forEach(env.data.usergroups, function (usergroup, nextGroup) {
-        ForumUsergroupStore.get(
-          ForumUsergroupStore.keys
+        SectionUsergroupStore.get(
+          SectionUsergroupStore.keys
         , { forum_id: section._id, usergroup_ids: [ usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, settings) {
@@ -98,7 +98,7 @@ module.exports = function (N, apiPath) {
         return selectedSections;
       }
 
-      env.response.data.settings_count = ForumUsergroupStore.keys.length;
+      env.response.data.settings_count = SectionUsergroupStore.keys.length;
       env.response.data.usergroups     = env.data.usergroups;
       env.response.data.sections       = buildSectionsTree(null);
       callback();

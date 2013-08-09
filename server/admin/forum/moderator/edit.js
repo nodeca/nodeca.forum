@@ -15,10 +15,10 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.before(apiPath, function setting_stores_check() {
-    if (!N.settings.getStore('forum_moderator')) {
+    if (!N.settings.getStore('section_moderator')) {
       return {
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_moderator` is not registered.'
+      , message: 'Settings store `section_moderator` is not registered.'
       };
     }
 
@@ -76,11 +76,11 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.on(apiPath, function group_permissions_edit(env, callback) {
-    var ForumModeratorStore = N.settings.getStore('forum_moderator')
+    var SectionModeratorStore = N.settings.getStore('section_moderator')
       , UsergroupStore      = N.settings.getStore('usergroup');
 
     // Setting schemas to build client interface.
-    env.response.data.setting_schemas = N.config.setting_schemas.forum_moderator;
+    env.response.data.setting_schemas = N.config.setting_schemas.section_moderator;
 
     // Expose moderator's full name.
     env.response.data.moderator_name = env.data.user._uname;
@@ -90,8 +90,8 @@ module.exports = function (N, apiPath) {
       // Fetch settings with inheritance info for current edit section.
       //
       function (next) {
-        ForumModeratorStore.get(
-          ForumModeratorStore.keys
+        SectionModeratorStore.get(
+          SectionModeratorStore.keys
         , { forum_id: env.data.section._id, user_id: env.data.user._id }
         , { skipCache: true, extended: true }
         , function (err, editSettings) {
@@ -109,8 +109,8 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        ForumModeratorStore.get(
-          ForumModeratorStore.keys
+        SectionModeratorStore.get(
+          SectionModeratorStore.keys
         , { forum_id: env.data.section.parent, user_id: env.data.user._id }
         , { skipCache: true, extended: true }
         , function (err, parentSettings) {

@@ -12,11 +12,11 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  N.wire.before(apiPath, function forum_moderator_store_check() {
-    if (!N.settings.getStore('forum_moderator')) {
+  N.wire.before(apiPath, function section_moderator_store_check() {
+    if (!N.settings.getStore('section_moderator')) {
       return {
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_moderator` is not registered.'
+      , message: 'Settings store `section_moderator` is not registered.'
       };
     }
   });
@@ -47,11 +47,11 @@ module.exports = function (N, apiPath) {
   // Fetch moderators map `user_id` => `array of section info`.
   //
   N.wire.on(apiPath, function moderator_index(env, callback) {
-    var ForumModeratorStore = N.settings.getStore('forum_moderator')
+    var SectionModeratorStore = N.settings.getStore('section_moderator')
       , sectionsByModerator = {};
 
     async.forEach(env.data.sections, function (section, next) {
-      ForumModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
+      SectionModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
         if (err) {
           next(err);
           return;
@@ -76,7 +76,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.settings_count = ForumModeratorStore.keys.length;
+      env.response.data.settings_count = SectionModeratorStore.keys.length;
 
       env.response.data.sections = env.data.sectionsById;
 

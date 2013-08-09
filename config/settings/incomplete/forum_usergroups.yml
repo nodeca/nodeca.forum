@@ -1,5 +1,5 @@
 setting_schemas:
-  forum_usergroup:
+  section_usergroup:
     forum_can_view:
       extends: true
       priority: 10

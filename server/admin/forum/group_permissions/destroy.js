@@ -11,16 +11,16 @@ module.exports = function (N, apiPath) {
   });
 
   N.wire.on(apiPath, function group_permissions_destroy(env, callback) {
-    var ForumUsergroupStore = N.settings.getStore('forum_usergroup');
+    var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
-    if (!ForumUsergroupStore) {
+    if (!SectionUsergroupStore) {
       callback({
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_usergroup` is not registered.'
+      , message: 'Settings store `section_usergroup` is not registered.'
       });
       return;
     }
 
-    ForumUsergroupStore.removePermissions(env.params.section_id, env.params.usergroup_id, callback);
+    SectionUsergroupStore.removePermissions(env.params.section_id, env.params.usergroup_id, callback);
   });
 };

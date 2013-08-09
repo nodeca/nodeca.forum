@@ -15,10 +15,10 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.before(apiPath, function setting_stores_check() {
-    if (!N.settings.getStore('forum_usergroup')) {
+    if (!N.settings.getStore('section_usergroup')) {
       return {
         code:    N.io.APP_ERROR
-      , message: 'Settings store `forum_usergroup` is not registered.'
+      , message: 'Settings store `section_usergroup` is not registered.'
       };
     }
 
@@ -76,11 +76,11 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.on(apiPath, function group_permissions_edit(env, callback) {
-    var ForumUsergroupStore = N.settings.getStore('forum_usergroup')
+    var SectionUsergroupStore = N.settings.getStore('section_usergroup')
       , UsergroupStore      = N.settings.getStore('usergroup');
 
     // Setting schemas to build client interface.
-    env.response.data.setting_schemas = N.config.setting_schemas.forum_usergroup;
+    env.response.data.setting_schemas = N.config.setting_schemas.section_usergroup;
 
     // Translation path for usergroup name.
     var usergroupI18n = '@admin.users.usergroup_names.' + env.data.usergroup.short_name;
@@ -91,8 +91,8 @@ module.exports = function (N, apiPath) {
       // Fetch settings with inheritance info for current edit section.
       //
       function (next) {
-        ForumUsergroupStore.get(
-          ForumUsergroupStore.keys
+        SectionUsergroupStore.get(
+          SectionUsergroupStore.keys
         , { forum_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, editSettings) {
@@ -110,8 +110,8 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        ForumUsergroupStore.get(
-          ForumUsergroupStore.keys
+        SectionUsergroupStore.get(
+          SectionUsergroupStore.keys
         , { forum_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, parentSettings) {

@@ -297,17 +297,17 @@ var create_forum = function (category, sub_forum_deep, callback) {
 
     // add moderators
     function (cb) {
-      var ForumModeratorStore = N.settings.getStore('forum_moderator');
+      var SectionModeratorStore = N.settings.getStore('section_moderator');
 
-      if (!ForumModeratorStore) {
-        cb('Settings store `forum_moderator` is not registered.');
+      if (!SectionModeratorStore) {
+        cb('Settings store `section_moderator` is not registered.');
         return;
       }
 
       async.timesSeries(Charlatan.Helpers.rand(MAX_MODERATOR_COUNT), function (index, next) {
         var user = Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)];
 
-        ForumModeratorStore.set(
+        SectionModeratorStore.set(
           { forum_mod_visible: { value: true } },
           { forum_id: forum._id, user_id: user._id },
           next

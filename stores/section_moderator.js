@@ -4,7 +4,7 @@
 //     ... // section fields like _id, title, etc
 //
 //     settings:
-//       forum_moderator:
+//       section_moderator:
 //         '51f1183699651cfc0a000003': // user id
 //           setting_key1: { value: Mixed, own: Boolean }
 //           setting_key2: { value: Mixed, own: Boolean }
@@ -51,7 +51,7 @@ module.exports = function (N) {
   });
 
 
-  var ForumModeratorStore = N.settings.createStore({
+  var SectionModeratorStore = N.settings.createStore({
     //
     // params:
     //   forum_id - ObjectId
@@ -71,12 +71,12 @@ module.exports = function (N) {
       var self = this;
 
       if (!params.forum_id) {
-        callback('`forum_id` parameter is required for getting settings from `forum_moderator` store.');
+        callback('`forum_id` parameter is required for getting settings from `section_moderator` store.');
         return;
       }
 
       if (!params.user_id) {
-        callback('`user_id` parameter is required for getting settings from `forum_moderator` store.');
+        callback('`user_id` parameter is required for getting settings from `section_moderator` store.');
         return;
       }
 
@@ -99,9 +99,9 @@ module.exports = function (N) {
         // non-provided settings to fallback to another store if possible.
         _.forEach(keys, function (settingName) {
           if (!section.settings ||
-              !section.settings.forum_moderator ||
-              !section.settings.forum_moderator[params.user_id] ||
-              !section.settings.forum_moderator[params.user_id][settingName]) {
+              !section.settings.section_moderator ||
+              !section.settings.section_moderator[params.user_id] ||
+              !section.settings.section_moderator[params.user_id][settingName]) {
 
             // Use empty value instead.
             results[settingName] = {
@@ -111,7 +111,7 @@ module.exports = function (N) {
             return;
           }
 
-          var setting = section.settings.forum_moderator[params.user_id][settingName];
+          var setting = section.settings.section_moderator[params.user_id][settingName];
 
           // For extended mode - get copy of whole setting object.
           // For normal mode - get copy of only value field.
@@ -136,12 +136,12 @@ module.exports = function (N) {
       var self = this;
 
       if (!params.forum_id) {
-        callback('`forum_id` parameter is required for saving settings into `forum_moderator` store.');
+        callback('`forum_id` parameter is required for saving settings into `section_moderator` store.');
         return;
       }
 
       if (!params.user_id) {
-        callback('`user_id` parameter required for saving settings into `forum_moderator` store.');
+        callback('`user_id` parameter required for saving settings into `section_moderator` store.');
         return;
       }
 
@@ -160,24 +160,24 @@ module.exports = function (N) {
           section.settings = {};
         }
 
-        if (!section.settings.forum_moderator) {
-          section.settings.forum_moderator = {};
+        if (!section.settings.section_moderator) {
+          section.settings.section_moderator = {};
         }
 
-        if (!section.settings.forum_moderator[params.user_id]) {
-          section.settings.forum_moderator[params.user_id] = {};
+        if (!section.settings.section_moderator[params.user_id]) {
+          section.settings.section_moderator[params.user_id] = {};
         }
  
         _.forEach(settings, function (setting, key) {
           if (null !== setting) {
             // NOTE: It's no need to put `force` flag into the database, since
             // this store always implies `force` at `Store#get`.
-            section.settings.forum_moderator[params.user_id][key] = {
+            section.settings.section_moderator[params.user_id][key] = {
               value: setting.value
             , own:   true
             };
           } else {
-            delete section.settings.forum_moderator[params.user_id][key];
+            delete section.settings.section_moderator[params.user_id][key];
           }
         });
 
@@ -208,7 +208,7 @@ module.exports = function (N) {
   //     { ... }
   //   ]
   //
-  ForumModeratorStore.getModeratorsInfo = function getModeratorsInfo(sectionId, callback) {
+  SectionModeratorStore.getModeratorsInfo = function getModeratorsInfo(sectionId, callback) {
     fetchSectionSettings(sectionId, function (err, section) {
       if (err) {
         callback(err);
@@ -222,8 +222,8 @@ module.exports = function (N) {
 
       var result = [];
 
-      if (section.settings && section.settings.forum_moderator) {
-        _.forEach(section.settings.forum_moderator, function (settings, userId) {
+      if (section.settings && section.settings.section_moderator) {
+        _.forEach(section.settings.section_moderator, function (settings, userId) {
           result.push({
             _id:       userId
           , own:       _.select(settings, { own: true  }).length
@@ -244,7 +244,7 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  ForumModeratorStore.updateInherited = function updateInherited(sectionId, callback) {
+  SectionModeratorStore.updateInherited = function updateInherited(sectionId, callback) {
     var self = this;
 
     if (_.isFunction(sectionId)) {
@@ -302,11 +302,11 @@ module.exports = function (N) {
 
         // Setting exists, and it is not inherited from another section.
         if (section.settings &&
-            section.settings.forum_moderator &&
-            section.settings.forum_moderator[userId] &&
-            section.settings.forum_moderator[userId][settingName] &&
-            section.settings.forum_moderator[userId][settingName].own) {
-          return section.settings.forum_moderator[userId][settingName];
+            section.settings.section_moderator &&
+            section.settings.section_moderator[userId] &&
+            section.settings.section_moderator[userId][settingName] &&
+            section.settings.section_moderator[userId][settingName].own) {
+          return section.settings.section_moderator[userId][settingName];
         }
 
         // Recursively walk through ancestors sequence.
@@ -336,8 +336,8 @@ module.exports = function (N) {
           return [];
         }
 
-        if (section.settings && section.settings.forum_moderator) {
-          return _.unique(_.keys(section.settings.forum_moderator).concat(collectModeratorIds(section.parent)));
+        if (section.settings && section.settings.section_moderator) {
+          return _.unique(_.keys(section.settings.section_moderator).concat(collectModeratorIds(section.parent)));
         } else {
           return collectModeratorIds(section.parent);
         }
@@ -375,17 +375,17 @@ module.exports = function (N) {
               section.settings = {};
             }
 
-            if (!section.settings.forum_moderator) {
-              section.settings.forum_moderator = {};
+            if (!section.settings.section_moderator) {
+              section.settings.section_moderator = {};
             }
 
-            if (!section.settings.forum_moderator[userId]) {
-              section.settings.forum_moderator[userId] = {};
+            if (!section.settings.section_moderator[userId]) {
+              section.settings.section_moderator[userId] = {};
             }
 
             // Do not touch own settings. We only update inherited settings.
-            if (section.settings.forum_moderator[userId][settingName] &&
-                section.settings.forum_moderator[userId][settingName].own) {
+            if (section.settings.section_moderator[userId][settingName] &&
+                section.settings.section_moderator[userId][settingName].own) {
               return;
             }
 
@@ -393,19 +393,19 @@ module.exports = function (N) {
 
             if (setting) {
               // Set/update inherited setting.
-              section.settings.forum_moderator[userId][settingName] = {
+              section.settings.section_moderator[userId][settingName] = {
                 value: setting.value
               , own:   false
               };
             } else {
               // Drop deprecated inherited setting.
-              delete section.settings.forum_moderator[userId][settingName];
+              delete section.settings.section_moderator[userId][settingName];
             }
           });
 
           // Drop empty moderator entries.
-          if (_.isEmpty(section.settings.forum_moderator[userId])) {
-            delete section.settings.forum_moderator[userId];
+          if (_.isEmpty(section.settings.section_moderator[userId])) {
+            delete section.settings.section_moderator[userId];
           }
         });
         section.markModified('settings');
@@ -414,9 +414,9 @@ module.exports = function (N) {
         // Select publicly visible moderators to update `moderator_list` and
         // `moderator_id_list` section fields.
         var visibleModeratorIds = _.select(allModeratorIds, function (userId) {
-          return section.settings.forum_moderator[userId] &&
-                 section.settings.forum_moderator[userId].forum_mod_visible &&
-                 section.settings.forum_moderator[userId].forum_mod_visible.value;
+          return section.settings.section_moderator[userId] &&
+                 section.settings.section_moderator[userId].forum_mod_visible &&
+                 section.settings.section_moderator[userId].forum_mod_visible.value;
         });
 
         // Fetch users numeric ids to compose `moderator_id_list`.
@@ -454,7 +454,7 @@ module.exports = function (N) {
 
   // Remove single moderator entry at section.
   //
-  ForumModeratorStore.removeModerator = function removeModerator(sectionId, userId, callback) {
+  SectionModeratorStore.removeModerator = function removeModerator(sectionId, userId, callback) {
     var self = this;
 
     N.models.forum.Section.findById(sectionId, function (err, section) {
@@ -469,13 +469,13 @@ module.exports = function (N) {
       }
 
       if (!section.settings ||
-          !section.settings.forum_moderator ||
-          !_.has(section.settings.forum_moderator, userId)) {
+          !section.settings.section_moderator ||
+          !_.has(section.settings.section_moderator, userId)) {
         callback();
         return;
       }
 
-      delete section.settings.forum_moderator[userId];
+      delete section.settings.section_moderator[userId];
       section.markModified('settings');
 
       section.save(function (err) {
@@ -492,7 +492,7 @@ module.exports = function (N) {
 
   // Remove all setting entries for specific moderator at all sections.
   //
-  ForumModeratorStore.removeUser = function removeUser(userId, callback) {
+  SectionModeratorStore.removeUser = function removeUser(userId, callback) {
     N.models.forum.Section.find({}, function (err, sections) {
       if (err) {
         callback(err);
@@ -501,13 +501,13 @@ module.exports = function (N) {
 
       async.forEach(sections, function (section, next) {
         if (!section.settings ||
-            !section.settings.forum_moderator ||
-            !_.has(section.settings.forum_moderator, userId)) {
+            !section.settings.section_moderator ||
+            !_.has(section.settings.section_moderator, userId)) {
           next();
           return;
         }
 
-        delete section.settings.forum_moderator[userId];
+        delete section.settings.section_moderator[userId];
         section.markModified('settings');
         section.save(next);
       }, callback);
@@ -515,5 +515,5 @@ module.exports = function (N) {
   };
 
 
-  return ForumModeratorStore;
+  return SectionModeratorStore;
 };
