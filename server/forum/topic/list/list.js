@@ -16,7 +16,7 @@ var statuses = require('../_statuses.js');
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // topic id
-    id: {
+    hid: {
       type: "integer",
       minimum: 1,
       required: true
@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Topic info prefetch');
 
-    Topic.findOne({ id: env.params.id }).setOptions({ lean: true })
+    Topic.findOne({ hid: env.params.hid }).setOptions({ lean: true })
         .exec(function (err, topic) {
 
       env.extras.puncher.stop();
@@ -273,7 +273,7 @@ module.exports = function (N, apiPath) {
     env.response.data.topic = _.extend({}, env.response.data.topic,
       _.pick(env.data.topic, [
         '_id',
-        'id',
+        'hid',
         'title',
         'st',
         'ste'

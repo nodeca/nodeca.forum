@@ -81,7 +81,7 @@ module.exports.up = function (N, cb) {
     // create basic topic record
     function (callback) {
       topic.title = 'Demo post';
-      topic.id = 1;
+      topic.hid = 1;
 
       topic.st = statuses.topic.OPEN;
 
@@ -114,7 +114,7 @@ module.exports.up = function (N, cb) {
       forum.cache.real.last_ts = post.ts;
 
       forum.cache.real.last_topic = topic._id;
-      forum.cache.real.last_topic_id = topic.id;
+      forum.cache.real.last_topic_hid = topic.hid;
       forum.cache.real.last_topic_title = topic.title;
 
       forum.cache.real.topic_count = 1;

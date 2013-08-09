@@ -35,10 +35,10 @@ var MAX_MODERATOR_COUNT = 3;
 var MAX_SUB_FORUM_COUNT = 3;
 
 var CATEGORY_ID_SHIFT = 3;
-var FORUM_ID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
+var FORUM_HID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
 var DISPLAY_ORDER_SHIFT = 2;
-var TOPIC_ID_SHIFT = 2;
-var USER_ID_SHIFT = 2;
+var TOPIC_HID_SHIFT = 2;
+var USER_HID_SHIFT = 2;
 
 // cache usergroups ids
 var usergroups_cache = {};
@@ -47,10 +47,10 @@ var usergroups_cache = {};
 // add numeric id generator
 Charlatan.Incrementer = {
   category_shift: CATEGORY_ID_SHIFT,
-  forum_shift: FORUM_ID_SHIFT,
+  forum_shift: FORUM_HID_SHIFT,
   display_order_shift: DISPLAY_ORDER_SHIFT,
-  topic_shift: TOPIC_ID_SHIFT,
-  user_shift: USER_ID_SHIFT
+  topic_shift: TOPIC_HID_SHIFT,
+  user_shift: USER_HID_SHIFT
 };
 
 Charlatan.Incrementer.next = function (type) {
@@ -100,7 +100,7 @@ Charlatan.Helpers.topic = function (forum) {
   return {
     title: Charlatan.Lorem.sentence().slice(0, -1),
 
-    id: Charlatan.Incrementer.next('topic'),
+    hid: Charlatan.Incrementer.next('topic'),
 
     st: statuses.topic.OPEN,
     forum: forum._id,
@@ -280,7 +280,7 @@ var create_forum = function (category, sub_forum_deep, callback) {
     // update forum dependent info
     function (cb) {
       forum.cache.real.last_topic = last_topic._id;
-      forum.cache.real.last_topic_id = last_topic.id;
+      forum.cache.real.last_topic_hid = last_topic.hid;
       forum.cache.real.last_topic_title = last_topic.title;
 
       var topic_real = last_topic.cache.real;

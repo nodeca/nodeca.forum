@@ -44,7 +44,7 @@ module.exports = function (N, collectionName) {
   var Topic = new Schema({
     title           : { type: String, required: true }
     // user-friendly id (autoincremented)
-  , id              : { type: Number, required: true, min: 1, index: true }
+  , hid             : { type: Number, required: true, min: 1, index: true }
 
     // prefix id/cache
   , prefix          : Schema.ObjectId

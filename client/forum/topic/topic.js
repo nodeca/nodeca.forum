@@ -76,9 +76,9 @@ N.wire.on('forum.post.reply', function (event) {
     eState.type = 'post-reply';
     eState.parent_post_id = parent_post_id;
 
-    // draft id = 'forum:reply:<forum_id>:<topic_id>:<post_id>'
+    // draft id = 'forum:reply:<forum_id>:<topic_hid>:<post_id>'
     eState.draft_id = 'forum:reply:' + topicInfo.forum_id + ':' +
-      topicInfo.id + ':' + parent_post_id;
+      topicInfo.hid + ':' + parent_post_id;
 
     // Create editing form instance
     eState.$form = $(N.runtime.render('forum.topic.reply'));
@@ -116,7 +116,7 @@ N.wire.on('forum.post.reply', function (event) {
 N.wire.on('forum.post.reply.save', function () {
   // Save reply on server
   var post = {
-    topic_id: topicInfo.id,
+    topic_hid: topicInfo.hid,
     format: 'txt',
     text: eState.editor.value()
   };
@@ -181,7 +181,7 @@ N.wire.on('forum.post.reply.cancel', function () {
 N.wire.on('navigate.done:' + module.apiPath, function (/*config*/) {
   var $postlist = $('#postlist');
 
-  topicInfo.id = $postlist.data('topic_id');
+  topicInfo.hid = $postlist.data('topic_hid');
   topicInfo.forum_id = $postlist.data('forum_id');
 
 });
@@ -323,7 +323,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
       $button.data('page', locals.page.current + 1);
 
       $button.attr('href', N.runtime.router.linkTo('forum.topic', {
-        id:       locals.topic.id
+        hid:       locals.topic.hid
       , forum_id: locals.forum.id
       , page:     locals.page.current + 1
       }));
@@ -336,7 +336,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
           route:    'forum.topic'
-        , params:   { id: locals.topic.id, forum_id: locals.forum.id }
+        , params:   { hid: locals.topic.hid, forum_id: locals.forum.id }
         , current:  locals.page.current
         , max_page: locals.page.max
         })

@@ -18,7 +18,7 @@ article#content.forum-topic-root
               href=self.link_to('forum.section', { id: self.forum.id }))
 
           - if (self.page.max > 1)
-            - var link_params = { id: self.topic.id, forum_id: self.forum.id }
+            - var link_params = { hid: self.topic.hid, forum_id: self.forum.id }
             .btn-group.pull-left.hidden-phone-vert._pagination
               != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
@@ -44,16 +44,16 @@ article#content.forum-topic-root
 
   #postlist.forum-postlist(
     data-forum_id=self.forum.id,
-    data-topic_id=self.topic.id
+    data-topic_hid=self.topic.hid
   )
     != self.partial('@forum.blocks.posts_list', { forum: self.forum, topic: self.topic, posts: self.posts, users: self.users, settings: self.settings })
 
   //- Button "More Topics"
-  - var link_params = { id: self.topic.id, forum_id: self.forum.id, page: self.page.current + 1 };
+  - var link_params = { hid: self.topic.hid, forum_id: self.forum.id, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
   a.forum-topic__more-link.btn.btn-block.icon-more(
     class=btn_more_state,
     href=self.link_to(self.apiPath, link_params),
     data-page=self.page.current+1,
-    data-topic=self.topic.id,
+    data-topic=self.topic.hid,
     data-on-click="forum.topic.append_next_page")= self.t('more_posts')

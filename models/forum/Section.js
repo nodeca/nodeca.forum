@@ -11,25 +11,25 @@ module.exports = function (N, collectionName) {
   var cache = {
     real: {
       topic_count      : { type: Number, 'default': 0 }
-    , post_count        : { type: Number, 'default': 0 }
+    , post_count       : { type: Number, 'default': 0 }
 
-    , last_post         : Schema.ObjectId
+    , last_post        : Schema.ObjectId
     , last_topic       : Schema.ObjectId
-    , last_topic_id    : Number
+    , last_topic_hid   : Number
     , last_topic_title : String
-    , last_user         : Schema.ObjectId
-    , last_ts           : Date
+    , last_user        : Schema.ObjectId
+    , last_ts          : Date
     }
   , hb: {
       topic_count      : { type: Number, 'default': 0 }
-    , post_count        : { type: Number, 'default': 0 }
+    , post_count       : { type: Number, 'default': 0 }
 
-    , last_post         : Schema.ObjectId
+    , last_post        : Schema.ObjectId
     , last_topic       : Schema.ObjectId
-    , last_topic_id    : Number
+    , last_topic_hid   : Number
     , last_topic_title : String
-    , last_user         : Schema.ObjectId
-    , last_ts           : Date
+    , last_user        : Schema.ObjectId
+    , last_ts          : Date
     }
   };
 

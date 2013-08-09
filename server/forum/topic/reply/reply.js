@@ -2,9 +2,13 @@
 
 var _ = require('lodash');
 
+
+// topic and post statuses
+var statuses = require('../_statuses.js');
+
+
 var posts_in_fields = [
   '_id',
-  'id',
   'to',
   'attach_list',
   'text',
@@ -16,7 +20,7 @@ var posts_in_fields = [
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    topic_id: {
+    topic_hid: {
       type: "integer",
       required: true
     },
@@ -43,7 +47,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function fetch_topic(env, callback) {
     env.extras.puncher.start('Topic info prefetch (reply)');
 
-    Topic.findOne({ id: env.params.topic_id }).setOptions({ lean: true })
+    Topic.findOne({ hid: env.params.topic_hid }).setOptions({ lean: true })
         .exec(function (err, topic) {
 
       env.extras.puncher.stop();
@@ -168,7 +172,7 @@ module.exports = function (N, apiPath) {
       post.text = env.params.text;
       post.fmt = env.params.format;
       post.ip = env.request.ip;
-      post.state = 0;
+      post.st = statuses.post.VISIBLE;
 
       post.forum = topic.forum;
       post.topic = topic._id;

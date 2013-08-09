@@ -14,7 +14,7 @@ var fetch_sections_visibility = require('../../lib/fetch_sections_visibility');
 
 var topics_in_fields = [
   '_id',
-  'id',
+  'hid',
   'title',
   'prefix',
   'views_count',

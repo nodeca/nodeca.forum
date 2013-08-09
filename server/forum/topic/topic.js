@@ -13,7 +13,7 @@ var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // topic id
-    id: {
+    hid: {
       type: "integer",
       minimum: 1,
       required: true
@@ -43,7 +43,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Topic info prefetch');
 
-    Topic.findOne({ id: env.params.id }).setOptions({ lean: true })
+    Topic.findOne({ hid: env.params.hid }).setOptions({ lean: true })
         .exec(function (err, topic) {
 
       env.extras.puncher.stop();
@@ -98,7 +98,7 @@ module.exports = function (N, apiPath) {
         code: N.io.REDIRECT,
         head: {
           'Location': N.runtime.router.linkTo('forum.section', {
-            id:       env.data.topic.id,
+            hid:       env.data.topic.hid,
             forum_id: env.data.section.id,
             page:     env.params.page || 1
           })
@@ -139,7 +139,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function get_posts(env, callback) {
     var _params = env.params;
 
-    env.params = { id: _params.id, page: _params.page };
+    env.params = { hid: _params.hid, page: _params.page };
 
     env.extras.puncher.start('Fetch posts');
 
