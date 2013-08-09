@@ -14,7 +14,7 @@ router:
     forum.topic:
       "/f{forum_id}/topic{hid}(/page{page})":
         forum_id: /\d+/
-        id: /\d+/
+        hid: /\d+/
         page:
           match: /[1-9]\d*/
           default: 1

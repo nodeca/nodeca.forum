@@ -287,7 +287,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
 
   N.io.rpc(
     'forum.topic.list',
-    { id: $button.data('topic'), page: $button.data('page') },
+    { hid: $button.data('topic'), page: $button.data('page') },
     function (err, res) {
 
       // Process errors
