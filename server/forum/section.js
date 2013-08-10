@@ -5,6 +5,7 @@
 
 var _     = require('lodash');
 var async = require('async');
+var memoizee  = require('memoizee');
 
 
 var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
@@ -492,8 +493,8 @@ module.exports = function (N, apiPath) {
 
   // Fill head meta & fetch/fill breadcrumbs
   //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
-    var query, fields, t_params;
+  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
+    var t_params;
 
     var data = env.response.data;
     var section = env.data.section;
@@ -511,29 +512,52 @@ module.exports = function (N, apiPath) {
 
     // prepare section info
     data.section  = _.pick(section, section_info_out_fields);
+  });
 
-    // fetch breadcrumbs data
-    query = { _id: { $in: section.parent_list } };
-    fields = { '_id': 1, 'id': 1, 'title': 1 };
+
+  // Helper - cacheable bredcrumbs info fetch, to save DB request.
+  // We can cache it, because cache size is limited by sections count.
+  var fetchForumsBcInfo = memoizee(
+    function (ids, callback) {
+      Section
+        .find({ _id: { $in: ids }})
+        .select('id title')
+        .sort({ 'level': 1 })
+        .setOptions({ lean: true })
+        .exec(function (err, parents) {
+        callback(err, parents);
+      });
+    },
+    {
+      async: true,
+      maxAge:     60000, // cache TTL = 60 seconds
+      primitive:  true   // params keys are calculated as toStrins, ok for our case
+    }
+  );
+
+  // build breadcrumbs
+  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
+    var section = env.data.section;
+    var data = env.response.data;
 
     env.extras.puncher.start('Build breadcrumbs');
 
-    Section.find(query).select(fields).sort({ 'level': 1 })
-        .setOptions({ lean: true }).exec(function (err, parents) {
+    fetchForumsBcInfo(section.parent_list, function (err, parents) {
+      env.extras.puncher.stop();
 
       if (err) {
-        env.extras.puncher.stop();
         callback(err);
         return;
       }
 
-      parents.push(section);
-      data.blocks = data.blocks || {};
-      data.blocks.breadcrumbs = forum_breadcrumbs(env, parents);
+      var bc_list = parents.slice(); // clone result to keep cache safe
+      //bc_list.push(_.pick(section, ['id', 'title']));
 
-      env.extras.puncher.stop();
+      data.blocks = data.blocks || {};
+      data.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
 
       callback();
     });
   });
+
 };

@@ -17,7 +17,7 @@ article#content.forum-topics-root
         .container
           .btn-toolbar.controlbar.clearfix
             .btn-group.pull-left
-              - var parent_forum_hid = self.blocks.breadcrumbs[self.blocks.breadcrumbs.length - 2].params.id
+              - var parent_forum_hid = self.blocks.breadcrumbs[self.blocks.breadcrumbs.length - 1].params.id
               a.btn.btn-icon-only.icon-back(
                 href=self.link_to('forum.section', { id: parent_forum_hid }))
 
