@@ -3,7 +3,6 @@
 ul.forum-sections
   - each section in self.subsections
     - last_topic = section.cache.real.last_topic_hid || null
-    - console.log(last_topic)
     - last_user = section.cache.real.last_user || null
     - last_ts = section.cache.real.last_ts || null
     li.forum-section
