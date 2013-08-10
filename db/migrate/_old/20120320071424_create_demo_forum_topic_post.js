@@ -101,7 +101,6 @@ module.exports.up = function (N, cb) {
       post.st = statuses.post.VISIBLE;
 
       post.topic = topic._id;
-      post.section = section._id;
       post.user = user;
 
       post.save(callback);

@@ -168,9 +168,6 @@ module.exports = function (N, apiPath) {
       t_params = { title: topic.title, page: env.params.page };
       data.head.title = env.t('title_with_page', t_params);
     }
-
-    // add topic info, specific for this page (partially filled in `forum.topic.list`)
-    data.topic = _.extend({}, data.topic, _.pick(topic, ['_seo_desc']));
   });
 
 

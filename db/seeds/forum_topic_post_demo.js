@@ -109,15 +109,15 @@ Charlatan.Helpers.topic = function (section) {
   };
 };
 
+var postDay = 0;
 Charlatan.Helpers.post = function (topic) {
-  var ts =  new Date(2010, 0, 0);
+  var ts =  new Date(2010, 0, postDay++);
   return {
     text: Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join(' '),
     fmt:  'txt',
 
     st: statuses.post.VISIBLE,
     topic: topic._id,
-    section: topic.section,
 
     user: Charlatan.users[Charlatan.Helpers.rand(USER_COUNT)],
 

@@ -9,7 +9,6 @@ module.exports = function (N, collectionName) {
 
   var Post = new Schema({
     topic          : Schema.ObjectId
-  , section        : Schema.ObjectId
 
     // Related post for replies
   , to              : Schema.ObjectId
