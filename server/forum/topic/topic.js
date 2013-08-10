@@ -180,7 +180,7 @@ module.exports = function (N, apiPath) {
     function (ids, callback) {
       Section
         .find({ _id: { $in: ids }})
-        .select('_id id title')
+        .select('id title')
         .sort({ 'level': 1 })
         .setOptions({ lean: true })
         .exec(function (err, parents) {
@@ -195,24 +195,25 @@ module.exports = function (N, apiPath) {
   );
 
   // build breadcrumbs
-  N.wire.after(apiPath, function fill_breadcrumbs(env, callback) {
+  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
     var section = env.data.section;
     var data = env.response.data;
 
     env.extras.puncher.start('Build breadcrumbs');
 
     fetchForumsBcInfo(section.parent_list, function (err, parents) {
+      env.extras.puncher.stop();
+
       if (err) {
-        env.extras.puncher.stop();
         callback(err);
         return;
       }
 
-      parents.push(section);
-      data.blocks = data.blocks || {};
-      data.blocks.breadcrumbs = forum_breadcrumbs(env, parents);
+      var bc_list = parents.slice(); // clone result to keep cache safe
+      bc_list.push(_.pick(section, ['id', 'title']));
 
-      env.extras.puncher.stop();
+      data.blocks = data.blocks || {};
+      data.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
 
       callback();
     });
