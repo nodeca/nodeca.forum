@@ -18,6 +18,11 @@ article#content.forum-index__root
             data-toggle='collapse',
             data-target='#cat_list_#{category.id}'
           )
+          a.forum-category__collapser.icon-expand(
+            href='#cat#{category.id}',
+            data-toggle='collapse',
+            data-target='#cat_list_#{category.id}'
+          )
 
       .forum-category__content(id='cat_list_#{category.id}', data-notify='#cat_box_#{category.id}').collapse.in
         != self.partial('@forum.blocks.sections_list', { subsections: category.child_list, users: self.users })
