@@ -3,9 +3,9 @@
 "use strict";
 
 
-var forum_breadcrumbs = require('../../lib/forum_breadcrumbs.js');
-var to_tree = require('../../lib/to_tree.js');
-var fetch_sections_visibility = require('../../lib/fetch_sections_visibility');
+var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
+var to_tree = require('../../../lib/to_tree.js');
+var fetch_sections_visibility = require('../../../lib/fetch_sections_visibility');
 
 
 var sections_in_fields = [
