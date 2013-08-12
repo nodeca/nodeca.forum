@@ -34,8 +34,8 @@ var USER_COUNT = 200;
 var MAX_MODERATOR_COUNT = 3;
 var MAX_SUB_SECTION_COUNT = 3;
 
-var CATEGORY_ID_SHIFT = 3;
-var SECTION_HID_SHIFT = CATEGORY_ID_SHIFT + CATEGORY_COUNT;
+var CATEGORY_HID_SHIFT = 3;
+var SECTION_HID_SHIFT = CATEGORY_HID_SHIFT + CATEGORY_COUNT;
 var DISPLAY_ORDER_SHIFT = 2;
 var TOPIC_HID_SHIFT = 2;
 var USER_HID_SHIFT = 2;
@@ -46,7 +46,7 @@ var usergroups_cache = {};
 // extend Charlatan
 // add numeric id generator
 Charlatan.Incrementer = {
-  category_shift: CATEGORY_ID_SHIFT,
+  category_shift: CATEGORY_HID_SHIFT,
   section_shift: SECTION_HID_SHIFT,
   display_order_shift: DISPLAY_ORDER_SHIFT,
   topic_shift: TOPIC_HID_SHIFT,
@@ -75,7 +75,7 @@ Charlatan.Helpers.category = function () {
     description: Charlatan.Lorem.sentence(),
 
     display_order: Charlatan.Incrementer.next('display_order'),
-    id: Charlatan.Incrementer.next('category'),
+    hid: Charlatan.Incrementer.next('category'),
     is_category: true
   };
 };
@@ -85,7 +85,7 @@ Charlatan.Helpers.section = function (parent) {
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: Charlatan.Lorem.sentence(),
 
-    id: Charlatan.Incrementer.next('section'),
+    hid: Charlatan.Incrementer.next('section'),
 
     parent: parent._id,
     display_order: Charlatan.Incrementer.next('display_order'),
@@ -230,7 +230,7 @@ var create_section = function (category, sub_section_deep, callback) {
   var topic_count;
 
   var sub_section_list = [];
-  var sub_section_id_list = [];
+  var sub_section_hid_list = [];
 
   if (is_big_section) {
     is_big_section = false;
@@ -271,7 +271,7 @@ var create_section = function (category, sub_section_deep, callback) {
       async.forEach(_.range(sub_section_count), function (current_section, next_section) {
         create_section(section, sub_section_deep - 1, function (err, sub_section) {
           sub_section_list.push(sub_section._id);
-          sub_section_id_list.push(sub_section.id);
+          sub_section_hid_list.push(sub_section.hid);
           next_section(err);
         });
       }, cb);

@@ -10,7 +10,7 @@ var fetch_sections_visibility = require('../../../lib/fetch_sections_visibility'
 
 var sections_in_fields = [
   '_id',
-  'id',
+  'hid',
   'title',
   'description',
   'parent',
@@ -23,7 +23,7 @@ var sections_in_fields = [
 
 var sections_out_fields = [
   '_id',
-  'id',
+  'hid',
   'title',
   'description',
   'moderator_list',

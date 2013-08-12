@@ -24,7 +24,7 @@ module.exports = function (N, apiPath) {
       minimum: 1,
       required: true
     },
-    section_id: {
+    section_hid: {
       type: "integer",
       minimum: 1
     },
@@ -98,21 +98,21 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // `params.section_id` can be wrong (old link to moved topic)
-  // If params.section_id defined, and not correct - redirect to proper location
+  // `params.section_hid` can be wrong (old link to moved topic)
+  // If params.section_hid defined, and not correct - redirect to proper location
   //
-  N.wire.before(apiPath, function fix_section_id(env) {
-    if (!env.params.hasOwnProperty('section_id')) {
+  N.wire.before(apiPath, function fix_section_hid(env) {
+    if (!env.params.hasOwnProperty('section_hid')) {
       return;
     }
 
-    if (env.data.section.id !== +env.params.section_id) {
+    if (env.data.section.hid !== +env.params.section_hid) {
       return {
         code: N.io.REDIRECT,
         head: {
           'Location': N.runtime.router.linkTo('forum.topic', {
             hid:       env.data.topic.hid,
-            section_id: env.data.section.id,
+            section_hid: env.data.section.hid,
             page:     env.params.page || 1
           })
         }
@@ -309,7 +309,7 @@ module.exports = function (N, apiPath) {
     env.response.data.section = _.extend({}, env.response.data.section,
       _.pick(env.data.section, [
         //'_id',
-        'id'
+        'hid'
       ])
     );
   });

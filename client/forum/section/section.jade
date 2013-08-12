@@ -22,7 +22,7 @@ article#content.forum-topics-root
                 href=self.link_to('forum.section', { id: parent_forum_hid }))
 
             - if (self.topics && self.topics.length && self.page.max > 1)
-              - var link_params = { id: self.section.id }
+              - var link_params = { hid: self.section.hid }
               .btn-group.pull-left.hidden-phone-vert._pagination
                 != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
 
@@ -59,7 +59,7 @@ article#content.forum-topics-root
         != self.partial('@forum.blocks.topics_list', { section: self.section, topics: self.topics, users: self.users })
 
       //- Button "More Topics"
-      - var link_params = { id: self.section.id, page: self.page.current + 1 };
+      - var link_params = { hid: self.section.hid, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
       a.forum-section__more-link.btn.btn-block.icon-more(
         class=btn_more_state,

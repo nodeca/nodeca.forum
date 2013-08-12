@@ -25,7 +25,7 @@ var topics_in_fields = [
 
 var subsections_in_fields = [
   '_id',
-  'id',
+  'hid',
   'title',
   'description',
   'parent',
@@ -39,7 +39,7 @@ var subsections_in_fields = [
 
 var subsections_out_fields = [
   '_id',
-  'id',
+  'hid',
   'title',
   'description',
   'moderator_list',
@@ -49,7 +49,7 @@ var subsections_out_fields = [
 
 
 var section_info_out_fields = [
-  'id',
+  'hid',
   'title',
   'description',
   'is_category'
@@ -77,8 +77,8 @@ var settings_expose = [
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    // section id
-    id: {
+    // section hid
+    hid: {
       type: "integer",
       minimum: 1,
       required: true
@@ -102,7 +102,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function prefetch_section(env, callback) {
     env.extras.puncher.start('Forum info prefetch');
 
-    Section.findOne({ id: env.params.id }).setOptions({ lean: true })
+    Section.findOne({ hid: env.params.hid }).setOptions({ lean: true })
         .exec(function (err, section) {
 
       env.extras.puncher.stop();
@@ -175,7 +175,7 @@ module.exports = function (N, apiPath) {
         code: N.io.REDIRECT,
         head: {
           "Location": N.runtime.router.linkTo(env.request.method, {
-            id:   env.params.id,
+            hid:   env.params.hid,
             page: max
           })
         }
@@ -521,7 +521,7 @@ module.exports = function (N, apiPath) {
     function (ids, callback) {
       Section
         .find({ _id: { $in: ids }})
-        .select('id title')
+        .select('hid title')
         .sort({ 'level': 1 })
         .setOptions({ lean: true })
         .exec(function (err, parents) {
@@ -551,7 +551,7 @@ module.exports = function (N, apiPath) {
       }
 
       var bc_list = parents.slice(); // clone result to keep cache safe
-      //bc_list.push(_.pick(section, ['id', 'title']));
+      //bc_list.push(_.pick(section, ['hid', 'title']));
 
       data.blocks = data.blocks || {};
       data.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);

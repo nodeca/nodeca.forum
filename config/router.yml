@@ -4,16 +4,16 @@ router:
       "/": ~
 
     forum.section:
-      "/f{id}(/page{page})":
-        id: /\d+/
+      "/f{hid}(/page{page})":
+        hid: /\d+/
         page:
           match: /[1-9]\d*/
           default: 1
 
 
     forum.topic:
-      "/f{section_id}/topic{hid}(/page{page})":
-        section_id: /\d+/
+      "/f{section_hid}/topic{hid}(/page{page})":
+        section_hid: /\d+/
         hid: /\d+/
         page:
           match: /[1-9]\d*/

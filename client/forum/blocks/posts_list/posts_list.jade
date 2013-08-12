@@ -8,7 +8,7 @@
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
         time.forum-post__time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
-        - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_id: self.section.id }) + '#post' + String(post._id);
+        - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + String(post._id);
         a.forum-post__link.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left

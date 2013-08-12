@@ -16,11 +16,11 @@ include ../pagination_micro/pagination_micro
     .row
       .forum-topicline__summary.span7
         h2.forum-topicline__title
-          a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_id: self.section.id }))= topic.title
+          a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
         //a.mark-i-attach._tip(href="#")=topic.attach_count
         - if (topic._pages_count > 1)
           //- micro-pagination
-          - var route_params = { hid: topic.hid, section_id: self.section.id }
+          - var route_params = { hid: topic.hid, section_hid: self.section.hid }
           mixin pagination_micro('forum.topic', route_params, topic._pages_count)
 
 

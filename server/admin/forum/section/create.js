@@ -44,7 +44,7 @@ module.exports = function (N, apiPath) {
 
         N.models.forum.Section
             .findById(newSection.parent)
-            .select('_id id parent_list level')
+            .select('_id hid parent_list level')
             .setOptions({ lean: true })
             .exec(function (err, parentSection) {
 
@@ -62,14 +62,14 @@ module.exports = function (N, apiPath) {
         });
       }
       //
-      // Find and set free `id` value for new section. (not `_id`!)
+      // Find and set free `hid` value for new section. (not `_id`!)
       //
     , function (next) {
         // This is the most simple way to find max value of a field in Mongo.
         N.models.forum.Section
             .find()
-            .select('id')
-            .sort('-id')
+            .select('hid')
+            .sort('-hid')
             .limit(1)
             .setOptions({ lean: true })
             .exec(function (err, result) {
@@ -79,7 +79,7 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          newSection.id = _.isEmpty(result) ? 1 : result[0].id + 1;
+          newSection.hid = _.isEmpty(result) ? 1 : result[0].hid + 1;
           next();
         });
       }

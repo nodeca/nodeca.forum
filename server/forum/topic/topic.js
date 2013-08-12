@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
       minimum: 1,
       required: true
     },
-    section_id: {
+    section_hid: {
       type: "integer",
       minimum: 1,
     },

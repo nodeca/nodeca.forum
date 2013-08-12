@@ -39,7 +39,7 @@ module.exports = function (N, collectionName) {
   , display_order   : Number
 
     // user-friendly id (autoincremented)
-  , id              : { type: Number, required: true, min: 1, index: true }
+  , hid              : { type: Number, required: true, min: 1, index: true }
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
@@ -118,7 +118,7 @@ module.exports = function (N, collectionName) {
 
     N.models.forum.Section
         .findById(self.parent)
-        .select('_id id parent_list level')
+        .select('_id hid parent_list level')
         .exec(function (err, parentSection) {
 
       if (err) {

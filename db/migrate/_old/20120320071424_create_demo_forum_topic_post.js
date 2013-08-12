@@ -59,7 +59,7 @@ module.exports.up = function (N, cb) {
       category.title = 'Demo category';
       category.description = 'Description of demo category';
 
-      category.id = 1;
+      category.hid = 1;
       category.is_category = true;
       category.display_order = 0;
 
@@ -71,7 +71,7 @@ module.exports.up = function (N, cb) {
       section.title = 'Demo forum';
       section.description = 'Description for demo forum';
 
-      section.id = 2;
+      section.hid = 2;
       section.parent = category._id;
       section.display_order = category.display_order + 1;
 
@@ -85,7 +85,7 @@ module.exports.up = function (N, cb) {
 
       topic.st = statuses.topic.OPEN;
 
-      topic.section_id = section.id;
+      topic.section_hid = section.hid;
       topic.section = section._id;
 
       topic.save(callback);
