@@ -28,7 +28,7 @@ module.exports.up = function (N, cb) {
           callback(err);
           return;
         }
-        user.id = 1;
+        user.hid = 1;
         user.nick = 'admin';
         user.email = 'admin@localhost';
         user.joined_ts = new Date;

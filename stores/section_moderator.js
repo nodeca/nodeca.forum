@@ -422,7 +422,7 @@ module.exports = function (N) {
         // Fetch users numeric ids to compose `moderator_id_list`.
         N.models.users.User
             .find().where('_id').in(visibleModeratorIds)
-            .select('id')
+            .select('hid')
             .exec(function (err, users) {
 
           if (err) {
@@ -438,7 +438,7 @@ module.exports = function (N) {
             });
 
             if (user) {
-              return user.id;
+              return user.hid;
             } else {
               N.logger.warn('Forum section %s has a non-existent user as moderator.', section._id);
               return -1;

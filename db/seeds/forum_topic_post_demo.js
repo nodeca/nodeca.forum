@@ -132,7 +132,7 @@ Charlatan.Helpers.user = function () {
   var first_name = Charlatan.Name.firstName();
   var last_name = Charlatan.Name.lastName();
   return {
-    id          : Charlatan.Incrementer.next('user'),
+    hid          : Charlatan.Incrementer.next('user'),
     first_name  : first_name,
     last_name   : last_name,
     nick        : nick,
