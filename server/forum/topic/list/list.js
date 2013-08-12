@@ -13,6 +13,9 @@ var fields = require('./_fields.js');
 // topic and post statuses
 var statuses = require('../_statuses.js');
 
+
+////////////////////////////////////////////////////////////////////////////////
+
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // topic id
@@ -20,6 +23,10 @@ module.exports = function (N, apiPath) {
       type: "integer",
       minimum: 1,
       required: true
+    },
+    section_id: {
+      type: "integer",
+      minimum: 1
     },
     page: {
       type: "integer",
@@ -36,14 +43,8 @@ module.exports = function (N, apiPath) {
 
 
   // fetch topic info & check that topic exists
+  //
   N.wire.before(apiPath, function fetch_topic_info(env, callback) {
-
-    // If topic already fetched (in parent request, for example),
-    // skip this step.
-    if (env.data.topic) {
-      callback();
-      return;
-    }
 
     env.extras.puncher.start('Topic info prefetch');
 
@@ -70,14 +71,8 @@ module.exports = function (N, apiPath) {
 
 
   // fetch section info
+  //
   N.wire.before(apiPath, function fetch_section_info(env, callback) {
-
-    // If section already fetched (in parent request, for example),
-    // skip this step.
-    if (env.data.section) {
-      callback();
-      return;
-    }
 
     env.extras.puncher.start('Forum info prefetch');
 
@@ -103,7 +98,31 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // `params.section_id` can be wrong (old link to moved topic)
+  // If params.section_id defined, and not correct - redirect to proper location
+  //
+  N.wire.before(apiPath, function fix_section_id(env) {
+    if (!env.params.hasOwnProperty('section_id')) {
+      return;
+    }
+
+    if (env.data.section.id !== +env.params.section_id) {
+      return {
+        code: N.io.REDIRECT,
+        head: {
+          'Location': N.runtime.router.linkTo('forum.topic', {
+            hid:       env.data.topic.hid,
+            section_id: env.data.section.id,
+            page:     env.params.page || 1
+          })
+        }
+      };
+    }
+  });
+
+
   // check access permissions
+  //
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
     env.extras.settings.params.section_id = env.data.topic.section;
@@ -128,6 +147,7 @@ module.exports = function (N, apiPath) {
 
 
   // fetch posts per page setting
+  //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
     env.extras.puncher.start('Fetch posts per page setting');
 
@@ -146,6 +166,7 @@ module.exports = function (N, apiPath) {
 
 
   // Fill page data or redirect to last page, if requested > available
+  //
   N.wire.before(apiPath, function check_and_set_page_info(env) {
     var per_page = env.data.posts_per_page,
         max      = Math.ceil(env.data.topic.cache.real.post_count / per_page),
@@ -269,6 +290,7 @@ module.exports = function (N, apiPath) {
 
 
   // Add topic info
+  //
   N.wire.after(apiPath, function fill_topic_info(env) {
     env.response.data.topic = _.extend({}, env.response.data.topic,
       _.pick(env.data.topic, [
@@ -282,6 +304,7 @@ module.exports = function (N, apiPath) {
   });
 
   // Add section info
+  //
   N.wire.after(apiPath, function fill_topic_info(env) {
     env.response.data.section = _.extend({}, env.response.data.section,
       _.pick(env.data.section, [
@@ -294,6 +317,7 @@ module.exports = function (N, apiPath) {
 
   // Sanitize response info. We should not show hellbanned status to users
   // that cannot view hellbanned content. In this case we use 'ste' status instead.
+  //
   N.wire.after(apiPath, function sanitize_statuses(env, callback) {
 
     env.extras.puncher.start("Fetch 'can_see_hellbanned' for statuses sanitizer");
@@ -332,6 +356,7 @@ module.exports = function (N, apiPath) {
   });
 
   // Add permissions, required to render posts list
+  //
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
     env.extras.settings.params.section_id = env.data.topic.section;

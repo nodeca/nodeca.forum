@@ -21,7 +21,6 @@ module.exports = function (N, apiPath) {
     section_id: {
       type: "integer",
       minimum: 1,
-      required: true
     },
     page: {
       type: "integer",
@@ -31,122 +30,18 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // shortcuts
+  // shortcut
   var Section = N.models.forum.Section;
-  var Topic = N.models.forum.Topic;
 
 
-  // Fetch topic info & check that topic exists.
-  // Make sure, that fields are not filtered, because
-  // data are reused in subrequest
-  N.wire.before(apiPath, function fetch_topic_info(env, callback) {
-
-    env.extras.puncher.start('Topic info prefetch');
-
-    Topic.findOne({ hid: env.params.hid }).setOptions({ lean: true })
-        .exec(function (err, topic) {
-
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      // No topic -> "Not Found" status
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
-  });
-
-  // fetch section info
-  N.wire.before(apiPath, function fetch_section_info(env, callback) {
-
-    env.extras.puncher.start('Forum info prefetch');
-
-    Section.findOne({ _id: env.data.topic.section }).setOptions({ lean: true })
-        .exec(function (err, section) {
-
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      // No section -> topic with missed parent, return "Not Found" too
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
-  });
-
-  // `params.section_id` can be wrong (old link to moved topic)
-  // If params.section_id defined, and not correct - redirect to proper location
-  N.wire.before(apiPath, function fix_section_id(env) {
-    if (env.params.section_id && (env.data.section.id !== +env.params.section_id)) {
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          'Location': N.runtime.router.linkTo('forum.section', {
-            hid:       env.data.topic.hid,
-            section_id: env.data.section.id,
-            page:     env.params.page || 1
-          })
-        }
-      };
-    }
-  });
-
-
-  // check access permissions
-  N.wire.before(apiPath, function check_permissions(env, callback) {
-
-    env.extras.settings.params.section_id = env.data.topic.section;
-    env.extras.puncher.start('Fetch settings');
-
-    env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!settings.forum_can_view) {
-        callback(N.io.NOT_AUTHORIZED);
-        return;
-      }
-
-      callback();
-    });
-  });
-
-
-  //
   // Just subcall section.topic.list, that enchances `env`
   //
-
   N.wire.on(apiPath, function get_posts(env, callback) {
-    var _params = env.params;
-
-    env.params = { hid: _params.hid, page: _params.page };
-
     env.extras.puncher.start('Fetch posts');
 
     N.wire.emit('server:forum.topic.list', env, function (err) {
       env.extras.puncher.stop();
 
-      env.params = _params;
       callback(err);
     });
   });
