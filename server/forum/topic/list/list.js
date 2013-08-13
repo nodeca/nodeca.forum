@@ -98,29 +98,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // `params.section_hid` can be wrong (old link to moved topic)
-  // If params.section_hid defined, and not correct - redirect to proper location
-  //
-  N.wire.before(apiPath, function fix_section_hid(env) {
-    if (!env.params.hasOwnProperty('section_hid')) {
-      return;
-    }
-
-    if (env.data.section.hid !== +env.params.section_hid) {
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          'Location': N.runtime.router.linkTo('forum.topic', {
-            hid:       env.data.topic.hid,
-            section_hid: env.data.section.hid,
-            page:     env.params.page || 1
-          })
-        }
-      };
-    }
-  });
-
-
   // check access permissions
   //
   N.wire.before(apiPath, function check_permissions(env, callback) {
@@ -143,6 +120,29 @@ module.exports = function (N, apiPath) {
 
       callback();
     });
+  });
+
+
+  // `params.section_hid` can be wrong (old link to moved topic)
+  // If params.section_hid defined, and not correct - redirect to proper location
+  //
+  N.wire.before(apiPath, function fix_section_hid(env) {
+    if (!env.params.hasOwnProperty('section_hid')) {
+      return;
+    }
+
+    if (env.data.section.hid !== +env.params.section_hid) {
+      return {
+        code: N.io.REDIRECT,
+        head: {
+          'Location': N.runtime.router.linkTo('forum.topic', {
+            hid:       env.data.topic.hid,
+            section_hid: env.data.section.hid,
+            page:     env.params.page || 1
+          })
+        }
+      };
+    }
   });
 
 
