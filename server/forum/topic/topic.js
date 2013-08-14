@@ -34,7 +34,7 @@ module.exports = function (N, apiPath) {
   var Section = N.models.forum.Section;
 
 
-  // Just subcall section.topic.list, that enchances `env`
+  // Just subcall forum.topic.list, that enchances `env`
   //
   N.wire.on(apiPath, function get_posts(env, callback) {
     env.extras.puncher.start('Fetch posts');

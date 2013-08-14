@@ -177,10 +177,10 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          "Location": N.runtime.router.linkTo('section.topic', {
+          "Location": N.runtime.router.linkTo('forum.topic', {
             section_id: env.data.topic.section_id,
-            id:       env.params.id,
-            page:     max
+            hid:        env.params.hid,
+            page:       max
           })
         }
       };
@@ -212,8 +212,14 @@ module.exports = function (N, apiPath) {
 
     // Unlike topics list, we can use simplified fetch,
     // because posts are always ordered by id - no need to sort by timestamp
-    Post.find({ topic: env.data.topic._id }).select('_id').sort('ts').skip(start)
-        .limit(posts_per_page + 1).setOptions({ lean: true }).exec(function (err, docs) {
+    Post
+      .find({ topic: env.data.topic._id })
+      .select('_id')
+      .sort('ts')
+      .skip(start)
+      .limit(posts_per_page + 1)
+      .setOptions({ lean: true })
+      .exec(function (err, docs) {
 
       env.extras.puncher.stop(!!docs ? { count: docs.length } : null);
 
