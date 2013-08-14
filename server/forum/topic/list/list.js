@@ -169,7 +169,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function check_and_set_page_info(env) {
     var per_page = env.data.posts_per_page,
-        max      = Math.ceil(env.data.topic.cache.real.post_count / per_page),
+        max      = Math.ceil(env.data.topic.cache.real.post_count / per_page) || 1,
         current  = parseInt(env.params.page, 10);
 
     if (current > max) {
