@@ -117,7 +117,7 @@ module.exports = function (N, apiPath) {
 
       // filter visibility
       var filtered_sections = [];
-      var s_ids             = env.data.sections.map(function (s) { return s._id; });
+      var s_ids             = sections.map(function (s) { return s._id; });
       var usergroups        = env.extras.settings.params.usergroup_ids;
 
       env.extras.puncher.start('Filter sub-sections');
