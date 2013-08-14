@@ -4,23 +4,12 @@
 
 
 var _     = require('lodash');
-var async = require('async');
 var memoizee  = require('memoizee');
 
 
 var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../../lib/to_tree.js');
 var fetch_sections_visibility = require('../../../lib/fetch_sections_visibility');
-
-
-var topics_in_fields = [
-  '_id',
-  'hid',
-  'title',
-  'prefix',
-  'views_count',
-  'cache'
-];
 
 
 var subsections_in_fields = [
@@ -56,23 +45,6 @@ var section_info_out_fields = [
 ];
 
 
-// settings that needs to be fetched
-var settings_fetch = [
-  'posts_per_page',
-  'topics_per_page',
-  'forum_can_view',
-  'forum_can_reply',
-  'forum_can_start_topics'
-];
-
-
-// settings that would be "exposed" into views
-var settings_expose = [
-  'forum_can_reply',
-  'forum_can_start_topics'
-];
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, apiPath) {
@@ -93,243 +65,24 @@ module.exports = function (N, apiPath) {
 
   // shortcuts
   var Section = N.models.forum.Section;
-  var Topic = N.models.forum.Topic;
 
 
-  // Prefetch section to simplify permisson check.
-  // Check that section exists.
+  // Just subcall forum.topic.list, that enchances `env`
   //
-  N.wire.before(apiPath, function prefetch_section(env, callback) {
-    env.extras.puncher.start('Forum info prefetch');
+  N.wire.on(apiPath, function get_posts(env, callback) {
+    env.extras.puncher.start('Fetch topics');
 
-    Section.findOne({ hid: env.params.hid }).setOptions({ lean: true })
-        .exec(function (err, section) {
-
+    N.wire.emit('server:forum.section.list', env, function (err) {
       env.extras.puncher.stop();
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      // No section -> "Not Found" status
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
+      callback(err);
     });
   });
 
 
-  N.wire.before(apiPath, function section_get_settings(env, callback) {
-    env.extras.settings.params.section_id = env.data.section._id;
-    env.extras.puncher.start('Fetch settings');
-
-    env.extras.settings.fetch(settings_fetch, function (err, settings) {
-
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      // propose all settings to data
-      env.data.settings = settings;
-
-      // propose settings for views to response.data
-      env.response.data.settings = _.pick(settings, settings_expose);
-
-      callback();
-    });
-  });
-
-
-  N.wire.before(apiPath, function section_check_permissions(env, callback) {
-    if (!env.data.settings.forum_can_view) {
-      callback(N.io.NOT_AUTHORIZED);
-      return;
-    }
-
-    callback();
-
-  });
-
-
-  // presets pagination data and redirects to the last page if
-  // requested page is bigger than max available
+  // fetch visible sub-sections (only on first page)
   //
-  N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
-    var per_page = env.data.settings.topics_per_page,
-        max      = Math.ceil(env.data.section.cache.real.topic_count / per_page),
-        current  = parseInt(env.params.page, 10);
-
-    // section might have only subsections and no topics,
-    // so check requested page vlidity only when max >= 1
-    if (max && current > max) {
-      // Requested page is BIGGER than maximum - redirect to the last one
-      callback({
-        code: N.io.REDIRECT,
-        head: {
-          "Location": N.runtime.router.linkTo(env.request.method, {
-            hid:   env.params.hid,
-            page: max
-          })
-        }
-      });
-      return;
-    }
-
-    // requested page is OK. propose data for pagination
-    env.response.data.page = { max: max, current: current };
-    callback();
-  });
-
-
-  // fetch and prepare topics
-  //
-  // ##### params
-  //
-  // - `id`   section id
-  //
-  N.wire.on(apiPath, function check_and_set_page_info(env, callback) {
-    // FIXME replace state hardcode
-    //var VISIBLE_STATE = 0;
-    //var DELETED_STATE = 1;
-
-    var sort = {};
-    var start;
-    var query;
-    var ids = [];
-
-    var topics_per_page = env.data.settings.topics_per_page;
-
-    env.response.data.show_page_number = false;
-
-    env.extras.puncher.start('Get topics');
-    env.extras.puncher.start('Topic ids prefetch');
-
-    if (env.session && env.session.hb) {
-      sort['cache.hb.last_ts'] = -1;
-    } else {
-      sort['cache.real.last_ts'] = -1;
-    }
-
-    async.series([
-      function (next) {
-        // FIXME add state condition to select only visible topics
-        start = (env.params.page - 1) * topics_per_page;
-
-        // Fetch IDs of "visible" topics interval
-        Topic.find({ section: env.data.section._id })
-            //.where('state').equals(VISIBLE_STATE)
-            .select('_id cache.real.last_ts').sort(sort).skip(start)
-            .limit(topics_per_page + 1).setOptions({ lean: true })
-            .exec(function (err, visible_topics) {
-
-          env.extras.puncher.stop({ count: visible_topics.length });
-
-          if (err) {
-            next(err);
-            return;
-          }
-
-          if (!visible_topics.length) {
-            // properly close puncher scope on early interrupt
-            env.extras.puncher.stop();
-
-            if (env.params.page > 1) {
-              // When user requests page that is out of possible range we redirect
-              // them during before filter (see above).
-              //
-              // But very rarely, cached topics counter can be out of sync.
-              // In this case return 404 for empty result.
-              next(N.io.NOT_FOUND);
-              return;
-            }
-
-            // category or section without topics
-            env.data.topics = [];
-
-            next();
-            return;
-          }
-
-          // collect ids
-          ids = visible_topics.map(function (topic) {
-            return topic._id;
-          });
-
-          // FIXME need real check permission
-          if (false) {
-            next();
-            return;
-          }
-
-          // delete last ID, if successefuly fetched (topics_per_page+1)
-          if (ids.length > topics_per_page) { ids.pop(); }
-
-          // Fetch IDs of "hidden" topics (use coverage index)
-          /*Topic.find({ section: env.data.section._id })
-              .where('state').equals(DELETED_STATE)
-              .where('cache.real.last_ts')
-                .lt(_.first(visible_topics).cache.real.last_ts)
-                .gt(_.last(visible_topics).cache.real.last_ts)
-              .select('_id').sort(sort)
-              .setOptions({ lean: true })
-              .exec(function (err, deleted_topics) {
-
-            if (err) {
-              next(err);
-              return;
-            }
-            // append ids of deleted topics
-            deleted_topics.forEach(function (topic) {
-              ids.push(topic._id);
-            });
-            next();
-          });*/
-          next();
-        });
-      },
-      function (next) {
-        if (_.isEmpty(ids)) {
-          next();
-          return;
-        }
-        env.extras.puncher.start('Get topics by _id list');
-
-        // FIXME modify state condition (deleted and etc) if user has permission
-        // If no hidden topics - no conditions needed, just select by IDs
-        query = Topic.find().where('_id').in(ids).sort(sort);
-
-        // Select all allowed topics in calculated
-        // interval: visible + deleted and others (if allowed by permissions)
-        query.select(topics_in_fields.join(' ')).sort(sort)
-            .setOptions({ lean: true }).exec(function (err, topics) {
-
-          env.extras.puncher.stop({ count: topics.length });
-          env.extras.puncher.stop();
-
-          if (err) {
-            next(err);
-            return;
-          }
-
-          env.data.topics = topics;
-          next();
-        });
-      }
-    ], callback);
-  });
-
-
-  // fetch sub-sections (only on first page)
-  //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
+  N.wire.after(apiPath, function fetch_visible_subsections(env, callback) {
     var max_level;
     var query;
 
@@ -348,9 +101,12 @@ module.exports = function (N, apiPath) {
       parent_list: env.data.section._id
     };
 
-    Section.find(query).sort('display_order').setOptions({ lean: true })
-        .select(subsections_in_fields.join(' '))
-        .exec(function (err, sections) {
+    Section
+      .find(query)
+      .sort('display_order')
+      .setOptions({ lean: true })
+      .select(subsections_in_fields.join(' '))
+      .exec(function (err, sections) {
 
       env.extras.puncher.stop({ count: sections.length });
 
@@ -359,43 +115,29 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.sections = sections;
-      callback();
-    });
-  });
+      // filter visibility
+      var filtered_sections = [];
+      var s_ids             = env.data.sections.map(function (s) { return s._id; });
+      var usergroups        = env.extras.settings.params.usergroup_ids;
 
+      env.extras.puncher.start('Filter sub-sections');
 
-  // removes sub-sections for which user has no rights to access:
-  //
-  //  - forum_can_view
-  //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
-    var filtered_sections = [];
-    var sections          = env.data.sections.map(function (s) { return s._id; });
-    var usergroups        = env.extras.settings.params.usergroup_ids;
+      fetch_sections_visibility(s_ids, usergroups, function (err, results) {
+        env.extras.puncher.stop({ count: filtered_sections.length });
 
-    env.extras.puncher.start('Filter sub-sections');
-
-    fetch_sections_visibility(sections, usergroups, function (err, results) {
-      env.extras.puncher.stop({ count: filtered_sections.length });
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.sections.forEach(function (section) {
-        var o = results[section._id];
-
-        if (o && o.forum_can_view) {
-          filtered_sections.push(section);
+        if (err) {
+          callback(err);
+          return;
         }
-      });
 
-      env.data.sections = filtered_sections;
-      callback();
+        env.data.sections = _.filter(sections, function(section) {
+          return results[section._id] && results[section._id].forum_can_view;
+        });
+        callback();
+      });
     });
   });
+
 
   // Build response:
   //  - sections list -> filtered tree
@@ -468,9 +210,9 @@ module.exports = function (N, apiPath) {
     }
 
     // calculate pages number
-    var posts_per_page = env.data.settings.posts_per_page;
+    var topics_per_page = env.topics_per_page;
     env.data.topics.forEach(function (doc) {
-      doc._pages_count = Math.ceil(doc.cache.real.post_count / posts_per_page);
+      doc._pages_count = Math.ceil(doc.cache.real.post_count / topics_per_page);
     });
 
     env.response.data.topics = env.data.topics;
