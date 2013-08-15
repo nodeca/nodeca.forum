@@ -146,7 +146,7 @@ module.exports = function (N, apiPath) {
     var query;
     var ids = [];
 
-    var topics_per_page = env.topics_per_page;
+    var topics_per_page = env.data.topics_per_page;
 
     env.response.data.show_page_number = false;
 
