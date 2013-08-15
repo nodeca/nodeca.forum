@@ -9,8 +9,8 @@ var async = require('async');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_id:   { type: 'string', required: true, pattern: /^[0-9a-fA-F]{24}$/ }
-  , usergroup_id: { type: 'string', required: true, pattern: /^[0-9a-fA-F]{24}$/ }
+    section_id:   { format: 'mongo', required: true }
+  , usergroup_id: { format: 'mongo', required: true }
   });
 
 
