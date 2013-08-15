@@ -72,7 +72,7 @@ module.exports = function (N, apiPath) {
     function (ids, callback) {
       Section
         .find({ _id: { $in: ids }})
-        .select('id title')
+        .select('hid title')
         .sort({ 'level': 1 })
         .setOptions({ lean: true })
         .exec(function (err, parents) {
@@ -102,7 +102,7 @@ module.exports = function (N, apiPath) {
       }
 
       var bc_list = parents.slice(); // clone result to keep cache safe
-      bc_list.push(_.pick(section, ['id', 'title']));
+      bc_list.push(_.pick(section, ['hid', 'title']));
 
       data.blocks = data.blocks || {};
       data.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
