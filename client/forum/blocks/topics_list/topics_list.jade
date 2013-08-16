@@ -4,7 +4,7 @@ include ../pagination_micro/pagination_micro
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
 - var replies, views;
-- if (self.page)
+- if (self.show_page_number)
   .forum-topicline__separator= self.t('page_separator', { page: self.show_page_number })
 
 - each topic in self.topics

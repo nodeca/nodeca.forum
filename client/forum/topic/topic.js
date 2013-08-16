@@ -301,10 +301,8 @@ N.wire.on('forum.topic.append_next_page', function (event) {
         return false;
       }
 
-      var locals = res.data;
-
       // if no posts - just disable 'More' button
-      if (!locals.posts || !locals.posts.length) {
+      if (!res.posts || !res.posts.length) {
         N.wire.emit('notify', {
           type: 'warning',
           message: t('error_no_more_posts')
@@ -313,22 +311,22 @@ N.wire.on('forum.topic.append_next_page', function (event) {
         return;
       }
 
-      locals.show_page_number = locals.page.current;
+      res.show_page_number = res.page.current;
 
       // render & inject posts list
-      var $result = $(N.runtime.render('forum.blocks.posts_list', locals));
+      var $result = $(N.runtime.render('forum.blocks.posts_list', res));
       $('#postlist > :last').after($result);
 
       // update button data & state
-      $button.data('page', locals.page.current + 1);
+      $button.data('page', res.page.current + 1);
 
       $button.attr('href', N.runtime.router.linkTo('forum.topic', {
-        hid:       locals.topic.hid
-      , section_hid: locals.section.hid
-      , page:     locals.page.current + 1
+        hid:          res.topic.hid,
+        section_hid:  res.section.hid,
+        page:         res.page.current + 1
       }));
 
-      if (locals.page.current === locals.page.max) {
+      if (res.page.current === res.page.max) {
         $button.addClass('hidden');
       }
 
@@ -336,9 +334,9 @@ N.wire.on('forum.topic.append_next_page', function (event) {
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
           route:    'forum.topic'
-        , params:   { hid: locals.topic.hid, section_hid: locals.section.hid }
-        , current:  locals.page.current
-        , max_page: locals.page.max
+        , params:   { hid: res.topic.hid, section_hid: res.section.hid }
+        , current:  res.page.current
+        , max_page: res.page.max
         })
       );
 
@@ -346,8 +344,8 @@ N.wire.on('forum.topic.append_next_page', function (event) {
       N.wire.emit('navigate.replace', {
         href: new_url,
         title: t('title_with_page', {
-          title: locals.topic.title,
-          page: locals.page.current
+          title: res.topic.title,
+          page: res.page.current
         })
       });
     }

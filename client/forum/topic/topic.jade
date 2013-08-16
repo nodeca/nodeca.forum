@@ -1,7 +1,7 @@
 - var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 } }
 
 article#content.forum-topic-root
-  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
+  != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
     h1.page-head__title(itemprop='name')= self.topic.title
@@ -18,9 +18,10 @@ article#content.forum-topic-root
               href=self.link_to('forum.section', { hid: self.section.hid }))
 
           - if (self.page.max > 1)
-            - var link_params = { hid: self.topic.hid, section_hid: self.section.hid }
             .btn-group.pull-left.hidden-phone-vert._pagination
-              != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
+              - var link_params = { hid: self.topic.hid, section_hid: self.section.hid }
+              - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max }
+              != self.partial('@common.blocks.pagination', pgn_params)
 
           .btn-group.pull-right
             a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
@@ -46,7 +47,7 @@ article#content.forum-topic-root
     data-section_hid=self.section.hid,
     data-topic_hid=self.topic.hid
   )
-    != self.partial('@forum.blocks.posts_list', { section: self.section, topic: self.topic, posts: self.posts, users: self.users, settings: self.settings })
+    != self.partial('@forum.blocks.posts_list')
 
   //- Button "More Topics"
   - var link_params = { hid: self.topic.hid, section_hid: self.section.hid, page: self.page.current + 1 };

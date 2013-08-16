@@ -1,5 +1,5 @@
 article#content.forum-index__root
-  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
+  != self.partial('@common.blocks.breadcrumbs')
 
   //h1= t('forum.index.title')
 
@@ -25,7 +25,7 @@ article#content.forum-index__root
           )
 
       .forum-category__content(id='cat_list_#{category.hid}', data-notify='#cat_box_#{category.hid}').collapse.in
-        != self.partial('@forum.blocks.sections_list', { subsections: category.child_list, users: self.users })
+        != self.partial('@forum.blocks.sections_list', { subsections: category.child_list })
 
   footer
     - if (self.runtime.is_member)
@@ -35,7 +35,7 @@ article#content.forum-index__root
         a.btn(href='#')= self.t('exclude', { count: 5 })
 
     .page-summary
-      .page-summary__head= self.t('total_active.all', { count: 710, interval: 30})
+      .page-summary__head= self.t('total_active.all', { count: 710, interval: 30 })
         .page-summary__subhead
           = self.t('total_active.members', { count: 128 })
           | , 

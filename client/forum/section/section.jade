@@ -1,5 +1,5 @@
 article#content.forum-topics-root
-  != self.partial('@common.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
+  != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
     h1.page-head__title(itemprop='name')= self.section.title
@@ -8,7 +8,7 @@ article#content.forum-topics-root
 
   //- Subsections, if exist
   - if (self.sections && self.sections.length)
-    != self.partial('@forum.blocks.sections_list', { subsections: self.sections, users: self.users })
+    != self.partial('@forum.blocks.sections_list', { subsections: self.sections })
 
   - if (self.section.is_category === false)
     //- Toolbar with pagination & controls
@@ -22,9 +22,10 @@ article#content.forum-topics-root
                 href=self.link_to('forum.section', { id: parent_forum_hid }))
 
             - if (self.topics && self.topics.length && self.page.max > 1)
-              - var link_params = { hid: self.section.hid }
               .btn-group.pull-left.hidden-phone-vert._pagination
-                != self.partial('@common.blocks.pagination', { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max })
+                - var link_params = { hid: self.section.hid }
+                - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max }
+                != self.partial('@common.blocks.pagination', pgn_params)
 
             .btn-group.pull-right
               a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
@@ -56,7 +57,7 @@ article#content.forum-topics-root
 
     - if (self.topics && self.topics.length)
       #topiclist.forum-topiclines
-        != self.partial('@forum.blocks.topics_list', { section: self.section, topics: self.topics, users: self.users, settings: self.settings })
+        != self.partial('@forum.blocks.topics_list')
 
       //- Button "More Topics"
       - var link_params = { hid: self.section.hid, page: self.page.current + 1 };
