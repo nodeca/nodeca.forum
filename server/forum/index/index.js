@@ -138,7 +138,6 @@ module.exports = function (N, apiPath) {
       }
     });
 
-    env.response.data.users = env.data.users;
     env.response.data.sections = to_tree(env.data.sections, null);
 
     // Cleanup output tree - delete attributes, that are not white list.

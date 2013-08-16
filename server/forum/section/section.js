@@ -181,7 +181,6 @@ module.exports = function (N, apiPath) {
 
 
     root = env.data.section._id;
-    env.response.data.users = env.data.users;
     env.response.data.sections = to_tree(env.data.sections, root);
 
     // Cleanup output tree - delete attributes, that are not white list.

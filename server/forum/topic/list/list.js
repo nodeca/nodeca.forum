@@ -287,8 +287,6 @@ module.exports = function (N, apiPath) {
       }
     });
 
-    env.response.data.users = env.data.users;
-
     env.extras.puncher.stop();
 
     callback();

@@ -207,10 +207,10 @@ module.exports = function (N, apiPath) {
       _.pick(env.data.new_post, posts_in_fields)
     ];
 
-    env.response.data.users = [];
+    env.data.users = env.data.users || [];
 
     if (env.data.new_post.user) {
-      env.response.data.users.push(env.data.new_post.user);
+      env.data.users.push(env.data.new_post.user._id);
     }
 
     callback();
