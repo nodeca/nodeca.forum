@@ -279,7 +279,10 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.section._id;
     env.extras.puncher.start('Fetch public posts list settings');
 
-    env.extras.settings.fetch(['forum_can_start_topics'], function (err, settings) {
+    env.extras.settings.fetch([
+      'forum_can_start_topics',
+      'posts_per_page' // needed for micropagination
+    ], function (err, settings) {
       env.extras.puncher.stop();
 
       if (err) {

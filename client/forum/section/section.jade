@@ -56,7 +56,7 @@ article#content.forum-topics-root
 
     - if (self.topics && self.topics.length)
       #topiclist.forum-topiclines
-        != self.partial('@forum.blocks.topics_list', { section: self.section, topics: self.topics, users: self.users })
+        != self.partial('@forum.blocks.topics_list', { section: self.section, topics: self.topics, users: self.users, settings: self.settings })
 
       //- Button "More Topics"
       - var link_params = { hid: self.section.hid, page: self.page.current + 1 };

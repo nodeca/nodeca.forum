@@ -18,10 +18,11 @@ include ../pagination_micro/pagination_micro
         h2.forum-topicline__title
           a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
         //a.mark-i-attach._tip(href="#")=topic.attach_count
-        - if (topic._pages_count > 1)
+        - _pages_count = Math.ceil(topic.cache.real.post_count / self.settings.posts_per_page)
+        - if (_pages_count > 1)
           //- micro-pagination
           - var route_params = { hid: topic.hid, section_hid: self.section.hid }
-          mixin pagination_micro('forum.topic', route_params, topic._pages_count)
+          mixin pagination_micro('forum.topic', route_params, _pages_count)
 
 
         .forum-topicline__meta
