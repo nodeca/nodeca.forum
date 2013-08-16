@@ -76,10 +76,10 @@ module.exports = function (N, apiPath) {
       return selectedSections;
     }
 
-    env.response.data.sections = buildSectionsTree(null);
+    env.res.sections = buildSectionsTree(null);
   });
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title');
+    env.res.head.title = env.t('title');
   });
 };

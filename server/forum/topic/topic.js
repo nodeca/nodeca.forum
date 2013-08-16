@@ -50,7 +50,7 @@ module.exports = function (N, apiPath) {
   // Fill head meta & topic info
   N.wire.after(apiPath, function fill_meta(env) {
     var t_params;
-    var data = env.response.data;
+    var res = env.res;
     var topic = env.data.topic;
 
     if (env.session && env.session.hb) {
@@ -58,10 +58,10 @@ module.exports = function (N, apiPath) {
     }
 
     // prepare page title
-    data.head.title = topic.title;
+    res.head.title = topic.title;
     if (env.params.page > 1) {
       t_params = { title: topic.title, page: env.params.page };
-      data.head.title = env.t('title_with_page', t_params);
+      res.head.title = env.t('title_with_page', t_params);
     }
   });
 
@@ -89,7 +89,7 @@ module.exports = function (N, apiPath) {
   // build breadcrumbs
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
     var section = env.data.section;
-    var data = env.response.data;
+    var res = env.res;
 
     env.extras.puncher.start('Build breadcrumbs');
 
@@ -104,8 +104,8 @@ module.exports = function (N, apiPath) {
       var bc_list = parents.slice(); // clone result to keep cache safe
       bc_list.push(_.pick(section, ['hid', 'title']));
 
-      data.blocks = data.blocks || {};
-      data.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
+      res.blocks = res.blocks || {};
+      res.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
 
       callback();
     });

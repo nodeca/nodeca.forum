@@ -80,10 +80,10 @@ module.exports = function (N, apiPath) {
       , UsergroupStore      = N.settings.getStore('usergroup');
 
     // Setting schemas to build client interface.
-    env.response.data.setting_schemas = N.config.setting_schemas.section_moderator;
+    env.res.setting_schemas = N.config.setting_schemas.section_moderator;
 
     // Expose moderator's full name.
-    env.response.data.moderator_name = env.data.user._uname;
+    env.res.moderator_name = env.data.user._uname;
 
     async.parallel([
       //
@@ -95,7 +95,7 @@ module.exports = function (N, apiPath) {
         , { section_id: env.data.section._id, user_id: env.data.user._id }
         , { skipCache: true, extended: true }
         , function (err, editSettings) {
-          env.response.data.settings = editSettings;
+          env.res.settings = editSettings;
           next(err);
         });
       }
@@ -104,7 +104,7 @@ module.exports = function (N, apiPath) {
       //
     , function (next) {
         if (!env.data.section.parent) {
-          env.response.data.parent_settings = null;
+          env.res.parent_settings = null;
           next();
           return;
         }
@@ -114,7 +114,7 @@ module.exports = function (N, apiPath) {
         , { section_id: env.data.section.parent, user_id: env.data.user._id }
         , { skipCache: true, extended: true }
         , function (err, parentSettings) {
-          env.response.data.parent_settings = parentSettings;
+          env.res.parent_settings = parentSettings;
           next(err);
         });
       }
@@ -127,7 +127,7 @@ module.exports = function (N, apiPath) {
         , { usergroup_ids: env.data.user.usergroups }
         , { skipCache: true }
         , function (err, usergroupSettings) {
-          env.response.data.usergroup_settings = usergroupSettings;
+          env.res.usergroup_settings = usergroupSettings;
           next(err);
         });
       }
@@ -136,6 +136,6 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title', { section: env.data.section.title });
+    env.res.head.title = env.t('title', { section: env.data.section.title });
   });
 };

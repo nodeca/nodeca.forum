@@ -187,7 +187,7 @@ module.exports = function (N, apiPath) {
     }
 
     // requested page is OK. propose data for pagination
-    env.response.data.page = { max: max, current: current };
+    env.res.page = { max: max, current: current };
   });
 
   // fetch and prepare posts
@@ -276,7 +276,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Post-process posts/users');
 
-    posts = env.response.data.posts = env.data.posts;
+    posts = env.res.posts = env.data.posts;
 
     env.data.users = env.data.users || [];
 
@@ -296,7 +296,7 @@ module.exports = function (N, apiPath) {
   // Add topic info
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
-    env.response.data.topic = _.extend({}, env.response.data.topic,
+    env.res.topic = _.extend({}, env.res.topic,
       _.pick(env.data.topic, [
         '_id',
         'hid',
@@ -310,7 +310,7 @@ module.exports = function (N, apiPath) {
   // Add section info
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
-    env.response.data.section = _.extend({}, env.response.data.section,
+    env.res.section = _.extend({}, env.res.section,
       _.pick(env.data.section, [
         //'_id',
         'hid'
@@ -340,14 +340,14 @@ module.exports = function (N, apiPath) {
       }
 
       //sanitize topic statuses
-      var topic = env.response.data.topic;
+      var topic = env.res.topic;
       if (topic.st === statuses.topic.HB) {
         topic.st = topic.ste;
         delete topic.ste;
       }
 
       //sanitize post statuses
-      var posts = env.response.data.posts;
+      var posts = env.res.posts;
       posts.forEach(function (post) {
         if (post.st === statuses.topic.HB) {
           post.st = post.ste;
@@ -374,7 +374,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.settings = _.extend({}, env.response.data.settings, settings);
+      env.res.settings = _.extend({}, env.res.settings, settings);
       callback();
     });
   });

@@ -80,11 +80,11 @@ module.exports = function (N, apiPath) {
       , UsergroupStore      = N.settings.getStore('usergroup');
 
     // Setting schemas to build client interface.
-    env.response.data.setting_schemas = N.config.setting_schemas.section_usergroup;
+    env.res.setting_schemas = N.config.setting_schemas.section_usergroup;
 
     // Translation path for usergroup name.
     var usergroupI18n = '@admin.users.usergroup_names.' + env.data.usergroup.short_name;
-    env.response.data.usergroup_name = env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : env.data.usergroup.short_name;
+    env.res.usergroup_name = env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : env.data.usergroup.short_name;
 
     async.parallel([
       //
@@ -96,7 +96,7 @@ module.exports = function (N, apiPath) {
         , { section_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, editSettings) {
-          env.response.data.settings = editSettings;
+          env.res.settings = editSettings;
           next(err);
         });
       }
@@ -105,7 +105,7 @@ module.exports = function (N, apiPath) {
       //
     , function (next) {
         if (!env.data.section.parent) {
-          env.response.data.parent_settings = null;
+          env.res.parent_settings = null;
           next();
           return;
         }
@@ -115,7 +115,7 @@ module.exports = function (N, apiPath) {
         , { section_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true, extended: true }
         , function (err, parentSettings) {
-          env.response.data.parent_settings = parentSettings;
+          env.res.parent_settings = parentSettings;
           next(err);
         });
       }
@@ -128,7 +128,7 @@ module.exports = function (N, apiPath) {
         , { usergroup_ids: [ env.data.usergroup._id ] }
         , { skipCache: true }
         , function (err, usergroupSettings) {
-          env.response.data.usergroup_settings = usergroupSettings;
+          env.res.usergroup_settings = usergroupSettings;
           next(err);
         });
       }
@@ -137,6 +137,6 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title', { section: env.data.section.title });
+    env.res.head.title = env.t('title', { section: env.data.section.title });
   });
 };

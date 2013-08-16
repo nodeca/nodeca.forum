@@ -18,12 +18,12 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.allowed_parents = allowedParents;
+      env.res.allowed_parents = allowedParents;
       callback();
     });
   });
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title');
+    env.res.head.title = env.t('title');
   });
 };

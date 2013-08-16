@@ -98,15 +98,15 @@ module.exports = function (N, apiPath) {
         return selectedSections;
       }
 
-      env.response.data.settings_count = SectionUsergroupStore.keys.length;
-      env.response.data.usergroups     = env.data.usergroups;
-      env.response.data.sections       = buildSectionsTree(null);
+      env.res.settings_count = SectionUsergroupStore.keys.length;
+      env.res.usergroups     = env.data.usergroups;
+      env.res.sections       = buildSectionsTree(null);
       callback();
     });
   });
 
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title');
+    env.res.head.title = env.t('title');
   });
 };

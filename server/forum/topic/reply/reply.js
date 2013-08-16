@@ -203,7 +203,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function process_response(env, callback) {
 
-    env.response.data.posts = [
+    env.res.posts = [
       _.pick(env.data.new_post, posts_in_fields)
     ];
 

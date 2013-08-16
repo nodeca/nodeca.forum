@@ -126,7 +126,7 @@ module.exports = function (N, apiPath) {
     }
 
     // requested page is OK. propose data for pagination
-    env.response.data.page = { max: max, current: current };
+    env.res.page = { max: max, current: current };
   });
 
 
@@ -148,7 +148,7 @@ module.exports = function (N, apiPath) {
 
     var topics_per_page = env.data.topics_per_page;
 
-    env.response.data.show_page_number = false;
+    env.res.show_page_number = false;
 
     env.extras.puncher.start('Get topics');
     env.extras.puncher.start('Topic ids prefetch');
@@ -290,7 +290,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.settings = _.extend({}, env.response.data.settings, settings);
+      env.res.settings = _.extend({}, env.res.settings, settings);
       callback();
     });
   });

@@ -76,11 +76,11 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.response.data.settings_count = SectionModeratorStore.keys.length;
+      env.res.settings_count = SectionModeratorStore.keys.length;
 
-      env.response.data.sections = env.data.sectionsById;
+      env.res.sections = env.data.sectionsById;
 
-      env.response.data.moderators = _(sectionsByModerator)
+      env.res.moderators = _(sectionsByModerator)
         .map(function (sections, userId) {
           var sortedSections = _.sortBy(sections, function (section) {
             return env.data.sectionsById[section._id].title;
@@ -101,11 +101,11 @@ module.exports = function (N, apiPath) {
   // Collect user ids for `users_join` hook. (provides users info)
   //
   N.wire.after(apiPath, function users_prepare(env) {
-    env.data.users = (env.data.users || []).concat(_.pluck(env.response.data.moderators, '_id'));
+    env.data.users = (env.data.users || []).concat(_.pluck(env.res.moderators, '_id'));
   });
 
 
   N.wire.after(apiPath, function title_set(env) {
-    env.response.data.head.title = env.t('title');
+    env.res.head.title = env.t('title');
   });
 };

@@ -181,7 +181,7 @@ module.exports = function (N, apiPath) {
 
 
     root = env.data.section._id;
-    env.response.data.sections = to_tree(env.data.sections, root);
+    env.res.sections = to_tree(env.data.sections, root);
 
     // Cleanup output tree - delete attributes, that are not white list.
     // Since tree points to the same objects, that are in flat list,
@@ -214,7 +214,7 @@ module.exports = function (N, apiPath) {
       doc._pages_count = Math.ceil(doc.cache.real.post_count / topics_per_page);
     });
 
-    env.response.data.topics = env.data.topics;
+    env.res.topics = env.data.topics;
 
     // collect users from topics
     env.data.topics.forEach(function (doc) {
@@ -237,7 +237,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
     var t_params;
 
-    var data = env.response.data;
+    var res = env.res;
     var section = env.data.section;
 
     if (env.session && env.session.hb) {
@@ -245,14 +245,14 @@ module.exports = function (N, apiPath) {
     }
 
     // prepare page title
-    data.head.title = section.title;
+    res.head.title = section.title;
     if (env.params.page > 1) {
       t_params = { title: section.title, page: env.params.page };
-      data.head.title = env.t('title_with_page', t_params);
+      res.head.title = env.t('title_with_page', t_params);
     }
 
     // prepare section info
-    data.section  = _.pick(section, section_info_out_fields);
+    res.section  = _.pick(section, section_info_out_fields);
   });
 
 
@@ -279,7 +279,7 @@ module.exports = function (N, apiPath) {
   // build breadcrumbs
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
     var section = env.data.section;
-    var data = env.response.data;
+    var res = env.res;
 
     env.extras.puncher.start('Build breadcrumbs');
 
@@ -294,8 +294,8 @@ module.exports = function (N, apiPath) {
       var bc_list = parents.slice(); // clone result to keep cache safe
       //bc_list.push(_.pick(section, ['hid', 'title']));
 
-      data.blocks = data.blocks || {};
-      data.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
+      res.blocks = res.blocks || {};
+      res.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
 
       callback();
     });

@@ -138,7 +138,7 @@ module.exports = function (N, apiPath) {
       }
     });
 
-    env.response.data.sections = to_tree(env.data.sections, null);
+    env.res.sections = to_tree(env.data.sections, null);
 
     // Cleanup output tree - delete attributes, that are not white list.
     // Since tree points to the same objects, that are in flat list,
@@ -163,10 +163,10 @@ module.exports = function (N, apiPath) {
   // Fill breadcrumbs and head meta
   //
   N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
-    var data = env.response.data;
+    var res = env.res;
 
-    data.head.title = env.t('title');
-    data.blocks = data.blocks || {};
-    data.blocks.breadcrumbs = forum_breadcrumbs(env);
+    res.head.title = env.t('title');
+    res.blocks = res.blocks || {};
+    res.blocks.breadcrumbs = forum_breadcrumbs(env);
   });
 };
