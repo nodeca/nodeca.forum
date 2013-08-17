@@ -3,7 +3,7 @@ article#content.forum-index__root
 
   //h1= t('forum.index.title')
 
-  - each category in self.sections
+  - each category in self.subsections
     article.forum-category(id='cat_box_#{category.hid}')
       header.forum-category__head(id='cat#{category.hid}')
         h2.forum-category__title

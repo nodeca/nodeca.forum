@@ -7,21 +7,7 @@ var _     = require('lodash');
 
 
 var to_tree = require('../../../lib/to_tree.js');
-var fetch_sections_visibility = require('../../../lib/fetch_sections_visibility');
-
-
-var subsections_in_fields = [
-  '_id',
-  'hid',
-  'title',
-  'description',
-  'parent',
-  'parent_list',
-  'moderator_list',
-  'display_order',
-  'level',
-  'cache'
-];
+var subsectionsFilterVisible = require('../../../lib/subsections_filter_visible');
 
 
 var subsections_out_fields = [
@@ -84,7 +70,7 @@ module.exports = function (N, apiPath) {
     var max_level;
     var query;
 
-    env.data.sections = [];
+    env.data.subsections = [];
     // subsections fetched only on first page
     if (env.params.page > 1) {
       callback();
@@ -94,45 +80,24 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('Get subsections');
 
     max_level = env.data.section.level + 2; // need two next levels
-    query = {
-      level: { $lte: max_level },
-      parent_list: env.data.section._id
-    };
 
     Section
-      .find(query)
+      .find({ parent_list: env.data.section._id })
+      .where('level').lte(max_level)
       .sort('display_order')
       .setOptions({ lean: true })
-      .select(subsections_in_fields.join(' '))
-      .exec(function (err, sections) {
-
-      env.extras.puncher.stop({ count: sections.length });
+      .exec(function (err, subsections) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      // filter visibility
-      var filtered_sections = [];
-      var s_ids             = sections.map(function (s) { return s._id; });
-      var usergroups        = env.extras.settings.params.usergroup_ids;
+      env.extras.puncher.stop();
 
-      env.extras.puncher.start('Filter sub-sections');
+      env.data.subsections = subsections;
 
-      fetch_sections_visibility(s_ids, usergroups, function (err, results) {
-        env.extras.puncher.stop({ count: filtered_sections.length });
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.data.sections = _.filter(sections, function(section) {
-          return results[section._id] && results[section._id].forum_can_view;
-        });
-        callback();
-      });
+      subsectionsFilterVisible(N, env, callback);
     });
   });
 
@@ -152,7 +117,7 @@ module.exports = function (N, apiPath) {
     //
 
     if (env.session && env.session.hb) {
-      env.data.sections = env.data.sections.map(function (doc) {
+      env.data.subsections = env.data.subsections.map(function (doc) {
         doc.cache.real = doc.cache.hb;
         return doc;
       });
@@ -163,7 +128,7 @@ module.exports = function (N, apiPath) {
     max_subsection_level = env.data.section.level + 2;
 
     // collect users from subsections
-    env.data.sections.forEach(function (doc) {
+    env.data.subsections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
       if (doc.level < max_subsection_level) {
         if (!!doc.moderator_list) {
@@ -179,12 +144,12 @@ module.exports = function (N, apiPath) {
 
 
     root = env.data.section._id;
-    env.res.sections = to_tree(env.data.sections, root);
+    env.res.subsections = to_tree(env.data.subsections, root);
 
     // Cleanup output tree - delete attributes, that are not white list.
     // Since tree points to the same objects, that are in flat list,
     // we use flat array for iteration.
-    env.data.sections.forEach(function (doc) {
+    env.data.subsections.forEach(function (doc) {
       for (var attr in doc) {
         if (doc.hasOwnProperty(attr) &&
             subsections_out_fields.indexOf(attr) === -1) {

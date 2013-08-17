@@ -4,23 +4,10 @@
 
 
 var to_tree = require('../../../lib/to_tree.js');
-var fetch_sections_visibility = require('../../../lib/fetch_sections_visibility');
+var subsectionsFilterVisible = require('../../../lib/subsections_filter_visible');
 
 
-var sections_in_fields = [
-  '_id',
-  'hid',
-  'title',
-  'description',
-  'parent',
-  'parent_list',
-  'moderator_list',
-  'display_order',
-  'level',
-  'cache'
-];
-
-var sections_out_fields = [
+var subsections_fields = [
   '_id',
   'hid',
   'title',
@@ -45,60 +32,24 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Get forums');
 
-    // build tree for 0..2 levels, start from sections without parent
-    query = { level: {$lte: 2} };
-
-    // FIXME add permissions check
+    // build tree for 0..2 levels, starting from sections without parent
     N.models.forum.Section
-        .find(query)
+        .find()
+        .where('level').lte(2)
         .sort('display_order')
         .setOptions({ lean: true })
-        .select(sections_in_fields.join(' '))
-        .exec(function (err, sections) {
+        .exec(function (err, subsections) {
 
-      env.extras.puncher.stop({ count: sections.length });
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.sections = sections;
-      callback();
-    });
-  });
-
-
-  // removes sections for which user has no rights to access:
-  //
-  //  - forum_can_view
-  //
-  N.wire.after(apiPath, function clean_sections(env, callback) {
-
-    var filtered_sections = [];
-    var sections          = env.data.sections.map(function (s) { return s._id; });
-    var usergroups        = env.extras.settings.params.usergroup_ids;
-
-    env.extras.puncher.start('Filter sections');
-
-    fetch_sections_visibility(sections, usergroups, function (err, results) {
-      env.extras.puncher.stop({ count: filtered_sections.length });
+      env.extras.puncher.stop({ count: subsections.length });
 
       if (err) {
         callback(err);
         return;
       }
 
-      env.data.sections.forEach(function (section) {
-        var o = results[section._id];
+      env.data.subsections = subsections;
 
-        if (o && o.forum_can_view) {
-          filtered_sections.push(section);
-        }
-      });
-
-      env.data.sections = filtered_sections;
-      callback();
+      subsectionsFilterVisible(N, env, callback);
     });
   });
 
@@ -122,8 +73,8 @@ module.exports = function (N, apiPath) {
 
     env.data.users = env.data.users || [];
 
-    // collect users from sections
-    env.data.sections.forEach(function (doc) {
+    // collect users from subsections
+    env.data.subsections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
       if (doc.level < 2) {
         if (!!doc.moderator_list) {
@@ -137,15 +88,15 @@ module.exports = function (N, apiPath) {
       }
     });
 
-    env.res.sections = to_tree(env.data.sections, null);
+    env.res.subsections = to_tree(env.data.subsections, null);
 
     // Cleanup output tree - delete attributes, that are not white list.
     // Since tree points to the same objects, that are in flat list,
     // we use flat array for iteration.
-    env.data.sections.forEach(function (doc) {
+    env.data.subsections.forEach(function (doc) {
       for (var attr in doc) {
         if (doc.hasOwnProperty(attr) &&
-            sections_out_fields.indexOf(attr) === -1) {
+            subsections_fields.indexOf(attr) === -1) {
           delete(doc[attr]);
         }
       }

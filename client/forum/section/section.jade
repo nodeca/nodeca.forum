@@ -7,8 +7,8 @@ article#content.forum-topics-root
       | #{self.section.description}
 
   //- Subsections, if exist
-  - if (self.sections && self.sections.length)
-    != self.partial('@forum.blocks.sections_list', { subsections: self.sections })
+  - if (self.subsections && self.subsections.length)
+    != self.partial('@forum.blocks.sections_list')
 
   - if (self.section.is_category === false)
     //- Toolbar with pagination & controls
