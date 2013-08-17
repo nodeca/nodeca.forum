@@ -41,8 +41,8 @@
                   |  
                   a(href="#",
                     data-on-click="admin.forum.moderator.destroy",
-                    data-section-id=section._id.toString(),
-                    data-user-id=moderator._id.toString())
+                    data-section-id=section._id,
+                    data-user-id=moderator._id)
                     = self.t('button_remove')
     else
       = self.t('no_moderators')

@@ -5,7 +5,7 @@ mixin render_sections_tree(sections, level)
       li.aforum-index__placeholder._placeholder
       li.aforum-index__slist-item._section-container
         //- Section's own control bar. 
-        .aforum-index__section._section(data-id=String(section._id), data-display-order=section.display_order)
+        .aforum-index__section._section(data-id=section._id, data-display-order=section.display_order)
           .pull-right
             span.aforum-index__section-mods.dropdown
               a.dropdown-toggle(data-toggle="dropdown")
@@ -22,13 +22,13 @@ mixin render_sections_tree(sections, level)
                   li.divider
 
                 li
-                  a(href="#", data-on-click="admin.forum.section.select_moderator_nick", data-section_id=String(section._id))
+                  a(href="#", data-on-click="admin.forum.section.select_moderator_nick", data-section_id=section._id)
                     = self.t('add_moderator')
 
             a.aforum-index__section-delete(
               href="#",
               data-on-click="admin.forum.section.destroy",
-              data-id=String(section._id),
+              data-id=section._id,
               data-title=section.title
             ) #{self.t('delete_section')}
 

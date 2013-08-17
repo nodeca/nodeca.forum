@@ -30,7 +30,8 @@ include ../pagination_micro/pagination_micro
           - if (self.users[fp_user])
             a.forum-topicline__author._ucard-popover(
               href=self.link_to('users.member', self.users[fp_user]),
-              data-user-id=String(fp_user)) #{self.users[fp_user]._uname}
+              data-user-id=fp_user
+            ) #{self.users[fp_user]._uname}
           time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
       ul.forum-topicline__counters.span2.hidden-phone
@@ -51,4 +52,5 @@ include ../pagination_micro/pagination_micro
           li.forum-topicline__lpost-user
             a.forum-topicline__lpost-user-link._ucard-popover(
               href=self.link_to('users.member', self.users[lp_user]),
-              data-user-id=String(lp_user)) #{self.users[lp_user]._uname}
+              data-user-id=lp_user
+            ) #{self.users[lp_user]._uname}

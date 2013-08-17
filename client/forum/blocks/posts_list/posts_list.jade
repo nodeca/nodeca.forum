@@ -8,14 +8,15 @@
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
         time.forum-post__time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
-        - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + String(post._id);
+        - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
         a.forum-post__link.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left
         - if (self.users[post.user])
           a.forum-post__author._ucard-popover(
             href=self.link_to('users.member', self.users[post.user]),
-            data-user-id=String(post.user)) #{self.users[post.user]._uname}
+            data-user-id=post.user
+          ) #{self.users[post.user]._uname}
     .forum-post__aside
       - if (self.users[post.user])
         a.forum-post__userpic(href='#')

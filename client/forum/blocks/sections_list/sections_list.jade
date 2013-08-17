@@ -26,7 +26,8 @@ ul.forum-sections
                   dd.forum-section__moderator
                     a.forum-section__moderator-link._ucard-popover(
                       href=self.link_to('users.member', self.users[moderator]),
-                      data-user-id=String(moderator)) #{self.users[moderator]._uname}
+                      data-user-id=moderator
+                    ) #{self.users[moderator]._uname}
 
         ul.forum-section__counters.span2.hidden-phone
           li.forum-section__counter-item
@@ -39,14 +40,17 @@ ul.forum-sections
         - if (last_topic)
           ul.forum-section__lpost.span3.hidden-phone
             li.forum-section__lpost-title
-              a.forum-section__lpost-title-link(href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+String(section.cache.real.last_post)) #{section.cache.real.last_topic_title}
+              a.forum-section__lpost-title-link(
+                href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.real.last_post
+              ) #{section.cache.real.last_topic_title}
             - if (self.users[last_user])
               li.forum-section__lpost-user
                 = self.t('topic_by')
                 - lp_user = self.users[last_user]
                 a.forum-section__lpost-user-link._ucard-popover(
                   href=self.link_to('users.member', lp_user),
-                  data-user-id=String(lp_user._id)) #{lp_user._uname}
+                  data-user-id=lp_user._id
+                ) #{lp_user._uname}
             - if (last_ts)
               li.forum-section__lpost-time
                 time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}

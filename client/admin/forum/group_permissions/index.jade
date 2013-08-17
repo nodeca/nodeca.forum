@@ -43,8 +43,8 @@
                   |  
                   a(href="#",
                     data-on-click="admin.forum.group_permissions.destroy",
-                    data-section-id=section._id.toString(),
-                    data-usergroup-id=usergroup._id.toString())
+                    data-section-id=section._id,
+                    data-usergroup-id=usergroup._id)
                     = self.t('button_reset_permissions')
 
           if section.children.length > 0
