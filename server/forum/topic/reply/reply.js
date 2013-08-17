@@ -171,7 +171,7 @@ module.exports = function (N, apiPath) {
 
       post.text = env.params.text;
       post.fmt = env.params.format;
-      post.ip = env.request.ip;
+      post.ip = env.req.ip;
       post.st = statuses.post.VISIBLE;
 
       post.forum = topic.forum;
