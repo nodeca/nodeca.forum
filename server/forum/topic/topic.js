@@ -3,13 +3,6 @@
 "use strict";
 
 
-var _         = require('lodash');
-var memoizee  = require('memoizee');
-
-
-var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // topic id
@@ -28,10 +21,6 @@ module.exports = function (N, apiPath) {
       'default': 1
     }
   });
-
-
-  // shortcut
-  var Section = N.models.forum.Section;
 
 
   // Just subcall forum.topic.list, that enchances `env`
@@ -65,49 +54,13 @@ module.exports = function (N, apiPath) {
     }
   });
 
-
-  // Helper - cacheable bredcrumbs info fetch, to save DB request.
-  // We can cache it, because cache size is limited by sections count.
-  var fetchForumsBcInfo = memoizee(
-    function (ids, callback) {
-      Section
-        .find({ _id: { $in: ids }})
-        .select('hid title')
-        .sort({ 'level': 1 })
-        .setOptions({ lean: true })
-        .exec(function (err, parents) {
-        callback(err, parents);
-      });
-    },
-    {
-      async: true,
-      maxAge:     60000, // cache TTL = 60 seconds
-      primitive:  true   // params keys are calculated as toStrins, ok for our case
-    }
-  );
-
-  // build breadcrumbs
+  // file breadcrumbs info
+  //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
-    var section = env.data.section;
-    var res = env.res;
+    var parents = env.data.section.parent_list.slice();
 
-    env.extras.puncher.start('Build breadcrumbs');
+    parents.push(env.data.section._id);
 
-    fetchForumsBcInfo(section.parent_list, function (err, parents) {
-      env.extras.puncher.stop();
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      var bc_list = parents.slice(); // clone result to keep cache safe
-      bc_list.push(_.pick(section, ['hid', 'title']));
-
-      res.blocks = res.blocks || {};
-      res.blocks.breadcrumbs = forum_breadcrumbs(env, bc_list);
-
-      callback();
-    });
+    N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
   });
 };

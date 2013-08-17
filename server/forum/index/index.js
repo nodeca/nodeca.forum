@@ -3,7 +3,6 @@
 "use strict";
 
 
-var forum_breadcrumbs = require('../../../lib/forum_breadcrumbs.js');
 var to_tree = require('../../../lib/to_tree.js');
 var fetch_sections_visibility = require('../../../lib/fetch_sections_visibility');
 
@@ -159,14 +158,15 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill breadcrumbs info
   //
-  // Fill breadcrumbs and head meta
+  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
+    N.wire.emit('internal:forum.breadcrumbs_fill', { env: env }, callback);
+  });
+
+  // Fill head meta
   //
   N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
-    var res = env.res;
-
-    res.head.title = env.t('title');
-    res.blocks = res.blocks || {};
-    res.blocks.breadcrumbs = forum_breadcrumbs(env);
+    env.res.head.title = env.t('title');
   });
 };
