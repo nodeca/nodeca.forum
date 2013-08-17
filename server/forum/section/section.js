@@ -67,8 +67,6 @@ module.exports = function (N, apiPath) {
   // fetch visible sub-sections (only on first page)
   //
   N.wire.after(apiPath, function fetch_visible_subsections(env, callback) {
-    var max_level;
-    var query;
 
     env.data.subsections = [];
     // subsections fetched only on first page
@@ -79,7 +77,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('Get subsections');
 
-    max_level = env.data.section.level + 2; // need two next levels
+    var max_level = env.data.section.level + 2; // need two next levels
 
     Section
       .find({ parent_list: env.data.section._id })

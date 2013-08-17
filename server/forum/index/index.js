@@ -28,7 +28,6 @@ module.exports = function (N, apiPath) {
   // Request handler
   //
   N.wire.on(apiPath, function (env, callback) {
-    var query;
 
     env.extras.puncher.start('Get forums');
 
