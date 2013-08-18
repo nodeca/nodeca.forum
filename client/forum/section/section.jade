@@ -7,7 +7,7 @@ article#content.forum-topics-root
       | #{self.section.description}
 
   //- Subsections, if exist
-  - if (self.subsections && self.subsections.length)
+  - if ((self.subsections || []).length)
     != self.partial('@forum.blocks.sections_list')
 
   - if (self.section.is_category === false)
