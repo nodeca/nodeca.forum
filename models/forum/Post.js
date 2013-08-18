@@ -36,6 +36,9 @@ module.exports = function (N, collectionName) {
                               // (general `state` is used for fast selects)
 
   , attach_list     : [Schema.ObjectId]
+  },
+  {
+    versionKey : false
   });
 
   // Indexes

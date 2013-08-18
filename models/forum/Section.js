@@ -69,6 +69,9 @@ module.exports = function (N, collectionName) {
 
     // Setting storage. Only `section_usergroup` settings store should access this.
   , settings        : { type: Schema.Types.Mixed, 'default': {} }
+  },
+  {
+    versionKey : false
   });
 
 
