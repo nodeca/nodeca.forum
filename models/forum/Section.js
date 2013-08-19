@@ -39,7 +39,7 @@ module.exports = function (N, collectionName) {
   , display_order   : Number
 
     // user-friendly id (autoincremented)
-  , hid              : { type: Number, required: true, min: 1, index: true }
+  , hid              : { type: Number, min: 1, index: true }
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
@@ -134,6 +134,26 @@ module.exports = function (N, collectionName) {
       self.parent_list    = parentSection.parent_list.concat(parentSection._id);
       self.level          = parentSection.level + 1;
       next();
+    });
+  });
+
+  // Set 'hid' for the new section.
+  // This hook should always be the last one to avoid counter increment on error
+  Section.pre('save', function (callback) {
+    if (!this.isNew) {
+      callback();
+      return;
+    }
+
+    var self = this;
+    N.models.core.Increment.next('section', function(err, value) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      self.hid = value;
+      callback();
     });
   });
 
