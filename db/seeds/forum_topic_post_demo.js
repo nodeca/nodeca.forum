@@ -34,11 +34,7 @@ var USER_COUNT = 200;
 var MAX_MODERATOR_COUNT = 3;
 var MAX_SUB_SECTION_COUNT = 3;
 
-var CATEGORY_HID_SHIFT = 3;
-var SECTION_HID_SHIFT = CATEGORY_HID_SHIFT + CATEGORY_COUNT;
 var DISPLAY_ORDER_SHIFT = 2;
-var TOPIC_HID_SHIFT = 2;
-var USER_HID_SHIFT = 2;
 
 // cache usergroups ids
 var usergroups_cache = {};
@@ -46,11 +42,7 @@ var usergroups_cache = {};
 // extend Charlatan
 // add numeric id generator
 Charlatan.Incrementer = {
-  category_shift: CATEGORY_HID_SHIFT,
-  section_shift: SECTION_HID_SHIFT,
-  display_order_shift: DISPLAY_ORDER_SHIFT,
-  topic_shift: TOPIC_HID_SHIFT,
-  user_shift: USER_HID_SHIFT
+  display_order_shift: DISPLAY_ORDER_SHIFT
 };
 
 Charlatan.Incrementer.next = function (type) {
@@ -75,7 +67,6 @@ Charlatan.Helpers.category = function () {
     description: Charlatan.Lorem.sentence(),
 
     display_order: Charlatan.Incrementer.next('display_order'),
-    hid: Charlatan.Incrementer.next('category'),
     is_category: true
   };
 };
@@ -84,8 +75,6 @@ Charlatan.Helpers.section = function (parent) {
   return {
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: Charlatan.Lorem.sentence(),
-
-    hid: Charlatan.Incrementer.next('section'),
 
     parent: parent._id,
     display_order: Charlatan.Incrementer.next('display_order'),
@@ -99,8 +88,6 @@ Charlatan.Helpers.section = function (parent) {
 Charlatan.Helpers.topic = function (section) {
   return {
     title: Charlatan.Lorem.sentence().slice(0, -1),
-
-    hid: Charlatan.Incrementer.next('topic'),
 
     st: statuses.topic.OPEN,
     section: section._id,
@@ -132,7 +119,6 @@ Charlatan.Helpers.user = function () {
   var first_name = Charlatan.Name.firstName();
   var last_name = Charlatan.Name.lastName();
   return {
-    hid          : Charlatan.Incrementer.next('user'),
     first_name  : first_name,
     last_name   : last_name,
     nick        : nick,
