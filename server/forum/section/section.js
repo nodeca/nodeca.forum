@@ -27,7 +27,7 @@ module.exports = function (N, apiPath) {
   // Just subcall forum.topic.list, that enchances `env`
   //
   N.wire.on(apiPath, function get_posts(env, callback) {
-    env.extras.puncher.start('Process section');
+    env.extras.puncher.start('process section');
 
     N.wire.emit('server:forum.section.list', env, callback);
   });
@@ -79,6 +79,5 @@ module.exports = function (N, apiPath) {
     ]));
 
     env.extras.puncher.stop(); // Close main page scope
-
   });
 };

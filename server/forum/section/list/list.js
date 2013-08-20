@@ -37,7 +37,9 @@ module.exports = function (N, apiPath) {
   // fetch section info
   N.wire.before(apiPath, function fetch_section_info(env, callback) {
 
-    env.extras.puncher.start('Forum info prefetch');
+    env.extras.puncher.start('process posts list'); // nested
+
+    env.extras.puncher.start('section info prefetch');
 
     Section.findOne({ hid: env.params.hid }).setOptions({ lean: true })
         .exec(function (err, section) {
@@ -66,7 +68,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
     env.extras.settings.params.section_id = env.data.section._id;
-    env.extras.puncher.start('Fetch settings');
+    env.extras.puncher.start('fetch setting (forum_can_view)');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
       env.extras.puncher.stop();
@@ -89,7 +91,7 @@ module.exports = function (N, apiPath) {
   // fetch posts per page setting
   //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
-    env.extras.puncher.start('Fetch topics per page setting');
+    env.extras.puncher.start('fetch setting (topics_per_page)');
 
     env.extras.settings.fetch(['topics_per_page'], function (err, settings) {
       env.extras.puncher.stop();
@@ -150,9 +152,11 @@ module.exports = function (N, apiPath) {
 
     env.res.show_page_number = false;
 
-    env.extras.puncher.start('Get topics');
-    env.extras.puncher.start('Topic ids prefetch');
+    env.extras.puncher.start('get topics'); // nested
 
+    env.extras.puncher.start('get topics ids');
+
+    // FIXME: that can break index
     if (env.session && env.session.hb) {
       sort['cache.hb.last_ts'] = -1;
     } else {
@@ -241,7 +245,7 @@ module.exports = function (N, apiPath) {
           next();
           return;
         }
-        env.extras.puncher.start('Get topics by _id list');
+        env.extras.puncher.start('get topics content by _id list');
 
         // FIXME modify state condition (deleted and etc) if user has permission
         // If no hidden topics - no conditions needed, just select by IDs
@@ -252,15 +256,16 @@ module.exports = function (N, apiPath) {
         query.select(fields.topic_in.join(' ')).sort(sort)
             .setOptions({ lean: true }).exec(function (err, topics) {
 
-          env.extras.puncher.stop({ count: topics.length });
-          env.extras.puncher.stop();
-
           if (err) {
             next(err);
             return;
           }
 
           env.data.topics = topics;
+
+          env.extras.puncher.stop({ count: topics.length });
+          env.extras.puncher.stop(); //nested
+
           next();
         });
       }
@@ -268,13 +273,16 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Add topics into to response & collect user info
+  // Add topics into to response & collect user ids
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
+
+    env.extras.puncher.start('collect users ids');
 
     env.res.topics = env.data.topics;
 
     env.data.users = env.data.users || [];
+
     // collect users from topics
     env.data.topics.forEach(function (doc) {
       if (doc.cache.real.first_user) {
@@ -285,6 +293,8 @@ module.exports = function (N, apiPath) {
       }
     });
 
+    env.extras.puncher.stop();
+
     callback();
   });
 
@@ -292,13 +302,11 @@ module.exports = function (N, apiPath) {
   // Add section info to response
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
-    env.res.section = _.extend({}, env.res.section,
-      _.pick(env.data.section, [
-        '_id',
-        'hid',
-        'title'
-      ])
-    );
+    env.res.section = _.extend({}, env.res.section, _.pick(env.data.section, [
+      '_id',
+      'hid',
+      'title'
+    ]));
   });
 
 
@@ -307,7 +315,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
     env.extras.settings.params.section_id = env.data.section._id;
-    env.extras.puncher.start('Fetch public topics list settings');
+    env.extras.puncher.start('fetch public settings for renderer');
 
     env.extras.settings.fetch([
       'forum_can_start_topics',
@@ -321,6 +329,9 @@ module.exports = function (N, apiPath) {
       }
 
       env.res.settings = _.extend({}, env.res.settings, settings);
+
+      env.extras.puncher.stop(); // Close main page scope
+
       callback();
     });
   });

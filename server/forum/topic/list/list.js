@@ -46,7 +46,9 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_topic_info(env, callback) {
 
-    env.extras.puncher.start('Topic info prefetch');
+    env.extras.puncher.start('process posts list'); // nested
+
+    env.extras.puncher.start('topic info prefetch');
 
     Topic.findOne({ hid: env.params.hid }).setOptions({ lean: true })
         .exec(function (err, topic) {
@@ -74,7 +76,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_section_info(env, callback) {
 
-    env.extras.puncher.start('Forum info prefetch');
+    env.extras.puncher.start('section info prefetch');
 
     Section.findOne({ _id: env.data.topic.section }).setOptions({ lean: true })
         .exec(function (err, section) {
@@ -103,7 +105,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function check_permissions(env, callback) {
 
     env.extras.settings.params.section_id = env.data.topic.section;
-    env.extras.puncher.start('Fetch settings');
+    env.extras.puncher.start('fetch setting (forum_can_view)');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
       env.extras.puncher.stop();
@@ -149,7 +151,7 @@ module.exports = function (N, apiPath) {
   // fetch posts per page setting
   //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
-    env.extras.puncher.start('Fetch posts per page setting');
+    env.extras.puncher.start('fetch setting (posts_per_page)');
 
     env.extras.settings.fetch(['posts_per_page'], function (err, settings) {
       env.extras.puncher.stop();
@@ -203,10 +205,11 @@ module.exports = function (N, apiPath) {
 
     var posts_per_page = env.data.posts_per_page;
 
-    env.extras.puncher.start('Post ids prefetch');
+    env.extras.puncher.start('get posts'); // nested
 
+    env.extras.puncher.start('get posts ids');
 
-    // FIXME add state condition to select only visible posts
+    // FIXME: add state condition to select only visible posts
 
     start = (env.params.page - 1) * posts_per_page;
 
@@ -236,7 +239,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.extras.puncher.start('Get posts by _id list');
+      env.extras.puncher.start('get posts content by _id list');
 
       // FIXME modify state condition (deleted and etc) if user has permission
       // If no hidden posts - no conditions needed, just select by IDs
@@ -252,36 +255,34 @@ module.exports = function (N, apiPath) {
       query.select(fields.post_in.join(' ')).setOptions({ lean: true })
           .exec(function (err, posts) {
 
-        env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
-        env.extras.puncher.stop();
-
         if (err) {
           callback(err);
           return;
         }
 
         env.data.posts = posts;
+
+        env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
+        env.extras.puncher.stop(); // nested
+
         callback();
       });
     });
 
   });
 
-  // Build response:
-  //  - posts list -> posts
-  //  - collect users ids
+  // Add posts into to response & collect user ids
   //
   N.wire.after(apiPath, function build_posts_list_and_users(env, callback) {
-    var posts;
 
-    env.extras.puncher.start('Post-process posts/users');
+    env.extras.puncher.start('collect users ids');
 
-    posts = env.res.posts = env.data.posts;
+    env.res.posts = env.data.posts;
 
     env.data.users = env.data.users || [];
 
     // collect users
-    posts.forEach(function (post) {
+    env.data.posts.forEach(function (post) {
       if (post.user) {
         env.data.users.push(post.user);
       }
@@ -293,7 +294,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Add topic info
+  // Add topic info to response
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
     env.res.topic = _.extend({}, env.res.topic,
@@ -307,7 +308,7 @@ module.exports = function (N, apiPath) {
     );
   });
 
-  // Add section info
+  // Add section info to response
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
     env.res.section = _.extend({}, env.res.section,
@@ -324,7 +325,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function sanitize_statuses(env, callback) {
 
-    env.extras.puncher.start("Fetch 'can_see_hellbanned' for statuses sanitizer");
+    env.extras.puncher.start("fetch setting ('can_see_hellbanned')");
 
     env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
       env.extras.puncher.stop();
@@ -364,7 +365,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
     env.extras.settings.params.section_id = env.data.topic.section;
-    env.extras.puncher.start('Fetch public posts list settings');
+    env.extras.puncher.start('fetch public settings for renderer');
 
     env.extras.settings.fetch(['forum_can_reply'], function (err, settings) {
       env.extras.puncher.stop();
@@ -375,6 +376,9 @@ module.exports = function (N, apiPath) {
       }
 
       env.res.settings = _.extend({}, env.res.settings, settings);
+
+      env.extras.puncher.stop(); // Close main page scope
+
       callback();
     });
   });

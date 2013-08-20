@@ -26,7 +26,7 @@ module.exports = function (N, apiPath) {
   // Just subcall forum.topic.list, that enchances `env`
   //
   N.wire.on(apiPath, function get_posts(env, callback) {
-    env.extras.puncher.start('Process topic');
+    env.extras.puncher.start('process topic');
 
     N.wire.emit('server:forum.topic.list', env, callback);
   });
