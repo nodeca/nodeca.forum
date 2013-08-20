@@ -44,7 +44,7 @@ module.exports = function (N, collectionName) {
   var Topic = new Schema({
     title           : { type: String, required: true }
     // user-friendly id (autoincremented)
-  , hid             : { type: Number, required: true, min: 1, index: true }
+  , hid             : { type: Number, min: 1, index: true }
 
     // prefix id/cache
   , prefix          : Schema.ObjectId
@@ -94,6 +94,25 @@ module.exports = function (N, collectionName) {
   , _id: -1
   });
 
+  // Set 'hid' for the new topic.
+  // This hook should always be the last one to avoid counter increment on error
+  Topic.pre('save', function (callback) {
+    if (!this.isNew) {
+      callback();
+      return;
+    }
+
+    var self = this;
+    N.models.core.Increment.next('topic', function(err, value) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      self.hid = value;
+      callback();
+    });
+  });
 
   N.wire.on("init:models", function emit_init_Topic(__, callback) {
     N.wire.emit("init:models." + collectionName, Topic, callback);
