@@ -27,13 +27,9 @@ module.exports = function (N, apiPath) {
   // Just subcall forum.topic.list, that enchances `env`
   //
   N.wire.on(apiPath, function get_posts(env, callback) {
-    env.extras.puncher.start('Fetch topics');
+    env.extras.puncher.start('Process section');
 
-    N.wire.emit('server:forum.section.list', env, function (err) {
-      env.extras.puncher.stop();
-
-      callback(err);
-    });
+    N.wire.emit('server:forum.section.list', env, callback);
   });
 
 
@@ -51,78 +47,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Build response:
-  //  - sections list -> filtered tree
-  //  - collect users ids (last posters / moderators / topics authors + last)
-  //  - topics
-  //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
-    //
-    // Process topics
-    //
-
-    if (env.session && env.session.hb) {
-      env.data.topics = env.data.topics.map(function (doc) {
-        doc.cache.real = doc.cache.hb;
-        return doc;
-      });
-    }
-
-    // calculate pages number
-    var topics_per_page = env.topics_per_page;
-    env.data.topics.forEach(function (doc) {
-      doc._pages_count = Math.ceil(doc.cache.real.post_count / topics_per_page);
-    });
-
-    env.res.topics = env.data.topics;
-
-    env.data.users = env.data.users || [];
-    // collect users from topics
-    env.data.topics.forEach(function (doc) {
-      if (doc.cache.real.first_user) {
-        env.data.users.push(doc.cache.real.first_user);
-      }
-      if (doc.cache.real.last_user) {
-        env.data.users.push(doc.cache.real.last_user);
-      }
-    });
-
-    env.extras.puncher.stop();
-
-    callback();
-  });
-
-
-  // Fill head meta & fetch/fill breadcrumbs
-  //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
-    var t_params;
-
-    var res = env.res;
-    var section = env.data.section;
-
-    if (env.session && env.session.hb) {
-      section.cache.real = section.cache.hb;
-    }
-
-    // prepare page title
-    res.head.title = section.title;
-    if (env.params.page > 1) {
-      t_params = { title: section.title, page: env.params.page };
-      res.head.title = env.t('title_with_page', t_params);
-    }
-
-    // prepare section info
-    res.section  = _.pick(section, [
-      'hid',
-      'title',
-      'description',
-      'is_category'
-    ]);
-  });
-
-
-  // fill breadcrumbs info
+  // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
     var parents = env.data.section.parent_list.slice();
@@ -130,4 +55,30 @@ module.exports = function (N, apiPath) {
     N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
   });
 
+
+  // Fill head meta
+  //
+  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
+    var section = env.data.section;
+
+    env.res.head = env.res.head || {};
+
+    // prepare page title
+    env.res.head.title = (env.params.page > 1) ?
+      env.t('title_with_page', { title: section.title, page: env.params.page })
+    :
+      section.title;
+  });
+
+  // Add section info to response
+  //
+  N.wire.after(apiPath, function fill_topic_info(env) {
+    env.res.section = _.extend({}, env.res.section, _.pick(env.data.section, [
+      'description',
+      'is_category'
+    ]));
+
+    env.extras.puncher.stop(); // Close main page scope
+
+  });
 };

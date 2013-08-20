@@ -10,7 +10,7 @@ article#content.forum-topics-root
   - if ((self.subsections || []).length)
     != self.partial('@forum.blocks.sections_list')
 
-  - if (self.section.is_category === false)
+  - if (self.section.is_category === false || (self.topics && self.topics.length))
     //- Toolbar with pagination & controls
     nav.controlbar-keeper
       #floatbar

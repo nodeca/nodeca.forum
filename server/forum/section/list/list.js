@@ -134,7 +134,7 @@ module.exports = function (N, apiPath) {
   //
   // ##### params
   //
-  // - `id`   section id
+  // - `id`   section._id
   //
   N.wire.on(apiPath, function check_and_set_page_info(env, callback) {
     // FIXME replace state hardcode
@@ -268,16 +268,46 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Add topics into to response & collect user info
+  //
+  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
+
+    env.res.topics = env.data.topics;
+
+    env.data.users = env.data.users || [];
+    // collect users from topics
+    env.data.topics.forEach(function (doc) {
+      if (doc.cache.real.first_user) {
+        env.data.users.push(doc.cache.real.first_user);
+      }
+      if (doc.cache.real.last_user) {
+        env.data.users.push(doc.cache.real.last_user);
+      }
+    });
+
+    callback();
+  });
 
 
+  // Add section info to response
+  //
+  N.wire.after(apiPath, function fill_topic_info(env) {
+    env.res.section = _.extend({}, env.res.section,
+      _.pick(env.data.section, [
+        '_id',
+        'hid',
+        'title'
+      ])
+    );
+  });
 
 
-  // Add permissions, required to render posts list
+  // Add settings, required to render topics list
   //
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
     env.extras.settings.params.section_id = env.data.section._id;
-    env.extras.puncher.start('Fetch public posts list settings');
+    env.extras.puncher.start('Fetch public topics list settings');
 
     env.extras.settings.fetch([
       'forum_can_start_topics',
