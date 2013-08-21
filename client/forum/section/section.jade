@@ -24,7 +24,7 @@ article#content.forum-topics-root
             - if (self.topics && self.topics.length && self.page.max > 1)
               .btn-group.pull-left.hidden-phone-vert._pagination
                 - var link_params = { hid: self.section.hid }
-                - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max_page: self.page.max }
+                - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
                 != self.partial('@common.blocks.pagination', pgn_params)
 
             .btn-group.pull-right

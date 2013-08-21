@@ -58,7 +58,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
           route:    'forum.section'
         , params:   { hid: res.section.hid }
         , current:  res.page.current
-        , max_page: res.page.max
+        , max: res.page.max
         })
       );
 

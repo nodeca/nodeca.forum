@@ -336,7 +336,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
           route:    'forum.topic'
         , params:   { hid: res.topic.hid, section_hid: res.section.hid }
         , current:  res.page.current
-        , max_page: res.page.max
+        , max: res.page.max
         })
       );
 
