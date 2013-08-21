@@ -11,7 +11,7 @@ var _  = require('lodash');
 var fields = require('./_fields.js');
 
 // topic and post statuses
-var statuses = require('../_statuses.js');
+var statuses = require('../../_lib/statuses.js');
 
 
 ////////////////////////////////////////////////////////////////////////////////

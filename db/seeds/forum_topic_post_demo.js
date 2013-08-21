@@ -15,7 +15,7 @@ var async     = require('async');
 var Charlatan = require('charlatan');
 
 // topic and post statuses
-var statuses = require('../../server/forum/topic/_statuses.js');
+var statuses = require('../../server/forum/_lib/statuses.js');
 
 var Category;
 var Section;
