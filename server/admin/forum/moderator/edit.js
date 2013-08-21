@@ -83,7 +83,7 @@ module.exports = function (N, apiPath) {
     env.res.setting_schemas = N.config.setting_schemas.section_moderator;
 
     // Expose moderator's full name.
-    env.res.moderator_name = env.data.user._uname;
+    env.res.moderator_name = env.data.user.name;
 
     async.parallel([
       //

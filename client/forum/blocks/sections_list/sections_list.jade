@@ -28,7 +28,7 @@ ul.forum-sections
                     a.forum-section__moderator-link._ucard-popover(
                       href=self.link_to('users.member', { hid: mod.hid }),
                       data-user-id=mod._id
-                    ) #{mod._uname}
+                    ) #{mod.name}
 
         ul.forum-section__counters.span2.hidden-phone
           li.forum-section__counter-item
@@ -50,7 +50,7 @@ ul.forum-sections
                 a.forum-section__lpost-user-link._ucard-popover(
                   href=self.link_to('users.member', { hid: last_user }),
                   data-user-id=last_user._id
-                ) #{last_user._uname}
+                ) #{last_user.name}
             - if (last_ts)
               li.forum-section__lpost-time
                 time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}

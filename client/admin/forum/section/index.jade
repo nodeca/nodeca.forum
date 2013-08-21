@@ -16,7 +16,7 @@ mixin render_sections_tree(sections, level)
                 each moderator_id in section.own_moderator_list
                   li
                     a(href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator_id }))
-                      = self.users[moderator_id]._uname
+                      = self.users[moderator_id].name
 
                 if 0 !== section.own_moderator_list.length
                   li.divider

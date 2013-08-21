@@ -11,7 +11,7 @@
         each moderator in self.moderators
           .section-control
             .section-title
-              a(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}") #{self.users[moderator._id]._uname}
+              a(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}") #{self.users[moderator._id].name}
               a.icon-collapse(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}")
 
             ul.section-moderator-list.collapse.in(id="moderator_#{moderator._id}")

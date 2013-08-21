@@ -122,9 +122,7 @@ Charlatan.Helpers.user = function () {
     first_name  : first_name,
     last_name   : last_name,
     nick        : nick,
-
-    _uname      : first_name + ' (' + nick + ') ' + last_name,
-    _uname_short: nick,
+    name      : first_name + ' (' + nick + ') ' + last_name,
 
     email       : Charlatan.Internet.email(),
 

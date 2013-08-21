@@ -19,11 +19,11 @@
           a.forum-post__author._ucard-popover(
             href=self.link_to('users.member', { hid: user.hid }),
             data-user-id=post.user
-          ) #{user._uname}
+          ) #{user.name}
     .forum-post__aside
       - if (user)
         a.forum-post__userpic(href='#')
-          img.av-l(alt='#{user._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{user.hid}' + '/')
+          img.av-l(alt='#{user.name}',src='http://lorempixel.com/150/150/sports/a' + '#{user.hid}' + '/')
       - else
         .av-l
     .forum-post__content
