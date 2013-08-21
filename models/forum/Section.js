@@ -47,9 +47,8 @@ module.exports = function (N, collectionName) {
 
   , level           : { type: Number, 'default': 0 }
 
-    // Visible moderator lists.
-  , moderator_id_list : [Number]
-  , moderator_list    : [Schema.ObjectId]
+    // Visible moderator list.
+  , moderators    : [Schema.ObjectId]
 
     // Options
   , is_category     : { type: Boolean, 'default': false } // subsection or category

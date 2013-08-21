@@ -12,13 +12,10 @@
 //
 //         '51f08394fd9fe55d2f000005': { ... }
 //
-//     moderator_list: 
+//     moderators:
 //       - ObjectId('51f0837dfd9fe55d2f000002')
 //       - ObjectId('51f08394fd9fe55d2f000005')
 //
-//     moderator_id_list:
-//       - 3
-//       - 5
 
 
 'use strict';

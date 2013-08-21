@@ -12,13 +12,10 @@
 //
 //         '51f0835b0798894c2f000006': { ... }
 //
-//     moderator_list: 
+//     moderators:
 //       - ObjectId('51f1183699651cfc0a000003')
 //       - ObjectId('51f0835b0798894c2f000006')
 //
-//     moderator_id_list:
-//       - 12
-//       - 30
 
 
 'use strict';
@@ -411,15 +408,14 @@ module.exports = function (N) {
         section.markModified('settings');
 
 
-        // Select publicly visible moderators to update `moderator_list` and
-        // `moderator_id_list` section fields.
+        // Select publicly visible moderators to update `moderators`
         var visibleModeratorIds = _.select(allModeratorIds, function (userId) {
           return section.settings.section_moderator[userId] &&
                  section.settings.section_moderator[userId].forum_mod_visible &&
                  section.settings.section_moderator[userId].forum_mod_visible.value;
         });
 
-        // Fetch users numeric ids to compose `moderator_id_list`.
+        // Fetch users numeric ids to set `moderators`.
         N.models.users.User
             .find().where('_id').in(visibleModeratorIds)
             .select('hid')
@@ -430,20 +426,7 @@ module.exports = function (N) {
             return;
           }
 
-          section.moderator_list    = visibleModeratorIds;
-          section.moderator_id_list = _.map(visibleModeratorIds, function (moderatorId) {
-            var user = _.find(users, function (user) {
-              // Universal way for equal check on: Null, ObjectId, and String.
-              return String(moderatorId) === String(user._id);
-            });
-
-            if (user) {
-              return user.hid;
-            } else {
-              N.logger.warn('Forum section %s has a non-existent user as moderator.', section._id);
-              return -1;
-            }
-          });
+          section.moderators    = visibleModeratorIds;
 
           section.save(next);
         });

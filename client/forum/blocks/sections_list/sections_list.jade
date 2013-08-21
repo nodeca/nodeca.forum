@@ -18,10 +18,10 @@ ul.forum-sections
                 li.forum-section__subforum-item
                   a.forum-section__subforum-link(href=self.link_to('forum.section', sub_section))= sub_section.title
 
-          - if (section.moderator_list && section.moderator_list.length > 0)
+          - if (section.moderators && section.moderators.length > 0)
             dl.forum-section__moderators.hidden-phone
-              dt.forum-section__moderators-caption= self.t('moderators', { count: section.moderator_list.length })
-              - each moderator in section.moderator_list
+              dt.forum-section__moderators-caption= self.t('moderators', { count: section.moderators.length })
+              - each moderator in section.moderators
                 - var mod = self.users[moderator]
                 - if (mod)
                   dd.forum-section__moderator
