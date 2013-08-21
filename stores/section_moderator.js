@@ -415,21 +415,10 @@ module.exports = function (N) {
                  section.settings.section_moderator[userId].forum_mod_visible.value;
         });
 
-        // Fetch users numeric ids to set `moderators`.
-        N.models.users.User
-            .find().where('_id').in(visibleModeratorIds)
-            .select('hid')
-            .exec(function (err, users) {
+        section.moderators    = visibleModeratorIds;
 
-          if (err) {
-            next(err);
-            return;
-          }
+        section.save(next);
 
-          section.moderators    = visibleModeratorIds;
-
-          section.save(next);
-        });
       }, callback);
     });
   };
