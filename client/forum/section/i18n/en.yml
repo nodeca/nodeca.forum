@@ -1,10 +1,15 @@
 en-US:
   no_topics: No topics yet.
-  topic_create: New topic
-  more_topics: More topics
+
   section_mark_read_tip: Mark all read
   section_subscribe: Subscribe to new topics notification
   section_announce: Announce
   section_add_moderator: Add moderator
   section_mass_move: Mass move
   section_mass_prune: Mass prune
+
+  topic_create: New topic
+  more_topics: More topics
+  title_with_page: "#{title} - page #{page}"
+
+  error_no_more_topics: Ups! No more topics in this section.
