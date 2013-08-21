@@ -66,7 +66,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
       N.wire.emit('navigate.replace', {
         href: new_url,
         title: t('title_with_page', {
-          title: res.topic.title,
+          title: res.section.title,
           page: res.page.current
         })
       });
