@@ -1,9 +1,12 @@
-- var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 }, post: { VISIBLE: 1, HB: 2, PENDING: 3, DELETED: 4, DELETED_HARD: 5 } }
+- var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 }, post: { VISIBLE: 1, HB: 2, PENDING: 3, DELETED: 4, DELETED_HARD: 5 } };
+- self.users = self.users || [];
 
 - if (self.show_page_number)
   .forum-postlist__separator= self.t('page_separator', { page: self.show_page_number })
 
 - each post in self.posts
+  - var user = self.users[post.user];
+  - console.log(user)
   article.forum-post.clearfix(id='post#{post._id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
@@ -12,15 +15,15 @@
         a.forum-post__link.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left
-        - if (self.users[post.user])
+        - if (user)
           a.forum-post__author._ucard-popover(
-            href=self.link_to('users.member', self.users[post.user]),
+            href=self.link_to('users.member', { hid: user.hid }),
             data-user-id=post.user
-          ) #{self.users[post.user]._uname}
+          ) #{user._uname}
     .forum-post__aside
-      - if (self.users[post.user])
+      - if (user)
         a.forum-post__userpic(href='#')
-          img.av-l(alt='#{self.users[post.user]._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{self.users[post.user].hid}' + '/')
+          img.av-l(alt='#{user._uname}',src='http://lorempixel.com/150/150/sports/a' + '#{user.hid}' + '/')
       - else
         .av-l
     .forum-post__content

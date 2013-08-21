@@ -2,9 +2,9 @@
 
 ul.forum-sections
   - each section in self.subsections
-    - last_topic = section.cache.real.last_topic_hid || null
-    - last_user = section.cache.real.last_user || null
-    - last_ts = section.cache.real.last_ts || null
+    - last_topic = section.cache.real.last_topic_hid
+    - last_user = self.users[section.cache.real.last_user]
+    - last_ts = section.cache.real.last_ts
     li.forum-section
       //- Add 'unread' class & #id below, for new data
       .row
@@ -22,12 +22,13 @@ ul.forum-sections
             dl.forum-section__moderators.hidden-phone
               dt.forum-section__moderators-caption= self.t('moderators', { count: section.moderator_list.length })
               - each moderator in section.moderator_list
-                - if (self.users[moderator])
+                - var mod = self.users[moderator]
+                - if (mod)
                   dd.forum-section__moderator
                     a.forum-section__moderator-link._ucard-popover(
-                      href=self.link_to('users.member', self.users[moderator]),
-                      data-user-id=moderator
-                    ) #{self.users[moderator]._uname}
+                      href=self.link_to('users.member', { hid: mod.hid }),
+                      data-user-id=mod._id
+                    ) #{mod._uname}
 
         ul.forum-section__counters.span2.hidden-phone
           li.forum-section__counter-item
@@ -43,14 +44,13 @@ ul.forum-sections
               a.forum-section__lpost-title-link(
                 href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.real.last_post
               ) #{section.cache.real.last_topic_title}
-            - if (self.users[last_user])
+            - if (last_user)
               li.forum-section__lpost-user
                 = self.t('topic_by')
-                - lp_user = self.users[last_user]
                 a.forum-section__lpost-user-link._ucard-popover(
-                  href=self.link_to('users.member', lp_user),
-                  data-user-id=lp_user._id
-                ) #{lp_user._uname}
+                  href=self.link_to('users.member', { hid: last_user }),
+                  data-user-id=last_user._id
+                ) #{last_user._uname}
             - if (last_ts)
               li.forum-section__lpost-time
                 time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}

@@ -8,8 +8,8 @@ include ../pagination_micro/pagination_micro
   .forum-topicline__separator= self.t('page_separator', { page: self.show_page_number })
 
 - each topic in self.topics
-  - fp_user = topic.cache.real.first_user
-  - lp_user = topic.cache.real.last_user
+  - fp_user = self.users[topic.cache.real.first_user]
+  - lp_user = self.users[topic.cache.real.last_user]
   - fp_ts   = topic.cache.real.first_ts
   - lp_ts   = topic.cache.real.last_ts
   .forum-topicline
@@ -27,11 +27,11 @@ include ../pagination_micro/pagination_micro
 
         .forum-topicline__meta
           a.forum-topicline__preview-link.icon-more(href='#')= self.t('topic_preview')
-          - if (self.users[fp_user])
+          - if (fp_user)
             a.forum-topicline__author._ucard-popover(
-              href=self.link_to('users.member', self.users[fp_user]),
-              data-user-id=fp_user
-            ) #{self.users[fp_user]._uname}
+              href=self.link_to('users.member', { hid: fp_user.hid }),
+              data-user-id=fp_user._id
+            ) #{fp_user._uname}
           time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
       ul.forum-topicline__counters.span2.hidden-phone
@@ -48,9 +48,9 @@ include ../pagination_micro/pagination_micro
         li.forum-topicline__lpost-time
           a.forum-topicline__lpost-time-link(href='#')
             time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}
-        - if (self.users[lp_user])
+        - if (lp_user)
           li.forum-topicline__lpost-user
             a.forum-topicline__lpost-user-link._ucard-popover(
-              href=self.link_to('users.member', self.users[lp_user]),
-              data-user-id=lp_user
-            ) #{self.users[lp_user]._uname}
+              href=self.link_to('users.member', { hid: lp_user.hid }),
+              data-user-id=lp_user._id
+            ) #{lp_user._uname}
