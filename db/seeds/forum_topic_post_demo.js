@@ -241,7 +241,7 @@ function updateSectionStat(section, callback) {
   var postCount;
 
   async.series([ function getLastTopic(cb) {
-      Topic.findOne({section: section._id}).select('_id hid')
+      Topic.findOne({section: section._id}).select('_id hid title cache')
         .sort({ 'hid': 1 })
         .exec(function (err, topic) {
 
