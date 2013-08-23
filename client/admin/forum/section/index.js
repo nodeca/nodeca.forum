@@ -123,7 +123,10 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   // Render dialog window.
   var $dialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
 
-  require('users.nick_typeahead')($dialog.find('input[name=nick]'));
+  $dialog.find('input[name=nick]').typeahead({
+    valueKey: 'nick',
+    remote: N.runtime.router.linkTo('admin.core.user_lookup') + '?nick=%QUERY'
+  });
 
   $dialog.on('shown', function () {
     $(this).find('input[name=nick]').focus();
