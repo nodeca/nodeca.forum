@@ -32,14 +32,12 @@
 //
 
 .forum-topicline__summary
-  padding-left 5px
+  padding-left 20px
   box-sizing border-box
-  // IE7 hack
-  *padding-left 0
 
 .forum-topicline__title
   position relative
-  font-size 16px
+  font-size 18px
   font-weight normal
   line-height (baseLineHeight*5/4)
   display inline-block
@@ -54,16 +52,6 @@
   margin-left 10px
   font-size 11px
   line-height (baseLineHeight*3/4)
-
-a.forum-topicline__preview-link
-  transition opacity 0.3s ease
-  float right
-  color gray
-  opacity 0
-  &:hover
-    color linkColorHover
-.forum-topicline:hover .forum-topicline__preview-link
-  opacity 1
 
 a.forum-topicline__author
   color grayLight
@@ -115,9 +103,7 @@ a.forum-topicline__lpost-user-link
 //
 .unread
   .forum-topicline__summary
-    padding-left 20px
-    // IE7 hack
-    *padding-left 0
+    padding-left 35px
   .forum-topicline__title
     font-weight bold
     &:before

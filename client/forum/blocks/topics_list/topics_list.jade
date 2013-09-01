@@ -14,7 +14,7 @@ include ../pagination_micro/pagination_micro
   - lp_ts   = topic.cache.real.last_ts
   .forum-topicline
     .row
-      .forum-topicline__summary.span7
+      .forum-topicline__summary.col-xs-9.col-sm-7
         h2.forum-topicline__title
           a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
         //a.mark-i-attach._tip(href="#")=topic.attach_count
@@ -26,7 +26,6 @@ include ../pagination_micro/pagination_micro
 
 
         .forum-topicline__meta
-          a.forum-topicline__preview-link.icon-more(href='#')= self.t('topic_preview')
           - if (fp_user)
             a.forum-topicline__author._ucard-popover(
               href=self.link_to('users.member', { hid: fp_user.hid }),
@@ -34,7 +33,7 @@ include ../pagination_micro/pagination_micro
             ) #{fp_user.name}
           time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
-      ul.forum-topicline__counters.span2.hidden-phone
+      ul.forum-topicline__counters.col-xs-3.col-sm-2
         - replies = topic.cache.real.post_count - 1;
         - views   = topic.views_count;
         li.forum-topicline__counter-item
@@ -44,7 +43,7 @@ include ../pagination_micro/pagination_micro
           span.forum-topicline__counter-val  #{views}
           = self.t('topic_views', { count: views })
 
-      ul.forum-topicline__lpost.span3.hidden-phone
+      ul.forum-topicline__lpost.col-sm-3.hidden-xs
         li.forum-topicline__lpost-time
           a.forum-topicline__lpost-time-link(href='#')
             time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}

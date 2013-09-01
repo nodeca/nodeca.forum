@@ -3,7 +3,7 @@ article#content.forum-topics-root
 
   header.page-head
     h1.page-head__title(itemprop='name')= self.section.title
-    p.page-head__descr(itemprop='description')
+    p.page-head__descr.hidden-xs(itemprop='description')
       | #{self.section.description}
 
   //- Subsections, if exist
@@ -16,19 +16,18 @@ article#content.forum-topics-root
       #floatbar
         .container
           .btn-toolbar.controlbar.clearfix
-            .btn-group.pull-left
-              - var parent_forum_hid = self.blocks.breadcrumbs[self.blocks.breadcrumbs.length - 1].params.id
-              a.btn.btn-icon-only.icon-back(
-                href=self.link_to('forum.section', { id: parent_forum_hid }))
+            - var parent_forum_hid = self.blocks.breadcrumbs[self.blocks.breadcrumbs.length - 1].params.id
+            a.btn.btn-default.btn-icon-only.icon-back.pull-left(
+              href=self.link_to('forum.section', { id: parent_forum_hid }))
 
             - if (self.topics && self.topics.length && self.page.max > 1)
-              .btn-group.pull-left.hidden-phone-vert._pagination
+              .btn-group.pull-left._pagination
                 - var link_params = { hid: self.section.hid }
                 - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
                 != self.partial('@common.blocks.pagination', pgn_params)
 
             .btn-group.pull-right
-              a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
+              a.btn.btn-default.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
                 li: a(href='#')= self.t('section_announce')
@@ -37,20 +36,14 @@ article#content.forum-topics-root
                 li: a(href='#')= self.t('section_mass_prune')
 
             - if (self.runtime.is_member)
-              .btn-group.pull-right
-                a.btn.icon-track.tip(
-                  href='#', title=self.t('section_subscribe')) 24
+              a.btn.btn-default.icon-track.tip.pull-right(
+                href='#', title=self.t('section_subscribe')) 24
 
-              .btn-group.pull-right
-                a.btn.btn-icon-only.icon-check.tip(
-                  href='#', title=self.t('section_mark_read_tip'))
+              a.btn.btn-default.btn-icon-only.icon-check.tip.pull-right(
+                href='#', title=self.t('section_mark_read_tip'))
 
             - if (self.settings.forum_can_start_topics)
-              .btn-group.pull-right.hidden-phone
-                a.btn.btn-primary.icon-new(href='#')= self.t('topic_create')
-              .btn-group.pull-right.visible-phone
-                a.btn.btn-primary.icon-new.btn-icon-only(
-                  href='#', title=self.t('topic_create'))
+              a.btn.btn-primary.pull-right(href='#')= self.t('topic_create')
 
           //- left part, no `float left` to avoid deals with container height
 
@@ -62,7 +55,7 @@ article#content.forum-topics-root
       //- Button "More Topics"
       - var link_params = { hid: self.section.hid, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-      a.forum-section__more-link.btn.btn-block.icon-more(
+      a.forum-section__more-link.btn.btn-default.btn-block.icon-more(
         class=btn_more_state,
         href=self.link_to(self.apiPath, link_params),
         data-page=self.page.current+1,

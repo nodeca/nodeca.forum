@@ -128,11 +128,11 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
     remote: N.runtime.router.linkTo('admin.core.user_lookup') + '?nick=%QUERY'
   });
 
-  $dialog.on('shown', function () {
+  $dialog.on('shown.bs.modal', function () {
     $(this).find('input[name=nick]').focus();
   });
 
-  $dialog.on('hidden', function () {
+  $dialog.on('hidden.bs.modal', function () {
     $(this).remove();
   });
 

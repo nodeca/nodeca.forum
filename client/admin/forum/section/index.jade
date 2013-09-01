@@ -51,9 +51,10 @@ mixin render_sections_tree(sections, level)
   .main
     != self.partial('@admin.core.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
 
-    .pull-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
+    h1
+      .pull-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
 
-    h1 #{self.head.title}
+      | #{self.head.title}
 
     .aforum-index__scontent._container
       mixin render_sections_tree(self.sections, 0)

@@ -1,6 +1,7 @@
 en-US:
   moderator_select_dialog:
     title: Select user to become a moderator
+    nick: Nick
     input_nick_placeholder: Enter nick
     button_accept: Accept
     button_cancel: Cancel

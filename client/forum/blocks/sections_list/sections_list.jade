@@ -8,18 +8,18 @@ ul.forum-sections
     li.forum-section
       //- Add 'unread' class & #id below, for new data
       .row
-        .forum-section__summary.span7
+        .forum-section__summary.col-xs-9.col-sm-7
           h3.forum-section__title
             a.forum-section__title-link(href=self.link_to('forum.section', section))= section.title
 
           - if (section.child_list && section.child_list.length > 0)
-            ul.forum-section__subforums.hidden-phone
+            ul.forum-section__subforums.hidden-xs
               - each sub_section in section.child_list
                 li.forum-section__subforum-item
                   a.forum-section__subforum-link(href=self.link_to('forum.section', sub_section))= sub_section.title
 
           - if (section.moderators && section.moderators.length > 0)
-            dl.forum-section__moderators.hidden-phone
+            dl.forum-section__moderators.hidden-xs
               dt.forum-section__moderators-caption= self.t('moderators', { count: section.moderators.length })
               - each moderator in section.moderators
                 - var mod = self.users[moderator]
@@ -30,7 +30,7 @@ ul.forum-sections
                       data-user-id=mod._id
                     ) #{mod.name}
 
-        ul.forum-section__counters.span2.hidden-phone
+        ul.forum-section__counters.col-xs-3.col-sm-2
           li.forum-section__counter-item
             span.forum-section__counter-val #{section.cache.real.topic_count}
             = self.t('section_topics', { count: section.cache.real.topic_count })
@@ -39,7 +39,7 @@ ul.forum-sections
             = self.t('section_posts', { count: section.cache.real.post_count })
 
         - if (last_topic)
-          ul.forum-section__lpost.span3.hidden-phone
+          ul.forum-section__lpost.col-sm-3.hidden-xs
             li.forum-section__lpost-title
               a.forum-section__lpost-title-link(
                 href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.real.last_post

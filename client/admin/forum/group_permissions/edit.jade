@@ -17,27 +17,28 @@
         legend #{self.usergroup_name}
 
         // ko foreach: settings
-        .control-group.control-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
-          label.control-label(data-bind="text: localizedName, attr: { 'for': elementId }")
-          .controls
-            .row-fluid
-              .span4.control-value
-                // ko if: 'boolean' === type
-                .switch
-                  input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
-                  label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
-                // /ko
+        .form-group.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
 
-                // ko if: localizedHelp
-                span.help-block(data-bind="text: localizedHelp")
-                // /ko
+          label.control-label.col-md-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
-              .span4
-                div
-                  label.checkbox.inline
-                    input(type="checkbox", data-bind="checked: overriden")
-                    = self.t('checkbox_override')
+          .col-md-4.control-value
+            // ko if: 'boolean' === type
+            .switch
+              input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
+              label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
+            // /ko
+
+            // ko if: localizedHelp
+            span.help-block(data-bind="text: localizedHelp")
+            // /ko
+
+          .col-md-4
+            label.checkbox-inline
+              input(type="checkbox", data-bind="checked: overriden")
+              = self.t('checkbox_override')
         // /ko
-        .form-actions
+
+      .form-group
+        .col-md-9.col-md-offset-3
           button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
             = self.t('button_save')

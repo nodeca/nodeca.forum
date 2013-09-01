@@ -13,18 +13,17 @@ article#content.forum-topic-root
     #floatbar
       .container
         .btn-toolbar.controlbar.clearfix
-          .btn-group.pull-left
-            a.btn.btn-icon-only.icon-back(
-              href=self.link_to('forum.section', { hid: self.section.hid }))
+          a.btn.btn-default.btn-icon-only.icon-back.pull-left(
+            href=self.link_to('forum.section', { hid: self.section.hid }))
 
           - if (self.page.max > 1)
-            .btn-group.pull-left.hidden-phone-vert._pagination
+            .btn-group.pull-left._pagination
               - var link_params = { hid: self.topic.hid, section_hid: self.section.hid }
               - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
               != self.partial('@common.blocks.pagination', pgn_params)
 
           .btn-group.pull-right
-            a.btn.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
+            a.btn.btn-default.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
               li: a(href='#')= self.t('topic_delete')
@@ -36,12 +35,10 @@ article#content.forum-topic-root
               li: a(href='#')= self.t('topic_merge')
 
           - if (self.runtime.is_member)
-            .btn-group.pull-right
-              a.btn.icon-track.tip(href='#', title=self.t('topic_subscribe')) 24
+            a.btn.btn-default.icon-track.tip.pull-right(href='#', title=self.t('topic_subscribe')) 24
 
           - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN))
-            .btn-group.pull-right
-              a.btn.btn-primary(href='#')= self.t('post_add')
+            a.btn.btn-primary.pull-right(href='#')= self.t('post_add')
 
   #postlist.forum-postlist(
     data-section_hid=self.section.hid,
@@ -52,7 +49,7 @@ article#content.forum-topic-root
   //- Button "More Topics"
   - var link_params = { hid: self.topic.hid, section_hid: self.section.hid, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-  a.forum-topic__more-link.btn.btn-block.icon-more(
+  a.forum-topic__more-link.btn.btn-default.btn-block.icon-more(
     class=btn_more_state,
     href=self.link_to(self.apiPath, link_params),
     data-page=self.page.current+1,
