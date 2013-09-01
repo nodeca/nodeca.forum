@@ -9,10 +9,10 @@ article#content.forum-topic-root
       p.page-head__descr(itemprop='description')
         | #{self.topic._seo_desc}
 
-  nav.controlbar-keeper
-    #floatbar
+  nav.controlbar._affix
+    .controlbar-floater
       .container
-        .btn-toolbar.controlbar.clearfix
+        .controlbar-body.btn-toolbar.clearfix
           a.btn.btn-default.btn-icon-only.icon-back.pull-left(
             href=self.link_to('forum.section', { hid: self.section.hid }))
 

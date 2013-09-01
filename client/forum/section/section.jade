@@ -12,10 +12,10 @@ article#content.forum-topics-root
 
   - if (self.section.is_category === false || (self.topics && self.topics.length))
     //- Toolbar with pagination & controls
-    nav.controlbar-keeper
-      #floatbar
+    nav.controlbar._affix
+      .controlbar-floater
         .container
-          .btn-toolbar.controlbar.clearfix
+          .controlbar-body.btn-toolbar.clearfix
             - var parent_forum_hid = self.blocks.breadcrumbs[self.blocks.breadcrumbs.length - 1].params.id
             a.btn.btn-default.btn-icon-only.icon-back.pull-left(
               href=self.link_to('forum.section', { id: parent_forum_hid }))
