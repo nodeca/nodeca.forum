@@ -125,7 +125,12 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
 
   $dialog.find('input[name=nick]').typeahead({
     valueKey: 'nick',
-    remote: N.runtime.router.linkTo('admin.core.user_lookup') + '?nick=%QUERY'
+    remote: N.runtime.router.linkTo('admin.core.user_lookup') + '?nick=%QUERY',
+    template: function(user) {
+      // Shows full name with entered text highlighting
+      var pattern = $dialog.find('input[name=nick]').val();
+      return '<p>' + user.name.replace('(' + pattern, '(<strong>' + pattern + '</strong>') + '</p>';
+    }
   });
 
   $dialog.on('shown.bs.modal', function () {
