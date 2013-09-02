@@ -13,8 +13,8 @@ article#content.forum-topic-root
     .controlbar-floater
       .container
         .controlbar-body.btn-toolbar.clearfix
-          a.btn.btn-default.btn-icon-only.icon-back.pull-left(
-            href=self.link_to('forum.section', { hid: self.section.hid }))
+          button.btn.btn-default.btn-icon-only.icon-back.pull-left(type='button')
+          //- href=self.link_to('forum.section', { hid: self.section.hid }))
 
           - if (self.page.max > 1)
             .btn-group.pull-left._pagination
@@ -23,7 +23,7 @@ article#content.forum-topic-root
               != self.partial('@common.blocks.pagination', pgn_params)
 
           .btn-group.pull-right
-            a.btn.btn-default.icon-options.dropdown-toggle(href='#', data-toggle='dropdown')
+            button.btn.btn-default.icon-options.dropdown-toggle(type='button', data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
               li: a(href='#')= self.t('topic_delete')
@@ -35,10 +35,10 @@ article#content.forum-topic-root
               li: a(href='#')= self.t('topic_merge')
 
           - if (self.runtime.is_member)
-            a.btn.btn-default.icon-track.tip.pull-right(href='#', title=self.t('topic_subscribe')) 24
+            button.btn.btn-default.icon-track.tip.pull-right(type='button', title=self.t('topic_subscribe')) 24
 
           - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN))
-            a.btn.btn-primary.pull-right(href='#')= self.t('post_add')
+            button.btn.btn-primary.pull-right(type='button')= self.t('post_add')
 
   #postlist.forum-postlist(
     data-section_hid=self.section.hid,

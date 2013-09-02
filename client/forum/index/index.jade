@@ -30,9 +30,9 @@ article#content.forum-index__root
   footer
     - if (self.runtime.is_member)
       .btn-toolbar
-        a.btn.btn-default.icon-check(href='#')= self.t('mark_all_read')
+        button.btn.btn-default.icon-check(type='button')= self.t('mark_all_read')
         | 
-        a.btn.btn-default(href='#')= self.t('exclude', { count: 5 })
+        button.btn.btn-default(type='button')= self.t('exclude', { count: 5 })
 
     .page-summary
       .page-summary__head= self.t('total_active.all', { count: 710, interval: 30 })
