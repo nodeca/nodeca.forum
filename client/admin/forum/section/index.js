@@ -150,7 +150,7 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
       return false; // Invoke standard error handling.
     }
 
-    if (_.isEmpty(res.users)) {
+    if (_.isEmpty(res)) {
       N.wire.emit('notify', t('error_no_user_with_such_nick', { nick: nick }));
       return;
     }
@@ -161,7 +161,7 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
       apiPath: 'admin.forum.moderator.edit'
     , params: {
         section_id: $dialog.find('input[name=section_id]').val()
-      , user_id:    res.users[0]._id
+      , user_id:    res[0]._id
       }
     });
   });
