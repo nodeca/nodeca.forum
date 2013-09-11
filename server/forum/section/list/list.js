@@ -5,11 +5,12 @@
 "use strict";
 
 var _     = require('lodash');
-var async = require('async');
 
 // collections fields filters
 var fields = require('./_fields.js');
 
+// topic and post statuses
+var statuses = require('../../_lib/statuses.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,8 +37,6 @@ module.exports = function (N, apiPath) {
 
   // fetch section info
   N.wire.before(apiPath, function fetch_section_info(env, callback) {
-
-    env.extras.puncher.start('process posts list'); // nested
 
     env.extras.puncher.start('section info prefetch');
 
@@ -71,6 +70,7 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('fetch setting (forum_can_view)');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
+
       env.extras.puncher.stop();
 
       if (err) {
@@ -91,9 +91,11 @@ module.exports = function (N, apiPath) {
   // fetch posts per page setting
   //
   N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
+
     env.extras.puncher.start('fetch setting (topics_per_page)');
 
     env.extras.settings.fetch(['topics_per_page'], function (err, settings) {
+
       env.extras.puncher.stop();
 
       if (err) {
@@ -105,7 +107,6 @@ module.exports = function (N, apiPath) {
       callback();
     });
   });
-
 
   // Fill page data or redirect to last page, if requested > available
   //
@@ -132,144 +133,112 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch and prepare topics
+  // define topic sorting order
   //
-  // ##### params
-  //
-  // - `id`   section._id
-  //
-  N.wire.on(apiPath, function check_and_set_page_info(env, callback) {
-    // FIXME replace state hardcode
-    //var VISIBLE_STATE = 0;
-    //var DELETED_STATE = 1;
+  N.wire.before(apiPath, function add_sort(env) {
+    // FIXME: that can break index
+    env.data.topic_sort = {};
+    if (env.session && env.user_info.hb) {
+      env.data.topic_sort['cache.hb.last_ts'] = -1;
+    } else {
+      env.data.topic_sort['cache.real.last_ts'] = -1;
+    }
+  });
 
-    var sort = {};
-    var start;
-    var query;
-    var ids = [];
+
+  // Get visible topic statuses
+  //
+  N.wire.before(apiPath, function get_permissions(env, callback) {
+
+    env.extras.settings.fetch(['can_see_hellbanned', 'forum_mod_can_manage_pending'], function (err, settings) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.data.statuses = [statuses.topic.OPEN, statuses.topic.CLOSED];
+      var st = env.data.statuses;
+
+      if (settings.can_see_hellbanned || env.user_info.hb) {
+        st.push(statuses.topic.HB);
+      }
+
+      if (settings.forum_mod_can_manage_pending) {
+        st.push(statuses.topic.PENDING);
+        st.push(statuses.topic.DELETED);
+      }
+
+      callback();
+    });
+  });
+
+
+  // fetch visible topics
+  //
+  N.wire.on(apiPath, function fetch_visible_topics(env, callback) {
 
     var topics_per_page = env.data.topics_per_page;
+    env.data.start = (env.params.page - 1) * topics_per_page;
 
-    env.res.show_page_number = false;
+    env.extras.puncher.start('get visible topics');
 
-    env.extras.puncher.start('get topics'); // nested
+    // fetch visible topics
+    Topic.find()
+      .where('section').equals(env.data.section._id)
+      .where('st').in(env.data.statuses)
+      .select(fields.topic_in.join(' '))
+      .sort(env.data.topic_sort)
+      .skip(env.data.start)
+      .limit(topics_per_page)
+      .setOptions({ lean: true })
+      .exec(function (err, visible_topics) {
 
-    env.extras.puncher.start('get topics ids');
-
-    // FIXME: that can break index
-    if (env.session && env.session.hb) {
-      sort['cache.hb.last_ts'] = -1;
-    } else {
-      sort['cache.real.last_ts'] = -1;
-    }
-
-    async.series([
-      function (next) {
-        // FIXME add state condition to select only visible topics
-        start = (env.params.page - 1) * topics_per_page;
-
-        // Fetch IDs of "visible" topics interval
-        Topic.find({ section: env.data.section._id })
-            //.where('state').equals(VISIBLE_STATE)
-            .select('_id cache.real.last_ts').sort(sort).skip(start)
-            .limit(topics_per_page + 1).setOptions({ lean: true })
-            .exec(function (err, visible_topics) {
-
-          env.extras.puncher.stop({ count: visible_topics.length });
-
-          if (err) {
-            next(err);
-            return;
-          }
-
-          if (!visible_topics.length) {
-            // properly close puncher scope on early interrupt
-            env.extras.puncher.stop();
-
-            if (env.params.page > 1) {
-              // When user requests page that is out of possible range we redirect
-              // them during before filter (see above).
-              //
-              // But very rarely, cached topics counter can be out of sync.
-              // In this case return 404 for empty result.
-              next(N.io.NOT_FOUND);
-              return;
-            }
-
-            // category or section without topics
-            env.data.topics = [];
-
-            next();
-            return;
-          }
-
-          // collect ids
-          ids = visible_topics.map(function (topic) {
-            return topic._id;
-          });
-
-          // FIXME need real check permission
-          if (false) {
-            next();
-            return;
-          }
-
-          // delete last ID, if successefuly fetched (topics_per_page+1)
-          if (ids.length > topics_per_page) { ids.pop(); }
-
-          // Fetch IDs of "hidden" topics (use coverage index)
-          /*Topic.find({ section: env.data.section._id })
-              .where('state').equals(DELETED_STATE)
-              .where('cache.real.last_ts')
-                .lt(_.first(visible_topics).cache.real.last_ts)
-                .gt(_.last(visible_topics).cache.real.last_ts)
-              .select('_id').sort(sort)
-              .setOptions({ lean: true })
-              .exec(function (err, deleted_topics) {
-
-            if (err) {
-              next(err);
-              return;
-            }
-            // append ids of deleted topics
-            deleted_topics.forEach(function (topic) {
-              ids.push(topic._id);
-            });
-            next();
-          });*/
-          next();
-        });
-      },
-      function (next) {
-        if (_.isEmpty(ids)) {
-          next();
+        if (err) {
+          callback(err);
           return;
         }
-        env.extras.puncher.start('get topics content by _id list');
 
-        // FIXME modify state condition (deleted and etc) if user has permission
-        // If no hidden topics - no conditions needed, just select by IDs
-        query = Topic.find().where('_id').in(ids).sort(sort);
+        env.extras.puncher.stop({ count: visible_topics.length });
 
-        // Select all allowed topics in calculated
-        // interval: visible + deleted and others (if allowed by permissions)
-        query.select(fields.topic_in.join(' ')).sort(sort)
-            .setOptions({ lean: true }).exec(function (err, topics) {
+        env.data.topics =  visible_topics;
 
-          if (err) {
-            next(err);
-            return;
-          }
+        callback();
+      });
+  });
 
-          env.data.topics = topics;
+  // fetch pinned topics
+  //
+  N.wire.before(apiPath, function fetch_topics(env, callback) {
 
-          env.extras.puncher.stop({ count: topics.length });
-          env.extras.puncher.stop(); //nested
+    // Pinned topics should be visible on the first page only
+    if (env.params.page > 1) {
+      callback();
+      return;
+    }
 
-          next();
-        });
-      }
-    ], callback);
+    env.extras.puncher.start('get pinned topics');
+
+    // fetch pinned topics
+    Topic.find()
+      .where('section').equals(env.data.section._id)
+      .where('st').equals(statuses.topic.PINNED)
+      .select(fields.topic_in.join(' '))
+      .sort(env.data.topic_sort)
+      .setOptions({ lean: true })
+      .exec(function (err, pinned_topics) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        env.extras.puncher.stop({ count: pinned_topics.length });
+
+        env.data.topics = pinned_topics.concat(env.data.topics);
+
+        callback();
+      });
   });
 
 
@@ -277,7 +246,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
 
-    env.extras.puncher.start('collect users ids');
+    env.extras.puncher.start('collect user ids');
 
     env.res.topics = env.data.topics;
 
@@ -314,6 +283,8 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function expose_settings(env, callback) {
 
+    env.res.show_page_number = false;
+
     env.extras.settings.params.section_id = env.data.section._id;
     env.extras.puncher.start('fetch public settings for renderer');
 
@@ -321,6 +292,7 @@ module.exports = function (N, apiPath) {
       'forum_can_start_topics',
       'posts_per_page' // needed for micropagination
     ], function (err, settings) {
+
       env.extras.puncher.stop();
 
       if (err) {

@@ -46,28 +46,16 @@ module.exports = function (N, collectionName) {
     // user-friendly id (autoincremented)
   , hid             : { type: Number, min: 1, index: true }
 
-    // prefix id/cache
-  , prefix          : Schema.ObjectId
-
   , section           : Schema.ObjectId
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
   , st              : { type: Number, required: true }
   , ste             : Number  // real state, if topic is sticky or hellbanned
-                              // (general `state` is used for fast selects)
-
-    // Tags
-  , tags_id_list    : [Number]
-
-    // "Similar" topics cache
-  , similar         : [Schema.ObjectId]
-
+                              // (general `state` is used for fast selects
     // Cache
   , cache           : cache
 
-
-  , tags            : [String]
   , views_count     : { type: Number, 'default': 0 }
   },
   {
@@ -81,16 +69,16 @@ module.exports = function (N, collectionName) {
   // Main one, used for topics list
   Topic.index({
     section: 1
-  , state: 1
-  , prefix: 1     // remove, if no prefixes needed
+  , st : 1
+  , 'cache.real.last_ts' : -1
   , _id: -1
   });
 
-  // Get user topics, with restriction by status & sections list
+  // For hellbanned users, used for topics list
   Topic.index({
-    first_user: 1
-  , state: 1
-  , section: 1
+    section: 1
+  , st : 1
+  , 'cache.hb.last_ts' : -1
   , _id: -1
   });
 

@@ -46,8 +46,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_topic_info(env, callback) {
 
-    env.extras.puncher.start('process posts list'); // nested
-
     env.extras.puncher.start('topic info prefetch');
 
     Topic.findOne({ hid: env.params.hid }).setOptions({ lean: true })
@@ -108,6 +106,7 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('fetch setting (forum_can_view)');
 
     env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
+
       env.extras.puncher.stop();
 
       if (err) {
@@ -123,7 +122,6 @@ module.exports = function (N, apiPath) {
       callback();
     });
   });
-
 
   // `params.section_hid` can be wrong (old link to moved topic)
   // If params.section_hid defined, and not correct - redirect to proper location
@@ -150,10 +148,12 @@ module.exports = function (N, apiPath) {
 
   // fetch posts per page setting
   //
-  N.wire.before(apiPath, function check_and_set_page_info(env, callback) {
+  N.wire.before(apiPath, function fetch_posts_per_page(env, callback) {
+
     env.extras.puncher.start('fetch setting (posts_per_page)');
 
     env.extras.settings.fetch(['posts_per_page'], function (err, settings) {
+
       env.extras.puncher.stop();
 
       if (err) {
@@ -192,84 +192,112 @@ module.exports = function (N, apiPath) {
     env.res.page = { max: max, current: current };
   });
 
-  // fetch and prepare posts
+
+  // Get visible post statuses
   //
-  // ##### params
-  //
-  // - `id`         topic id
-  // - `page`       page number
-  //
-  N.wire.on(apiPath, function (env, callback) {
-    var start;
-    var query;
+  N.wire.before(apiPath, function get_permissions(env, callback) {
 
-    var posts_per_page = env.data.posts_per_page;
-
-    env.extras.puncher.start('get posts'); // nested
-
-    env.extras.puncher.start('get posts ids');
-
-    // FIXME: add state condition to select only visible posts
-
-    start = (env.params.page - 1) * posts_per_page;
-
-    // Unlike topics list, we can use simplified fetch,
-    // because posts are always ordered by id - no need to sort by timestamp
-    Post
-      .find({ topic: env.data.topic._id })
-      .select('_id')
-      .sort('ts')
-      .skip(start)
-      .limit(posts_per_page + 1)
-      .setOptions({ lean: true })
-      .exec(function (err, docs) {
-
-      env.extras.puncher.stop(!!docs ? { count: docs.length } : null);
+    env.extras.settings.fetch(['can_see_hellbanned', 'forum_mod_can_manage_pending'], function (err, settings) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      // No page -> return empty data, without trying to fetch posts
-      if (!docs.length) {
-        // Very rarely, user can request next page, when moderator deleted topic tail.
-        env.data.posts = [];
-        callback();
+      env.data.statuses = {};
+      var st = env.data.statuses;
+      st.paginated = [statuses.post.VISIBLE];
+      st.visible = [statuses.post.VISIBLE];
+
+      if (settings.can_see_hellbanned || env.user_info.hb) {
+        st.paginated.push(statuses.post.HB);
+        st.visible.push(statuses.post.HB);
+      }
+
+      if (settings.forum_mod_can_manage_pending) {
+        st.visible.push(statuses.topic.PENDING);
+        st.visible.push(statuses.topic.DELETED);
+      }
+
+      callback();
+    });
+  });
+
+
+  // fetch and prepare posts, by getting first and last required post ID
+  //
+  N.wire.before(apiPath, function (env, callback) {
+    var posts_per_page = env.data.posts_per_page;
+    var start = (env.params.page - 1) * posts_per_page;
+
+    env.extras.puncher.start('get posts ids');
+
+    // Unlike topics list, we can use simplified fetch,
+    // because posts are always ordered by id - no need to sort by timestamp
+    Post.find()
+      .where('topic').equals(env.data.topic._id)
+      .where('st').in(env.data.statuses.paginated)
+      .select('_id')
+      .sort('ts')
+      .skip(start)
+      .limit(posts_per_page + 1)
+      .setOptions({ lean: true })
+      .exec(function (err, visible_posts) {
+
+      env.extras.puncher.stop(!!visible_posts ? { count: visible_posts.length } : null);
+
+      if (err) {
+        callback(err);
         return;
       }
 
-      env.extras.puncher.start('get posts content by _id list');
-
-      // FIXME modify state condition (deleted and etc) if user has permission
-      // If no hidden posts - no conditions needed, just select by IDs
-
-      query = Post.find({ topic: env.data.topic._id }).where('_id').gte(_.first(docs)._id);
-      if (docs.length <= posts_per_page) {
-        query.lte(_.last(docs)._id);
-      }
-      else {
-        query.lt(_.last(docs)._id);
+      // delete last ID, if successfully fetched (posts_per_page + 1)
+      if (visible_posts.length > posts_per_page) {
+        visible_posts.pop();
       }
 
-      query.select(fields.post_in.join(' ')).setOptions({ lean: true })
-          .exec(function (err, posts) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.data.posts = posts;
-
-        env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
-        env.extras.puncher.stop(); // nested
-
+      // If page is not empty, get first and last post ID
+      if (visible_posts.length) {
+        env.data.first_post_id = _.first(visible_posts)._id;
+        env.data.last_post_id = _.last(visible_posts)._id;
         callback();
-      });
+        return;
+      }
     });
-
   });
+
+
+  // fetch posts
+  //
+  N.wire.before(apiPath, function get_permissions(env, callback) {
+
+    env.extras.puncher.start('get posts content by _id list');
+
+    // FIXME modify state condition (deleted and etc) if user has permission
+    // If no hidden posts - no conditions needed, just select by IDs
+
+    Post.find()
+      .where('topic').equals(env.data.topic._id)
+      .where('st').in(env.data.statuses.visible)
+      .where('_id').gte(env.data.first_post_id).lte(env.data.last_post_id)
+      .select(fields.post_in.join(' '))
+      .setOptions({ lean: true })
+      .sort('ts')
+      .exec(function (err, posts) {
+
+      env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.data.posts = posts;
+
+      callback();
+    });
+  });
+
 
   // Add posts into to response & collect user ids
   //
@@ -307,6 +335,7 @@ module.exports = function (N, apiPath) {
       ])
     );
   });
+
 
   // Add section info to response
   //

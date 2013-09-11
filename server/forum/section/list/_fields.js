@@ -6,7 +6,6 @@ exports.topic_in = [
   '_id',
   'hid',
   'title',
-  'prefix',
   'views_count',
   'cache'
 ];

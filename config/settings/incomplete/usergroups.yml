@@ -41,3 +41,9 @@ setting_schemas:
       category_key: perm_moderator
       type: boolean
       default: false
+
+    forum_mod_can_manage_pending:
+      priority: 540
+      category_key: perm_moderator
+      type: boolean
+      default: false

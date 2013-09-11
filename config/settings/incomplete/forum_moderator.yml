@@ -20,3 +20,7 @@ setting_schemas:
     forum_mod_can_delete_posts:
       extends: true
       priority: 540
+
+    forum_mod_can_manage_pending:
+      extends: true
+      priority: 550

@@ -14,3 +14,4 @@ i18n:
           forum_mod_can_edit_posts: Edit posts
           forum_mod_can_delete_topics: Delete topics
           forum_mod_can_delete_posts: Delete posts
+          forum_mod_can_manage_pending: Manage pending content
