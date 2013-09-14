@@ -183,16 +183,32 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('get visible topics');
 
-    // fetch visible topics
+    // FIXME: revisit after mongo 2.6.0 release (try single request again)
+    // https://jira.mongodb.org/browse/SERVER-3310
+    //
+    // Select _id first to use covered index
+    //
     Topic.find()
       .where('section').equals(env.data.section._id)
       .where('st').in(env.data.statuses)
-      .select(fields.topic_in.join(' '))
+      .select('_id')
       .sort(env.data.topic_sort)
       .skip(env.data.start)
       .limit(topics_per_page)
       .setOptions({ lean: true })
-      .exec(function (err, visible_topics) {
+      .exec(function (err, ids) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      Topic.find()
+        .where('_id').in(ids)
+        .select(fields.topic_in.join(' '))
+        .sort(env.data.topic_sort)
+        .setOptions({ lean: true })
+        .exec(function (err, visible_topics) {
 
         if (err) {
           callback(err);
@@ -205,6 +221,7 @@ module.exports = function (N, apiPath) {
 
         callback();
       });
+    });
   });
 
   // fetch pinned topics

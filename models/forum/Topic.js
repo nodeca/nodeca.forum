@@ -66,21 +66,34 @@ module.exports = function (N, collectionName) {
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Main one, used for topics list
+  // topics list, ordered by last post (normal/hellbanned)
+  //
+  // FIXME:
+  // see http://blog.mongolab.com/2012/06/cardinal-ins/ for field order details
+  // revisit after 2.6.0 https://jira.mongodb.org/browse/SERVER-3310
+  //
   Topic.index({
-    section: 1
-  , st : 1
+    section:  1
   , 'cache.real.last_ts' : -1
-  , _id: -1
+  , st:       1
+  , _id:      1
   });
 
-  // For hellbanned users, used for topics list
   Topic.index({
-    section: 1
-  , st : 1
-  , 'cache.hb.last_ts' : -1
-  , _id: -1
+    section:  1
+  , 'cache.real.last_ts' : -1
+  , st:       1
+  , _id:      1
   });
+
+  // Pinned topics fetch (good cardinality, don't add timestamp to index)
+  Topic.index({
+    section:  1
+  , st:       1
+  });
+
+
+  ////////////////////////////////////////////////////////////////////////////////
 
   // Set 'hid' for the new topic.
   // This hook should always be the last one to avoid counter increment on error
