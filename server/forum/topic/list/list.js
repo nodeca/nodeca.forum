@@ -170,26 +170,36 @@ module.exports = function (N, apiPath) {
   // Fill page data or redirect to last page, if requested > available
   //
   N.wire.before(apiPath, function check_and_set_page_info(env) {
-    var per_page = env.data.posts_per_page,
-        max      = Math.ceil(env.data.topic.cache.real.post_count / per_page) || 1,
-        current  = parseInt(env.params.page, 10);
 
-    if (current > max) {
-      // Requested page is BIGGER than maximum - redirect to the last one
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          "Location": N.runtime.router.linkTo('forum.topic', {
-            section_id: env.data.topic.section_id,
-            hid:        env.params.hid,
-            page:       max
-          })
-        }
-      };
-    }
+    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
 
-    // requested page is OK. propose data for pagination
-    env.res.page = { max: max, current: current };
+      var per_page = env.data.posts_per_page;
+
+      //Post count will include hellbanned posts for helbanned users and administrators
+      var postCount = (settings.can_see_hellbanned || env.user_info.hb) ?
+        env.data.topic.cache.hb.post_count : env.data.topic.cache.real.post_count;
+
+      var max      = Math.ceil(postCount / per_page) || 1,
+          current  = parseInt(env.params.page, 10);
+
+      if (current > max) {
+        // Requested page is BIGGER than maximum - redirect to the last one
+        return {
+          code: N.io.REDIRECT,
+          head: {
+            "Location": N.runtime.router.linkTo('forum.topic', {
+              section_id: env.data.topic.section_id,
+              hid:        env.params.hid,
+              page:       max
+            })
+          }
+        };
+      }
+
+      // requested page is OK. propose data for pagination
+      env.res.page = { max: max, current: current };
+
+    });
   });
 
 
@@ -224,7 +234,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch and prepare posts, by getting first and last required post ID
+  // get first and last+1 required _id for required page
   //
   N.wire.before(apiPath, function (env, callback) {
     var posts_per_page = env.data.posts_per_page;
@@ -238,27 +248,23 @@ module.exports = function (N, apiPath) {
       .where('topic').equals(env.data.topic._id)
       .where('st').in(env.data.statuses.paginated)
       .select('_id')
-      .sort('ts')
+      .sort('_id')
       .skip(start)
       .limit(posts_per_page + 1)
       .setOptions({ lean: true })
       .exec(function (err, visible_posts) {
-
-      env.extras.puncher.stop(!!visible_posts ? { count: visible_posts.length } : null);
 
       if (err) {
         callback(err);
         return;
       }
 
-      // delete last ID, if successfully fetched (posts_per_page + 1)
-      if (visible_posts.length > posts_per_page) {
-        visible_posts.pop();
-      }
+      env.extras.puncher.stop({ count: visible_posts.length });
 
       // If page is not empty, get first and last post ID
       if (visible_posts.length) {
         env.data.first_post_id = _.first(visible_posts)._id;
+        // Thit is the first post of the next page, it is required to include deleted posts on page tail
         env.data.last_post_id = _.last(visible_posts)._id;
         callback();
         return;
@@ -267,34 +273,38 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch posts
+  // fetch visible posts between first and last paginated posts
   //
-  N.wire.before(apiPath, function get_permissions(env, callback) {
+  N.wire.on(apiPath, function fetch_posts(env, callback) {
 
     env.extras.puncher.start('get posts content by _id list');
 
-    // FIXME modify state condition (deleted and etc) if user has permission
-    // If no hidden posts - no conditions needed, just select by IDs
-
-    Post.find()
+    var query = Post.find()
       .where('topic').equals(env.data.topic._id)
       .where('st').in(env.data.statuses.visible)
-      .where('_id').gte(env.data.first_post_id).lte(env.data.last_post_id)
-      .select(fields.post_in.join(' '))
-      .setOptions({ lean: true })
-      .sort('ts')
-      .exec(function (err, posts) {
+      .where('_id').gte(env.data.first_post_id);
 
-      env.extras.puncher.stop(!!posts ? { count: posts.length } : null);
+    // Don't cut tail on the last page
+    if (env.res.page.current < env.res.page.max) {
+      query.lt(env.data.last_post_id);
+    }
+
+    query.select(fields.post_in.join(' '))
+      .setOptions({ lean: true })
+      .sort('_id')
+      .exec(function (err, posts) {
 
       if (err) {
         callback(err);
         return;
       }
 
+      env.extras.puncher.stop({ count: posts.length });
+
       env.data.posts = posts;
 
       callback();
+
     });
   });
 

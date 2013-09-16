@@ -132,23 +132,9 @@ module.exports = function (N, apiPath) {
     env.res.page = { max: max, current: current };
   });
 
-
-  // define topic sorting order
+  // define visible topic statuses and define sorting order
   //
-  N.wire.before(apiPath, function add_sort(env) {
-    // FIXME: that can break index
-    env.data.topic_sort = {};
-    if (env.session && env.user_info.hb) {
-      env.data.topic_sort['cache.hb.last_ts'] = -1;
-    } else {
-      env.data.topic_sort['cache.real.last_ts'] = -1;
-    }
-  });
-
-
-  // Get visible topic statuses
-  //
-  N.wire.before(apiPath, function get_permissions(env, callback) {
+  N.wire.before(apiPath, function define_visible_statuses_and_sort(env, callback) {
 
     env.extras.settings.fetch(['can_see_hellbanned', 'forum_mod_can_manage_pending'], function (err, settings) {
 
@@ -157,6 +143,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
+      // Define visible statuses
       env.data.statuses = [statuses.topic.OPEN, statuses.topic.CLOSED];
       var st = env.data.statuses;
 
@@ -167,6 +154,14 @@ module.exports = function (N, apiPath) {
       if (settings.forum_mod_can_manage_pending) {
         st.push(statuses.topic.PENDING);
         st.push(statuses.topic.DELETED);
+      }
+
+      // Define sorting order
+      env.data.topic_sort = {};
+      if (env.session && (env.user_info.hb || settings.can_see_hellbanned)) {
+        env.data.topic_sort['cache.hb.last_ts'] = -1;
+      } else {
+        env.data.topic_sort['cache.real.last_ts'] = -1;
       }
 
       callback();
@@ -188,6 +183,8 @@ module.exports = function (N, apiPath) {
     //
     // Select _id first to use covered index
     //
+    // Pagination includes all visible topics (including deleted, hellbanned, e t.c.) to simplify query
+    // This is acceptable for interface
     Topic.find()
       .where('section').equals(env.data.section._id)
       .where('st').in(env.data.statuses)
@@ -226,7 +223,7 @@ module.exports = function (N, apiPath) {
 
   // fetch pinned topics
   //
-  N.wire.before(apiPath, function fetch_topics(env, callback) {
+  N.wire.after(apiPath, function fetch_topics(env, callback) {
 
     // Pinned topics should be visible on the first page only
     if (env.params.page > 1) {
@@ -295,6 +292,29 @@ module.exports = function (N, apiPath) {
     ]));
   });
 
+
+  // Sanitize response info. We should not show hellbanned last post info to users
+  // that cannot view hellbanned content.
+  //
+  N.wire.after(apiPath, function sanitize_statuses(env, callback) {
+
+    env.extras.puncher.start('sanitize statuses');
+
+    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+
+      env.data.topics.forEach(function (doc) {
+        if (env.user_info.hb || settings.can_see_hellbanned) { // use hellbanned last post info for hellbanned current user
+          doc.cache.real = doc.cache.hb;
+        }
+        delete doc.cache.hb; //remove hellbanned last post info
+      });
+
+      env.extras.puncher.stop();
+    });
+
+    callback();
+
+  });
 
   // Add settings, required to render topics list
   //

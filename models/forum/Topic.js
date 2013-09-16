@@ -81,7 +81,7 @@ module.exports = function (N, collectionName) {
 
   Topic.index({
     section:  1
-  , 'cache.real.last_ts' : -1
+  , 'cache.hb.last_ts' : -1
   , st:       1
   , _id:      1
   });

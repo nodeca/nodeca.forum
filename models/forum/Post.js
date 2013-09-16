@@ -44,22 +44,13 @@ module.exports = function (N, collectionName) {
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Get posts with restriction by status & pagination
-  // !!! Use _id instead of ts
+  // Get posts ids range for page XX and get posts for page XX
+  // !!! Use _id for sort order
   Post.index({
     topic: 1
-  , state: 1
+  , st: 1
   , _id: 1
   });
-
-  // Get user posts, with restriction by status & sections list
-  Post.index({
-    user: 1
-  , state: 1
-  , section: 1
-  , _id: -1
-  });
-
 
   N.wire.on("init:models", function emit_init_Post(__, callback) {
     N.wire.emit("init:models." + collectionName, Post, callback);
