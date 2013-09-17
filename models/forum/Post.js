@@ -4,6 +4,8 @@
 var Mongoose = require('mongoose');
 var Schema   = Mongoose.Schema;
 
+// topic and post statuses
+var statuses = require('../../server/forum/_lib/statuses.js');
 
 module.exports = function (N, collectionName) {
 
@@ -51,6 +53,24 @@ module.exports = function (N, collectionName) {
   , st: 1
   , _id: 1
   });
+
+  // Hide hellbanned info for regular users for security reasons.
+  // This method works with raw object.
+  //
+  // options:
+  //
+  // - `keep_statuses` (boolean) - when true, don't merge `st` and `ste` into one. Default - false.
+  Post.statics.sanitize = function sanitize(post, options) {
+    options = options || {};
+
+    // sanitize statuses
+    if (post.st === statuses.post.HB) {
+      if (!options.keep_statuses) {
+        post.st = post.ste;
+        delete post.ste;
+      }
+    }
+  };
 
   N.wire.on("init:models", function emit_init_Post(__, callback) {
     N.wire.emit("init:models." + collectionName, Post, callback);

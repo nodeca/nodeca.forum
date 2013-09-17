@@ -111,17 +111,17 @@ var createTopic = function (section, post_count, callback) {
           callback(err);
         }
 
-        topic.cache.real.post_count = post_count;
+        topic.cache.post_count = post_count;
 
-        topic.cache.real.first_post = first_post._id;
-        topic.cache.real.first_ts = first_post.ts;
-        topic.cache.real.first_user = first_post.user;
+        topic.cache.first_post = first_post._id;
+        topic.cache.first_ts = first_post.ts;
+        topic.cache.first_user = first_post.user;
 
-        topic.cache.real.last_post = last_post._id;
-        topic.cache.real.last_ts = last_post.ts;
-        topic.cache.real.last_user = last_post.user;
+        topic.cache.last_post = last_post._id;
+        topic.cache.last_ts = last_post.ts;
+        topic.cache.last_user = last_post.user;
 
-        _.extend(topic.cache.hb, topic.cache.real);
+        _.extend(topic.cache_hb, topic.cache);
 
         topic.save(callback);
       }
@@ -271,7 +271,7 @@ function updateSectionStat(section, callback) {
 
       Topic.aggregate(
         { $match: { section: section._id }},
-        { $group: { _id: null, count: { $sum: '$cache.real.post_count' }}},
+        { $group: { _id: null, count: { $sum: '$cache.post_count' }}},
         { $project: { _id: 0, count: 1 }}, function (err, sum) {
 
           if (err) {
@@ -296,18 +296,18 @@ function updateSectionStat(section, callback) {
       return;
     }
 
-    section.cache.real.last_topic = lastTopic._id;
-    section.cache.real.last_topic_hid = lastTopic.hid;
-    section.cache.real.last_topic_title = lastTopic.title;
+    section.cache.last_topic = lastTopic._id;
+    section.cache.last_topic_hid = lastTopic.hid;
+    section.cache.last_topic_title = lastTopic.title;
 
-    var topicReal = lastTopic.cache.real;
-    section.cache.real.last_post = topicReal.last_post;
-    section.cache.real.last_ts = topicReal.last_ts;
-    section.cache.real.last_user = topicReal.last_user;
+    var topicReal = lastTopic.cache;
+    section.cache.last_post = topicReal.last_post;
+    section.cache.last_ts = topicReal.last_ts;
+    section.cache.last_user = topicReal.last_user;
 
-    section.cache.real.post_count = postCount;
-    section.cache.real.topic_count = topicCount;
-    _.extend(section.cache.hb, section.cache.real);
+    section.cache.post_count = postCount;
+    section.cache.topic_count = topicCount;
+    _.extend(section.cache_hb, section.cache);
 
     section.save(callback);
   });

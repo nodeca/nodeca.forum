@@ -9,28 +9,15 @@ var async    = require('async');
 module.exports = function (N, collectionName) {
 
   var cache = {
-    real: {
-      topic_count      : { type: Number, 'default': 0 }
-    , post_count       : { type: Number, 'default': 0 }
+    topic_count      : { type: Number, 'default': 0 }
+  , post_count       : { type: Number, 'default': 0 }
 
-    , last_post        : Schema.ObjectId
-    , last_topic       : Schema.ObjectId
-    , last_topic_hid   : Number
-    , last_topic_title : String
-    , last_user        : Schema.ObjectId
-    , last_ts          : Date
-    }
-  , hb: {
-      topic_count      : { type: Number, 'default': 0 }
-    , post_count       : { type: Number, 'default': 0 }
-
-    , last_post        : Schema.ObjectId
-    , last_topic       : Schema.ObjectId
-    , last_topic_hid   : Number
-    , last_topic_title : String
-    , last_user        : Schema.ObjectId
-    , last_ts          : Date
-    }
+  , last_post        : Schema.ObjectId
+  , last_topic       : Schema.ObjectId
+  , last_topic_hid   : Number
+  , last_topic_title : String
+  , last_user        : Schema.ObjectId
+  , last_ts          : Date
   };
 
   var Section = new Schema({
@@ -65,6 +52,7 @@ module.exports = function (N, collectionName) {
 
     // Cache
   , cache           : cache
+  , cache_hb        : cache
 
     // Setting storage. Only `section_usergroup` settings store should access this.
   , settings        : { type: Schema.Types.Mixed, 'default': {} }
@@ -236,6 +224,23 @@ module.exports = function (N, collectionName) {
     ]);
   });
 
+  // Hide hellbanned info for regular users for security reasons.
+  // This method works with raw object.
+  //
+  // options:
+  //
+  // - `keep_data` - when true, use cache_hb instead of cache. Default - false.
+  Section.statics.sanitize = function sanitize(section, options) {
+    options = options || {};
+
+    // Use hellbanned last topic/post info for hellbanned current user or administrators
+    if (section.cache_hb) {
+      if (options.keep_data) {
+        section.cache = section.cache_hb;
+      }
+      delete section.cache_hb;
+    }
+  };
 
   N.wire.on("init:models", function emit_init_Section(__, callback) {
     N.wire.emit("init:models." + collectionName, Section, callback);

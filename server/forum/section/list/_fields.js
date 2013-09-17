@@ -7,5 +7,6 @@ exports.topic_in = [
   'hid',
   'title',
   'views_count',
-  'cache'
+  'cache',
+  'cache_hb'
 ];

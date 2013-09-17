@@ -64,8 +64,17 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.topic = topic;
-      callback();
+      // Sanitize topic data
+      env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+
+        Topic.sanitize(topic, {
+          keep_statuses: settings.can_see_hellbanned,
+          keep_data: env.user_info.hb || settings.can_see_hellbanned
+        });
+
+        env.data.topic = topic;
+        callback();
+      });
     });
   });
 
@@ -92,11 +101,18 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.section = section;
-      callback();
+      // Sanitize section data
+      env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+
+        Section.sanitize(section, {
+          keep_data: env.user_info.hb || settings.can_see_hellbanned
+        });
+
+        env.data.section = section;
+        callback();
+      });
     });
   });
-
 
   // check access permissions
   //
@@ -170,36 +186,26 @@ module.exports = function (N, apiPath) {
   // Fill page data or redirect to last page, if requested > available
   //
   N.wire.before(apiPath, function check_and_set_page_info(env) {
+    var per_page = env.data.posts_per_page,
+      max      = Math.ceil(env.data.topic.cache.post_count / per_page) || 1,
+      current  = parseInt(env.params.page, 10);
 
-    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+    if (current > max) {
+      // Requested page is BIGGER than maximum - redirect to the last one
+      return {
+        code: N.io.REDIRECT,
+        head: {
+          "Location": N.runtime.router.linkTo('forum.topic', {
+            section_id: env.data.topic.section_id,
+            hid:        env.params.hid,
+            page:       max
+          })
+        }
+      };
+    }
 
-      var per_page = env.data.posts_per_page;
-
-      //Post count will include hellbanned posts for helbanned users and administrators
-      var postCount = (settings.can_see_hellbanned || env.user_info.hb) ?
-        env.data.topic.cache.hb.post_count : env.data.topic.cache.real.post_count;
-
-      var max      = Math.ceil(postCount / per_page) || 1,
-          current  = parseInt(env.params.page, 10);
-
-      if (current > max) {
-        // Requested page is BIGGER than maximum - redirect to the last one
-        return {
-          code: N.io.REDIRECT,
-          head: {
-            "Location": N.runtime.router.linkTo('forum.topic', {
-              section_id: env.data.topic.section_id,
-              hid:        env.params.hid,
-              page:       max
-            })
-          }
-        };
-      }
-
-      // requested page is OK. propose data for pagination
-      env.res.page = { max: max, current: current };
-
-    });
+    // requested page is OK. propose data for pagination
+    env.res.page = { max: max, current: current };
   });
 
 
@@ -374,25 +380,12 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (settings.can_see_hellbanned) {
-        callback();
-        return;
-      }
-
-      //sanitize topic statuses
-      var topic = env.res.topic;
-      if (topic.st === statuses.topic.HB) {
-        topic.st = topic.ste;
-        delete topic.ste;
-      }
-
       //sanitize post statuses
       var posts = env.res.posts;
       posts.forEach(function (post) {
-        if (post.st === statuses.topic.HB) {
-          post.st = post.ste;
-          delete post.ste;
-        }
+        Post.sanitize(post, {
+          keep_statuses: settings.can_see_hellbanned
+        });
       });
 
       callback();

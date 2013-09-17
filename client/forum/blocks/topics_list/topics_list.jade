@@ -8,17 +8,17 @@ include ../pagination_micro/pagination_micro
   .forum-topicline__separator= self.t('page_separator', { page: self.show_page_number })
 
 - each topic in self.topics
-  - fp_user = self.users[topic.cache.real.first_user]
-  - lp_user = self.users[topic.cache.real.last_user]
-  - fp_ts   = topic.cache.real.first_ts
-  - lp_ts   = topic.cache.real.last_ts
+  - fp_user = self.users[topic.cache.first_user]
+  - lp_user = self.users[topic.cache.last_user]
+  - fp_ts   = topic.cache.first_ts
+  - lp_ts   = topic.cache.last_ts
   .forum-topicline
     .row
       .forum-topicline__summary.col-xs-9.col-sm-7
         h2.forum-topicline__title
           a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
         //a.mark-i-attach._tip(href="#")=topic.attach_count
-        - _pages_count = Math.ceil(topic.cache.real.post_count / self.settings.posts_per_page)
+        - _pages_count = Math.ceil(topic.cache.post_count / self.settings.posts_per_page)
         - if (_pages_count > 1)
           //- micro-pagination
           - var route_params = { hid: topic.hid, section_hid: self.section.hid }
@@ -34,7 +34,7 @@ include ../pagination_micro/pagination_micro
           time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
 
       ul.forum-topicline__counters.col-xs-3.col-sm-2
-        - replies = topic.cache.real.post_count - 1;
+        - replies = topic.cache.post_count - 1;
         - views   = topic.views_count;
         li.forum-topicline__counter-item
           span.forum-topicline__counter-val #{replies}

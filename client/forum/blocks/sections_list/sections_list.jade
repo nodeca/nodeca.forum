@@ -2,9 +2,9 @@
 
 ul.forum-sections
   - each section in self.subsections
-    - last_topic = section.cache.real.last_topic_hid
-    - last_user = self.users[section.cache.real.last_user]
-    - last_ts = section.cache.real.last_ts
+    - last_topic = section.cache.last_topic_hid
+    - last_user = self.users[section.cache.last_user]
+    - last_ts = section.cache.last_ts
     li.forum-section
       //- Add 'unread' class & #id below, for new data
       .row
@@ -32,18 +32,18 @@ ul.forum-sections
 
         ul.forum-section__counters.col-xs-3.col-sm-2
           li.forum-section__counter-item
-            span.forum-section__counter-val #{section.cache.real.topic_count}
-            = self.t('section_topics', { count: section.cache.real.topic_count })
+            span.forum-section__counter-val #{section.cache.topic_count}
+            = self.t('section_topics', { count: section.cache.topic_count })
           li.forum-section__counter-item
-            span.forum-section__counter-val #{section.cache.real.post_count}
-            = self.t('section_posts', { count: section.cache.real.post_count })
+            span.forum-section__counter-val #{section.cache.post_count}
+            = self.t('section_posts', { count: section.cache.post_count })
 
         - if (last_topic)
           ul.forum-section__lpost.col-sm-3.hidden-xs
             li.forum-section__lpost-title
               a.forum-section__lpost-title-link(
-                href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.real.last_post
-              ) #{section.cache.real.last_topic_title}
+                href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.last_post
+              ) #{section.cache.last_topic_title}
             - if (last_user)
               li.forum-section__lpost-user
                 = self.t('topic_by')

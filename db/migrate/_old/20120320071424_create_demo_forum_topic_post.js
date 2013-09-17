@@ -108,35 +108,35 @@ module.exports.up = function (N, cb) {
 
     // update section dependent info
     function (callback) {
-      section.cache.real.last_post = post._id;
-      section.cache.real.last_user = user;
-      section.cache.real.last_ts = post.ts;
+      section.cache.last_post = post._id;
+      section.cache.last_user = user;
+      section.cache.last_ts = post.ts;
 
-      section.cache.real.last_topic = topic._id;
-      section.cache.real.last_topic_hid = topic.hid;
-      section.cache.real.last_topic_title = topic.title;
+      section.cache.last_topic = topic._id;
+      section.cache.last_topic_hid = topic.hid;
+      section.cache.last_topic_title = topic.title;
 
-      section.cache.real.topic_count = 1;
-      section.cache.real.post_count = 1;
+      section.cache.topic_count = 1;
+      section.cache.post_count = 1;
 
-      _.extend(section.cache.hb, section.cache.real);
+      _.extend(section.cache_hb, section.cache);
       section.save(callback);
     },
 
     // update topic dependent info
     function (callback) {
-      topic.cache.real.post_count = 1;
+      topic.cache.post_count = 1;
 
-      topic.cache.real.first_post = post._id;
-      topic.cache.real.last_post = post._id;
+      topic.cache.first_post = post._id;
+      topic.cache.last_post = post._id;
 
-      topic.cache.real.first_user = user;
-      topic.cache.real.last_user = user;
+      topic.cache.first_user = user;
+      topic.cache.last_user = user;
 
-      topic.cache.real.first_ts = post.ts;
-      topic.cache.real.last_ts = post.ts;
+      topic.cache.first_ts = post.ts;
+      topic.cache.last_ts = post.ts;
 
-      _.extend(topic.cache.hb, topic.cache.real);
+      _.extend(topic.cache_hb, topic.cache);
       topic.save(callback);
     }
   ], cb);

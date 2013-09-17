@@ -56,11 +56,18 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.section = section;
-      callback();
+      // Sanitize section data
+      env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+
+        Section.sanitize(section, {
+          keep_data: env.user_info.hb || settings.can_see_hellbanned
+        });
+
+        env.data.section = section;
+        callback();
+      });
     });
   });
-
 
   // check access permissions
   //
@@ -112,7 +119,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function check_and_set_page_info(env) {
     var per_page = env.data.topics_per_page,
-        max      = Math.ceil(env.data.section.cache.real.topic_count / per_page) || 1,
+        max      = Math.ceil(env.data.section.cache.topic_count / per_page) || 1,
         current  = parseInt(env.params.page, 10);
 
     if (current > max) {
@@ -159,9 +166,9 @@ module.exports = function (N, apiPath) {
       // Define sorting order
       env.data.topic_sort = {};
       if (env.session && (env.user_info.hb || settings.can_see_hellbanned)) {
-        env.data.topic_sort['cache.hb.last_ts'] = -1;
+        env.data.topic_sort['cache_hb.last_ts'] = -1;
       } else {
-        env.data.topic_sort['cache.real.last_ts'] = -1;
+        env.data.topic_sort['cache.last_ts'] = -1;
       }
 
       callback();
@@ -268,11 +275,11 @@ module.exports = function (N, apiPath) {
 
     // collect users from topics
     env.data.topics.forEach(function (doc) {
-      if (doc.cache.real.first_user) {
-        env.data.users.push(doc.cache.real.first_user);
+      if (doc.cache.first_user) {
+        env.data.users.push(doc.cache.first_user);
       }
-      if (doc.cache.real.last_user) {
-        env.data.users.push(doc.cache.real.last_user);
+      if (doc.cache.last_user) {
+        env.data.users.push(doc.cache.last_user);
       }
     });
 
@@ -298,15 +305,15 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function sanitize_statuses(env, callback) {
 
-    env.extras.puncher.start('sanitize statuses');
+    env.extras.puncher.start('sanitize data');
 
     env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
 
       env.data.topics.forEach(function (doc) {
-        if (env.user_info.hb || settings.can_see_hellbanned) { // use hellbanned last post info for hellbanned current user
-          doc.cache.real = doc.cache.hb;
-        }
-        delete doc.cache.hb; //remove hellbanned last post info
+        Topic.sanitize(doc, {
+          keep_data: env.user_info.hb || settings.can_see_hellbanned,
+          keep_statuses: settings.can_see_hellbanned
+        });
       });
 
       env.extras.puncher.stop();

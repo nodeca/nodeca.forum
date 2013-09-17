@@ -4,42 +4,26 @@
 var Mongoose = require('mongoose');
 var Schema = Mongoose.Schema;
 
+// topic and post statuses
+var statuses = require('../../server/forum/_lib/statuses.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, collectionName) {
 
   var cache = {
+    post_count      : { type: Number, 'default': 0 }
+  , attach_count    : { type: Number, 'default': 0 }
 
-    real: {
-      post_count      : { type: Number, 'default': 0 }
-    , attach_count    : { type: Number, 'default': 0 }
-
-      // First post
-    , first_post      : Schema.ObjectId
-    , first_user      : Schema.ObjectId
-    , first_ts        : Date
-      // Last post
-    , last_post       : Schema.ObjectId
-    , last_user       : Schema.ObjectId
-    , last_ts         : Date
-    }
-
-  , hb: {
-      post_count      : { type: Number, 'default': 0 }
-    , attach_count    : { type: Number, 'default': 0 }
-
-      // First post
-    , first_post      : Schema.ObjectId
-    , first_user      : Schema.ObjectId
-    , first_ts        : Date
-      // Last post
-    , last_post       : Schema.ObjectId
-    , last_user       : Schema.ObjectId
-    , last_ts         : Date
-    }
+    // First post
+  , first_post      : Schema.ObjectId
+  , first_user      : Schema.ObjectId
+  , first_ts        : Date
+    // Last post
+  , last_post       : Schema.ObjectId
+  , last_user       : Schema.ObjectId
+  , last_ts         : Date
   };
-
 
   var Topic = new Schema({
     title           : { type: String, required: true }
@@ -55,6 +39,7 @@ module.exports = function (N, collectionName) {
                               // (general `state` is used for fast selects
     // Cache
   , cache           : cache
+  , cache_hb        : cache
 
   , views_count     : { type: Number, 'default': 0 }
   },
@@ -74,14 +59,14 @@ module.exports = function (N, collectionName) {
   //
   Topic.index({
     section:  1
-  , 'cache.real.last_ts' : -1
+  , 'cache.last_ts' : -1
   , st:       1
   , _id:      1
   });
 
   Topic.index({
     section:  1
-  , 'cache.hb.last_ts' : -1
+  , 'cache_hb.last_ts' : -1
   , st:       1
   , _id:      1
   });
@@ -114,6 +99,33 @@ module.exports = function (N, collectionName) {
       callback();
     });
   });
+
+  // Hide hellbanned info for regular users for security reasons.
+  // This method works with raw object.
+  //
+  // options:
+  //
+  // - `keep_statuses` (boolean) - when true, don't merge `st` and `ste` into one. Default - false.
+  // - `keep_data` - when true, use cache_hb instead of cache. Default - false.
+  Topic.statics.sanitize = function sanitize(topic, options) {
+    options = options || {};
+
+    // sanitize statuses
+    if (topic.st === statuses.topic.HB) {
+      if (!options.keep_statuses) {
+        topic.st = topic.ste;
+        delete topic.ste;
+      }
+    }
+
+    // use hellbanned last post info
+    if (topic.cache_hb) {
+      if (options.keep_data) {
+        topic.cache = topic.cache_hb;
+      }
+      delete topic.cache_hb;
+    }
+  };
 
   N.wire.on("init:models", function emit_init_Topic(__, callback) {
     N.wire.emit("init:models." + collectionName, Topic, callback);
