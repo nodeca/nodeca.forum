@@ -29,11 +29,9 @@ function removeEditor() {
 
 // init on page load
 //
-N.wire.on('navigate.done:forum.topic', function (/*config*/) {
-  var $postlist = $('#postlist');
-
-  editorState.hid = $postlist.data('topic_hid');
-  editorState.section_hid = $postlist.data('section_hid');
+N.wire.on('navigate.done:forum.topic', function (data) {
+  editorState.hid = +data.params.hid;
+  editorState.section_hid = +data.params.section_hid;
 });
 
 // free resources on page exit

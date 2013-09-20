@@ -3,15 +3,31 @@
 
 'use strict';
 
+// Topic state
+//
+// - topic_hid:             topic's human id
+// - section_hid:     id of the current section
+// - page:            topic's next page
+//
+var topicState = {};
+
+// init on page load and destroy editor on window unload
+//
+N.wire.on('navigate.done:forum.topic', function (data) {
+  topicState.topic_hid = +data.params.hid;
+  topicState.section_hid = +data.params.section_hid;
+  topicState.page = +data.params.page;
+});
+
 // "More posts" button logic
 //
 N.wire.on('forum.topic.append_next_page', function (event) {
   var $button = $(event.currentTarget);
-  var new_url = $button.attr('href');
 
-  N.io.rpc(
+  // request for the next page
+  N.io.rpc( 
     'forum.topic.list',
-    { hid: $button.data('topic'), page: $button.data('page') },
+    { hid: topicState.topic_hid, page: topicState.page + 1 },
     function (err, res) {
 
       // Process errors
@@ -41,15 +57,17 @@ N.wire.on('forum.topic.append_next_page', function (event) {
       var $result = $(N.runtime.render('forum.blocks.posts_list', res));
       $('#postlist > :last').after($result);
 
-      // update button data & state
-      $button.data('page', res.page.current + 1);
+      // store current url to replace it in browser
+      var currentUrl = $button.attr('href');
 
+      // update button href with next page URL
       $button.attr('href', N.runtime.router.linkTo('forum.topic', {
         hid:          res.topic.hid,
         section_hid:  res.section.hid,
         page:         res.page.current + 1
       }));
 
+      // hide button if max page is reached
       if (res.page.current === res.page.max) {
         $button.addClass('hidden');
       }
@@ -66,14 +84,15 @@ N.wire.on('forum.topic.append_next_page', function (event) {
 
       // update history / url / title
       N.wire.emit('navigate.replace', {
-        href: new_url,
+        href: currentUrl,
         title: t('title_with_page', {
           title: res.topic.title,
           page: res.page.current
         })
       });
+
+      // update topic state
+      topicState.page = res.page.current;
     }
   );
-
-  return;
 });

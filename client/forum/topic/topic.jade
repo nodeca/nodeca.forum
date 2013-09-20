@@ -40,10 +40,7 @@ article#content.forum-topic-root
           - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN))
             button.btn.btn-primary.pull-right(type='button')= self.t('post_add')
 
-  #postlist.forum-postlist(
-    data-section_hid=self.section.hid,
-    data-topic_hid=self.topic.hid
-  )
+  #postlist.forum-postlist
     != self.partial('@forum.blocks.posts_list')
 
   //- Button "More Topics"
@@ -52,6 +49,4 @@ article#content.forum-topic-root
   a.forum-topic__more-link.btn.btn-default.btn-block.icon-more(
     class=btn_more_state,
     href=self.link_to(self.apiPath, link_params),
-    data-page=self.page.current+1,
-    data-topic=self.topic.hid,
     data-on-click="forum.topic.append_next_page")= self.t('more_posts')

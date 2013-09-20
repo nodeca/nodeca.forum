@@ -52,11 +52,10 @@ function removeEditor(dropDraft) {
 
 // init on page load and destroy editor on window unload
 //
-N.wire.on('navigate.done:forum.topic', function () {
-  var $postlist = $('#postlist');
+N.wire.on('navigate.done:forum.topic', function (data) {
 
-  editorState.hid = $postlist.data('topic_hid');
-  editorState.section_hid = $postlist.data('section_hid');
+  editorState.hid = +data.params.hid;
+  editorState.section_hid = +data.params.section_hid;
 
   $(window).on('beforeunload', removeEditor);
 });
