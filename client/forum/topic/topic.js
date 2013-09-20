@@ -25,7 +25,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
   var $button = $(event.currentTarget);
 
   // request for the next page
-  N.io.rpc( 
+  N.io.rpc(
     'forum.topic.list',
     { hid: topicState.topic_hid, page: topicState.page + 1 },
     function (err, res) {
