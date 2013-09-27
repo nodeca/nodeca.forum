@@ -50,9 +50,21 @@ module.exports = function (N, apiPath) {
   // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
-    var parents = env.data.section.parent_list.slice();
 
-    N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
+    if (!env.data.section) {
+      callback();
+      return;
+    }
+
+    N.models.forum.Section.getParentList(env.data.section._id, function(err, parents) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
+    });
   });
 
 

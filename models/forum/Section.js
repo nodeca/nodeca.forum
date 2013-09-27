@@ -4,6 +4,7 @@
 var Mongoose = require('mongoose');
 var Schema   = Mongoose.Schema;
 var async    = require('async');
+var memoizee = require('memoizee');
 
 
 module.exports = function (N, collectionName) {
@@ -30,9 +31,6 @@ module.exports = function (N, collectionName) {
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
-  , parent_list     : [Schema.ObjectId]
-
-  , level           : { type: Number, 'default': 0 }
 
     // Visible moderator list.
   , moderators    : [Schema.ObjectId]
@@ -65,18 +63,9 @@ module.exports = function (N, collectionName) {
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
 
-  // build tree on index page
+  // build section tree structure in `getSectionsTree` (see below)
   Section.index({
-    level: 1
-  , display_order: 1
-  , _id: -1
-  });
-
-  // build tree in section page
-  Section.index({
-    level: 1
-  , parent_list: 1
-  , display_order: 1
+    display_order: 1
   , _id: -1
   });
 
@@ -93,38 +82,7 @@ module.exports = function (N, collectionName) {
     // Always assume true for unsaved models.
     self.__isParentModified__ = self.isModified('parent') || self.isNew;
 
-    // Nothing to do if parent is not changed.
-    if (!self.__isParentModified__) {
-      next();
-      return;
-    }
-
-    if (!self.parent) {
-      self.parent_list    = [];
-      self.level          = 0;
-      next();
-      return;
-    }
-
-    N.models.forum.Section
-        .findById(self.parent)
-        .select('_id hid parent_list level')
-        .exec(function (err, parentSection) {
-
-      if (err) {
-        next(err);
-        return;
-      }
-
-      if (!parentSection) {
-        next('Cannot save forum section ' + self._id + ': `parent` field references a non-existent section.');
-        return;
-      }
-
-      self.parent_list    = parentSection.parent_list.concat(parentSection._id);
-      self.level          = parentSection.level + 1;
-      next();
-    });
+    next();
   });
 
   // Set 'hid' for the new section.
@@ -147,7 +105,6 @@ module.exports = function (N, collectionName) {
     });
   });
 
-  // Update all subsection's data for saved section: `parent_list` and `level`.
   // Update all inherited settings (permissions) for subsections.
   //
   Section.post('save', function (section) {
@@ -157,39 +114,9 @@ module.exports = function (N, collectionName) {
       return;
     }
 
-    function updateDescendants(parentSection, callback) {
-      N.models.forum.Section.find({ parent: parentSection._id }, function (err, sections) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        async.forEach(sections, function (section, next) {
-          section.parent_list    = parentSection.parent_list.concat(parentSection._id);
-          section.level          = parentSection.level + 1;
-
-          section.save(function (err) {
-            if (err) {
-              N.logger.error('%s', err);
-              next();
-              return;
-            }
-            updateDescendants(section, next);
-          });
-        }, callback);
-      });
-    }
-
     async.series([
+
       function (next) {
-        updateDescendants(section, function (err) {
-          if (err) {
-            N.logger.error('%s', err);
-          }
-          next();
-        });
-      }
-    , function (next) {
         var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
         if (!SectionUsergroupStore) {
@@ -249,4 +176,143 @@ module.exports = function (N, collectionName) {
   N.wire.on("init:models." + collectionName, function init_model_Section(schema) {
     N.models[collectionName] = Mongoose.model(collectionName, schema);
   });
+
+
+  // Get sections tree, returns hash table with sections with next structure:
+  // _id:
+  //   - `_id` - section `_id`
+  //   - `parent` - link to parent section object
+  //   - children[ { _id, parent, children[...] } ]
+  var getSectionsTree = memoizee(
+
+    function(callback) {
+
+      var result = {};
+
+      N.models.forum.Section.find()
+        .setOptions({ lean: true })
+        .sort('display_order')
+        .select('_id parent')
+        .setOptions({ lean: true })
+        .exec(function (err, sections) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        // create hash of trees for each section
+        sections.forEach(function(section) {
+
+          // check if section was already added by child. If not found, create it
+          result[section._id] = result[section._id] || { _id: section._id, children: [] };
+
+          // if section has parent, try to find it and push section to its children.
+          // If parent not found, create it.
+          if (section.parent) {
+            // find parent in hash table
+            if (result[section.parent]) {
+              result[section.parent].children.push(result[section._id]);
+            } else {
+              // no parent in hash table, create and add it
+              result[section.parent] = { _id: section.parent, children: [result[section._id]] };
+            }
+            // set link from section to parent
+            result[section._id].parent = result[section.parent];
+          }
+        });
+
+        // root is a special fake `section` that contains array of the root-level sections
+        result['root'] = { children: [] };
+        // fill root chirden
+        sections.forEach(function(section) {
+          if (!section.parent) {
+            result['root'].children.push(result[section._id]);
+          }
+        });
+
+        callback(err, result);
+      });
+    },
+    {
+      async: true,
+      maxAge:     60000, // cache TTL = 60 seconds
+      primitive:  true   // params keys are calculated as toString, ok for our case
+    }
+  );
+
+  // Returns list of parent sections for given section `_id`
+  //
+  Section.statics.getParentList = function(sectionID, callback) {
+
+    getSectionsTree(function(err, sections) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      var parentList = [];
+      var current = sections[sectionID].parent;
+
+      while (current) {
+        parentList.unshift(current._id);
+        current = current.parent;
+      }
+
+      callback(null, parentList);
+    });
+  };
+
+
+  // Returns list of child sections, including subsections until the given deepness.
+  // Also, sets `level` property for found sections
+  // Can be called as
+  // getChildren(callback),
+  // getChildren(deepness, callback),
+  // getChildren((section, deepness, callback)
+  //
+  // - [ {_id, level} ]
+  //
+  Section.statics.getChildren = function(sectionID, deepness, callback) {
+
+    // shift parameters
+    if (deepness === undefined) {
+      // single parameter is callback
+      callback = sectionID;
+      deepness = -1;
+      sectionID = null;
+    } else if (callback === null) {
+      // two parameters are deepness and callback
+      callback = deepness;
+      deepness = sectionID;
+      sectionID = null;
+    }
+
+    var children = [];
+
+    function fillChildren(section, curDeepness, maxDeepness) {
+
+      if (maxDeepness >= 0 && curDeepness >= maxDeepness) {
+        return;
+      }
+
+      section.children.forEach(function (childSection) {
+        children.push({ _id: childSection._id, level: curDeepness });
+        fillChildren(childSection, curDeepness + 1, maxDeepness);
+      });
+    }
+
+    getSectionsTree(function(err, sections) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      var storedSection = sections[sectionID || 'root'];
+      fillChildren(storedSection, 0, deepness);
+      callback(null, children);
+    });
+  };
+
 };
