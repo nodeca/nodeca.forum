@@ -157,6 +157,7 @@ module.exports = function (N, collectionName) {
   // options:
   //
   // - `keep_data` - when true, use cache_hb instead of cache. Default - false.
+  //
   Section.statics.sanitize = function sanitize(section, options) {
     options = options || {};
 
@@ -178,11 +179,13 @@ module.exports = function (N, collectionName) {
   });
 
 
-  // Get sections tree, returns hash table with sections with next structure:
+  // Get sections tree, returns hash of nested trees for sections. Structure:
+  //
   // _id:
-  //   - `_id` - section `_id`
-  //   - `parent` - link to parent section object
+  //   - _id - section `_id`
+  //   - parent - link to parent section object
   //   - children[ { _id, parent, children[...] } ]
+  //
   var getSectionsTree = memoizee(
 
     function(callback) {
@@ -241,7 +244,7 @@ module.exports = function (N, collectionName) {
     }
   );
 
-  // Returns list of parent sections for given section `_id`
+  // Returns list of parent _id-s for given section `_id`
   //
   Section.statics.getParentList = function(sectionID, callback) {
 
@@ -267,10 +270,12 @@ module.exports = function (N, collectionName) {
 
   // Returns list of child sections, including subsections until the given deepness.
   // Also, sets `level` property for found sections
-  // Can be called as
-  // getChildren(callback),
-  // getChildren(deepness, callback),
-  // getChildren((section, deepness, callback)
+  //
+  // - getChildren((section, deepness, callback)
+  // - getChildren(deepness, callback) - for root (on index page)
+  // - getChildren(callback) - for all
+  //
+  // result:
   //
   // - [ {_id, level} ]
   //
