@@ -6,85 +6,28 @@ var _ = require('lodash');
 
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
-  // Make sections draggable (both section control and children).
-  $('._section').draggable({
-    handle: '._sorter'
-  , appendTo: '._container'
-  , revert: false
-  , helper: 'clone'
-  , opacity: 0.5
-  , cursor: 'move'
-  , start: function () {
-      var $container = $(this).parent(); // Get whole parent (ul) of selected item (li)
+  $('._sortable_list').nestedSortable({
+    listType: 'ul',
+    forcePlaceholderSize: true,
+    items: '._sortable_list_item',
+    opacity: 0.6,
+    revert: 250,
+    tabSize: 25,
+    doNotClear: true,
+    protectRoot: true,
+    isTree: true,
+    expandOnHover: 700,
+    stop: function(event, ui) {
 
-      // Calculate element offset relative to upper edge of viewport.
-      var screenOffsetTop = $(this).offset().top - window.scrollY;
-
-      $container.addClass('_dragged');
-
-      // Show all placeholders except useless (inner and surrounding).
-      $('._placeholder')
-        .not($container.find('._placeholder'))
-        .not($container.prev('._placeholder'))
-        .not($container.next('._placeholder'))
-        .show();
-
-      // After placeholders are shown, restore the offset to prevent jerk effect.
-      window.scrollTo(window.scrollX, ($(this).offset().top - screenOffsetTop));
-    }
-  , stop: function () {
-      $(this).parent().removeClass('_dragged');
-      $('._placeholder').hide();
-    }
-  });
-
-  // Make all placeholders (hidden by default) droppable.
-  $('._placeholder').droppable({
-    accept: '._section'
-  , hoverClass: '_hovered'
-  , tolerance: 'pointer'
-  , drop: function (event, ui) {
-      // Data to update.
       var request = {
-        _id:    ui.draggable.data('id')
-      , parent: $(this).closest('._section-container').children('._section').data('id')
+        _id:    $(ui.item).data('id')
+      , parent: $(ui.item).parent('._sortable_list_item').data('id')
+      , display_order: ($(ui.item).prev().data('display-order') || 0) + 1
       };
 
-      // Compute `display_order` depending on previous and next sibling sections.
-      var prev = $(this).prev('._section-container').children('._section').data('displayOrder')
-        , next = $(this).next('._section-container').children('._section').data('displayOrder')
-        , displayOrder;
-
-      if ((null !== prev) && (null !== next)) {
-        // Between other.
-        displayOrder = (Number(prev) + Number(next)) / 2;
-
-      } else if (null !== prev) {
-        // After all.
-        displayOrder = Number(prev) + 1;
-
-      } else if (null !== next) {
-        // Before all.
-        displayOrder = Number(next) - 1;
-
-      } else {
-        // Single in current children list.
-        displayOrder = 1;
-      }
-
-      // Move section and it's allied placeholder into new location.
-      var $draggableGroup = ui.draggable.parent();
-
-      $draggableGroup.prev('._placeholder').insertBefore(this);
-      $draggableGroup.insertBefore(this);
-      $draggableGroup.children('._section').data('displayOrder', displayOrder);
-
-      request.display_order = displayOrder;
-
-      // Send save request.
       N.io.rpc('admin.forum.section.update', request, function (err) {
         if (err) {
-          return false; // Invoke standard error handling.
+          return false;
         }
       });
     }

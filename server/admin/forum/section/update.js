@@ -9,6 +9,7 @@
 
 
 var _ = require('lodash');
+var async = require('async');
 
 
 module.exports = function (N, apiPath) {
@@ -40,6 +41,8 @@ module.exports = function (N, apiPath) {
         callback(err);
         return;
       }
+
+      env.data.section = section;
 
       // Update specified fields.
       _(env.params).keys().without('_id').forEach(function (key) {
@@ -83,6 +86,40 @@ module.exports = function (N, apiPath) {
         }
 
         section.save(callback);
+      });
+    });
+  });
+
+  // increase display order in section siblings below current section
+  //
+  N.wire.after(apiPath, function refresh_display_order(env, callback) {
+
+    var section = env.data.section;
+    // don't touch display orders if parent or display order wasn't changed
+    if (!_.has(env.params, 'parent') && !_.has(env.params, 'display_order')) {
+      callback();
+      return;
+    }
+
+    // Select section siblings with display order > display order of the current section
+    N.models.forum.Section
+      .find({ parent: section.parent })
+      .where('display_order').gte(section.display_order)
+      .where('_id').ne(section._id)
+      .select('display_order')
+      .sort('display_order')
+      .exec(function (err, siblings) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      async.forEachSeries(siblings, function (sibling, cb) {
+        sibling.display_order++;
+        sibling.save(cb);
+      }, function() {
+        callback();
       });
     });
   });

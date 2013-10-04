@@ -1,11 +1,10 @@
 //- Helper to render single section control bar with children list.
 mixin render_sections_tree(sections, level)
-  ul.aforum-index__slist
+  ul.aforum-index__slist._sortable_list
     each section in sections
-      li.aforum-index__placeholder._placeholder
-      li.aforum-index__slist-item._section-container
+      li.aforum-index__slist-item._sortable_list_item(data-id=section._id, data-display-order=section.display_order)
         //- Section's own control bar. 
-        .aforum-index__section._section(data-id=section._id, data-display-order=section.display_order)
+        .aforum-index__section
           .pull-right
             span.aforum-index__section-mods.dropdown
               a.dropdown-toggle(data-toggle="dropdown")
@@ -40,10 +39,6 @@ mixin render_sections_tree(sections, level)
 
         //- Section's children list.
         mixin render_sections_tree(section.children, level + 1)
-
-    //- Tail placeholder.
-    li.aforum-index__placeholder._placeholder
-
 
 #content
   != self.partial('@admin.core.blocks.sidebar_menu')
