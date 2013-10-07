@@ -6,10 +6,10 @@ var _ = require('lodash');
 
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
-  $('._sortable_list').nestedSortable({
+  $('._sortable_tree').nestedSortable({
     listType: 'ul',
     forcePlaceholderSize: true,
-    items: '._sortable_list_item',
+    items: '._sortable_tree_item',
     opacity: 0.6,
     revert: 250,
     tabSize: 25,
@@ -20,12 +20,15 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     stop: function(event, ui) {
 
       var request = {
-        _id:    $(ui.item).data('id')
-      , parent: $(ui.item).parent('._sortable_list_item').data('id')
-      , display_order: ($(ui.item).prev().data('display-order') || 0) + 1
+        _id:           ui.item.data('id')
+      , parent:        ui.item.parents('._sortable_tree_item').data('id')
+      , sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function(child) {
+          // calculate new data order for each sibling of the current sections
+          return $(child).data('id');
+        })
       };
 
-      N.io.rpc('admin.forum.section.update', request, function (err) {
+      N.io.rpc('admin.forum.section.update_order', request, function (err) {
         if (err) {
           return false;
         }
