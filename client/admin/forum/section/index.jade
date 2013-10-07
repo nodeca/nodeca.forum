@@ -1,8 +1,8 @@
 //- Helper to render single section control bar with children list.
 mixin render_sections_tree(sections, level)
-  ul.aforum-index__slist._sortable_list
+  ul.aforum-index__slist(class="#{level === 0 ? '_sortable_tree' : ''}")
     each section in sections
-      li.aforum-index__slist-item._sortable_list_item(data-id=section._id, data-display-order=section.display_order)
+      li.aforum-index__slist-item._sortable_tree_item(data-id=section._id)
         //- Section's own control bar. 
         .aforum-index__section
           .pull-right
