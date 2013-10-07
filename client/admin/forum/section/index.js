@@ -10,11 +10,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     listType: 'ul',
     forcePlaceholderSize: true,
     items: '._sortable_tree_item',
+    placeholder: 'aforum-index__section-placeholder',
     opacity: 0.6,
     revert: 250,
     tabSize: 25,
     doNotClear: true,
-    protectRoot: true,
     isTree: true,
     expandOnHover: 700,
     stop: function(event, ui) {
