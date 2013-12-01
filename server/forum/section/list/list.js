@@ -2,7 +2,7 @@
 // - from section page, as sub-request
 // - from ajax, to "append next page"
 //
-"use strict";
+'use strict';
 
 var _     = require('lodash');
 
@@ -18,12 +18,12 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // section hid
     hid: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       required: true
     },
     page: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       'default': 1
     }
@@ -127,7 +127,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          "Location": N.runtime.router.linkTo('forum.section', {
+          'Location': N.runtime.router.linkTo('forum.section', {
             hid:  env.params.hid,
             page: max
           })

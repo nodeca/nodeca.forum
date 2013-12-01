@@ -1,22 +1,22 @@
 // Show posts list (topic)
 //
-"use strict";
+'use strict';
 
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // topic id
     hid: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       required: true
     },
     section_hid: {
-      type: "integer",
+      type: 'integer',
       minimum: 1
     },
     page: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       'default': 1
     }

@@ -1,6 +1,6 @@
 // Show topics list (section)
 //
-"use strict";
+'use strict';
 
 
 var _     = require('lodash');
@@ -12,12 +12,12 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // section hid
     hid: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       required: true
     },
     page: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       'default': 1
     }

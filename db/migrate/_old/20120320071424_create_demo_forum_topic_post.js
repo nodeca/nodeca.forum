@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 
 var _     = require('lodash');
@@ -31,7 +31,7 @@ module.exports.up = function (N, cb) {
         user.hid = 1;
         user.nick = 'admin';
         user.email = 'admin@localhost';
-        user.joined_ts = new Date;
+        user.joined_ts = new Date();
         user.post_count = 1;
         user.usergroups = [group];
 
@@ -95,7 +95,7 @@ module.exports.up = function (N, cb) {
     function (callback) {
       post.text = 'Welcome to nodeca forum';
       post.fmt =  'txt';
-      post.ts = new Date;
+      post.ts = new Date();
 
       // Stub. This constants should be defined globally
       post.st = statuses.post.VISIBLE;

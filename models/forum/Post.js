@@ -72,11 +72,11 @@ module.exports = function (N, collectionName) {
     }
   };
 
-  N.wire.on("init:models", function emit_init_Post(__, callback) {
-    N.wire.emit("init:models." + collectionName, Post, callback);
+  N.wire.on('init:models', function emit_init_Post(__, callback) {
+    N.wire.emit('init:models.' + collectionName, Post, callback);
   });
 
-  N.wire.on("init:models." + collectionName, function init_model_Post(schema) {
+  N.wire.on('init:models.' + collectionName, function init_model_Post(schema) {
     N.models[collectionName] = Mongoose.model(collectionName, schema);
   });
 };

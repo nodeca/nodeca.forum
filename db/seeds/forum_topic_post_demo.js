@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 
 /*
@@ -196,7 +196,7 @@ var createUsers = function (callback) {
 
           joined_ts: new Date(),
 
-          usergroups: userGroupsByName['members']
+          usergroups: userGroupsByName.members
         });
         user.save(next_user);
 

@@ -2,7 +2,7 @@
 // - from topic page, as sub-request
 // - from ajax, to "append next page"
 //
-"use strict";
+'use strict';
 
 
 var _  = require('lodash');
@@ -20,16 +20,16 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     // topic id
     hid: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       required: true
     },
     section_hid: {
-      type: "integer",
+      type: 'integer',
       minimum: 1
     },
     page: {
-      type: "integer",
+      type: 'integer',
       minimum: 1,
       'default': 1
     }
@@ -195,7 +195,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          "Location": N.runtime.router.linkTo('forum.topic', {
+          'Location': N.runtime.router.linkTo('forum.topic', {
             section_id: env.data.topic.section_id,
             hid:        env.params.hid,
             page:       max
@@ -370,7 +370,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function sanitize_statuses(env, callback) {
 
-    env.extras.puncher.start("fetch setting ('can_see_hellbanned')");
+    env.extras.puncher.start('fetch setting (\'can_see_hellbanned\')');
 
     env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
       env.extras.puncher.stop();

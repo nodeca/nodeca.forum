@@ -21,21 +21,21 @@ var posts_in_fields = [
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     topic_hid: {
-      type: "integer",
+      type: 'integer',
       required: true
     },
     to_id: {
-      type: "string"
+      type: 'string'
     },
     _id: {
-      type: "string"
+      type: 'string'
     },
     format: {
-      type: "string",
+      type: 'string',
       required: true
     },
     text: {
-      type: "string",
+      type: 'string',
       required: true
     }
   });
