@@ -16,23 +16,24 @@
 
             ul.section-usergroup-list.collapse.in(id="section_#{section._id}")
               each usergroup in self.usergroups
-                own_count       = section.own_settings_count[usergroup._id]
-                inherited_count = section.inherited_settings_count[usergroup._id]
-                total_count     = own_count + inherited_count
+                - var own_count, inherited_count, total_count
+                - own_count       = section.own_settings_count[usergroup._id]
+                - inherited_count = section.inherited_settings_count[usergroup._id]
+                - total_count     = own_count + inherited_count
 
                 //- Select override type.
                 if total_count >= self.settings_count
-                  override_type = 'every'
+                  - override_type = 'every'
                 else if total_count > 0
-                  override_type = 'some'
+                  - override_type = 'some'
                 else
-                  override_type = 'none'
+                  - override_type = 'none'
 
                 //- Append type modifier for 'every' and 'some' types.
                 if own_count > 0
-                  override_type = override_type + '-own'
+                  - override_type = override_type + '-own'
                 else if inherited_count > 0
-                  override_type = override_type + '-inherited'
+                  - override_type = override_type + '-inherited'
 
                 li
                   span(class=('section-usergroup-override-' + override_type))

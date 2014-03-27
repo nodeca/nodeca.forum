@@ -16,21 +16,22 @@
 
             ul.section-moderator-list.collapse.in(id="moderator_#{moderator._id}")
               each section in moderator.sections
-                count = section.own + section.inherited;
+                - var count, override_type
+                - count = section.own + section.inherited;
 
                 //- Select override type.
                 if count >= self.settings_count
-                  override_type = 'every'
+                  - override_type = 'every'
                 else if count > 0
-                  override_type = 'some'
+                  - override_type = 'some'
                 else
-                  override_type = 'none'
+                  - override_type = 'none'
 
                 //- Append type modifier for 'every' and 'some' types.
                 if section.own > 0
-                  override_type = override_type + '-own'
+                  - override_type = override_type + '-own'
                 else if section.inherited > 0
-                  override_type = override_type + '-inherited'
+                  - override_type = override_type + '-inherited'
 
                 li
                   span(class=('section-moderator-override-' + override_type))
