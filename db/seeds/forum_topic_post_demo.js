@@ -23,6 +23,7 @@ var Topic;
 var Post;
 var User;
 var UserGroup;
+var settings;
 
 
 var CATEGORY_COUNT = 3;
@@ -386,7 +387,7 @@ var addBigTopic = function (callback) {
 
 var addModerators = function (callback) {
 
-  var SectionModeratorStore = N.settings.getStore('section_moderator');
+  var SectionModeratorStore = settings.getStore('section_moderator');
 
   if (!SectionModeratorStore) {
     callback('Settings store `section_moderator` is not registered.');
@@ -412,12 +413,13 @@ var addModerators = function (callback) {
 };
 
 module.exports = function (N, callback) {
-  Category = N.models.forum.Section;
-  Section = N.models.forum.Section;
-  Topic = N.models.forum.Topic;
-  Post = N.models.forum.Post;
-  User = N.models.users.User;
+  Category  = N.models.forum.Section;
+  Section   = N.models.forum.Section;
+  Topic     = N.models.forum.Topic;
+  Post      = N.models.forum.Post;
+  User      = N.models.users.User;
   UserGroup = N.models.users.UserGroup;
+  settings  = N.settings;
 
   async.series([
     createUsers,
