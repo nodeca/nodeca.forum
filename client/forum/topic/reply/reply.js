@@ -111,7 +111,7 @@ N.wire.on('forum.post.reply', function (event) {
     $parent_post.after(editorState.$form);
 
     // Initialize editable area
-    var Editor = require('editor');
+    var Editor = require('nodeca-editor');
     editorState.editor = new Editor();
     editorState.editor.attach(editorState.$form.find('.forum-reply__editor'));
 
