@@ -7,7 +7,7 @@ var _         = require('lodash');
 var memoizee  = require('memoizee');
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
   // Helper - cacheable bredcrumbs info fetch, to save DB request.
   // We can cache it, because cache size is limited by sections count.
@@ -42,7 +42,7 @@ module.exports = function (N) {
 
   // data = { env, parents }
   // parents - array of forums ids to show in breadcrumbs
-  N.wire.on('internal:forum.breadcrumbs_fill', function (data, callback) {
+  N.wire.on(apiPath, function (data, callback) {
     var env     = data.env;
     var parents = data.parents;
 

@@ -7,8 +7,6 @@ var _         = require('lodash');
 var async     = require('async');
 var memoizee  = require('memoizee');
 
-var API_PATH  = 'internal:forum.subsections_fill';
-
 
 var subsections_fields = [
   '_id',
@@ -25,7 +23,7 @@ var subsections_fields = [
 ////////////////////////////////////////////////////////////////////////////////
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
   /*
    * filterVisibility(s_ids, g_ids, callback)
@@ -97,7 +95,7 @@ module.exports = function (N) {
 
   // Get subsections tree in flat style (id, level) & filter visibility
   //
-  N.wire.before(API_PATH, function fetch_subsections_tree_info(env, callback) {
+  N.wire.before(apiPath, function fetch_subsections_tree_info(env, callback) {
 
     env.extras.puncher.start('fill subsections'); // closed in the last handler
     env.extras.puncher.start('fill subsections tree structure');
@@ -135,7 +133,7 @@ module.exports = function (N) {
 
   // Fetch subsections data and add `level` property
   //
-  N.wire.on(API_PATH, function subsections_fetch_visible(env, callback) {
+  N.wire.on(apiPath, function subsections_fetch_visible(env, callback) {
     var _ids = env.data.subsections_info.map(function (s) { return s._id; });
     env.data.subsections = [];
 
@@ -161,7 +159,7 @@ module.exports = function (N) {
 
   // Sanitize subsections
   //
-  N.wire.after(API_PATH, function sanitize(env) {
+  N.wire.after(apiPath, function sanitize(env) {
     env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
 
       var sanitize = N.models.forum.Section.sanitize;
@@ -175,7 +173,7 @@ module.exports = function (N) {
 
   // Fill response data
   //
-  N.wire.after(API_PATH, function subsections_fill_response(env) {
+  N.wire.after(apiPath, function subsections_fill_response(env) {
 
     env.extras.puncher.start('fill response data');
 

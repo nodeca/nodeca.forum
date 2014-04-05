@@ -49,5 +49,9 @@ packages:
       include: server/forum/**.js
       exclude: /(^|\/|\\)_.*/
 
+    internal:
+      include: internal/forum/**.js
+      exclude: /(^|\/|\\)_.*/
+
     i18n_server:
       include: server/forum/**i18n/*.yml
