@@ -5,18 +5,26 @@ router:
 
     forum.section:
       "/f{hid}(/page{page})":
-        hid: /\d+/
+        hid:
+          match: /\d+/
+          type: integer
         page:
           match: /[1-9]\d*/
+          type: integer
           default: 1
 
 
     forum.topic:
       "/f{section_hid}/topic{hid}(/page{page})":
-        section_hid: /\d+/
-        hid: /\d+/
+        section_hid:
+          match: /\d+/
+          type: integer
+        hid:
+          match: /\d+/
+          type: integer
         page:
           match: /[1-9]\d*/
+          type: integer
           default: 1
 
     admin.forum.section.index:
@@ -27,20 +35,20 @@ router:
 
     admin.forum.section.edit:
       "/forum/section/{_id}":
-        _id: /[0-9a-f]+/
+        _id: /[0-9a-f]{24}/
 
     admin.forum.group_permissions.index:
       "/forum/group_permissions": ~
 
     admin.forum.group_permissions.edit:
       "/forum/group_permissions/{section_id}/{usergroup_id}":
-        section_id: /[0-9a-f]+/
-        usergroup_id: /[0-9a-f]+/
+        section_id: /[0-9a-f]{24}/
+        usergroup_id: /[0-9a-f]{24}/
 
     admin.forum.moderator.index:
       "/forum/moderator":
 
     admin.forum.moderator.edit:
       "/forum/moderator/{section_id}/{user_id}":
-        section_id: /[0-9a-f]+/
-        user_id: /[0-9a-f]+/
+        section_id: /[0-9a-f]{24}/
+        user_id: /[0-9a-f]{24}/
