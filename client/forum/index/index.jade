@@ -8,19 +8,20 @@ article#content.forum-index__root
       header.forum-category__head(id='cat#{category.hid}')
         h2.forum-category__title
           a.forum-category__link(
-            href='#cat#{category.hid}',
-            data-toggle='collapse',
+            href='#cat#{category.hid}'
+            data-toggle='collapse'
             data-target='#cat_list_#{category.hid}'
+            data-notify='#cat#{category.hid}'
           )
-            = category.title 
+            = category.title
           a.forum-category__collapser.icon-collapse(
-            href='#cat#{category.hid}',
-            data-toggle='collapse',
+            href='#cat#{category.hid}'
+            data-toggle='collapse'
             data-target='#cat_list_#{category.hid}'
           )
           a.forum-category__collapser.icon-expand(
-            href='#cat#{category.hid}',
-            data-toggle='collapse',
+            href='#cat#{category.hid}'
+            data-toggle='collapse'
             data-target='#cat_list_#{category.hid}'
           )
 
@@ -31,17 +32,14 @@ article#content.forum-index__root
     - if (self.runtime.is_member)
       .btn-toolbar
         button.btn.btn-default.icon-check(type='button')= self.t('mark_all_read')
-        | 
-        button.btn.btn-default(type='button')= self.t('exclude', { count: 5 })
+        button.btn.btn-default(type='button')= self.t('exclude', 5)
 
     .page-summary
       .page-summary__head= self.t('total_active.all', { count: 710, interval: 30 })
-        .page-summary__subhead
-          = self.t('total_active.members', { count: 128 })
-          | , 
-          = self.t('total_active.guests', { count: 567 })
-          | , 
-          = self.t('total_active.anonymous', { count: 6 })
+        .hlist.page-summary__subhead
+          li.hlist-item= self.t('total_active.members', 128)
+          li.hlist-item= self.t('total_active.guests', 567)
+          li.hlist-item= self.t('total_active.anonymous', 6)
       .page-summary__content
         ul.hlist
           li.hlist-item: a(href='#') Google
@@ -57,12 +55,6 @@ article#content.forum-index__root
       .page-summary__head Total
       .page-summary__content
         ul.hlist
-          li.hlist-item
-            = self.t('total_topics', { count: 25 })
-            strong 35836
-          li.hlist-item
-            = self.t('total_posts', { count: 3 })
-            strong 456949
-          li.hlist-item
-            = self.t('total_members', { count: 3 })
-            strong 269270
+          li.hlist-item= self.t('total_topics', 35836)
+          li.hlist-item= self.t('total_posts', 456949)
+          li.hlist-item= self.t('total_members', 269270)

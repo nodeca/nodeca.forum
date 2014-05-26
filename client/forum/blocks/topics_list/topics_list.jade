@@ -5,7 +5,7 @@ include ../pagination_micro/pagination_micro
 //- - appending next page posts via autoload or "more" button
 - var replies, views;
 - if (self.show_page_number)
-  .forum-topicline__separator= self.t('page_separator', { page: self.show_page_number })
+  .forum-topicline__separator= self.t('page_separator', self.show_page_number)
 
 - each topic in self.topics
   - fp_user = self.users[topic.cache.first_user]

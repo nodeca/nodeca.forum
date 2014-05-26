@@ -2,7 +2,7 @@
 - self.users = self.users || [];
 
 - if (self.show_page_number)
-  .forum-postlist__separator= self.t('page_separator', { page: self.show_page_number })
+  .forum-postlist__separator= self.t('page_separator', self.show_page_number)
 
 - each post in self.posts
   - var user = self.users[post.user];

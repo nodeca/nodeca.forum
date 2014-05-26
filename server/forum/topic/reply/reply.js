@@ -60,7 +60,7 @@ module.exports = function (N, apiPath) {
       if (!topic) {
         callback({
           code: N.io.BAD_REQUIEST,
-          message: env.t('error_invalid_topic', env.params)
+          message: env.t('error_invalid_topic', env.params.topic_hid)
         });
         return;
       }

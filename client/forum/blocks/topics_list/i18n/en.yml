@@ -1,4 +1,4 @@
 en-US:
-  page_separator: "page #{page}"
-  topic_replies: " ((reply|replies))"
-  topic_views: " ((view|views))"
+  page_separator: "page #{value}"
+  topic_replies: ((reply|replies))
+  topic_views: ((view|views))
