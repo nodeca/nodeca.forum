@@ -1,6 +1,14 @@
 article#content.forum-index__root
   != self.partial('@common.blocks.breadcrumbs')
 
+  if self.runtime.is_member
+    .breadcrumbs
+      button.btn.btn-default.btn-sm(type='button')= self.t('news')
+      |  
+      button.btn.btn-default.btn-sm(type='button')= self.t('mark_all_read')
+      |  
+      button.btn.btn-default.btn-sm(type='button')= self.t('exclude', 5)
+
   //h1= t('forum.index.title')
 
   - each category in (self.subsections || [])
@@ -28,11 +36,6 @@ article#content.forum-index__root
         != self.partial('@forum.blocks.sections_list', { subsections: category.child_list })
 
   footer
-    - if (self.runtime.is_member)
-      .btn-toolbar
-        button.btn.btn-default.icon-check(type='button')= self.t('mark_all_read')
-        button.btn.btn-default(type='button')= self.t('exclude', 5)
-
     .page-summary
       .page-summary__head= self.t('total_active.all', { count: 710, interval: 30 })
         .hlist.page-summary__subhead
