@@ -10,8 +10,10 @@ article#content.forum-topic-root
         | #{self.topic._seo_desc}
 
   nav.controlbar._affix
-    .controlbar-floater
-        .controlbar-body.btn-toolbar.clearfix
+    .controlbar__floater
+      //- needed set width & center content on horizontal navigation
+      .controlbar__floater-inner
+        .controlbar__body.btn-toolbar.clearfix
           button.btn.btn-default.btn-icon-only.icon-back.pull-left(type='button')
           //- href=self.link_to('forum.section', { hid: self.section.hid }))
 

@@ -1,7 +1,7 @@
 article#content.forum-index__root
   != self.partial('@common.blocks.breadcrumbs')
 
-  if self.runtime.is_member
+  if true || self.runtime.is_member
     .breadcrumbs
       button.btn.btn-default.btn-sm(type='button')= self.t('news')
       |  
