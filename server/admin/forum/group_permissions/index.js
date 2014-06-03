@@ -26,7 +26,7 @@ module.exports = function (N, apiPath) {
     N.models.users.UserGroup
         .find()
         .sort('_id')
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, usergroups) {
 
       env.data.usergroups = usergroups;
@@ -39,7 +39,7 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section
         .find()
         .sort('display_order')
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, sections) {
 
       env.data.sections = sections;

@@ -26,7 +26,7 @@ module.exports = function (N, apiPath) {
       N.models.forum.Section
         .find({ _id: { $in: _ids }})
         .select('_id title')
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, sections) {
 
         if (err) {

@@ -45,7 +45,7 @@ module.exports = function (N, apiPath) {
         N.models.forum.Section
             .findById(newSection.parent)
             .select('_id')
-            .setOptions({ lean: true })
+            .lean(true)
             .exec(function (err, parentSection) {
 
           if (err) {
@@ -71,7 +71,7 @@ module.exports = function (N, apiPath) {
             .select('hid')
             .sort('-hid')
             .limit(1)
-            .setOptions({ lean: true })
+            .lean(true)
             .exec(function (err, result) {
 
           if (err) {
@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
             .select('display_order')
             .sort('-display_order')
             .limit(1)
-            .setOptions({ lean: true })
+            .lean(true)
             .exec(function (err, result) {
 
           if (err) {

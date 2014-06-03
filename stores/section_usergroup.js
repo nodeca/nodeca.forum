@@ -34,7 +34,7 @@ module.exports = function (N) {
     N.models.forum.Section
       .findById(id)
       .select('settings')
-      .setOptions({ lean: true })
+      .lean(true)
       .exec(callback);
   }
 
@@ -171,7 +171,7 @@ module.exports = function (N) {
         if (!section.settings.section_usergroup[params.usergroup_id]) {
           section.settings.section_usergroup[params.usergroup_id] = {};
         }
- 
+
         _.forEach(settings, function (setting, key) {
           if (null !== setting) {
             // NOTE: It's no need to put `force` flag into the database, since
@@ -231,7 +231,7 @@ module.exports = function (N) {
         _.forEach(children, function (child) {
           result.push(child);
         });
-        
+
         _.forEach(children, function (child) {
           _.forEach(selectSectionDescendants(child._id), function (grandchild) {
             result.push(grandchild);

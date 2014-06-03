@@ -16,7 +16,7 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section
         .find()
         .sort('display_order')
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, sections) {
 
       env.data.sections = sections;
@@ -38,7 +38,7 @@ module.exports = function (N, apiPath) {
 
     // Register section's moderators for `users_join` hooks.
     env.data.users = env.data.users || [];
-    
+
     async.forEach(env.data.sections, function (section, next) {
       section.own_moderator_list = [];
 

@@ -25,7 +25,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function sections_fetch(env, callback) {
     N.models.forum.Section
         .find()
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, sections) {
 
       if (err) {
@@ -35,7 +35,7 @@ module.exports = function (N, apiPath) {
 
       env.data.sections     = sections;
       env.data.sectionsById = {};
-      
+
       _.forEach(sections, function (section) {
         env.data.sectionsById[section._id] = section;
       });

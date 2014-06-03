@@ -140,7 +140,7 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section
       .find({ _id: { $in: _ids }})
       .select(subsections_fields.join(' '))
-      .setOptions({ lean: true })
+      .lean(true)
       .exec(function (err, sections) {
 
         // sort result in the same order as ids

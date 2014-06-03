@@ -19,7 +19,7 @@ module.exports = function (N, apiPath) {
       N.models.forum.Section
         .find({ _id: { $in: ids }})
         .select('hid title')
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, parents) {
 
           // sort result in the same order as ids

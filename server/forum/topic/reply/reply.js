@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function fetch_topic(env, callback) {
     env.extras.puncher.start('Topic info prefetch (reply)');
 
-    Topic.findOne({ hid: env.params.topic_hid }).setOptions({ lean: true })
+    Topic.findOne({ hid: env.params.topic_hid }).lean(true)
         .exec(function (err, topic) {
 
       env.extras.puncher.stop();
@@ -75,7 +75,7 @@ module.exports = function (N, apiPath) {
     if (env.params.to_id) {
       env.extras.puncher.start('Parent post info prefetch (reply)');
 
-      Post.findOne({ _id: env.params.to_id }).select('_id').setOptions({ lean: true })
+      Post.findOne({ _id: env.params.to_id }).select('_id').lean(true)
           .exec(function (err, post) {
 
         env.extras.puncher.stop();

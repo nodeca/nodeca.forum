@@ -34,7 +34,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function section_fetch(env, callback) {
     N.models.forum.Section
         .findById(env.params.section_id)
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, section) {
 
       if (err) {
@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function usergroup_fetch(env, callback) {
     N.models.users.UserGroup
         .findById(env.params.usergroup_id)
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, usergroup) {
 
       if (err) {

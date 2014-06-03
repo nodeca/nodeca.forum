@@ -193,10 +193,9 @@ module.exports = function (N, collectionName) {
       var result = {};
 
       N.models.forum.Section.find()
-        .setOptions({ lean: true })
         .sort('display_order')
         .select('_id parent')
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, sections) {
 
         if (err) {

@@ -40,7 +40,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('section info prefetch');
 
-    Section.findOne({ hid: env.params.hid }).setOptions({ lean: true })
+    Section.findOne({ hid: env.params.hid }).lean(true)
         .exec(function (err, section) {
 
       env.extras.puncher.stop();
@@ -199,7 +199,7 @@ module.exports = function (N, apiPath) {
       .sort(env.data.topic_sort)
       .skip(env.data.start)
       .limit(topics_per_page)
-      .setOptions({ lean: true })
+      .lean(true)
       .exec(function (err, ids) {
 
       if (err) {
@@ -211,7 +211,7 @@ module.exports = function (N, apiPath) {
         .where('_id').in(ids)
         .select(fields.topic_in.join(' '))
         .sort(env.data.topic_sort)
-        .setOptions({ lean: true })
+        .lean(true)
         .exec(function (err, visible_topics) {
 
         if (err) {
@@ -246,7 +246,7 @@ module.exports = function (N, apiPath) {
       .where('st').equals(statuses.topic.PINNED)
       .select(fields.topic_in.join(' '))
       .sort(env.data.topic_sort)
-      .setOptions({ lean: true })
+      .lean(true)
       .exec(function (err, pinned_topics) {
 
         if (err) {

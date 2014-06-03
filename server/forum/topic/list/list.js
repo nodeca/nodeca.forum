@@ -48,7 +48,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('topic info prefetch');
 
-    Topic.findOne({ hid: env.params.hid }).setOptions({ lean: true })
+    Topic.findOne({ hid: env.params.hid }).lean(true)
         .exec(function (err, topic) {
 
       env.extras.puncher.stop();
@@ -85,7 +85,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('section info prefetch');
 
-    Section.findOne({ _id: env.data.topic.section }).setOptions({ lean: true })
+    Section.findOne({ _id: env.data.topic.section }).lean(true)
         .exec(function (err, section) {
 
       env.extras.puncher.stop();
@@ -257,7 +257,7 @@ module.exports = function (N, apiPath) {
       .sort('_id')
       .skip(start)
       .limit(posts_per_page + 1)
-      .setOptions({ lean: true })
+      .lean(true)
       .exec(function (err, visible_posts) {
 
       if (err) {
@@ -296,7 +296,7 @@ module.exports = function (N, apiPath) {
     }
 
     query.select(fields.post_in.join(' '))
-      .setOptions({ lean: true })
+      .lean(true)
       .sort('_id')
       .exec(function (err, posts) {
 

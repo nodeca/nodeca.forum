@@ -65,7 +65,7 @@ module.exports = function (N, apiPath) {
             .select('display_order')
             .sort('-display_order')
             .limit(1)
-            .setOptions({ lean: true })
+            .lean(true)
             .exec(function (err, result) {
 
           if (err) {
