@@ -16,7 +16,7 @@
       .forum-post__meta-blk.pull-left
         - if (user)
           a.forum-post__author._ucard-popover(
-            href=self.link_to('users.member', { hid: user.hid }),
+            href=self.link_to('users.member', { user_hid: user.hid }),
             data-user-id=post.user
           ) #{user.name}
     .forum-post__aside

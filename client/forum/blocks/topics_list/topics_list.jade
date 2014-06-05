@@ -28,7 +28,7 @@ include ../pagination_micro/pagination_micro
         .forum-topicline__meta
           - if (fp_user)
             a.forum-topicline__author._ucard-popover(
-              href=self.link_to('users.member', { hid: fp_user.hid }),
+              href=self.link_to('users.member', { user_hid: fp_user.hid }),
               data-user-id=fp_user._id
             ) #{fp_user.name}
           time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
@@ -50,6 +50,6 @@ include ../pagination_micro/pagination_micro
         - if (lp_user)
           li.forum-topicline__lpost-user
             a.forum-topicline__lpost-user-link._ucard-popover(
-              href=self.link_to('users.member', { hid: lp_user.hid }),
+              href=self.link_to('users.member', { user_hid: lp_user.hid }),
               data-user-id=lp_user._id
             ) #{lp_user.name}

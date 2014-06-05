@@ -26,7 +26,7 @@ ul.forum-sections
                 - if (mod)
                   dd.forum-section__moderator
                     a.forum-section__moderator-link._ucard-popover(
-                      href=self.link_to('users.member', { hid: mod.hid }),
+                      href=self.link_to('users.member', { user_hid: mod.hid }),
                       data-user-id=mod._id
                     ) #{mod.name}
 
@@ -47,7 +47,7 @@ ul.forum-sections
             - if (last_user)
               li.forum-section__lpost-user
                 a.forum-section__lpost-user-link._ucard-popover(
-                  href=self.link_to('users.member', { hid: last_user }),
+                  href=self.link_to('users.member', { user_hid: last_user }),
                   data-user-id=last_user._id
                 ) #{last_user.name}
             - if (last_ts)
