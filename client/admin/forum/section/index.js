@@ -4,6 +4,9 @@
 var _ = require('lodash');
 
 
+var $moderatorSelectDialog;
+
+
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
   $('._sortable_tree').nestedSortable({
@@ -67,34 +70,33 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   var sectionId = $(event.currentTarget).data('section_id');
 
   // Render dialog window.
-  var $dialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
+  $moderatorSelectDialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
 
-  $dialog.find('input[name=nick]').typeahead({
+  $moderatorSelectDialog.find('input[name=nick]').typeahead({
     valueKey: 'nick',
     remote: N.runtime.router.linkTo('admin.core.user_lookup') + '?nick=%QUERY',
     template: function(user) {
       // Shows full name with entered text highlighting
-      var pattern = $dialog.find('input[name=nick]').val();
+      var pattern = $moderatorSelectDialog.find('input[name=nick]').val();
       return '<p>' + user.name.replace('(' + pattern, '(<strong>' + pattern + '</strong>') + '</p>';
     }
   });
 
-  $dialog.on('shown.bs.modal', function () {
+  $moderatorSelectDialog.on('shown.bs.modal', function () {
     $(this).find('input[name=nick]').focus();
   });
 
-  $dialog.on('hidden.bs.modal', function () {
+  $moderatorSelectDialog.on('hidden.bs.modal', function () {
     $(this).remove();
   });
 
   // Show dialog.
-  $dialog.appendTo('#content').modal();
+  $moderatorSelectDialog.appendTo('#content').modal();
 });
 
 
-N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(event) {
-  var $dialog = $(event.currentTarget)
-    , nick    = $dialog.find('input[name=nick]').val();
+N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(form) {
+  var nick = form.fields.nick;
 
   N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }, function (err, res) {
     if (err) {
@@ -106,12 +108,12 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
       return;
     }
 
-    $dialog.modal('hide');
+    $moderatorSelectDialog.modal('hide');
 
     N.wire.emit('navigate.to', {
       apiPath: 'admin.forum.moderator.edit'
     , params: {
-        section_id: $dialog.find('input[name=section_id]').val()
+        section_id: form.fields.section_id
       , user_id:    res[0]._id
       }
     });
