@@ -19,9 +19,9 @@
         // ko foreach: settings
         .form-group.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
 
-          label.control-label.col-md-3(data-bind="text: localizedName, attr: { 'for': elementId }")
+          label.control-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
-          .col-md-4.control-value
+          .col-xs-4.control-value
             // ko if: 'boolean' === type
             .switch
               input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
@@ -32,13 +32,13 @@
             span.help-block(data-bind="text: localizedHelp")
             // /ko
 
-          .col-md-4
+          .col-xs-4
             label.checkbox-inline
               input(type="checkbox", data-bind="checked: overriden")
               = self.t('checkbox_override')
         // /ko
 
       .form-group
-        .col-md-9.col-md-offset-3
+        .col-xs-9.col-xs-offset-3
           button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
             = self.t('button_save')
