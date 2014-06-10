@@ -44,7 +44,7 @@ mixin render_sections_tree(sections, level)
   != self.partial('@admin.core.blocks.sidebar_menu')
 
   .main
-    != self.partial('@admin.core.blocks.breadcrumbs', { path: self.blocks.breadcrumbs })
+    != self.partial('@admin.core.blocks.breadcrumbs')
 
     h1
       .pull-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
