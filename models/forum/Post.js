@@ -14,13 +14,10 @@ module.exports = function (N, collectionName) {
 
     // Related post for replies
   , to              : Schema.ObjectId
-
   , user            : Schema.ObjectId
-  , ts              : { type: Date, required: true, 'default': function(){ return new Date(); } }    // timestamp
-
+  , ts              : { type: Date, 'default': Date.now }    // timestamp
   , ip              : String  // ip address
-
-  , text            : { type: String, required: true }
+  , text            : String
 
   // Text format. Possible values:
   //  `md`  - markdown
@@ -33,7 +30,7 @@ module.exports = function (N, collectionName) {
 
   // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
   // constants should be defined globally
-  , st              : { type: Number, required: true }
+  , st              : Number
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
 

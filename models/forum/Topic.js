@@ -26,15 +26,15 @@ module.exports = function (N, collectionName) {
   };
 
   var Topic = new Schema({
-    title           : { type: String, required: true }
+    title           : String
     // user-friendly id (autoincremented)
-  , hid             : { type: Number, min: 1, index: true }
+  , hid             : Number
 
   , section           : Schema.ObjectId
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
-  , st              : { type: Number, required: true }
+  , st              : Number
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects
     // Cache
@@ -69,6 +69,11 @@ module.exports = function (N, collectionName) {
   , 'cache_hb.last_ts' : -1
   , st:       1
   , _id:      1
+  });
+
+  // lookup _id by hid (for routing)
+  Topic.index({
+    hid:  1
   });
 
   // Pinned topics fetch (good cardinality, don't add timestamp to index)

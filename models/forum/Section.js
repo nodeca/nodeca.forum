@@ -22,12 +22,12 @@ module.exports = function (N, collectionName) {
   };
 
   var Section = new Schema({
-    title           : { type: String, required: true }
+    title           : String
   , description     : String
   , display_order   : Number
 
     // user-friendly id (autoincremented)
-  , hid              : { type: Number, min: 1, index: true }
+  , hid              : { type: Number, index: true }
 
     // Sections tree paths/cache
   , parent          : Schema.ObjectId
