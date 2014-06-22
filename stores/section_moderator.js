@@ -223,8 +223,8 @@ module.exports = function (N) {
         _.forEach(section.settings.section_moderator, function (settings, userId) {
           result.push({
             _id:       userId
-          , own:       _.select(settings, { own: true  }).length
-          , inherited: _.select(settings, { own: false }).length
+          , own:       _.filter(settings, { own: true  }).length
+          , inherited: _.filter(settings, { own: false }).length
           });
         });
       }
@@ -261,7 +261,7 @@ module.exports = function (N) {
       function selectSectionDescendants(parentId) {
         var result = [];
 
-        var children = _.select(allSections, function (section) {
+        var children = _.filter(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section.parent || null) === String(parentId);
         });
@@ -287,28 +287,28 @@ module.exports = function (N) {
           return null;
         }
 
-        var section = _.find(allSections, function (section) {
+        var sect = _.find(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section._id) === String(sectionId);
         });
 
-        if (!section) {
+        if (!sect) {
           N.logger.warn('Forum sections collection contains a reference to non-existent section %s', sectionId);
           return null;
         }
 
         // Setting exists, and it is not inherited from another section.
-        if (section.settings &&
-            section.settings.section_moderator &&
-            section.settings.section_moderator[userId] &&
-            section.settings.section_moderator[userId][settingName] &&
-            section.settings.section_moderator[userId][settingName].own) {
-          return section.settings.section_moderator[userId][settingName];
+        if (sect.settings &&
+            sect.settings.section_moderator &&
+            sect.settings.section_moderator[userId] &&
+            sect.settings.section_moderator[userId][settingName] &&
+            sect.settings.section_moderator[userId][settingName].own) {
+          return sect.settings.section_moderator[userId][settingName];
         }
 
         // Recursively walk through ancestors sequence.
-        if (section.parent) {
-          return findInheritedSetting(section.parent, userId, settingName);
+        if (sect.parent) {
+          return findInheritedSetting(sect.parent, userId, settingName);
         }
 
         return null;
@@ -323,21 +323,20 @@ module.exports = function (N) {
           return [];
         }
 
-        var section = _.find(allSections, function (section) {
+        var sect = _.find(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section._id) === String(sectionId);
         });
 
-        if (!section) {
+        if (!sect) {
           N.logger.warn('Forum sections collection contains a reference to non-existent section %s', sectionId);
           return [];
         }
 
-        if (section.settings && section.settings.section_moderator) {
-          return _.unique(_.keys(section.settings.section_moderator).concat(collectModeratorIds(section.parent)));
-        } else {
-          return collectModeratorIds(section.parent);
+        if (sect.settings && sect.settings.section_moderator) {
+          return _.uniq(_.keys(sect.settings.section_moderator).concat(collectModeratorIds(sect.parent)));
         }
+        return collectModeratorIds(sect.parent);
       }
 
 
@@ -360,7 +359,7 @@ module.exports = function (N) {
         sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
       }
 
-      async.forEach(sectionsToUpdate, function (section, next) {
+      async.each(sectionsToUpdate, function (section, next) {
 
         // Collect all moderators (both own and inherited) for current section.
         var allModeratorIds = collectModeratorIds(section._id);
@@ -409,7 +408,7 @@ module.exports = function (N) {
 
 
         // Select publicly visible moderators to update `moderators`
-        var visibleModeratorIds = _.select(allModeratorIds, function (userId) {
+        var visibleModeratorIds = _.filter(allModeratorIds, function (userId) {
           return section.settings.section_moderator[userId] &&
                  section.settings.section_moderator[userId].forum_mod_visible &&
                  section.settings.section_moderator[userId].forum_mod_visible.value;
@@ -471,7 +470,7 @@ module.exports = function (N) {
         return;
       }
 
-      async.forEach(sections, function (section, next) {
+      async.each(sections, function (section, next) {
         if (!section.settings ||
             !section.settings.section_moderator ||
             !_.has(section.settings.section_moderator, userId)) {

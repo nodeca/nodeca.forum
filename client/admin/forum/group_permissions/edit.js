@@ -99,7 +99,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   });
 
   view.isDirty = ko.computed(function () {
-    return _.any(view.settings, function (setting) {
+    return _.some(view.settings, function (setting) {
       return setting.isDirty();
     });
   });

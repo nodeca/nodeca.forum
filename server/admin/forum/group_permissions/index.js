@@ -58,11 +58,11 @@ module.exports = function (N, apiPath) {
     });
 
     // Set override type for each section/usergroup.
-    async.forEach(env.data.sections, function (section, nextSection) {
+    async.each(env.data.sections, function (section, nextSection) {
       section.own_settings_count       = {};
       section.inherited_settings_count = {};
 
-      async.forEach(env.data.usergroups, function (usergroup, nextGroup) {
+      async.each(env.data.usergroups, function (usergroup, nextGroup) {
         SectionUsergroupStore.get(
           SectionUsergroupStore.keys
         , { section_id: section._id, usergroup_ids: [ usergroup._id ] }
@@ -73,8 +73,8 @@ module.exports = function (N, apiPath) {
             return;
           }
 
-          section.own_settings_count[usergroup._id]       = _.select(settings, { own: true  }).length;
-          section.inherited_settings_count[usergroup._id] = _.select(settings, { own: false }).length;
+          section.own_settings_count[usergroup._id]       = _.filter(settings, { own: true  }).length;
+          section.inherited_settings_count[usergroup._id] = _.filter(settings, { own: false }).length;
           nextGroup();
         });
       }, nextSection);
@@ -85,7 +85,7 @@ module.exports = function (N, apiPath) {
       }
 
       function buildSectionsTree(parent) {
-        var selectedSections = _.select(env.data.sections, function (section) {
+        var selectedSections = _.filter(env.data.sections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section.parent || null) === String(parent);
         });

@@ -73,7 +73,8 @@ module.exports = function (N) {
       }
 
       if (!_.isArray(params.usergroup_ids) || _.isEmpty(params.usergroup_ids)) {
-        callback('`usergroup_ids` parameter required to be non-empty array for getting settings from `section_usergroup` store.');
+        callback('`usergroup_ids` parameter required to be non-empty array for getting' +
+                 'settings from `section_usergroup` store.');
         return;
       }
 
@@ -223,7 +224,7 @@ module.exports = function (N) {
       function selectSectionDescendants(parentId) {
         var result = [];
 
-        var children = _.select(allSections, function (section) {
+        var children = _.filter(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section.parent || null) === String(parentId);
         });
@@ -249,28 +250,28 @@ module.exports = function (N) {
           return null;
         }
 
-        var section = _.find(allSections, function (section) {
+        var sect = _.find(allSections, function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section._id) === String(sectionId);
         });
 
-        if (!section) {
+        if (!sect) {
           N.logger.warn('Forum sections collection contains a reference to non-existent section %s', sectionId);
           return null;
         }
 
         // Setting exists, and it is not inherited from another section.
-        if (section.settings &&
-            section.settings.section_usergroup &&
-            section.settings.section_usergroup[usergroupId] &&
-            section.settings.section_usergroup[usergroupId][settingName] &&
-            section.settings.section_usergroup[usergroupId][settingName].own) {
-          return section.settings.section_usergroup[usergroupId][settingName];
+        if (sect.settings &&
+            sect.settings.section_usergroup &&
+            sect.settings.section_usergroup[usergroupId] &&
+            sect.settings.section_usergroup[usergroupId][settingName] &&
+            sect.settings.section_usergroup[usergroupId][settingName].own) {
+          return sect.settings.section_usergroup[usergroupId][settingName];
         }
 
         // Recursively walk through ancestors sequence.
-        if (section.parent) {
-          return findInheritedSetting(section.parent, usergroupId, settingName);
+        if (sect.parent) {
+          return findInheritedSetting(sect.parent, usergroupId, settingName);
         }
 
         return null;
@@ -303,7 +304,7 @@ module.exports = function (N) {
           return;
         }
 
-        async.forEach(sectionsToUpdate, function (section, next) {
+        async.each(sectionsToUpdate, function (section, next) {
           _.forEach(usergroups, function (usergroup) {
             _.forEach(self.keys, function (settingName) {
               if (!section.settings) {
@@ -394,7 +395,7 @@ module.exports = function (N) {
         return;
       }
 
-      async.forEach(sections, function (section, next) {
+      async.each(sections, function (section, next) {
         if (!section.settings ||
             !section.settings.section_usergroup ||
             !_.has(section.settings.section_usergroup, usergroupId)) {

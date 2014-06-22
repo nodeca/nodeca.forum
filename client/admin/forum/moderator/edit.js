@@ -99,12 +99,12 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   });
 
   // Show "Remove permissions" button only is moderator has saved overriden settings.
-  view.showRemoveButton = ko.observable(_.any(view.settings, function (setting) {
+  view.showRemoveButton = ko.observable(_.some(view.settings, function (setting) {
     return setting.overriden();
   }));
 
   view.isDirty = ko.computed(function () {
-    return _.any(view.settings, function (setting) {
+    return _.some(view.settings, function (setting) {
       return setting.isDirty();
     });
   });
@@ -134,7 +134,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       });
 
       // Show "Delete" button if there are some overriden settings after save.
-      view.showRemoveButton(_.any(view.settings, function (setting) {
+      view.showRemoveButton(_.some(view.settings, function (setting) {
         return setting.overriden();
       }));
 

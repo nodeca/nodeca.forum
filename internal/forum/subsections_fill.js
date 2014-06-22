@@ -35,7 +35,7 @@ module.exports = function (N, apiPath) {
   var filterVisibility = memoizee(
     function (s_ids, g_ids, callback) {
       var result = {};
-      async.forEach(s_ids, function (_id, next) {
+      async.each(s_ids, function (_id, next) {
         var params = { section_id: _id, usergroup_ids: g_ids };
 
         N.settings.get(['forum_can_view'], params, function (err, data) {
@@ -69,12 +69,12 @@ module.exports = function (N, apiPath) {
       nodes[node._id] = node;
     });
 
-    root = !!root ? root.toString() : null;
+    root = root ? root.toString() : null;
 
     // set children links for all nodes
     // and collect root children to result array
     source.forEach(function (node) {
-      node.parent = !!node.parent ? node.parent.toString() : null;
+      node.parent = node.parent ? node.parent.toString() : null;
 
       if (node.parent === root) {
         result.push(node);
@@ -159,8 +159,12 @@ module.exports = function (N, apiPath) {
 
   // Sanitize subsections
   //
-  N.wire.after(apiPath, function sanitize(env) {
+  N.wire.after(apiPath, function sanitize(env, callback) {
     env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
       var sanitize = N.models.forum.Section.sanitize;
       env.data.subsections.forEach(function (doc) {
@@ -168,6 +172,8 @@ module.exports = function (N, apiPath) {
           keep_data: env.user_info.hb || settings.can_see_hellbanned
         });
       });
+
+      callback();
     });
   });
 
@@ -183,7 +189,7 @@ module.exports = function (N, apiPath) {
     env.data.subsections.forEach(function (doc) {
       // queue moderators only for second level on index page and for first level on section page
       if (doc.level === (env.data.section ? 0 : 1)) {
-        if (!!doc.moderators) {
+        if (doc.moderators) {
           doc.moderators.forEach(function (user) {
             env.data.users.push(user);
           });
@@ -201,7 +207,7 @@ module.exports = function (N, apiPath) {
     env.data.subsections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
       if (doc.level < max_subsection_level) {
-        if (!!doc.moderators) {
+        if (doc.moderators) {
           doc.moderators.forEach(function (user) {
             env.data.users.push(user);
           });

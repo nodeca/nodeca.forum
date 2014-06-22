@@ -58,6 +58,10 @@ module.exports = function (N, apiPath) {
 
       // Sanitize section data
       env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
         Section.sanitize(section, {
           keep_data: env.user_info.hb || settings.can_see_hellbanned
@@ -292,7 +296,7 @@ module.exports = function (N, apiPath) {
   // Add section info to response
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
-    env.res.section = _.extend({}, env.res.section, _.pick(env.data.section, [
+    env.res.section = _.assign({}, env.res.section, _.pick(env.data.section, [
       '_id',
       'hid',
       'title'
@@ -308,6 +312,10 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('sanitize data');
 
     env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
       env.data.topics.forEach(function (doc) {
         Topic.sanitize(doc, {
@@ -344,7 +352,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.settings = _.extend({}, env.res.settings, settings);
+      env.res.settings = _.assign({}, env.res.settings, settings);
 
       env.extras.puncher.stop(); // Close main page scope
 

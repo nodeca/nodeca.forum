@@ -1,0 +1,13 @@
+env:
+  node: false
+  browser: true
+
+rules:
+  no-global-strict 0
+
+globals:
+  $: false
+  N: false
+  module: false
+  require: false
+  t: false

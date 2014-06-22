@@ -85,7 +85,7 @@ module.exports = function (N, apiPath) {
   // Add section info to response
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
-    env.res.section = _.extend({}, env.res.section, _.pick(env.data.section, [
+    env.res.section = _.assign({}, env.res.section, _.pick(env.data.section, [
       'description',
       'is_category'
     ]));

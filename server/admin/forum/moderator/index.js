@@ -50,7 +50,7 @@ module.exports = function (N, apiPath) {
     var SectionModeratorStore = N.settings.getStore('section_moderator')
       , sectionsByModerator = {};
 
-    async.forEach(env.data.sections, function (section, next) {
+    async.each(env.data.sections, function (section, next) {
       SectionModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
         if (err) {
           next(err);

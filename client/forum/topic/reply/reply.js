@@ -154,7 +154,7 @@ N.wire.on('forum.post.reply.save', function () {
       settings: {}
     };
 
-    _.each(locals.posts, function(post){
+    _.forEach(locals.posts, function(post){
       post.ts = new Date(post.ts);
     });
 

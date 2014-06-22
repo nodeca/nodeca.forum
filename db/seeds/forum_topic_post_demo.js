@@ -122,7 +122,7 @@ var createTopic = function (section, post_count, callback) {
         topic.cache.last_ts = last_post.ts;
         topic.cache.last_user = last_post.user;
 
-        _.extend(topic.cache_hb, topic.cache);
+        _.assign(topic.cache_hb, topic.cache);
 
         topic.save(callback);
       }
@@ -308,7 +308,7 @@ function updateSectionStat(section, callback) {
 
     section.cache.post_count = postCount;
     section.cache.topic_count = topicCount;
-    _.extend(section.cache_hb, section.cache);
+    _.assign(section.cache_hb, section.cache);
 
     section.save(callback);
   });
@@ -326,7 +326,7 @@ var createTopics = function (callback) {
         return;
       }
 
-      async.forEachSeries(sections, function (section, cb) {
+      async.eachSeries(sections, function (section, cb) {
         //create topic with single post
         createTopic(section, 1, function (err) {
           if (err) {
@@ -351,12 +351,13 @@ var fillBigSection = function (callback) {
         return;
       }
 
-      async.series([ function (cb) {
-        async.timesSeries(TOPIC_COUNT_IN_BIG_SECTION, function (idx, next) {
+      async.series([
+        function (cb) {
+          async.timesSeries(TOPIC_COUNT_IN_BIG_SECTION, function (idx, next) {
             createTopic(section, 1, next);
           }, cb);
-
-      }, function (cb) {
+        },
+        function (cb) {
           updateSectionStat(section, cb);
         }
       ], callback);
@@ -396,8 +397,12 @@ var addModerators = function (callback) {
 
   Section.find({ is_category: false }).select('_id')
     .exec(function (err, sections) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-      async.forEach(sections, function (section, cb) {
+      async.each(sections, function (section, cb) {
 
         async.timesSeries(Charlatan.Helpers.rand(MAX_MODERATOR_COUNT), function (index, next) {
           var user = users[Charlatan.Helpers.rand(USER_COUNT)];

@@ -39,7 +39,7 @@ module.exports = function (N, apiPath) {
     // Register section's moderators for `users_join` hooks.
     env.data.users = env.data.users || [];
 
-    async.forEach(env.data.sections, function (section, next) {
+    async.each(env.data.sections, function (section, next) {
       section.own_moderator_list = [];
 
       SectionModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
@@ -63,7 +63,7 @@ module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, function section_index(env) {
     function buildSectionsTree(parent) {
-      var selectedSections = _.select(env.data.sections, function (section) {
+      var selectedSections = _.filter(env.data.sections, function (section) {
         // Universal way for equal check on: Null, ObjectId, and String.
         return String(section.parent || null) === String(parent);
       });

@@ -119,7 +119,7 @@ module.exports.up = function (N, cb) {
       section.cache.topic_count = 1;
       section.cache.post_count = 1;
 
-      _.extend(section.cache_hb, section.cache);
+      _.assign(section.cache_hb, section.cache);
       section.save(callback);
     },
 
@@ -136,7 +136,7 @@ module.exports.up = function (N, cb) {
       topic.cache.first_ts = post.ts;
       topic.cache.last_ts = post.ts;
 
-      _.extend(topic.cache_hb, topic.cache);
+      _.assign(topic.cache_hb, topic.cache);
       topic.save(callback);
     }
   ], cb);

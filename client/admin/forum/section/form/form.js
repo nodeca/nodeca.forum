@@ -45,7 +45,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   allowedParents.push({ _id: null, title: t('value_section_none') });
 
   function fetchOtherSections(parent) {
-    var sections = _.select(data.allowed_parents, function (section) {
+    var sections = _.filter(data.allowed_parents, function (section) {
       return parent === (section.parent || null);
     });
 
@@ -102,7 +102,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
 
   // Check if any field values of currentSection were changed.
   view.isDirty = ko.computed(function () {
-    return _.any(currentSection, function (field) {
+    return _.some(currentSection, function (field) {
       return field.isDirty();
     });
   });
