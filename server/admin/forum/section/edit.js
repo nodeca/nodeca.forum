@@ -11,7 +11,10 @@ module.exports = function (N, apiPath) {
     _id: { format: 'mongo', required: true }
   });
 
-  N.wire.on(apiPath, function section_edit(env, callback) {
+
+  // Fetch current section
+  //
+  N.wire.before(apiPath, function section_edit_fetch_current(env, callback) {
     N.models.forum.Section
         .findById(env.params._id)
         .lean(true)
@@ -28,46 +31,59 @@ module.exports = function (N, apiPath) {
       }
 
       env.res.current_section = currentSection;
+      callback();
+    });
+  });
 
-      N.models.forum.Section.getChildren(function (err, allSections) {
 
-        if (err) {
-          callback(err);
-          return;
-        }
+  // Fetch sections tree & remove current leaf to avoid circular dependency
+  //
+  N.wire.on(apiPath, function fetch_data(env, callback) {
 
-        env.data.allowed_parents = _.filter(allSections, function(section) {
-          // exclude current section
-          return !section._id.equals(env.params._id);
-        });
+    N.models.forum.Section.getChildren(function (err, allSections) {
 
-        // Add title to sections
-        var _ids = env.data.allowed_parents.map(function (s) { return s._id; });
-        env.res.allowed_parents = [];
+      if (err) {
+        callback(err);
+        return;
+      }
 
-        N.models.forum.Section
-          .find({ _id: { $in: _ids }})
-          .select('_id title')
-          .lean(true)
-          .exec(function (err, sections) {
-
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          // sort result in the same order as ids
-          _.forEach(env.data.allowed_parents, function(allowedParent) {
-            var foundSection = _.find(sections, function(section) {
-              return section._id.equals(allowedParent._id);
-            });
-            foundSection.level = allowedParent.level;
-            env.res.allowed_parents.push(foundSection);
-          });
-
-          callback();
-        });
+      env.data.allowed_parents = _.filter(allSections, function(section) {
+        // exclude current section
+        return !section._id.equals(env.params._id);
       });
+
+      callback();
+    });
+  });
+
+
+  N.wire.after(apiPath, function fill_parents_path(env, callback) {
+
+    var _ids = env.data.allowed_parents.map(function (s) { return s._id; });
+
+    N.models.forum.Section.find()
+      .where('_id').in(_ids)
+      .select('_id title')
+      .lean(true)
+      .exec(function (err, sections) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.allowed_parents = [];
+
+      // sort result in the same order as ids
+      env.data.allowed_parents.forEach(function(allowedParent) {
+        var foundSection = _.find(sections, function(section) {
+          return section._id.equals(allowedParent._id);
+        });
+        foundSection.level = allowedParent.level;
+        env.res.allowed_parents.push(foundSection);
+      });
+
+      callback();
     });
   });
 

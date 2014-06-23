@@ -304,7 +304,7 @@ module.exports = function (N) {
           return;
         }
 
-        async.each(sectionsToUpdate, function (section, next) {
+        function updateOne(section, next) {
           _.forEach(usergroups, function (usergroup) {
             _.forEach(self.keys, function (settingName) {
               if (!section.settings) {
@@ -342,7 +342,9 @@ module.exports = function (N) {
 
           section.markModified('settings');
           section.save(next);
-        }, callback);
+        }
+
+        async.each(sectionsToUpdate, updateOne, callback);
       });
     });
   };
