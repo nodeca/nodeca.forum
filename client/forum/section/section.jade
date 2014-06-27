@@ -12,7 +12,7 @@ article#content.forum-topics-root
 
   if self.section.is_category === false || (self.topics && self.topics.length)
     //- Toolbar with pagination & controls
-    nav.controlbar._affix
+    nav.controlbar._affix(data-affix-top=-10)
       .controlbar__floater
         //- needed set width & center content on horizontal navigation
         .controlbar__floater-inner
