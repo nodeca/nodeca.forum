@@ -250,7 +250,7 @@ module.exports = function (N, apiPath) {
 
   // get first and last+1 required _id for required page
   //
-  N.wire.before(apiPath, function (env, callback) {
+  N.wire.before(apiPath, function fetch_post_ids_range(env, callback) {
     var posts_per_page = env.data.posts_per_page;
     var start = (env.params.page - 1) * posts_per_page;
 

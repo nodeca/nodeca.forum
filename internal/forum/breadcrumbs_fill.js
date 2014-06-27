@@ -42,7 +42,7 @@ module.exports = function (N, apiPath) {
 
   // data = { env, parents }
   // parents - array of forums ids to show in breadcrumbs
-  N.wire.on(apiPath, function (data, callback) {
+  N.wire.on(apiPath, function internal_breadcrumbs_fill(data, callback) {
     var env     = data.env;
     var parents = data.parents;
 

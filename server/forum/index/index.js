@@ -12,7 +12,7 @@ module.exports = function (N, apiPath) {
 
   // Request handler
   //
-  N.wire.on(apiPath, function (env, callback) {
+  N.wire.on(apiPath, function forum_index(env, callback) {
     env.extras.puncher.start('process index');
 
     N.wire.emit('internal:forum.subsections_fill', env, callback);
