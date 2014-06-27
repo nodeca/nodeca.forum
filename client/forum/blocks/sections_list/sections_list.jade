@@ -25,9 +25,8 @@ ul.forum-sections
                 - var mod = self.users[moderator]
                 - if (mod)
                   dd.forum-section__moderator
-                    a.forum-section__moderator-link._ucard-popover(
-                      href=self.link_to('users.member', { user_hid: mod.hid }),
-                      data-user-id=mod._id
+                    a.forum-section__moderator-link(
+                      href=self.link_to('users.member', { user_hid: mod.hid })
                     ) #{mod.name}
 
         ul.forum-section__counters.col-xs-3.col-sm-2
