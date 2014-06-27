@@ -5,7 +5,7 @@ article#content.forum-topic-root
 
   header.page-head
     h1.page-head__title(itemprop='name')= self.topic.title
-    - if (self.topic._seo_desc)
+    if self.topic._seo_desc
       p.page-head__descr(itemprop='description')
         | #{self.topic._seo_desc}
 
@@ -17,14 +17,14 @@ article#content.forum-topic-root
           //- button.btn.btn-default.btn-icon-only.icon-back.pull-left(type='button')
           //- href=self.link_to('forum.section', { hid: self.section.hid }))
 
-          - if (self.page.max > 1)
+          if self.page.max > 1
             .btn-group.pull-left._pagination
               - var link_params = { hid: self.topic.hid, section_hid: self.section.hid }
               - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
               != self.partial('@common.blocks.pagination', pgn_params)
 
           .btn-group.pull-right
-            button.btn.btn-default.icon-options.dropdown-toggle(type='button', data-toggle='dropdown')
+            button.btn.btn-default.icon-options.dropdown-toggle(type='button' data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
               li: a(href='#')= self.t('topic_delete')
@@ -35,10 +35,10 @@ article#content.forum-topic-root
               li: a(href='#')= self.t('topic_approve')
               li: a(href='#')= self.t('topic_merge')
 
-          - if (self.runtime.is_member)
-            button.btn.btn-default.icon-track.tip.pull-right(type='button', title=self.t('topic_subscribe')) 24
+          if self.runtime.is_member
+            button.btn.btn-default.icon-track.tip.pull-right(type='button' title=self.t('topic_subscribe')) 24
 
-          - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN))
+          if self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN)
             button.btn.btn-primary.pull-right(type='button')= self.t('post_add')
 
   #postlist.forum-postlist
@@ -48,6 +48,7 @@ article#content.forum-topic-root
   - var link_params = { hid: self.topic.hid, section_hid: self.section.hid, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
   a.forum-topic__more-link.btn.btn-default.btn-block.icon-more(
-    class=btn_more_state,
-    href=self.link_to(self.apiPath, link_params),
-    data-on-click="forum.topic.append_next_page")= self.t('more_posts')
+    class=btn_more_state
+    href=self.link_to(self.apiPath, link_params)
+    data-on-click="forum.topic.append_next_page"
+  )= self.t('more_posts')

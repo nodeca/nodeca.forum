@@ -4,26 +4,29 @@
 - if (self.show_page_number)
   .forum-postlist__separator= self.t('page_separator', self.show_page_number)
 
-- each post in self.posts
+each post in self.posts
   - var user = self.users[post.user];
   article.forum-post.clearfix(id='post#{post._id}', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
-        time.forum-post__time(itemprop='datePublished', datetime=self.date(post.ts, 'iso')) #{self.date(post.ts, 'date')}
+        time.forum-post__time(
+          itemprop='datePublished'
+          datetime=self.date(post.ts, 'iso')
+        ) #{self.date(post.ts, 'date')}
         - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
         a.forum-post__link.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left
-        - if (user)
+        if user
           a.forum-post__author._ucard-popover(
-            href=self.link_to('users.member', { user_hid: user.hid }),
+            href=self.link_to('users.member', { user_hid: user.hid })
             data-user-id=post.user
           ) #{user.name}
     .forum-post__aside
-      - if (user)
+      if user
         a.forum-post__userpic(href='#')
-          img.av-l(alt='#{user.name}',src='http://lorempixel.com/150/150/sports/a' + '#{user.hid}' + '/')
-      - else
+          img.av-l(alt='#{user.name}' src='http://lorempixel.com/150/150/sports/a' + '#{user.hid}' + '/')
+      else
         .av-l
     .forum-post__content
       .forum-post__message !{post.text}
@@ -34,11 +37,19 @@
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
-          - if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
+          if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
             li.forum-post__control-item
-              a.forum-post__action-link.icon-reply(href='#',data-on-click="forum.post.reply",data-post-id='#{post._id}')= self.t('reply')
+              a.forum-post__action-link.icon-reply(
+                href='#'
+                data-on-click='forum.post.reply'
+                data-post-id='#{post._id}'
+              )= self.t('reply')
           li.forum-post__control-item
-            a.forum-post__action-link(href='#',data-on-click="forum.post.edit",data-post-id='#{post._id}')= self.t('edit')
+            a.forum-post__action-link(
+              href='#'
+              data-on-click='forum.post.edit'
+              data-post-id='#{post._id}'
+            )= self.t('edit')
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('delete')
           li.forum-post__control-item

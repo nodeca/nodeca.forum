@@ -7,10 +7,10 @@ article#content.forum-topics-root
       | #{self.section.description}
 
   //- Subsections, if exist
-  - if ((self.subsections || []).length)
+  if (self.subsections || []).length
     != self.partial('@forum.blocks.sections_list')
 
-  - if (self.section.is_category === false || (self.topics && self.topics.length))
+  if self.section.is_category === false || (self.topics && self.topics.length)
     //- Toolbar with pagination & controls
     nav.controlbar._affix
       .controlbar__floater
@@ -19,7 +19,7 @@ article#content.forum-topics-root
           .controlbar__body.btn-toolbar.clearfix
             //- button.btn.btn-default.btn-icon-only.icon-back.pull-left(type='button')
 
-            - if (self.topics && self.topics.length && self.page.max > 1)
+            if self.topics && self.topics.length && self.page.max > 1
               .btn-group.pull-left._pagination
                 - var link_params = { hid: self.section.hid }
                 - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
@@ -34,7 +34,7 @@ article#content.forum-topics-root
                 li: a(href='#')= self.t('section_mass_move')
                 li: a(href='#')= self.t('section_mass_prune')
 
-            - if (self.runtime.is_member)
+            if self.runtime.is_member
               button.btn.btn-default.icon-track.tip.pull-right(type='button', title=self.t('section_subscribe')) 24
 
               button.btn.btn-default.btn-icon-only.icon-check.tip.pull-right(
@@ -42,13 +42,13 @@ article#content.forum-topics-root
                 title=self.t('section_mark_read_tip')
               )
 
-            - if (self.settings.forum_can_start_topics)
+            if self.settings.forum_can_start_topics
               button.btn.btn-primary.pull-right(type='button')= self.t('topic_create')
 
           //- left part, no `float left` to avoid deals with container height
 
 
-    - if (self.topics && self.topics.length)
+    if self.topics && self.topics.length
       #topiclist.forum-topiclines
         != self.partial('@forum.blocks.topics_list')
 
@@ -62,6 +62,6 @@ article#content.forum-topics-root
         data-section=self.section.hid,
         data-on-click="forum.section.append_next_page")= self.t('more_topics')
 
-    - else
+    else
       p.forum-section__notopics
         != self.t('no_topics')

@@ -2,7 +2,7 @@ mixin pagination_micro(route, params, max_page)
   - var i;
   ul.forum-pgn-micro
 
-    - if (max_page > 4)
+    if max_page > 4
       li.forum-pgn-micro__item
         a.forum-pgn-micro__link(href=self.link_to(route, params)) 1
 
@@ -20,7 +20,7 @@ mixin pagination_micro(route, params, max_page)
       li.forum-pgn-micro__item
         a.forum-pgn-micro__link(href=self.link_to(route, params)) #{params.page}
 
-    - else
+    else
       - for (i = 1; i <= max_page; i++) {
         - params.page = i;
         li.forum-pgn-micro__item

@@ -4,10 +4,10 @@ include ../pagination_micro/pagination_micro
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
 - var replies, views;
-- if (self.show_page_number)
+if self.show_page_number
   .forum-topicline__separator= self.t('page_separator', self.show_page_number)
 
-- each topic in self.topics
+each topic in self.topics
   - fp_user = self.users[topic.cache.first_user]
   - lp_user = self.users[topic.cache.last_user]
   - fp_ts   = topic.cache.first_ts
@@ -19,14 +19,14 @@ include ../pagination_micro/pagination_micro
           a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
         //a.mark-i-attach._tip(href="#")=topic.attach_count
         - _pages_count = Math.ceil(topic.cache.post_count / self.settings.posts_per_page)
-        - if (_pages_count > 1)
+        if _pages_count > 1
           //- micro-pagination
           - var route_params = { hid: topic.hid, section_hid: self.section.hid }
           mixin pagination_micro('forum.topic', route_params, _pages_count)
 
 
         .forum-topicline__meta
-          - if (fp_user)
+          if fp_user
             a.forum-topicline__author(
               href=self.link_to('users.member', { user_hid: fp_user.hid })
             ) #{fp_user.name}
@@ -46,9 +46,9 @@ include ../pagination_micro/pagination_micro
         li.forum-topicline__lpost-time
           a.forum-topicline__lpost-time-link(href='#')
             time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}
-        - if (lp_user)
+        if lp_user
           li.forum-topicline__lpost-user
             a.forum-topicline__lpost-user-link._ucard-popover(
-              href=self.link_to('users.member', { user_hid: lp_user.hid }),
+              href=self.link_to('users.member', { user_hid: lp_user.hid })
               data-user-id=lp_user._id
             ) #{lp_user.name}
