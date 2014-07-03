@@ -41,13 +41,18 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 });
 
 
-N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
-  var $item = $(event.currentTarget)
-   , $container = $item.closest('._section-container');
+N.wire.before('admin.forum.section.destroy', function confirm_section_destroy(event, callback) {
+  N.wire.emit(
+    'admin.core.blocks.confirm',
+    t('message_confim_section_delete', { title: $(event.target).data('title') }),
+    callback
+  );
+});
 
-  if (!window.confirm(t('message_confim_section_delete', { title: $item.data('title') }))) {
-    return;
-  }
+
+N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
+  var $item = $(event.target)
+   , $container = $item.closest('.aforum-index__slist-item');
 
   N.io.rpc('admin.forum.section.destroy', { _id: $item.data('id') }, function (err) {
     if (err && (N.io.CLIENT_ERROR === err.code) && !_.isEmpty(err.message)) {

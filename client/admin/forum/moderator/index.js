@@ -1,14 +1,15 @@
 'use strict';
 
 
+N.wire.before('admin.forum.moderator.destroy', function confirm_moderator_destroy(event, callback) {
+  N.wire.emit('admin.core.blocks.confirm', t('confirm_remove'), callback);
+});
+
+
 N.wire.on('admin.forum.moderator.destroy', function moderator_destroy(event) {
-  if (!window.confirm(t('confirm_remove'))) {
-    return;
-  }
- 
   var request = {
-    section_id: $(event.currentTarget).data('sectionId')
-  , user_id:    $(event.currentTarget).data('userId')
+    section_id: $(event.target).data('sectionId')
+  , user_id:    $(event.target).data('userId')
   };
 
   N.io.rpc('admin.forum.moderator.destroy', request, function (err) {

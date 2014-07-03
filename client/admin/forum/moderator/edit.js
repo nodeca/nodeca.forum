@@ -143,22 +143,21 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   };
 
   view.destroy = function destroy() {
-    if (!window.confirm(t('confirm_remove'))) {
-      return;
-    }
- 
-    var request = {
-      section_id: data.params.section_id
-    , user_id:    data.params.user_id
-    };
+    N.wire.emit('admin.core.blocks.confirm', t('confirm_remove'), function () {
 
-    N.io.rpc('admin.forum.moderator.destroy', request, function (err) {
-      if (err) {
-        return false; // Invoke standard error handling.
-      }
+      var request = {
+        section_id: data.params.section_id
+      , user_id:    data.params.user_id
+      };
 
-      N.wire.emit('notify', { type: 'info', message: t('message_deleted') });
-      N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' });
+      N.io.rpc('admin.forum.moderator.destroy', request, function (err) {
+        if (err) {
+          return false; // Invoke standard error handling.
+        }
+
+        N.wire.emit('notify', { type: 'info', message: t('message_deleted') });
+        N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' });
+      });
     });
   };
 

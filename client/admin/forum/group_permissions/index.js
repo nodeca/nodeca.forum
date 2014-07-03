@@ -1,14 +1,15 @@
 'use strict';
 
 
+N.wire.before('admin.forum.group_permissions.destroy', function confirm_group_permissions_destroy(event, callback) {
+  N.wire.emit('admin.core.blocks.confirm', t('confirm_reset_permissions'), callback);
+});
+
+
 N.wire.on('admin.forum.group_permissions.destroy', function group_permissions_destroy(event) {
-  if (!window.confirm(t('confirm_reset_permissions'))) {
-    return;
-  }
- 
   var request = {
-    section_id:   $(event.currentTarget).data('sectionId')
-  , usergroup_id: $(event.currentTarget).data('usergroupId')
+    section_id:   $(event.target).data('sectionId')
+  , usergroup_id: $(event.target).data('usergroupId')
   };
 
   N.io.rpc('admin.forum.group_permissions.destroy', request, function (err) {
