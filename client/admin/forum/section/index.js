@@ -5,6 +5,7 @@ var _ = require('lodash');
 
 
 var $moderatorSelectDialog;
+var bloodhound;
 
 
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
@@ -77,15 +78,43 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   // Render dialog window.
   $moderatorSelectDialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
 
-  $moderatorSelectDialog.find('input[name=nick]').typeahead({
-    valueKey: 'nick',
-    remote: N.runtime.router.linkTo('admin.core.user_lookup') + '?nick=%QUERY',
-    template: function(user) {
-      // Shows full name with entered text highlighting
-      var pattern = $moderatorSelectDialog.find('input[name=nick]').val();
-      return '<p>' + user.name.replace('(' + pattern, '(<strong>' + pattern + '</strong>') + '</p>';
+  if (!bloodhound) {
+    bloodhound = new Bloodhound({
+      remote: {
+        // Hack to get nick in first param of transport call
+        url: '%QUERY',
+        transport: function (url, o, onSuccess, onError) {
+          N.io.rpc('admin.core.user_lookup', { nick: url, strict: false }, function (err, res) {
+            if (err) {
+              onError();
+              return;
+            }
+            onSuccess(res);
+          });
+        }
+      },
+      datumTokenizer: function(d) {
+        return Bloodhound.tokenizers.whitespace(d.nick);
+      },
+      queryTokenizer: Bloodhound.tokenizers.whitespace
+    });
+    bloodhound.initialize();
+  }
+
+  $moderatorSelectDialog.find('input[name=nick]').typeahead(
+    {
+      highlight: true
+    },
+    {
+      source: bloodhound.ttAdapter(),
+      displayKey: 'nick',
+      templates: {
+        suggestion: function (user) {
+          return user.name;
+        }
+      }
     }
-  });
+  );
 
   $moderatorSelectDialog.on('shown.bs.modal', function () {
     $(this).find('input[name=nick]').focus();
@@ -96,7 +125,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   });
 
   // Show dialog.
-  $moderatorSelectDialog.appendTo('#content').modal();
+  $moderatorSelectDialog.appendTo('#content').modal({ backdrop: false });
 });
 
 
@@ -113,14 +142,14 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
       return;
     }
 
-    $moderatorSelectDialog.modal('hide');
-
-    N.wire.emit('navigate.to', {
-      apiPath: 'admin.forum.moderator.edit'
-    , params: {
-        section_id: form.fields.section_id
-      , user_id:    res[0]._id
-      }
-    });
+    $moderatorSelectDialog.on('hidden.bs.modal', function () {
+      N.wire.emit('navigate.to', {
+        apiPath: 'admin.forum.moderator.edit'
+        , params: {
+          section_id: form.fields.section_id
+          , user_id: res[0]._id
+        }
+      });
+    }).modal('hide');
   });
 });
