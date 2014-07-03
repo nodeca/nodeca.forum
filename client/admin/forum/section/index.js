@@ -56,7 +56,7 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
 
   N.io.rpc('admin.forum.section.destroy', { _id: $item.data('id') }, function (err) {
     if (err && (N.io.CLIENT_ERROR === err.code) && !_.isEmpty(err.message)) {
-      window.alert(err.message);
+      N.wire.emit('notify', { type: 'error', message: err.message });
       return;
     }
 
