@@ -12,11 +12,7 @@ N.wire.on('admin.forum.group_permissions.destroy', function group_permissions_de
   , usergroup_id: $(event.target).data('usergroupId')
   };
 
-  N.io.rpc('admin.forum.group_permissions.destroy', request, function (err) {
-    if (err) {
-      return false; // Invoke standard error handling.
-    }
-
+  N.io.rpc('admin.forum.group_permissions.destroy', request).done(function () {
     // Refresh page to show result of the reset.
     window.location.reload();
   });

@@ -32,11 +32,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
         })
       };
 
-      N.io.rpc('admin.forum.section.update_order', request, function (err) {
-        if (err) {
-          return false;
-        }
-      });
+      N.io.rpc('admin.forum.section.update_order', request);
     }
   });
 });
@@ -55,20 +51,15 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
   var $item = $(event.target)
    , $container = $item.closest('.aforum-index__slist-item');
 
-  N.io.rpc('admin.forum.section.destroy', { _id: $item.data('id') }, function (err) {
-    if (err && (N.io.CLIENT_ERROR === err.code) && !_.isEmpty(err.message)) {
+  N.io.rpc('admin.forum.section.destroy', { _id: $item.data('id') })
+    .done(function () {
+      // Remove all destroyed elements from DOM.
+      $container.prev('._placeholder').remove();
+      $container.remove();
+    })
+    .fail(function (err) {
       N.wire.emit('notify', { type: 'error', message: err.message });
-      return;
-    }
-
-    if (err) {
-      return false; // Invoke standard error handling.
-    }
-
-    // Remove all destroyed elements from DOM.
-    $container.prev('._placeholder').remove();
-    $container.remove();
-  });
+    });
 });
 
 
@@ -84,13 +75,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
         // Hack to get nick in first param of transport call
         url: '%QUERY',
         transport: function (url, o, onSuccess, onError) {
-          N.io.rpc('admin.core.user_lookup', { nick: url, strict: false }, function (err, res) {
-            if (err) {
-              onError();
-              return;
-            }
-            onSuccess(res);
-          });
+          N.io.rpc('admin.core.user_lookup', { nick: url, strict: false }).done(onSuccess).fail(onError);
         }
       },
       datumTokenizer: function(d) {
@@ -132,11 +117,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
 N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(form) {
   var nick = form.fields.nick;
 
-  N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }, function (err, res) {
-    if (err) {
-      return false; // Invoke standard error handling.
-    }
-
+  N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }).done(function (res) {
     if (_.isEmpty(res)) {
       N.wire.emit('notify', t('error_no_user_with_such_nick', { nick: nick }));
       return;

@@ -38,7 +38,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
           return;
         }
         // Notify user in other case
-        return false;
+        N.wire.emit('io.error', err);
       }
 
       // if no posts - just disable 'More' button

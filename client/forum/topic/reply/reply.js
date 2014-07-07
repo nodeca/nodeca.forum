@@ -139,11 +139,7 @@ N.wire.on('forum.post.reply.save', function () {
 
   post.to_id = editorState.parent_post_id;
 
-  N.io.rpc('forum.topic.reply', post, function (err, env) {
-    if (err) {
-      return;
-    }
-
+  N.io.rpc('forum.topic.reply', post).done(function (env) {
     var locals = {
       topic: editorState,
       section: {

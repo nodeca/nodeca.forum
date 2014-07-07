@@ -124,11 +124,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       }
     });
 
-    N.io.rpc('admin.forum.moderator.update', request, function (err) {
-      if (err) {
-        return false; // Invoke standard error handling.
-      }
-
+    N.io.rpc('admin.forum.moderator.update', request).done(function () {
       _.forEach(view.settings, function (setting) {
         setting.markClean();
       });
@@ -150,11 +146,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       , user_id:    data.params.user_id
       };
 
-      N.io.rpc('admin.forum.moderator.destroy', request, function (err) {
-        if (err) {
-          return false; // Invoke standard error handling.
-        }
-
+      N.io.rpc('admin.forum.moderator.destroy', request).done(function () {
         N.wire.emit('notify', { type: 'info', message: t('message_deleted') });
         N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' });
       });

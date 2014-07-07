@@ -119,11 +119,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       }
     });
 
-    N.io.rpc('admin.forum.group_permissions.update', request, function (err) {
-      if (err) {
-        return false; // Invoke standard error handling.
-      }
-
+    N.io.rpc('admin.forum.group_permissions.update', request).done(function () {
       _.forEach(view.settings, function (setting) {
         setting.markClean();
       });

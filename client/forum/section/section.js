@@ -21,7 +21,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
           return;
         }
         // Notify user in other case
-        return false;
+        N.wire.emit('io.error', err);
       }
 
       // if no topics - just disable 'More' button
