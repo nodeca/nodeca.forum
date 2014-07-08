@@ -90,7 +90,7 @@ module.exports = function (N, apiPath) {
       }
 
       if (!settings.forum_can_view) {
-        callback(N.io.NOT_AUTHORIZED);
+        callback(N.io.FORBIDDEN);
         return;
       }
 
