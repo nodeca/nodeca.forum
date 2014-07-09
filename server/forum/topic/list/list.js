@@ -147,28 +147,6 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // `params.section_hid` can be wrong (old link to moved topic)
-  // If params.section_hid defined, and not correct - redirect to proper location
-  //
-  N.wire.before(apiPath, function fix_section_hid(env) {
-    if (!env.params.hasOwnProperty('section_hid')) {
-      return;
-    }
-
-    if (env.data.section.hid !== +env.params.section_hid) {
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          'Location': N.runtime.router.linkTo('forum.topic', {
-            hid:       env.data.topic.hid,
-            section_hid: env.data.section.hid,
-            page:     env.params.page || 1
-          })
-        }
-      };
-    }
-  });
-
 
   // fetch posts per page setting
   //
@@ -191,29 +169,14 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill page data or redirect to last page, if requested > available
+  // Fill page data
   //
-  N.wire.before(apiPath, function check_and_set_page_info(env) {
+  N.wire.before(apiPath, function set_page_info(env) {
     var per_page = env.data.posts_per_page,
       max      = Math.ceil(env.data.topic.cache.post_count / per_page) || 1,
       current  = parseInt(env.params.page, 10);
 
-    if (current > max) {
-      // Requested page is BIGGER than maximum - redirect to the last one
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          'Location': N.runtime.router.linkTo('forum.topic', {
-            section_id: env.data.topic.section_id,
-            hid:        env.params.hid,
-            page:       max
-          })
-        }
-      };
-    }
-
-    // requested page is OK. propose data for pagination
-    env.res.page = { max: max, current: current };
+    env.res.page = env.data.page = { max: max, current: current };
   });
 
 
@@ -280,9 +243,8 @@ module.exports = function (N, apiPath) {
         env.data.first_post_id = _.first(visible_posts)._id;
         // Thit is the first post of the next page, it is required to include deleted posts on page tail
         env.data.last_post_id = _.last(visible_posts)._id;
-        callback();
-        return;
       }
+      callback();
     });
   });
 
@@ -290,6 +252,12 @@ module.exports = function (N, apiPath) {
   // fetch visible posts between first and last paginated posts
   //
   N.wire.on(apiPath, function fetch_posts(env, callback) {
+
+    if (!env.data.first_post_id || !env.data.last_post_id) {
+      env.data.posts = [];
+      callback();
+      return;
+    }
 
     env.extras.puncher.start('get posts content by _id list');
 

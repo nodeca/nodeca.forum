@@ -33,6 +33,24 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Redirect to last page, if requested > available
+  //
+  N.wire.after(apiPath, function redirect_to_last_page(env) {
+    if (env.data.page.current > env.data.page.max) {
+      // Requested page is BIGGER than maximum - redirect to the last one
+      return {
+        code: N.io.REDIRECT,
+        head: {
+          'Location': N.runtime.router.linkTo('forum.section', {
+            hid:  env.params.hid,
+            page: env.data.page.max
+          })
+        }
+      };
+    }
+  });
+
+
   // fetch visible sub-sections (only for the first page)
   //
   N.wire.after(apiPath, function fetch_visible_subsections(env, callback) {

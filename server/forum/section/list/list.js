@@ -119,29 +119,17 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // Fill page data or redirect to last page, if requested > available
+
+  // Fill page data
   //
-  N.wire.before(apiPath, function check_and_set_page_info(env) {
+  N.wire.before(apiPath, function set_page_info(env) {
     var per_page = env.data.topics_per_page,
         max      = Math.ceil(env.data.section.cache.topic_count / per_page) || 1,
         current  = parseInt(env.params.page, 10);
 
-    if (current > max) {
-      // Requested page is BIGGER than maximum - redirect to the last one
-      return {
-        code: N.io.REDIRECT,
-        head: {
-          'Location': N.runtime.router.linkTo('forum.section', {
-            hid:  env.params.hid,
-            page: max
-          })
-        }
-      };
-    }
-
-    // requested page is OK. propose data for pagination
-    env.res.page = { max: max, current: current };
+    env.res.page = env.data.page = { max: max, current: current };
   });
+
 
   // define visible topic statuses and define sorting order
   //
@@ -225,7 +213,7 @@ module.exports = function (N, apiPath) {
 
         env.extras.puncher.stop({ count: visible_topics.length });
 
-        env.data.topics =  visible_topics;
+        env.data.topics =  visible_topics || [];
 
         callback();
       });
