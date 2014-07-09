@@ -177,13 +177,11 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('get visible topics');
 
-    // FIXME: revisit after mongo 2.6.0 release (try single request again)
-    // https://jira.mongodb.org/browse/SERVER-3310
-    //
     // Select _id first to use covered index
     //
     // Pagination includes all visible topics (including deleted, hellbanned, e t.c.) to simplify query
     // This is acceptable for interface
+
     Topic.find()
       .where('section').equals(env.data.section._id)
       .where('st').in(env.data.statuses)
@@ -219,6 +217,7 @@ module.exports = function (N, apiPath) {
       });
     });
   });
+
 
   // fetch pinned topics
   //

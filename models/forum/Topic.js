@@ -53,21 +53,17 @@ module.exports = function (N, collectionName) {
 
   // topics list, ordered by last post (normal/hellbanned)
   //
-  // FIXME:
-  // see http://blog.mongolab.com/2012/06/cardinal-ins/ for field order details
-  // revisit after 2.6.0 https://jira.mongodb.org/browse/SERVER-3310
-  //
   Topic.index({
     section:  1
-  , 'cache.last_ts' : -1
   , st:       1
+  , 'cache.last_ts' : -1
   , _id:      1
   });
 
   Topic.index({
     section:  1
-  , 'cache_hb.last_ts' : -1
   , st:       1
+  , 'cache_hb.last_ts' : -1
   , _id:      1
   });
 
