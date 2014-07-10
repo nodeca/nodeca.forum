@@ -35,6 +35,9 @@ module.exports = function (N, apiPath) {
   // `params.section_hid` can be wrong (old link to moved topic)
   // If params.section_hid defined, and not correct - redirect to proper location
   //
+  // Making redirect here is not optimal, because posts will be fetched twice.
+  // But that's not crilital, and avoid logic duplication (permissions check and other)
+  //
   N.wire.after(apiPath, function fix_section_hid(env) {
     if (!env.params.hasOwnProperty('section_hid')) {
       return;
