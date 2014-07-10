@@ -65,15 +65,15 @@ module.exports = function (N, apiPath) {
       }
 
       // Sanitize topic data
-      env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
+      env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
         if (err) {
           callback(err);
           return;
         }
 
         Topic.sanitize(topic, {
-          keep_statuses: settings.can_see_hellbanned,
-          keep_data: env.user_info.hb || settings.can_see_hellbanned
+          keep_statuses: can_see_hellbanned,
+          keep_data: env.user_info.hb || can_see_hellbanned
         });
 
         env.data.topic = topic;
@@ -106,14 +106,14 @@ module.exports = function (N, apiPath) {
       }
 
       // Sanitize section data
-      env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
+      env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
         if (err) {
           callback(err);
           return;
         }
 
         Section.sanitize(section, {
-          keep_data: env.user_info.hb || settings.can_see_hellbanned
+          keep_data: env.user_info.hb || can_see_hellbanned
         });
 
         env.data.section = section;
@@ -129,7 +129,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('fetch setting (forum_can_view)');
 
-    env.extras.settings.fetch('forum_can_view', function (err, settings) {
+    env.extras.settings.fetch('forum_can_view', function (err, forum_can_view) {
 
       env.extras.puncher.stop();
 
@@ -138,7 +138,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (!settings.forum_can_view) {
+      if (!forum_can_view) {
         callback(N.io.FORBIDDEN);
         return;
       }
@@ -154,7 +154,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('fetch setting (posts_per_page)');
 
-    env.extras.settings.fetch('posts_per_page', function (err, settings) {
+    env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
 
       env.extras.puncher.stop();
 
@@ -163,7 +163,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.posts_per_page = settings.posts_per_page;
+      env.data.posts_per_page = posts_per_page;
       callback();
     });
   });
@@ -348,7 +348,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('fetch setting (\'can_see_hellbanned\')');
 
-    env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
+    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
       env.extras.puncher.stop();
 
       if (err) {
@@ -360,7 +360,7 @@ module.exports = function (N, apiPath) {
       var posts = env.res.posts;
       posts.forEach(function (post) {
         Post.sanitize(post, {
-          keep_statuses: settings.can_see_hellbanned
+          keep_statuses: can_see_hellbanned
         });
       });
 
@@ -383,7 +383,8 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.settings = _.assign({}, env.res.settings, settings);
+      env.res.settings = env.res.settings || {};
+      env.res.settings = _.assign(env.res.settings, settings);
 
       env.extras.puncher.stop(); // Close main page scope
 
