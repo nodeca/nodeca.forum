@@ -38,7 +38,7 @@ module.exports = function (N, apiPath) {
       async.each(s_ids, function (_id, next) {
         var params = { section_id: _id, usergroup_ids: g_ids };
 
-        N.settings.get(['forum_can_view'], params, function (err, data) {
+        N.settings.get([ 'forum_can_view' ], params, function (err, data) {
           result[_id] = data.forum_can_view;
           next(err);
         });
@@ -138,7 +138,7 @@ module.exports = function (N, apiPath) {
     env.data.subsections = [];
 
     N.models.forum.Section
-      .find({ _id: { $in: _ids }})
+      .find({ _id: { $in: _ids } })
       .select(subsections_fields.join(' '))
       .lean(true)
       .exec(function (err, sections) {
@@ -160,7 +160,7 @@ module.exports = function (N, apiPath) {
   // Sanitize subsections
   //
   N.wire.after(apiPath, function sanitize(env, callback) {
-    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+    env.extras.settings.fetch([ 'can_see_hellbanned' ], function (err, settings) {
       if (err) {
         callback(err);
         return;

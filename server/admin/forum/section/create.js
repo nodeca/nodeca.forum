@@ -10,7 +10,7 @@ var async = require('async');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    parent:         { type: ['null', 'string'], required: true }
+    parent:         { type: [ 'null', 'string' ], required: true }
   , title:          { type: 'string',           required: true, minLength: 1 }
   , description:    { type: 'string',           required: true }
   , is_category:    { type: 'boolean',          required: true }

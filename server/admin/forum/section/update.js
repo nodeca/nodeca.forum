@@ -14,7 +14,7 @@ var _ = require('lodash');
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id:            { format: 'mongo', required: true }
-  , parent:         { type: ['null', 'string'], required: false }
+  , parent:         { type: [ 'null', 'string' ], required: false }
   , display_order:  { type: 'number',           required: false }
   , title:          { type: 'string',           required: false }
   , description:    { type: 'string',           required: false }

@@ -36,7 +36,7 @@ module.exports = function (N, apiPath) {
 
     // Add title to sections
     N.models.forum.Section
-      .find({ _id: { $in: _ids }})
+      .find({ _id: { $in: _ids } })
       .select('_id title')
       .lean(true)
       .exec(function (err, sections) {

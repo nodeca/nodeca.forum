@@ -57,7 +57,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Sanitize section data
-      env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+      env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
         if (err) {
           callback(err);
           return;
@@ -80,7 +80,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.section._id;
     env.extras.puncher.start('fetch setting (forum_can_view)');
 
-    env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
+    env.extras.settings.fetch('forum_can_view', function (err, settings) {
 
       env.extras.puncher.stop();
 
@@ -105,7 +105,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('fetch setting (topics_per_page)');
 
-    env.extras.settings.fetch(['topics_per_page'], function (err, settings) {
+    env.extras.settings.fetch('topics_per_page', function (err, settings) {
 
       env.extras.puncher.stop();
 
@@ -135,7 +135,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function define_visible_statuses_and_sort(env, callback) {
 
-    env.extras.settings.fetch(['can_see_hellbanned', 'forum_mod_can_manage_pending'], function (err, settings) {
+    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_manage_pending' ], function (err, settings) {
 
       if (err) {
         callback(err);
@@ -143,7 +143,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Define visible statuses
-      env.data.statuses = [statuses.topic.OPEN, statuses.topic.CLOSED];
+      env.data.statuses = [ statuses.topic.OPEN, statuses.topic.CLOSED ];
       var st = env.data.statuses;
 
       if (settings.can_see_hellbanned || env.user_info.hb) {
@@ -298,7 +298,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('sanitize data');
 
-    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+    env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
       if (err) {
         callback(err);
         return;

@@ -66,7 +66,7 @@ var createPost = function (topic, callback) {
       return;
     }
 
-    User.update({ _id: post.user }, { $inc: { post_count: 1 }}, function (err) {
+    User.update({ _id: post.user }, { $inc: { post_count: 1 } }, function (err) {
       callback(err, post);
     });
   });
@@ -242,7 +242,7 @@ function updateSectionStat(section, callback) {
   var postCount;
 
   async.series([ function getLastTopic(cb) {
-      Topic.findOne({section: section._id}).select('_id hid title cache')
+      Topic.findOne({ section: section._id }).select('_id hid title cache')
         .sort({ 'hid': 1 })
         .exec(function (err, topic) {
 
@@ -256,7 +256,7 @@ function updateSectionStat(section, callback) {
           cb();
         });
     }, function getTopicCount(cb) {
-      Topic.count({section: section._id})
+      Topic.count({ section: section._id })
         .exec(function (err, count) {
 
           if (err) {
@@ -271,9 +271,9 @@ function updateSectionStat(section, callback) {
     }, function getPostCount(cb) {
 
       Topic.aggregate(
-        { $match: { section: section._id }},
-        { $group: { _id: null, count: { $sum: '$cache.post_count' }}},
-        { $project: { _id: 0, count: 1 }}, function (err, sum) {
+        { $match: { section: section._id } },
+        { $group: { _id: null, count: { $sum: '$cache.post_count' } } },
+        { $project: { _id: 0, count: 1 } }, function (err, sum) {
 
           if (err) {
             cb(err);

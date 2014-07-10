@@ -65,7 +65,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Sanitize topic data
-      env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+      env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
         if (err) {
           callback(err);
           return;
@@ -106,7 +106,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Sanitize section data
-      env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+      env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
         if (err) {
           callback(err);
           return;
@@ -129,7 +129,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('fetch setting (forum_can_view)');
 
-    env.extras.settings.fetch(['forum_can_view'], function (err, settings) {
+    env.extras.settings.fetch('forum_can_view', function (err, settings) {
 
       env.extras.puncher.stop();
 
@@ -154,7 +154,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('fetch setting (posts_per_page)');
 
-    env.extras.settings.fetch(['posts_per_page'], function (err, settings) {
+    env.extras.settings.fetch('posts_per_page', function (err, settings) {
 
       env.extras.puncher.stop();
 
@@ -184,7 +184,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function get_permissions(env, callback) {
 
-    env.extras.settings.fetch(['can_see_hellbanned', 'forum_mod_can_manage_pending'], function (err, settings) {
+    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_manage_pending' ], function (err, settings) {
 
       if (err) {
         callback(err);
@@ -193,8 +193,8 @@ module.exports = function (N, apiPath) {
 
       env.data.statuses = {};
       var st = env.data.statuses;
-      st.paginated = [statuses.post.VISIBLE];
-      st.visible = [statuses.post.VISIBLE];
+      st.paginated = [ statuses.post.VISIBLE ];
+      st.visible = [ statuses.post.VISIBLE ];
 
       if (settings.can_see_hellbanned || env.user_info.hb) {
         st.paginated.push(statuses.post.HB);
@@ -348,7 +348,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('fetch setting (\'can_see_hellbanned\')');
 
-    env.extras.settings.fetch(['can_see_hellbanned'], function (err, settings) {
+    env.extras.settings.fetch('can_see_hellbanned', function (err, settings) {
       env.extras.puncher.stop();
 
       if (err) {
@@ -375,7 +375,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('fetch public settings for renderer');
 
-    env.extras.settings.fetch(['forum_can_reply'], function (err, settings) {
+    env.extras.settings.fetch('forum_can_reply', function (err, settings) {
       env.extras.puncher.stop();
 
       if (err) {

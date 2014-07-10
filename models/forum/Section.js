@@ -33,20 +33,20 @@ module.exports = function (N, collectionName) {
   , parent          : Schema.ObjectId
 
     // Visible moderator list.
-  , moderators    : [Schema.ObjectId]
+  , moderators    : [ Schema.ObjectId ]
 
     // Options
   , is_category     : { type: Boolean, 'default': false } // subsection or category
   , is_enabled      : { type: Boolean, 'default': true }  // hiden inactive
-  , is_writeble     : { type: Boolean, 'default': true} // read-only archive
+  , is_writeble     : { type: Boolean, 'default': true }  // read-only archive
   , is_searcheable  : { type: Boolean, 'default': true }
   , is_voteable     : { type: Boolean, 'default': true }
   , is_counted      : { type: Boolean, 'default': true }  // inc user's counter, when posted here
-  , is_excludable   : { type: Boolean, 'default': true}
+  , is_excludable   : { type: Boolean, 'default': true }
 
     // Topic prefixes
   , is_prefix_required  : { type: Boolean, 'default': false }
-  , prefix_groups   : [Schema.ObjectId] // allowed groups of prefixes
+  , prefix_groups   : [ Schema.ObjectId ] // allowed groups of prefixes
 
     // Cache
   , cache           : cache
@@ -217,7 +217,7 @@ module.exports = function (N, collectionName) {
               result[section.parent].children.push(result[section._id]);
             } else {
               // no parent in hash table, create and add it
-              result[section.parent] = { _id: section.parent, children: [result[section._id]] };
+              result[section.parent] = { _id: section.parent, children: [ result[section._id] ] };
             }
             // set link from section to parent
             result[section._id].parent = result[section.parent];

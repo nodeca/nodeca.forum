@@ -13,7 +13,7 @@ var async = require('async');
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id:            { format: 'mongo',          required: true }
-  , parent:         { type: ['null', 'string'], required: true }
+  , parent:         { type: [ 'null', 'string' ], required: true }
   , sibling_order:  { type: 'array',            required: false }
   });
 
@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
     });
 
     N.models.forum.Section
-      .find({ _id: { $in: _ids }})
+      .find({ _id: { $in: _ids } })
       .select('display_order')
       .exec(function (err, sections) {
 

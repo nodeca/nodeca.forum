@@ -34,7 +34,7 @@ module.exports = function (N, collectionName) {
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
 
-  , attach_list     : [Schema.ObjectId]
+  , attach_list     : [ Schema.ObjectId ]
   },
   {
     versionKey : false

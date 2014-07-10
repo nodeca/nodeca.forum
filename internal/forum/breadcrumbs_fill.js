@@ -17,7 +17,7 @@ module.exports = function (N, apiPath) {
       var result = [];
 
       N.models.forum.Section
-        .find({ _id: { $in: ids }})
+        .find({ _id: { $in: ids } })
         .select('hid title')
         .lean(true)
         .exec(function (err, parents) {
@@ -51,10 +51,10 @@ module.exports = function (N, apiPath) {
     env.res.blocks = env.res.blocks || {};
 
     // first element - always link to forum root
-    env.res.blocks.breadcrumbs = [{
+    env.res.blocks.breadcrumbs = [ {
       text: env.t('@common.menus.navbar.forum'),
       route: 'forum.index'
-    }];
+    } ];
 
     // no parents - we are on the root
     if (_.isEmpty(parents)) {

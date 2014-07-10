@@ -102,7 +102,7 @@ module.exports = function (N, apiPath) {
     env.res.head = env.res.head || {};
 
     env.res.head.title = (env.params.page > 1) ?
-      env.t('title_with_page', { title: topic.title, page: env.params.page})
+      env.t('title_with_page', { title: topic.title, page: env.params.page })
     :
       topic.title;
 
