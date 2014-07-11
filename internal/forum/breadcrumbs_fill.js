@@ -48,10 +48,8 @@ module.exports = function (N, apiPath) {
 
     env.extras.puncher.start('build breadcrumbs');
 
-    env.res.blocks = env.res.blocks || {};
-
     // first element - always link to forum root
-    env.res.blocks.breadcrumbs = [ {
+    env.res.breadcrumbs = [ {
       text: env.t('@common.menus.navbar.forum'),
       route: 'forum.index'
     } ];
@@ -72,7 +70,7 @@ module.exports = function (N, apiPath) {
       var bc_list = parentsInfo.slice(); // clone result to keep cache safe
 
       // transform fetched data & glue to output
-      env.res.blocks.breadcrumbs = env.res.blocks.breadcrumbs.concat(
+      env.res.breadcrumbs = env.res.breadcrumbs.concat(
         _.map(bc_list, function(section_info) {
           return {
             text: section_info.title,
