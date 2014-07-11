@@ -375,7 +375,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('fetch public settings for renderer');
 
-    env.extras.settings.fetch('forum_can_reply', function (err, settings) {
+    env.extras.settings.fetch('forum_can_reply', function (err, forum_can_reply) {
       env.extras.puncher.stop();
 
       if (err) {
@@ -384,7 +384,7 @@ module.exports = function (N, apiPath) {
       }
 
       env.res.settings = env.res.settings || {};
-      env.res.settings = _.assign(env.res.settings, settings);
+      env.res.settings.forum_can_reply = forum_can_reply;
 
       env.extras.puncher.stop(); // Close main page scope
 
