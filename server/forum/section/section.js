@@ -41,7 +41,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          'Location': N.runtime.router.linkTo('forum.section', {
+          'Location': N.router.linkTo('forum.section', {
             hid:  env.params.hid,
             page: env.data.page.max
           })

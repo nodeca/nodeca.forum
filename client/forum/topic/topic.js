@@ -46,7 +46,7 @@ N.wire.on('forum.topic.append_next_page', function (event) {
     var currentUrl = $button.attr('href');
 
     // update button href with next page URL
-    $button.attr('href', N.runtime.router.linkTo('forum.topic', {
+    $button.attr('href', N.router.linkTo('forum.topic', {
       hid:          res.topic.hid,
       section_hid:  res.section.hid,
       page:         res.page.current + 1

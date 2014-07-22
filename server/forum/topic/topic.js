@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          'Location': N.runtime.router.linkTo('forum.topic', {
+          'Location': N.router.linkTo('forum.topic', {
             hid:       env.data.topic.hid,
             section_hid: env.data.section.hid,
             page:     env.params.page || 1
@@ -66,7 +66,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          'Location': N.runtime.router.linkTo('forum.topic', {
+          'Location': N.router.linkTo('forum.topic', {
             section_hid: env.data.section.hid,
             hid:         env.params.hid,
             page:        env.data.page.max

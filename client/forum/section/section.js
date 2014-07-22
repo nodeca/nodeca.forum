@@ -29,7 +29,7 @@ N.wire.on('forum.section.append_next_page', function (event) {
     // update button data & state
     $button.data('page', res.page.current + 1);
 
-    $button.attr('href', N.runtime.router.linkTo('forum.section', {
+    $button.attr('href', N.router.linkTo('forum.section', {
       hid:          res.section.hid,
       page:         res.page.current + 1
     }));
