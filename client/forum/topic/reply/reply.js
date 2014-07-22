@@ -3,174 +3,151 @@
 
 'use strict';
 
-var _ = require('lodash');
+var _        = require('lodash');
+var remarked = require('remarked');
 
-var draft = require('../../_draft');
-
-// Reply state
-//
-// - draft_id:        key to save draft text
-// - editor:          editor instance: TimyMCE
-// - $form:           reply form with editor
-// - hid:             topic's human id
-// - parent_post_id:  `_id` of the parent post
-// - section_hid:     id of the current section
-//
-var editorState = {};
+var $form;
+var pageParams;
+var parentPostId;
+var $preview;
 
 
-// helper to destroy editor & free resourses
-// - dropDraft:       true to delete draft, autosave in other case
-//
-function removeEditor(dropDraft) {
-  if (dropDraft) {
-    // just remove draft text
-    draft.remove(editorState.draft_id);
-  } else {
-    if (editorState.editor && editorState.editor.isDirty()) {
-      // text is edited
-      if (editorState.editor.value()) {
-        // editor has text, need to save it
-        draft.save(editorState.draft_id, editorState.editor.value());
-      } else {
-        // If content empty - cleanup draft key, don't store empty records
-        draft.save(editorState.draft_id);
-      }
-    }
+function removeEditor() {
+  if (!$form) {
+    return;
   }
 
-  // cleanup
-  if (editorState.$form) {
-    editorState.$form.remove();
-  }
-  if (editorState.editor) {
-    editorState.editor.remove();
-  }
-  editorState = {};
+  // TODO: save draft
+  $form.remove();
+  $form = null;
+  $preview = null;
 }
 
 
-// init on page load and destroy editor on window unload
-//
-N.wire.on('navigate.done:forum.topic', function (data) {
-
-  editorState.hid = +data.params.hid;
-  editorState.section_hid = +data.params.section_hid;
-
-  $(window).on('beforeunload', removeEditor);
-});
-
-
-// free resources on page exit
-//
-N.wire.before('navigate.exit:forum.topic', function () {
-  removeEditor();
-
-  $(window).off('beforeunload', removeEditor);
-});
-
-
-// click on post reply link or toolbar reply button
-//
-N.wire.on('forum.post.reply', function (event) {
-  var $button = $(event.currentTarget),
-    button_offset = $button.offset().top,
-    parent_post_id = $button.data('post-id') || 0;
-
-  // Check if previous editor exists
-  if (editorState.$form) {
-    // If already writing reply to this post, then nothing to do
-    if (parent_post_id === editorState.parent_post_id) {
-      return;
-    }
-    removeEditor();
+function updatePreview() {
+  if (!$preview) {
+    return;
   }
 
-  N.loader.loadAssets('editor', function () {
+  remarked.setOptions({
+    gfm: false,
+    tables: false,
+    breaks: false,
+    pedantic: false,
+    sanitize: true,
+    smartLists: true,
+    smartypants: false
+  });
 
-    editorState.parent_post_id = parent_post_id;
+  // TODO: generate real preview
+  var Parser = require('ndparser');
+  var parser = new Parser();
 
-    // draft id = 'forum:reply:<section_hid>:<topic_hid>:<post_id>'
-    editorState.draft_id = 'forum:reply:' + editorState.section_hid + ':' +
-      editorState.hid + ':' + parent_post_id;
+  var data = {
+    input: remarked($form.find('textarea').val()),
+    output: null,
+    options: {}
+  };
 
-    // Create editing form instance
-    editorState.$form = $(N.runtime.render('forum.topic.reply'));
-    editorState.$form.hide();
+  parser.src2ast(data, function () {
+    $preview.html(data.output.html());
+  });
+}
 
-    var $parent_post;
 
-    // Find parent, to attach editor after. For new reply - last child
-    if (editorState.parent_post_id) {
-      $parent_post = $('#post' + editorState.parent_post_id);
-    } else {
-      $parent_post = $('#postlist > :last');
-    }
+// Init on page load
+//
+N.wire.on('navigate.done:forum.topic', function init_forum_post_reply(data) {
+  pageParams = data.params;
+});
 
-    // Insert editing form after editor post
-    $parent_post.after(editorState.$form);
 
-    // Initialize editable area
-    var Editor = require('nodeca-editor');
-    editorState.editor = new Editor();
-    editorState.editor.attach(editorState.$form.find('.forum-reply__editor'));
+// Free resources on page exit
+//
+N.wire.before('navigate.exit:forum.topic', function tear_down_forum_post_reply() {
+  removeEditor();
+});
 
-    // Load draft if exists
-    editorState.editor.value(draft.find(editorState.draft_id) || '');
 
-    // Show form
-    editorState.$form.fadeIn();
+// Load parser
+//
+N.wire.before('forum.post.reply', function load_parser(event, callback) {
+  N.loader.loadAssets('parser', callback);
+});
 
-    // Fix scroll
-    $('html,body').animate({scrollTop: '+=' + ($button.offset().top - button_offset)}, 0);
+
+// Click on post reply link or toolbar reply button
+//
+N.wire.on('forum.post.reply', function click_reply(event) {
+  removeEditor();
+
+  // TODO: load draft
+
+  parentPostId = $(event.target).data('post-id');
+
+  $form = $(N.runtime.render('forum.topic.reply'));
+  $form.hide();
+
+  $preview = $form.find('.forum-reply__preview');
+
+  // Find parent, to attach editor after. For new reply - last child
+  if (parentPostId) {
+    $('#post' + parentPostId).after($form);
+  } else {
+    $('#postlist > :last').after($form);
+  }
+
+  $form.fadeIn();
+
+  $form.find('textarea').on('input propertychange', _.debounce(updatePreview, 500));
+});
+
+
+// Event handler on Save button click
+//
+N.wire.on('forum.post.reply.save', function save() {
+  // Save reply on server
+
+  remarked.setOptions({
+    gfm: false,
+    tables: false,
+    breaks: false,
+    pedantic: false,
+    sanitize: true,
+    smartLists: true,
+    smartypants: false
+  });
+
+  var data = {
+    section_hid: pageParams.section_hid,
+    topic_hid:   pageParams.hid,
+    post_text:   remarked($form.find('textarea').val())
+  };
+
+  if (parentPostId) {
+    data.parent_post_id = parentPostId;
+  }
+
+  N.io.rpc('forum.topic.reply', data).done(function (res) {
+    removeEditor();
+    // TODO: remove draft
+
+    // TODO: append new posts
+    window.location = res.redirect_url;
   });
 });
 
 
-// event handler on Save button click
-//
-N.wire.on('forum.post.reply.save', function () {
-  // Save reply on server
-  var post = {
-    topic_hid: editorState.hid,
-    format: 'txt',
-    text: editorState.editor.value()
-  };
-
-  post.to_id = editorState.parent_post_id;
-
-  N.io.rpc('forum.topic.reply', post).done(function (env) {
-    var locals = {
-      topic: editorState,
-      section: {
-        hid: editorState.section_hid
-      },
-      posts: env.posts,
-      users: env.users,
-      settings: {}
-    };
-
-    _.forEach(locals.posts, function(post){
-      post.ts = new Date(post.ts);
-    });
-
-    // Render new post
-    var $result = $(N.runtime.render('forum.blocks.posts_list', locals)).hide();
-
-    // Append new post
-    $('#postlist > :last').after($result);
-
-    $result.fadeIn();
-
-    removeEditor(true);
-  });
+N.wire.on('forum.post.reply.preview_toggle', function preview_toggle() {
+  $preview.fadeToggle();
+  // TODO: save preview visibility
 });
 
 
 // on Cancel button remove editor and store draft
 //
-N.wire.on('forum.post.reply.cancel', function () {
-  editorState.$form.fadeOut(function () {
+N.wire.on('forum.post.reply.cancel', function cancel() {
+  $form.fadeOut(function () {
     removeEditor();
   });
 });
@@ -178,6 +155,6 @@ N.wire.on('forum.post.reply.cancel', function () {
 
 // terminate editor if user tries to edit post on the same page
 //
-N.wire.on('forum.post.edit', function () {
+N.wire.on('forum.post.edit', function click_edit() {
   removeEditor();
 });

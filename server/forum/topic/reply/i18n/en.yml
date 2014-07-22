@@ -1,3 +1,2 @@
 en-US:
-  error_invalid_topic: "Invalid topic id #{value}"
-  error_invalid_parent_post: "Can't reply. Probably, moderator deleted parent post."
+  error_invalid_parent_post: "You try reply to not existing post."

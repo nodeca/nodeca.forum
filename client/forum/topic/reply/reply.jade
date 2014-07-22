@@ -3,11 +3,15 @@
     img.av-l(src='http://lorempixel.com/150/150/sports/a' + '#{ Math.ceil(Math.random()*1000) }')
 
   .forum-reply__content
+    .forum-reply__preview
     .forum-reply__editor
+      textarea
     .forum-reply__buttons.clearfix
       .forum-reply__buttons-blk.pull-right
-        button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.post.reply.cancel')=self.t('reply_cancel')
-        |  
-        button.forum-reply__save.btn.btn-primary(data-on-click='forum.post.reply.save')='post-reply' === self.type ? self.t('reply_save') : self.t('edit_save')
+        button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.post.reply.cancel')=self.t('cancel')
+        | 
+        button.forum-reply__toggle_preview.btn.btn-info(data-on-click='forum.post.reply.preview_toggle')=self.t('preview_toggle')
+        | 
+        button.forum-reply__save.btn.btn-primary(data-on-click='forum.post.reply.save')=self.t('reply')
       .forum-reply__buttons-blk.pull-left
-        button.forum-reply__options.btn.btn-link=self.t('reply_options')
+        button.forum-reply__options.btn.btn-link=self.t('options')

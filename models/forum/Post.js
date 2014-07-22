@@ -19,15 +19,6 @@ module.exports = function (N, collectionName) {
   , ip              : String  // ip address
   , text            : String
 
-  // Text format. Possible values:
-  //  `md`  - markdown
-  //  `vb`  - vBulletin bbcode
-  //  `txt` - clear text, with line breaks
-  //  `ts`  - textile
-  , fmt             : String
-  , html            : String  // Optional, rendered text, if needed
-                              // (some formats are rendered on the fly)
-
   // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
   // constants should be defined globally
   , st              : Number

@@ -3,121 +3,98 @@
 
 'use strict';
 
+var $form;
+var pageParams;
+var postId;
 
-// Edit state
-//
-// - editor:          editor instance: TimyMCE
-// - $form:           reply form with editor
-// - hid:             topic's human id
-// - post_id:         `_id` of the current post
-// - section_hid:     id of the current section
-//
-var editorState = {};
 
-// helper to destroy editor & free resourses
-//
 function removeEditor() {
-  // cleanup
-  if (editorState.$form) {
-    editorState.$form.remove();
+  if (!$form) {
+    return;
   }
-  if (editorState.editor) {
-    editorState.editor.remove();
-  }
-  editorState = {};
+
+  $form.remove();
+  $form = null;
 }
 
-// init on page load
+
+// Init on page load
 //
-N.wire.on('navigate.done:forum.topic', function (data) {
-  editorState.hid = +data.params.hid;
-  editorState.section_hid = +data.params.section_hid;
+N.wire.on('navigate.done:forum.topic', function init_forum_post_edit(data) {
+  pageParams = data.params;
 });
 
-// free resources on page exit
+
+// Free resources on page exit
 //
-N.wire.on('navigate.exit:forum.topic', function () {
+N.wire.on('navigate.exit:forum.topic', function tear_down_forum_post_edit() {
   removeEditor();
 });
 
-// click on post edit link
+
+// Click on post edit link
 //
-N.wire.on('forum.post.edit', function (event) {
-  var $button = $(event.currentTarget),
-    button_offset = $button.offset().top,
-    post_id = $button.data('post-id') || 0;
+N.wire.on('forum.post.edit', function click_edit(event) {
+  removeEditor();
 
-  // Check if previous editor exists
-  if (editorState.$form) {
-    // If already editing this post, then nothing to do
-    if (post_id === editorState.post_id) {
-      return;
-    }
+  var $button = $(event.target);
 
-    // Show hidden post
-    if ('post-edit' === editorState.type) {
-      $('#post' + editorState.post_id).show();
-    }
+  postId = $button.data('post-id');
 
-    removeEditor();
-  }
+  var $targetPost = $('#post' + postId);
 
-  N.loader.loadAssets('editor', function () {
+  $form = $(N.runtime.render('forum.topic.edit'));
+  $form.hide();
 
-    editorState.post_id = post_id;
+  var params = {
+    post_id: postId,
+    section_hid: pageParams.section_hid,
+    topic_hid: pageParams.hid
+  };
 
-    // Create editing form instance
-    editorState.$form = $(N.runtime.render('forum.topic.reply', {
-      type: editorState.type
-    }));
-    editorState.$form.hide();
+  N.io.rpc('forum.topic.edit', params).done(function (res) {
+    // TODO: src html to markdown
+    $form.find('textarea').val(res.src);
 
-    // Find target, to attach editor after
-    var $target_post = $('#post' + editorState.post_id);
-
-    // Insert editing form after post
-    $target_post.after(editorState.$form);
-
-    // Initialize editable area
-    var Editor = require('nodeca-editor');
-    editorState.editor = new Editor();
-    editorState.editor.attach(editorState.$form.find('.forum-reply__editor'));
-
-    // Load previously saved text
-    editorState.editor.value($target_post.find('.forum-post__message').html());
-
-    // Show form
-    editorState.$form.fadeIn();
-
-    // Fix scroll
-    $('html,body').animate({scrollTop: '+=' + ($button.offset().top - button_offset)}, 0);
-
-    // Hide post
-    $target_post.hide();
+    // Insert editing form after editor post
+    $targetPost.after($form);
+    $form.fadeIn();
   });
 });
 
-// event handler on Save button click
+
+// Event handler on Save button click
 //
-N.wire.on('forum.post.edit.save', function () {
+N.wire.on('forum.post.edit.save', function save() {
 
-  // TODO: implement post saving
+  // TODO: markdown to src html
+  var params = {
+    post_id: postId,
+    section_hid: pageParams.section_hid,
+    post_text: $form.find('textarea').val(),
+    topic_hid: pageParams.hid
+  };
 
-  editorState.$form.fadeOut(function () {
+  N.io.rpc('forum.topic.edit', params).done(function (res) {
+    $form.fadeOut(function () {
+      removeEditor();
+      $('#post' + postId + ' .forum-post__message').html(res.html);
+    });
+  });
+});
+
+
+// On Cancel button remove editor
+//
+N.wire.on('forum.post.edit.cancel', function cancel() {
+  $form.fadeOut(function () {
     removeEditor();
   });
 });
 
-// on Cancel button remove editor and store draft
-//
-N.wire.on('forum.post.edit.cancel', function () {
-  editorState.$form.fadeOut(function () {
-    removeEditor();
-  });
-});
 
-// terminate editor if user tries to reply post on the same page
+// Terminate editor if user tries to reply post on the same page
 //
-N.wire.on('forum.post.reply', function () {
+N.wire.on('forum.post.reply', function click_reply() {
   removeEditor();
 });
