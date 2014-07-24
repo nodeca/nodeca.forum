@@ -13,7 +13,7 @@ var topicState = {};
 
 // init on page load and destroy editor on window unload
 //
-N.wire.on('navigate.done:forum.topic', function (data) {
+N.wire.on('navigate.done:forum.topic', function setup_page(data) {
   topicState.topic_hid = +data.params.hid;
   topicState.section_hid = +data.params.section_hid;
   topicState.page = +data.params.page;
@@ -21,7 +21,7 @@ N.wire.on('navigate.done:forum.topic', function (data) {
 
 // "More posts" button logic
 //
-N.wire.on('forum.topic.append_next_page', function (event) {
+N.wire.on('forum.topic.append_next_page', function append_next_page(event) {
   var $button = $(event.currentTarget);
 
   // request for the next page

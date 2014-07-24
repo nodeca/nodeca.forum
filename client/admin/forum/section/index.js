@@ -1,8 +1,8 @@
 'use strict';
 
 
-var _ = require('lodash');
-
+var _          = require('lodash');
+var Bloodhound = window.Bloodhound;
 
 var $moderatorSelectDialog;
 var bloodhound;
@@ -67,7 +67,9 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   var sectionId = $(event.currentTarget).data('section_id');
 
   // Render dialog window.
-  $moderatorSelectDialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', { section_id: sectionId }));
+  $moderatorSelectDialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', {
+    section_id: sectionId
+  }));
 
   if (!bloodhound) {
     bloodhound = new Bloodhound({
@@ -125,10 +127,10 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
 
     $moderatorSelectDialog.on('hidden.bs.modal', function () {
       N.wire.emit('navigate.to', {
-        apiPath: 'admin.forum.moderator.edit'
-        , params: {
-          section_id: form.fields.section_id
-          , user_id: res[0]._id
+        apiPath: 'admin.forum.moderator.edit',
+        params: {
+          section_id: form.fields.section_id,
+          user_id: res[0]._id
         }
       });
     }).modal('hide');

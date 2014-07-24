@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // "More topics" button logic
 
-N.wire.on('forum.section.append_next_page', function (event) {
+N.wire.on('forum.section.append_next_page', function append_next_page(event) {
   var $button = $(event.currentTarget);
   var new_url = $button.attr('href');
 

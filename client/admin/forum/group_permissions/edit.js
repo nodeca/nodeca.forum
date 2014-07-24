@@ -37,10 +37,10 @@ function Setting(name, schema, value, overriden) {
         // Use usergroup.
         return N.runtime.page_data.usergroup_settings[this.name].value;
 
-      } else {
-        // Use defaults.
-        return schema['default'];
       }
+
+      // Use defaults.
+      return schema['default'];
     }
   , write: function (value) {
       this.overriden(true);

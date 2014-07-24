@@ -26,7 +26,7 @@ var view = null;
 N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   var isNewSection   = !data.current_section
     , currentSection = {};
-  
+
   // Create observable fields on currentSection.
   _.forEach(SECTION_FIELD_DEFAULTS, function (defaultValue, key) {
     var value = _.has(data.current_section, key) ? data.current_section[key] : defaultValue;
