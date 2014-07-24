@@ -8,7 +8,7 @@ ul.forum-sections
     li.forum-section
       //- Add 'unread' class & #id below, for new data
       .row
-        .forum-section__summary.col-xs-9.col-sm-7
+        .forum-section__summary.col-xs-10.col-sm-9
           h3.forum-section__title
             a.forum-section__title-link(href=self.link_to('forum.section', section))= section.title
 
@@ -29,21 +29,21 @@ ul.forum-sections
                       href=self.link_to('users.member', { user_hid: mod.hid })
                     ) #{mod.name}
 
-        ul.forum-section__counters.col-xs-3.col-sm-2
+        ul.forum-section__counters.col-xs-2.col-sm-1
           li.forum-section__counter-item
             span.forum-section__counter-val #{section.cache.topic_count}
             = self.t('section_topics', section.cache.topic_count)
-          li.forum-section__counter-item
+          //-li.forum-section__counter-item
             span.forum-section__counter-val #{section.cache.post_count}
             = self.t('section_posts', section.cache.post_count)
 
         if last_topic
-          ul.forum-section__lpost.col-sm-3.hidden-xs
-            li.forum-section__lpost-title
+          ul.forum-section__lpost.col-sm-2.hidden-xs
+            //-li.forum-section__lpost-title
               a.forum-section__lpost-title-link(
                 href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.last_post
               ) #{section.cache.last_topic_title}
-            if last_user
+            //-if last_user
               li.forum-section__lpost-user
                 a.forum-section__lpost-user-link._ucard-popover(
                   href=self.link_to('users.member', { user_hid: last_user })
