@@ -29,9 +29,9 @@ article#content.forum-topics-root
               button.btn.btn-default.icon-options.dropdown-toggle(type='button', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
-                li.visible-xs-block: a(href='#')= self.t('mark_read')
-                li.visible-xs-block: a(href='#')= self.t('subscribe')
-                li.visible-xs-block.divider
+                li.visible-xxs-block: a(href='#')= self.t('mark_read')
+                li.visible-xxs-block: a(href='#')= self.t('subscribe')
+                li.visible-xxs-block.divider
                 li.dropdown-header= self.t('mod_actions')
                 li: a(href='#')= self.t('announce')
                 li: a(href='#')= self.t('add_moderator')
@@ -39,12 +39,12 @@ article#content.forum-topics-root
                 li: a(href='#')= self.t('mass_prune')
 
             if self.runtime.is_member
-              button.hidden-xs.btn.btn-default.btn-icon-only.icon-track.pull-right(
+              button.hidden-xxs.btn.btn-default.btn-icon-only.icon-track.pull-right(
                 type='button'
                 title=self.t('subscribe')
               )
 
-              button.hidden-xs.btn.btn-default.btn-icon-only.icon-check.pull-right(
+              button.hidden-xxs.btn.btn-default.btn-icon-only.icon-check.pull-right(
                 type='button'
                 title=self.t('mark_read')
               )
