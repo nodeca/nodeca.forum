@@ -25,7 +25,7 @@ each post in self.posts
     .forum-post__aside
       if user
         a.forum-post__userpic(href='#')
-          img.av-l(alt='#{user.name}' src='http://lorempixel.com/150/150/sports/a' + '#{user.hid}' + '/')
+          img.av-l(alt='#{user.name}' src=self.link_to('core.gridfs', { bucket: user.avatar_id }))
       else
         .av-l
     .forum-post__content
