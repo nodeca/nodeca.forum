@@ -27,20 +27,20 @@ article#content.forum-topic-root
             button.btn.btn-default.icon-options.dropdown-toggle(type='button' data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
-              li.visible-xs-block: a(href='#')= self.t('topic_subscribe')
-              li: a(href='#')= self.t('topic_delete')
-              li: a(href='#')= self.t('topic_close')
+              li.visible-xs-block: a(href='#')= self.t('subscribe')
+              li: a(href='#')= self.t('delete')
+              li: a(href='#')= self.t('close')
               li.divider
               li.dropdown-header= self.t('mod_actions')
-              li: a(href='#')= self.t('topic_pin')
-              li: a(href='#')= self.t('topic_history')
-              li: a(href='#')= self.t('topic_approve')
-              li: a(href='#')= self.t('topic_merge')
+              li: a(href='#')= self.t('pin')
+              li: a(href='#')= self.t('history')
+              li: a(href='#')= self.t('approve')
+              li: a(href='#')= self.t('merge')
 
           if self.runtime.is_member
             button.hidden-xs.btn.btn-default.btn-icon-only.icon-track.pull-right(
               type='button'
-              title=self.t('topic_subscribe')
+              title=self.t('subscribe')
             )
 
           if self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN)

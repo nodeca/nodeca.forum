@@ -1,12 +1,12 @@
 en-US:
-  topic_subscribe: Subscribe
-  topic_delete: Delete
-  topic_close: Close
-  topic_pin: Pin
-  topic_unpin: Unpin
-  topic_history: History
-  topic_approve: Approve
-  topic_merge: Merge
+  subscribe: Subscribe
+  delete: Delete
+  close: Close
+  pin: Pin
+  unpin: Unpin
+  history: History
+  approve: Approve
+  merge: Merge
 
   mod_actions: Moderation
 

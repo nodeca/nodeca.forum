@@ -1,12 +1,12 @@
 en-US:
   no_topics: No topics yet.
 
-  section_mark_read: Mark all read
-  section_subscribe: Subscribe
-  section_announce: Announce
-  section_add_moderator: Add moderator
-  section_mass_move: Mass move
-  section_mass_prune: Mass prune
+  mark_read: Mark all read
+  subscribe: Subscribe
+  announce: Announce
+  add_moderator: Add moderator
+  mass_move: Mass move
+  mass_prune: Mass prune
 
   mod_actions: Moderation
 
