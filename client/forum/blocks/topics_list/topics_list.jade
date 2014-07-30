@@ -1,5 +1,3 @@
-include ../pagination_micro/pagination_micro
-
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
@@ -17,13 +15,7 @@ each topic in self.topics
       .forum-topicline__summary.col-xs-9.col-sm-7
         h2.forum-topicline__title
           a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
-        //a.mark-i-attach._tip(href="#")=topic.attach_count
-        - _pages_count = Math.ceil(topic.cache.post_count / self.settings.posts_per_page)
-        if _pages_count > 1
-          //- micro-pagination
-          - var route_params = { hid: topic.hid, section_hid: self.section.hid }
-          mixin pagination_micro('forum.topic', route_params, _pages_count)
-
+        //-a.mark-i-attach._tip(href="#")=topic.attach_count
 
         .forum-topicline__meta
           if fp_user
