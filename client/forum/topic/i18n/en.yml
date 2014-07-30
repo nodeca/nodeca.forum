@@ -1,5 +1,5 @@
 en-US:
-  topic_subscribe: Subscribe to new posts notification
+  topic_subscribe: Subscribe
   topic_delete: Delete
   topic_close: Close
   topic_pin: Pin
@@ -7,6 +7,8 @@ en-US:
   topic_history: History
   topic_approve: Approve
   topic_merge: Merge
+
+  mod_actions: Moderation
 
   post_add: Add reply
   more_posts: More posts
