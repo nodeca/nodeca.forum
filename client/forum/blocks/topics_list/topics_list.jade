@@ -21,26 +21,29 @@ each topic in self.topics
           if fp_user
             a.forum-topicline__author(
               href=self.link_to('users.member', { user_hid: fp_user.hid })
-            ) #{fp_user.name}
-          time.forum-topicline__time(datetime=self.date(fp_ts, 'iso')) #{self.date(fp_ts, 'date')}
+            )= fp_user.name
+          time.forum-topicline__time(datetime=self.date(fp_ts, 'iso'))= self.date(fp_ts, 'date')
 
       ul.forum-topicline__counters.col-xs-3.col-sm-2
         - replies = topic.cache.post_count - 1;
         - views   = topic.views_count;
-        li.forum-topicline__counter-item
-          span.forum-topicline__counter-val #{replies}
-          = self.t('topic_replies', { count: replies })
-        li.forum-topicline__counter-item
-          span.forum-topicline__counter-val  #{views}
-          = self.t('topic_views', { count: views })
+        li.forum-topicline__counter-item.hidden-xxs
+          = self.t('topic_replies', replies)
+        li.forum-topicline__counter-item.visible-xxs-block
+          = replies
+
+        li.forum-topicline__counter-item.hidden-xxs
+          = self.t('topic_views', views)
+        li.forum-topicline__counter-item.visible-xxs-block
+          = views
 
       ul.forum-topicline__lpost.col-sm-3.hidden-xs
         li.forum-topicline__lpost-time
           a.forum-topicline__lpost-time-link(href='#')
-            time(datetime=self.date(lp_ts, 'iso')) #{self.date(lp_ts, 'date')}
+            time(datetime=self.date(lp_ts, 'iso'))= self.date(lp_ts, 'date')
         if lp_user
           li.forum-topicline__lpost-user
             a.forum-topicline__lpost-user-link._ucard-popover(
               href=self.link_to('users.member', { user_hid: lp_user.hid })
               data-user-id=lp_user._id
-            ) #{lp_user.name}
+            )= lp_user.name

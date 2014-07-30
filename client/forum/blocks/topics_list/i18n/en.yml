@@ -1,4 +1,4 @@
 en-US:
   page_separator: "page #{value}"
-  topic_replies: ((reply|replies))
-  topic_views: ((view|views))
+  topic_replies: "#{count} ((reply|replies))"
+  topic_views: "#{count} ((view|views))"

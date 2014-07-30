@@ -1,4 +1,4 @@
 en-US:
   moderators: "((moderator|moderators))"
-  section_topics: "((topic|topics))"
-  section_posts: "((post|posts))"
+  section_topics: "#{count} ((topic|topics))"
+  section_posts: "#{count} ((post|posts))"

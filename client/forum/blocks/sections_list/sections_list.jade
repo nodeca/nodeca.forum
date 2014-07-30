@@ -27,12 +27,13 @@ ul.forum-sections
                   dd.forum-section__moderator
                     a.forum-section__moderator-link(
                       href=self.link_to('users.member', { user_hid: mod.hid })
-                    ) #{mod.name}
+                    )= mod.name
 
         ul.forum-section__counters.col-xs-3.col-sm-2
-          li.forum-section__counter-item
-            span.forum-section__counter-val #{section.cache.topic_count}
+          li.forum-section__counter-item.hidden-xxs
             = self.t('section_topics', section.cache.topic_count)
+          li.forum-section__counter-item.visible-xxs-block
+            = section.cache.topic_count
           //-li.forum-section__counter-item
             span.forum-section__counter-val #{section.cache.post_count}
             = self.t('section_posts', section.cache.post_count)
@@ -51,4 +52,4 @@ ul.forum-sections
                 ) #{last_user.name}
             if last_ts
               li.forum-section__lpost-time
-                time(datetime=self.date(last_ts, 'iso')) #{self.date(last_ts, 'date')}
+                time(datetime=self.date(last_ts, 'iso'))= self.date(last_ts, 'date')
