@@ -1,7 +1,7 @@
 en-US:
   mark_all_read: Mark all read
-  exclude: "#{count} ((forum|forums)) hidden"
-  news: What's new?
+  exclude: "#{count} hidden"
+  news: New topics
   total_active:
     all: "#{count} active ((user|users)) in the past #{interval} ((minute|minutes)):interval"
     members: "#{count} ((member|members))"
