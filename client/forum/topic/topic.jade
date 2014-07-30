@@ -24,7 +24,7 @@ article#content.forum-topic-root
               != self.partial('@common.blocks.pagination', pgn_params)
 
           .btn-group.pull-right
-            button.btn.btn-default.icon-options.dropdown-toggle(type='button' data-toggle='dropdown')
+            button.btn.btn-default.dropdown-toggle(type='button' data-toggle='dropdown')
               span.caret
             ul.dropdown-menu
               li.visible-xxs-block: a(href='#')= self.t('subscribe')
