@@ -1,4 +1,6 @@
 en-US:
   moderators: "((moderator|moderators))"
-  section_topics: "#{count} ((topic|topics))"
-  section_posts: "#{count} ((post|posts))"
+  topics: "#{count} ((topic|topics))"
+  posts: "#{count} ((post|posts))"
+  empty: "No topics"
+  stat: "#{count} ((topic|topics)) · Last post #{last}"
