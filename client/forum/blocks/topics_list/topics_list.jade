@@ -10,32 +10,36 @@ each topic in self.topics
   - lp_user = self.users[topic.cache.last_user]
   - fp_ts   = topic.cache.first_ts
   - lp_ts   = topic.cache.last_ts
+  - replies = topic.cache.post_count - 1;
+  - views   = topic.views_count;
   .forum-topicline
     .row
-      .forum-topicline__summary.col-xs-9.col-sm-7
-        h2.forum-topicline__title
-          a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
-        //-a.mark-i-attach._tip(href="#")=topic.attach_count
+      .col-sm-7
+        .forum-topicline__summary
+          h2.forum-topicline__title
+            a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
+          //-a.mark-i-attach._tip(href="#")=topic.attach_count
 
-        .forum-topicline__meta
-          if fp_user
-            a.forum-topicline__author(
-              href=self.link_to('users.member', { user_hid: fp_user.hid })
-            )= fp_user.name
-          time.forum-topicline__time(datetime=self.date(fp_ts, 'iso'))= self.date(fp_ts, 'date')
+          .forum-topicline__meta.hidden-xs
+            if fp_user
+              a.forum-topicline__author(
+                href=self.link_to('users.member', { user_hid: fp_user.hid })
+              )= fp_user.name
+            time.forum-topicline__time(datetime=self.date(fp_ts, 'iso'))= self.date(fp_ts, 'date')
 
-      ul.forum-topicline__counters.col-xs-3.col-sm-2
-        - replies = topic.cache.post_count - 1;
-        - views   = topic.views_count;
-        li.forum-topicline__counter-item.hidden-xxs
-          = self.t('topic_replies', replies)
-        li.forum-topicline__counter-item.visible-xxs-block
-          = replies
+          .forum-topicline__microstat.visible-xs-block
+            = self.t('stat', { count: replies, last: self.date(lp_ts, 'date'), name: lp_user.name })
 
-        li.forum-topicline__counter-item.hidden-xxs
-          = self.t('topic_views', views)
-        li.forum-topicline__counter-item.visible-xxs-block
-          = views
+          .forum-topicline__enter.icon-right-open.visible-xs-block
+
+          .forum-topicline__unread-marker
+
+      ul.forum-topicline__counters.col-sm-2.hidden-xs
+        li.forum-topicline__counter-item
+          = self.t('replies', replies)
+
+        li.forum-topicline__counter-item
+          = self.t('views', views)
 
       ul.forum-topicline__lpost.col-sm-3.hidden-xs
         li.forum-topicline__lpost-time
@@ -47,3 +51,6 @@ each topic in self.topics
               href=self.link_to('users.member', { user_hid: lp_user.hid })
               data-user-id=lp_user._id
             )= lp_user.name
+
+    //- cover all space with link for small screens
+    a.forum-topicline__overlay.visible-xs-block(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))

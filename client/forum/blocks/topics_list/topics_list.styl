@@ -5,20 +5,20 @@
 
 // pages separator
 .forum-topicline__separator
-  font-family sansWideFontFamily
   border-bottom 1px solid grayLighter
   font-size 10px
-  font-weight bold
   padding 0
+  text-align center
 
 //
 // Topics lines
 //
 
 .forum-topicline
-  font-family sansWideFontFamily
   padding 10px 0
   border-top 1px solid grayLightest
+  // for link overlay
+  position relative
   // hide border on first item
   &:first-child
     border 0
@@ -32,16 +32,29 @@
 //
 
 .forum-topicline__summary
-  padding-left 20px
-  box-sizing border-box
+  padding-left 5px
+  padding-right 20px
+  position relative
+
+.forum-topicline__unread-marker
+  position absolute
+  display none
+  left 5px
+  top 50%
+  line-height 0
+  width 1px
+  height 20px
+  margin-top -10px
+  background-color grayLighter
 
 .forum-topicline__title
+  font-family sansWideFontFamily
   position relative
-  font-size 18px
   font-weight normal
-  line-height (baseLineHeight*5/4)
-  display inline-block
-  margin 0 .7em 0 0
+  font-size 16px
+  line-height inherit
+  margin-top 0
+  margin-bottom 0
 
 .forum-topicline__title-link
   color grayDark
@@ -49,9 +62,16 @@
     color linkColorHover
 
 .forum-topicline__meta
+.forum-topicline__microstat
+  color grayLight
   margin-left 10px
   font-size 11px
-  line-height (baseLineHeight*3/4)
+  line-height 1.6
+
+.forum-topicline__microstat
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
 
 a.forum-topicline__author
   color grayLight
@@ -61,7 +81,36 @@ a.forum-topicline__author
 .forum-topicline__time
   font-style italic
   margin-left 1em
+
+.forum-topicline__enter
+  position absolute
+  right 0
+  top 50%
+  height 100%
+  width 20px
+  text-align center
   color grayLight
+  &:before
+    margin-right 0
+    height 100%
+    vertical-align middle
+    font-size 18px
+    line-height 0
+
+// Enabled only for small screens
+.forum-topicline__overlay
+  position absolute
+  top 0
+  left 0
+  width 100%
+  height 100%
+  z-index 10
+  &:focus
+    opacity .1
+    background-color grayLighter
+  &:hover
+    opacity .1
+    background-color grayLighter
 
 //
 // Second column (topics/posts counters)
@@ -69,14 +118,12 @@ a.forum-topicline__author
 
 .forum-topicline__counters
   list-style none
-  font-size 13px
+  font-size 12px
   color gray
-  margin-bottom 0
+  margin 0
 
 .forum-topicline__counter-item
   text-align right
-  padding-right 0.5em
-  line-height baseLineHeight
   white-space nowrap
   overflow hidden
   text-overflow ellipsis
@@ -87,11 +134,11 @@ a.forum-topicline__author
 
 .forum-topicline__lpost
   list-style none
-  font-size 11px
+  font-size 12px
+  margin 0
 
 .forum-topicline__lpost-user
 .forum-topicline__lpost-time
-  line-height (baseLineHeight*3/4)
   white-space nowrap
   overflow hidden
   text-overflow ellipsis
@@ -107,17 +154,15 @@ a.forum-topicline__lpost-user-link
 //
 .unread
   .forum-topicline__summary
-    padding-left 35px
+    padding-left 15px
   .forum-topicline__title
     font-weight bold
-    &:before
-      content ''
-      position absolute
-      left -15px
-      top 3px
-      height 19px
-      background-color colorUnread
-      width 7px
+
+  .forum-topicline__unread-marker
+    display block
+    background-color colorUnread
+    width 2px
+
 
 .forum-topicline__summary .icon-closed
   display inline-block
