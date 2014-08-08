@@ -1,0 +1,17 @@
+.forum-reply.clearfix
+  .forum-reply__aside
+    img.av-l(alt='#{N.runtime.user_name}' src=self.link_to('core.gridfs', { bucket: N.runtime.user_avatar }))
+
+  .forum-reply__content
+    .forum-reply__preview
+    .forum-reply__editor
+      textarea
+    .forum-reply__buttons.clearfix
+      .forum-reply__buttons-blk.pull-right
+        button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.topic.post_reply:cancel')=self.t('cancel')
+        | 
+        button.forum-reply__toggle_preview.btn.btn-info(data-on-click='forum.topic.post_reply:preview_toggle')=self.t('preview_toggle')
+        | 
+        button.forum-reply__save.btn.btn-primary(data-on-click='forum.topic.post_reply:save')=self.t('reply')
+      .forum-reply__buttons-blk.pull-left
+        button.forum-reply__options.btn.btn-link=self.t('options')

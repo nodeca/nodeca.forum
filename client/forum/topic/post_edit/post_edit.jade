@@ -1,0 +1,14 @@
+.forum-edit.clearfix
+  .forum-edit__aside
+    img.av-l(alt='#{N.runtime.user_name}' src=self.link_to('core.gridfs', { bucket: N.runtime.user_avatar }))
+
+  .forum-edit__content
+    .forum-edit__editor
+      textarea
+    .forum-edit__buttons.clearfix
+      .forum-edit__buttons-blk.pull-right
+        button.forum-edit__cancel.btn.btn-mini(data-on-click='forum.topic.post_edit:cancel')=self.t('cancel')
+        | 
+        button.forum-edit__save.btn.btn-primary(data-on-click='forum.topic.post_edit:save')=self.t('save')
+      .forum-edit__buttons-blk.pull-left
+        button.forum-edit__options.btn.btn-link=self.t('options')

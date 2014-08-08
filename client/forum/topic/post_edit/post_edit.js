@@ -18,6 +18,7 @@ function removeEditor() {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
 // Init on page load
 //
 N.wire.on('navigate.done:forum.topic', function init_forum_post_edit(data) {
@@ -32,9 +33,17 @@ N.wire.on('navigate.exit:forum.topic', function tear_down_forum_post_edit() {
 });
 
 
+// Terminate editor if user tries to reply post on the same page
+//
+N.wire.on('forum.topic.post_reply', function click_reply() {
+  removeEditor();
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Click on post edit link
 //
-N.wire.on('forum.post.edit', function click_edit(event) {
+N.wire.on('forum.topic.post_edit', function click_edit(event) {
   removeEditor();
 
   var $button = $(event.target);
@@ -43,7 +52,7 @@ N.wire.on('forum.post.edit', function click_edit(event) {
 
   var $targetPost = $('#post' + postId);
 
-  $form = $(N.runtime.render('forum.topic.edit'));
+  $form = $(N.runtime.render('forum.topic.post_edit'));
   $form.hide();
 
   var params = {
@@ -52,7 +61,7 @@ N.wire.on('forum.post.edit', function click_edit(event) {
     topic_hid: pageParams.hid
   };
 
-  N.io.rpc('forum.topic.edit', params).done(function (res) {
+  N.io.rpc('forum.topic.post_edit', params).done(function (res) {
     // TODO: src html to markdown
     $form.find('textarea').val(res.src);
 
@@ -63,9 +72,10 @@ N.wire.on('forum.post.edit', function click_edit(event) {
 });
 
 
+///////////////////////////////////////////////////////////////////////////////
 // Event handler on Save button click
 //
-N.wire.on('forum.post.edit.save', function save() {
+N.wire.on('forum.topic.post_edit:save', function save() {
 
   // TODO: markdown to src html
   var params = {
@@ -75,7 +85,7 @@ N.wire.on('forum.post.edit.save', function save() {
     topic_hid: pageParams.hid
   };
 
-  N.io.rpc('forum.topic.edit', params).done(function (res) {
+  N.io.rpc('forum.topic.post_edit', params).done(function (res) {
     $form.fadeOut(function () {
       removeEditor();
       $('#post' + postId + ' .forum-post__message').html(res.html);
@@ -86,15 +96,8 @@ N.wire.on('forum.post.edit.save', function save() {
 
 // On Cancel button remove editor
 //
-N.wire.on('forum.post.edit.cancel', function cancel() {
+N.wire.on('forum.topic.post_edit:cancel', function cancel() {
   $form.fadeOut(function () {
     removeEditor();
   });
-});
-
-
-// Terminate editor if user tries to reply post on the same page
-//
-N.wire.on('forum.post.reply', function click_reply() {
-  removeEditor();
 });

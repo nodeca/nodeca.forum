@@ -1,15 +1,16 @@
-// Forum Topic post reply logic
-//
+// Create reply form and load data from server
 
 'use strict';
 
-var _        = require('lodash');
-var remarked = require('remarked');
+var _          = require('lodash');
+var remarked   = require('remarked');
+var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 var $form;
 var pageParams;
 var parentPostId;
 var $preview;
+var parseRules;
 
 
 function removeEditor() {
@@ -43,18 +44,19 @@ function updatePreview() {
   var Parser = require('ndparser');
   var parser = new Parser();
 
-  var data = {
+  var parserData = {
     input: remarked($form.find('textarea').val()),
     output: null,
-    options: {}
+    options: parseRules
   };
 
-  parser.src2ast(data, function () {
-    $preview.html(data.output.html());
+  parser.src2ast(parserData, function () {
+    $preview.html(parserData.output.html());
   });
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
 // Init on page load
 //
 N.wire.on('navigate.done:forum.topic', function init_forum_post_reply(data) {
@@ -68,24 +70,48 @@ N.wire.before('navigate.exit:forum.topic', function tear_down_forum_post_reply()
   removeEditor();
 });
 
+// terminate editor if user tries to edit post on the same page
+//
+N.wire.on('forum.topic.post_edit', function click_edit() {
+  removeEditor();
+});
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Fetch parse rules
+//
+N.wire.before('forum.topic.post_reply', function fetch_parse_rules(event, callback) {
+  if (parseRules) {
+    callback();
+    return;
+  }
+
+  N.io.rpc('forum.topic.parse_rules').done(function (res) {
+    parseRules = res.parse_rules;
+    parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
+    callback();
+  });
+});
+
 
 // Load parser
 //
-N.wire.before('forum.post.reply', function load_parser(event, callback) {
+N.wire.before('forum.topic.post_reply', function load_parser(event, callback) {
   N.loader.loadAssets('parser', callback);
 });
 
 
 // Click on post reply link or toolbar reply button
 //
-N.wire.on('forum.post.reply', function click_reply(event) {
+N.wire.on('forum.topic.post_reply', function click_reply(event) {
   removeEditor();
 
   // TODO: load draft
 
   parentPostId = $(event.target).data('post-id');
 
-  $form = $(N.runtime.render('forum.topic.reply'));
+  $form = $(N.runtime.render('forum.topic.post_reply'));
   $form.hide();
 
   $preview = $form.find('.forum-reply__preview');
@@ -103,9 +129,10 @@ N.wire.on('forum.post.reply', function click_reply(event) {
 });
 
 
+///////////////////////////////////////////////////////////////////////////////
 // Event handler on Save button click
 //
-N.wire.on('forum.post.reply.save', function save() {
+N.wire.on('forum.topic.post_reply:save', function save() {
   // Save reply on server
 
   remarked.setOptions({
@@ -128,7 +155,7 @@ N.wire.on('forum.post.reply.save', function save() {
     data.parent_post_id = parentPostId;
   }
 
-  N.io.rpc('forum.topic.reply', data).done(function (res) {
+  N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
     removeEditor();
     // TODO: remove draft
 
@@ -138,7 +165,7 @@ N.wire.on('forum.post.reply.save', function save() {
 });
 
 
-N.wire.on('forum.post.reply.preview_toggle', function preview_toggle() {
+N.wire.on('forum.topic.post_reply:preview_toggle', function preview_toggle() {
   $preview.fadeToggle();
   // TODO: save preview visibility
 });
@@ -146,15 +173,8 @@ N.wire.on('forum.post.reply.preview_toggle', function preview_toggle() {
 
 // on Cancel button remove editor and store draft
 //
-N.wire.on('forum.post.reply.cancel', function cancel() {
+N.wire.on('forum.topic.post_reply:cancel', function cancel() {
   $form.fadeOut(function () {
     removeEditor();
   });
-});
-
-
-// terminate editor if user tries to edit post on the same page
-//
-N.wire.on('forum.post.edit', function click_edit() {
-  removeEditor();
 });

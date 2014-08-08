@@ -41,13 +41,13 @@ each post in self.posts
             li.forum-post__control-item
               a.forum-post__action-link.icon-reply(
                 href='#'
-                data-on-click='forum.post.reply'
+                data-on-click='forum.topic.post_reply'
                 data-post-id=post._id
               )= self.t('reply')
           li.forum-post__control-item
             a.forum-post__action-link(
               href='#'
-              data-on-click='forum.post.edit'
+              data-on-click='forum.topic.post_edit'
               data-post-id='#{post._id}'
             )= self.t('edit')
             //- TODO: show edit button only if user have permissions to do this

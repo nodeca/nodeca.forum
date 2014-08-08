@@ -1,6 +1,8 @@
+// Save new reply
+
 'use strict';
 
-var _ = require('lodash');
+var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 // topic and post statuses
 var statuses = require('../../_lib/statuses.js');
@@ -120,16 +122,6 @@ module.exports = function (N, apiPath) {
   // Parse user input to HTML
   //
   N.wire.before(apiPath, function parse_text(env, callback) {
-    var providers;
-
-    // Get available for media providers
-    if (N.config.medialinks.content === true) {
-      providers = N.config.medialinks.providers;
-    } else {
-      providers = _.filter(N.config.medialinks.providers, function (provider, providerName) {
-        return N.config.medialinks.albums.indexOf(providerName) !== -1;
-      });
-    }
 
     var data = {
       input: env.params.post_text,
@@ -138,7 +130,7 @@ module.exports = function (N, apiPath) {
       {
         cleanupRules: N.config.parser.cleanup,
         smiles: N.config.smiles,
-        medialinkProviders: providers
+        medialinkProviders: medialinks(N.config.medialinks.providers, N.config.medialinks.content)
       }
     };
 
