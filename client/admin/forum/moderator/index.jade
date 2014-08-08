@@ -11,8 +11,7 @@
         each moderator in self.moderators
           .section-control
             .section-title
-              a(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}") #{self.users[moderator._id].name}
-              a.icon-collapse(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}")
+              a(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}")= self.users[moderator._id].name
 
             ul.section-moderator-list.collapse.in(id="moderator_#{moderator._id}")
               each section in moderator.sections
@@ -43,7 +42,8 @@
                   a(href="#",
                     data-on-click="admin.forum.moderator.destroy",
                     data-section-id=section._id,
-                    data-user-id=moderator._id)
+                    data-user-id=moderator._id
+                  )
                     = self.t('button_remove')
     else
       = self.t('no_moderators')

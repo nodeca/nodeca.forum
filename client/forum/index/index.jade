@@ -7,7 +7,7 @@ article#content.forum-index__root
         type='button'
         title= self.t('news')
       ) +15
-      button.btn.btn-default.btn-sm.btn-icon-only.icon-check(
+      button.btn.btn-default.btn-sm.icon.icon-check(
         type='button'
         title= self.t('mark_all_read')
       )
@@ -25,12 +25,12 @@ article#content.forum-index__root
             data-target='#cat_list_#{category.hid}'
           )
             = category.title
-          a.forum-category__collapser.icon-collapse(
+          a.forum-category__collapser.icon.icon-collapse(
             href='#cat#{category.hid}'
             data-toggle='collapse'
             data-target='#cat_list_#{category.hid}'
           )
-          a.forum-category__collapser.icon-expand(
+          a.forum-category__collapser.icon.icon-expand(
             href='#cat#{category.hid}'
             data-toggle='collapse'
             data-target='#cat_list_#{category.hid}'

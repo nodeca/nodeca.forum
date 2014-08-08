@@ -17,7 +17,6 @@ article#content.forum-topics-root
         //- needed set width & center content on horizontal navigation
         .controlbar__floater-inner
           .controlbar__body.btn-toolbar.clearfix
-            //- button.btn.btn-default.btn-icon-only.icon-back.pull-left(type='button')
 
             if self.topics && self.topics.length && self.page.max > 1
               .btn-group.pull-left._pagination
@@ -39,18 +38,18 @@ article#content.forum-topics-root
                 li: a(href='#')= self.t('mass_prune')
 
             if self.runtime.is_member
-              button.hidden-xxs.btn.btn-default.btn-icon-only.icon-track.pull-right(
+              button.hidden-xxs.btn.btn-default.icon.icon-track.pull-right(
                 type='button'
                 title=self.t('subscribe')
               )
 
-              button.hidden-xxs.btn.btn-default.btn-icon-only.icon-check.pull-right(
+              button.hidden-xxs.btn.btn-default.icon.icon-check.pull-right(
                 type='button'
                 title=self.t('mark_read')
               )
 
             if self.settings.forum_can_start_topics
-              button.btn.btn-primary.btn-icon-only.icon-plus.pull-right(
+              button.btn.btn-primary.icon.icon-plus.pull-right(
                 type='button'
                 title=self.t('topic_create')
               )
@@ -65,7 +64,7 @@ article#content.forum-topics-root
       //- Button "More Topics"
       - var link_params = { hid: self.section.hid, page: self.page.current + 1 };
       - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-      a.forum-section__more-link.btn.btn-default.btn-block.icon-more(
+      a.forum-section__more-link.btn.btn-default.btn-block.icon.icon-dimmed.icon-space-after.icon-more(
         class=btn_more_state,
         href=self.link_to(self.apiPath, link_params),
         data-page=self.page.current+1,

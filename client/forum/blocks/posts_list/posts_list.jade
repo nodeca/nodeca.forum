@@ -14,7 +14,7 @@ each post in self.posts
           datetime=self.date(post.ts, 'iso')
         ) #{self.date(post.ts, 'date')}
         - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
-        a.forum-post__link.icon-link(href=_post_anchor)
+        a.forum-post__link.icon.icon-link(href=_post_anchor)
         input.forum-post__check(type='checkbox')
       .forum-post__meta-blk.pull-left
         if user
@@ -39,7 +39,7 @@ each post in self.posts
         ul.forum-post__controls-blk.pull-right
           if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
             li.forum-post__control-item
-              a.forum-post__action-link.icon-reply(
+              a.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
                 href='#'
                 data-on-click='forum.topic.post_reply'
                 data-post-id=post._id
@@ -54,6 +54,6 @@ each post in self.posts
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('delete')
           li.forum-post__control-item
-            a.forum-post__vote-down.icon-vote-down(href='#')
+            a.forum-post__vote-down.icon.icon-vote-down(href='#')
             span.forum-post__vote-count +47
-            a.forum-post__vote-up.icon-vote-up(href='#')
+            a.forum-post__vote-up.icon.icon-vote-up(href='#')

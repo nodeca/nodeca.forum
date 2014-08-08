@@ -3,7 +3,7 @@ mixin render_sections_tree(sections, level)
   ul.aforum-index__slist(class="#{level === 0 ? '_sortable_tree' : ''}")
     each section in sections
       li.aforum-index__slist-item._sortable_tree_item(data-id=section._id)
-        //- Section's own control bar. 
+        //- Section's own control bar.
         .aforum-index__section
           .pull-right
             span.aforum-index__section-mods.dropdown
@@ -32,7 +32,7 @@ mixin render_sections_tree(sections, level)
             ) #{self.t('delete_section')}
 
           .aforum-index__section-info
-            i.aforum-index__sorter.icon-sorter._sorter
+            i.aforum-index__sorter.icon.icon-sorter._sorter
 
             a.aforum-index__section-title(href=self.link_to('admin.forum.section.edit', { _id: section._id }))
               = section.title
