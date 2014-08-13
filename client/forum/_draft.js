@@ -30,7 +30,7 @@ store.remove = function (key) {
 };
 
 store.set = function (key, value) {
-  if (!store.exists()) { return; }
+  if (!store.exists()) { return null; }
   if (value === undefined) { return store.remove(key); }
   localStorage.setItem(key, JSON.stringify(value));
 };

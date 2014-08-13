@@ -40,7 +40,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fix_section_hid(env) {
     if (!env.params.hasOwnProperty('section_hid')) {
-      return;
+      return null;
     }
 
     if (env.data.section.hid !== +env.params.section_hid) {
