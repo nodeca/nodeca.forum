@@ -3,7 +3,6 @@
 'use strict';
 
 var _          = require('lodash');
-var remarked   = require('remarked');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 var $form;
@@ -11,6 +10,7 @@ var pageParams;
 var parentPostId;
 var $preview;
 var parseRules;
+var parser;
 
 
 function removeEditor() {
@@ -30,28 +30,18 @@ function updatePreview() {
     return;
   }
 
-  remarked.setOptions({
-    gfm: false,
-    tables: false,
-    breaks: false,
-    pedantic: false,
-    sanitize: true,
-    smartLists: true,
-    smartypants: false
-  });
+  var mdData = { input: $form.find('textarea').val(), output: null };
 
-  // TODO: generate real preview
-  var Parser = require('ndparser');
-  var parser = new Parser();
+  parser.md2src(mdData, function () {
+    var parserData = {
+      input: mdData.output,
+      output: null,
+      options: parseRules
+    };
 
-  var parserData = {
-    input: remarked($form.find('textarea').val()),
-    output: null,
-    options: parseRules
-  };
-
-  parser.src2ast(parserData, function () {
-    $preview.html(parserData.output.html());
+    parser.src2ast(parserData, function () {
+      $preview.html(parserData.output.html());
+    });
   });
 }
 
@@ -107,6 +97,9 @@ N.wire.before('forum.topic.post_reply', function load_parser(event, callback) {
 N.wire.on('forum.topic.post_reply', function click_reply(event) {
   removeEditor();
 
+  var Parser = require('ndparser');
+  parser = new Parser();
+
   // TODO: load draft
 
   parentPostId = $(event.target).data('post-id');
@@ -135,32 +128,26 @@ N.wire.on('forum.topic.post_reply', function click_reply(event) {
 N.wire.on('forum.topic.post_reply:save', function save() {
   // Save reply on server
 
-  remarked.setOptions({
-    gfm: false,
-    tables: false,
-    breaks: false,
-    pedantic: false,
-    sanitize: true,
-    smartLists: true,
-    smartypants: false
-  });
+  var mdData = { input: $form.find('textarea').val(), output: null };
 
-  var data = {
-    section_hid: pageParams.section_hid,
-    topic_hid:   pageParams.hid,
-    post_text:   remarked($form.find('textarea').val())
-  };
+  parser.md2src(mdData, function () {
+    var data = {
+      section_hid: pageParams.section_hid,
+      topic_hid:   pageParams.hid,
+      post_text:   mdData.output
+    };
 
-  if (parentPostId) {
-    data.parent_post_id = parentPostId;
-  }
+    if (parentPostId) {
+      data.parent_post_id = parentPostId;
+    }
 
-  N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
-    removeEditor();
-    // TODO: remove draft
+    N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
+      removeEditor();
+      // TODO: remove draft
 
-    // TODO: append new posts
-    window.location = res.redirect_url;
+      // TODO: append new posts
+      window.location = res.redirect_url;
+    });
   });
 });
 
