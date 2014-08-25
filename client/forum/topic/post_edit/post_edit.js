@@ -40,64 +40,68 @@ N.wire.on('forum.topic.post_reply', function click_reply() {
 });
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Click on post edit link
-//
-N.wire.on('forum.topic.post_edit', function click_edit(event) {
-  removeEditor();
+N.wire.once('navigate.done:forum.topic', function page_once() {
 
-  var $button = $(event.target);
+  ///////////////////////////////////////////////////////////////////////////////
+  // Click on post edit link
+  //
+  N.wire.on('forum.topic.post_edit', function click_edit(event) {
+    removeEditor();
 
-  postId = $button.data('post-id');
+    var $button = $(event.target);
 
-  var $targetPost = $('#post' + postId);
+    postId = $button.data('post-id');
 
-  $form = $(N.runtime.render('forum.topic.post_edit'));
-  $form.hide();
+    var $targetPost = $('#post' + postId);
 
-  var params = {
-    post_id: postId,
-    section_hid: pageParams.section_hid,
-    topic_hid: pageParams.hid
-  };
+    $form = $(N.runtime.render('forum.topic.post_edit'));
+    $form.hide();
 
-  N.io.rpc('forum.topic.post_edit', params).done(function (res) {
-    // TODO: src html to markdown
-    $form.find('textarea').val(res.src);
+    var params = {
+      post_id: postId,
+      section_hid: pageParams.section_hid,
+      topic_hid: pageParams.hid
+    };
 
-    // Insert editing form after editor post
-    $targetPost.after($form);
-    $form.fadeIn();
-  });
-});
+    N.io.rpc('forum.topic.post_edit', params).done(function (res) {
+      // TODO: src html to markdown
+      $form.find('textarea').val(res.src);
 
-
-///////////////////////////////////////////////////////////////////////////////
-// Event handler on Save button click
-//
-N.wire.on('forum.topic.post_edit:save', function save() {
-
-  // TODO: markdown to src html
-  var params = {
-    post_id: postId,
-    section_hid: pageParams.section_hid,
-    post_text: $form.find('textarea').val(),
-    topic_hid: pageParams.hid
-  };
-
-  N.io.rpc('forum.topic.post_edit', params).done(function (res) {
-    $form.fadeOut(function () {
-      removeEditor();
-      $('#post' + postId + ' .forum-post__message').html(res.html);
+      // Insert editing form after editor post
+      $targetPost.after($form);
+      $form.fadeIn();
     });
   });
-});
 
 
-// On Cancel button remove editor
-//
-N.wire.on('forum.topic.post_edit:cancel', function cancel() {
-  $form.fadeOut(function () {
-    removeEditor();
+  ///////////////////////////////////////////////////////////////////////////////
+  // Event handler on Save button click
+  //
+  N.wire.on('forum.topic.post_edit:save', function save() {
+
+    // TODO: markdown to src html
+    var params = {
+      post_id: postId,
+      section_hid: pageParams.section_hid,
+      post_text: $form.find('textarea').val(),
+      topic_hid: pageParams.hid
+    };
+
+    N.io.rpc('forum.topic.post_edit', params).done(function (res) {
+      $form.fadeOut(function () {
+        removeEditor();
+        $('#post' + postId + ' .forum-post__message').html(res.html);
+      });
+    });
   });
+
+
+  // On Cancel button remove editor
+  //
+  N.wire.on('forum.topic.post_edit:cancel', function cancel() {
+    $form.fadeOut(function () {
+      removeEditor();
+    });
+  });
+
 });

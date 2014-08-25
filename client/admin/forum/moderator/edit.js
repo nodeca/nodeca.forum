@@ -158,7 +158,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 });
 
 
-N.wire.on('navigate.exit:' + module.apiPath, function page_setup() {
+N.wire.on('navigate.exit:' + module.apiPath, function page_exit() {
   view = null;
   ko.cleanNode($('#content')[0]);
 });

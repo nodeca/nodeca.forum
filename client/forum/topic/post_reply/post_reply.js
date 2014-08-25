@@ -67,101 +67,104 @@ N.wire.on('forum.topic.post_edit', function click_edit() {
 });
 
 
+N.wire.once('navigate.done:forum.topic', function page_once() {
 
-///////////////////////////////////////////////////////////////////////////////
-// Fetch parse rules
-//
-N.wire.before('forum.topic.post_reply', function fetch_parse_rules(event, callback) {
-  if (parseRules) {
-    callback();
-    return;
-  }
-
-  N.io.rpc('forum.topic.parse_rules').done(function (res) {
-    parseRules = res.parse_rules;
-    parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
-    callback();
-  });
-});
-
-
-// Load parser
-//
-N.wire.before('forum.topic.post_reply', function load_parser(event, callback) {
-  N.loader.loadAssets('parser', callback);
-});
-
-
-// Click on post reply link or toolbar reply button
-//
-N.wire.on('forum.topic.post_reply', function click_reply(event) {
-  removeEditor();
-
-  var Parser = require('ndparser');
-  parser = new Parser();
-
-  // TODO: load draft
-
-  parentPostId = $(event.target).data('post-id');
-
-  $form = $(N.runtime.render('forum.topic.post_reply'));
-  $form.hide();
-
-  $preview = $form.find('.forum-reply__preview');
-
-  // Find parent, to attach editor after. For new reply - last child
-  if (parentPostId) {
-    $('#post' + parentPostId).after($form);
-  } else {
-    $('#postlist > :last').after($form);
-  }
-
-  $form.fadeIn();
-
-  $form.find('textarea').on('input propertychange', _.debounce(updatePreview, 500));
-});
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Event handler on Save button click
-//
-N.wire.on('forum.topic.post_reply:save', function save() {
-  // Save reply on server
-
-  var mdData = { input: $form.find('textarea').val(), output: null };
-
-  parser.md2src(mdData, function () {
-    var data = {
-      section_hid: pageParams.section_hid,
-      topic_hid:   pageParams.hid,
-      post_text:   mdData.output
-    };
-
-    if (parentPostId) {
-      data.parent_post_id = parentPostId;
+  ///////////////////////////////////////////////////////////////////////////////
+  // Fetch parse rules
+  //
+  N.wire.before('forum.topic.post_reply', function fetch_parse_rules(event, callback) {
+    if (parseRules) {
+      callback();
+      return;
     }
 
-    N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
-      removeEditor();
-      // TODO: remove draft
-
-      // TODO: append new posts
-      window.location = res.redirect_url;
+    N.io.rpc('forum.topic.parse_rules').done(function (res) {
+      parseRules = res.parse_rules;
+      parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
+      callback();
     });
   });
-});
 
 
-N.wire.on('forum.topic.post_reply:preview_toggle', function preview_toggle() {
-  $preview.fadeToggle();
-  // TODO: save preview visibility
-});
-
-
-// on Cancel button remove editor and store draft
-//
-N.wire.on('forum.topic.post_reply:cancel', function cancel() {
-  $form.fadeOut(function () {
-    removeEditor();
+  // Load parser
+  //
+  N.wire.before('forum.topic.post_reply', function load_parser(event, callback) {
+    N.loader.loadAssets('parser', callback);
   });
+
+
+  // Click on post reply link or toolbar reply button
+  //
+  N.wire.on('forum.topic.post_reply', function click_reply(event) {
+    removeEditor();
+
+    var Parser = require('ndparser');
+    parser = new Parser();
+
+    // TODO: load draft
+
+    parentPostId = $(event.target).data('post-id');
+
+    $form = $(N.runtime.render('forum.topic.post_reply'));
+    $form.hide();
+
+    $preview = $form.find('.forum-reply__preview');
+
+    // Find parent, to attach editor after. For new reply - last child
+    if (parentPostId) {
+      $('#post' + parentPostId).after($form);
+    } else {
+      $('#postlist > :last').after($form);
+    }
+
+    $form.fadeIn();
+
+    $form.find('textarea').on('input propertychange', _.debounce(updatePreview, 500));
+  });
+
+
+  ///////////////////////////////////////////////////////////////////////////////
+  // Event handler on Save button click
+  //
+  N.wire.on('forum.topic.post_reply:save', function save() {
+    // Save reply on server
+
+    var mdData = { input: $form.find('textarea').val(), output: null };
+
+    parser.md2src(mdData, function () {
+      var data = {
+        section_hid: pageParams.section_hid,
+        topic_hid:   pageParams.hid,
+        post_text:   mdData.output
+      };
+
+      if (parentPostId) {
+        data.parent_post_id = parentPostId;
+      }
+
+      N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
+        removeEditor();
+        // TODO: remove draft
+
+        // TODO: append new posts
+        window.location = res.redirect_url;
+      });
+    });
+  });
+
+
+  N.wire.on('forum.topic.post_reply:preview_toggle', function preview_toggle() {
+    $preview.fadeToggle();
+    // TODO: save preview visibility
+  });
+
+
+  // on Cancel button remove editor and store draft
+  //
+  N.wire.on('forum.topic.post_reply:cancel', function cancel() {
+    $form.fadeOut(function () {
+      removeEditor();
+    });
+  });
+
 });
