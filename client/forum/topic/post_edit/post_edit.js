@@ -3,9 +3,16 @@
 
 'use strict';
 
+var _          = require('lodash');
+var medialinks = require('nodeca.core/lib/parser/medialinks');
+
+
 var $form;
+var $preview;
 var pageParams;
 var postId;
+var parseRules;
+var parser;
 
 
 function removeEditor() {
@@ -15,6 +22,28 @@ function removeEditor() {
 
   $form.remove();
   $form = null;
+  $preview = null;
+}
+
+
+function updatePreview() {
+  if (!$preview) {
+    return;
+  }
+
+  var mdData = { input: $form.find('textarea').val(), output: null };
+
+  parser.md2src(mdData, function () {
+    var parserData = {
+      input: mdData.output,
+      output: null,
+      options: parseRules
+    };
+
+    parser.src2ast(parserData, function () {
+      $preview.html(parserData.output.html());
+    });
+  });
 }
 
 
@@ -43,10 +72,37 @@ N.wire.on('forum.topic.post_reply', function click_reply() {
 N.wire.once('navigate.done:forum.topic', function page_once() {
 
   ///////////////////////////////////////////////////////////////////////////////
+  // Fetch parse rules
+  //
+  N.wire.before('forum.topic.post_edit', function fetch_parse_rules(event, callback) {
+    if (parseRules) {
+      callback();
+      return;
+    }
+
+    N.io.rpc('forum.topic.parse_rules').done(function (res) {
+      parseRules = res.parse_rules;
+      parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
+      callback();
+    });
+  });
+
+
+  // Load parser
+  //
+  N.wire.before('forum.topic.post_edit', function load_parser(event, callback) {
+    N.loader.loadAssets('parser', callback);
+  });
+
+
+  ///////////////////////////////////////////////////////////////////////////////
   // Click on post edit link
   //
   N.wire.on('forum.topic.post_edit', function click_edit(event) {
     removeEditor();
+
+    var Parser = require('ndparser');
+    parser = new Parser();
 
     var $button = $(event.target);
 
@@ -57,6 +113,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     $form = $(N.runtime.render('forum.topic.post_edit'));
     $form.hide();
 
+    $preview = $form.find('.forum-reply__preview');
+
     var params = {
       post_id: postId,
       section_hid: pageParams.section_hid,
@@ -65,11 +123,19 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     N.io.rpc('forum.topic.post_edit', params).done(function (res) {
       // TODO: src html to markdown
-      $form.find('textarea').val(res.src);
 
-      // Insert editing form after editor post
-      $targetPost.after($form);
-      $form.fadeIn();
+      var srcData = { input: res.src, output: null };
+
+      parser.src2md(srcData, function () {
+        $form.find('textarea').val(srcData.output);
+
+        // Insert editing form after editor post
+        $targetPost.after($form);
+        $form.fadeIn();
+
+        updatePreview();
+        $form.find('textarea').on('input propertychange', _.debounce(updatePreview, 500));
+      });
     });
   });
 

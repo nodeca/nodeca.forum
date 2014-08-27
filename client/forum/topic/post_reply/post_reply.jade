@@ -3,9 +3,9 @@
     img.av-l(alt='#{N.runtime.user_name}' src=self.link_to('core.gridfs', { bucket: N.runtime.user_avatar }))
 
   .forum-reply__content
-    .forum-reply__preview
     .forum-reply__editor
       textarea
+    .forum-reply__preview
     .forum-reply__buttons.clearfix
       .forum-reply__buttons-blk.pull-right
         button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.topic.post_reply:cancel')=self.t('cancel')
