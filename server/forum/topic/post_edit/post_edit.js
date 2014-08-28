@@ -1,7 +1,7 @@
 // Get post src html, update post
 'use strict';
 
-var _ = require('lodash');
+var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 module.exports = function (N, apiPath) {
 
@@ -75,17 +75,6 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    var providers;
-
-    // Get available for media providers
-    if (N.config.medialinks.content === true) {
-      providers = N.config.medialinks.providers;
-    } else {
-      providers = _.filter(N.config.medialinks.providers, function (provider, providerName) {
-        return N.config.medialinks.albums.indexOf(providerName) !== -1;
-      });
-    }
-
     var data = {
       input: env.params.post_text,
       output: null, // will be cheerio instance
@@ -93,7 +82,7 @@ module.exports = function (N, apiPath) {
       {
         cleanupRules: N.config.parser.cleanup,
         smiles: N.config.smiles,
-        medialinkProviders: providers
+        medialinkProviders: medialinks(N.config.medialinks.providers, N.config.medialinks.content)
       }
     };
 

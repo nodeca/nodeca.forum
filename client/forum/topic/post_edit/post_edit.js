@@ -145,16 +145,19 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   //
   N.wire.on('forum.topic.post_edit:save', function save() {
 
-    // TODO: markdown to src html
-    var params = {
-      post_id: postId,
-      section_hid: pageParams.section_hid,
-      post_text: $form.find('textarea').val(),
-      topic_hid: pageParams.hid
-    };
+    var mdData = { input: $form.find('textarea').val(), output: null };
 
-    N.io.rpc('forum.topic.post_edit', params).done(function (res) {
-      $form.fadeOut(function () {
+    parser.md2src(mdData, function () {
+
+      var params = {
+        post_id: postId,
+        section_hid: pageParams.section_hid,
+        post_text: mdData.output,
+        topic_hid: pageParams.hid
+      };
+
+      N.io.rpc('forum.topic.post_edit', params).done(function (res) {
+        $form.fadeOut();
         removeEditor();
         $('#post' + postId + ' .forum-post__message').html(res.html);
       });
