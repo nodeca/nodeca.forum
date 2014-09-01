@@ -12,7 +12,6 @@ var $preview;
 var pageParams;
 var postId;
 var parseRules;
-var parser;
 
 
 function removeEditor() {
@@ -33,14 +32,14 @@ function updatePreview() {
 
   var mdData = { input: $form.find('textarea').val(), output: null };
 
-  parser.md2src(mdData, function () {
+  N.parser.md2src(mdData, function () {
     var parserData = {
       input: mdData.output,
       output: null,
       options: parseRules
     };
 
-    parser.src2ast(parserData, function () {
+    N.parser.src2ast(parserData, function () {
       $preview.html(parserData.output.html());
     });
   });
@@ -101,9 +100,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   N.wire.on('forum.topic.post_edit', function click_edit(event) {
     removeEditor();
 
-    var Parser = require('ndparser');
-    parser = new Parser();
-
     var $button = $(event.target);
 
     postId = $button.data('post-id');
@@ -126,7 +122,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
       var srcData = { input: res.src, output: null };
 
-      parser.src2md(srcData, function () {
+      N.parser.src2md(srcData, function () {
         $form.find('textarea').val(srcData.output);
 
         // Insert editing form after editor post
@@ -147,7 +143,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     var mdData = { input: $form.find('textarea').val(), output: null };
 
-    parser.md2src(mdData, function () {
+    N.parser.md2src(mdData, function () {
 
       var params = {
         post_id: postId,
