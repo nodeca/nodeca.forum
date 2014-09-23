@@ -2,7 +2,6 @@
 
 'use strict';
 
-var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 var $form;
@@ -10,6 +9,7 @@ var pageParams;
 var parentPostId;
 var $preview;
 var parseRules;
+var editor;
 
 
 function removeEditor() {
@@ -21,27 +21,7 @@ function removeEditor() {
   $form.remove();
   $form = null;
   $preview = null;
-}
-
-
-function updatePreview() {
-  if (!$preview) {
-    return;
-  }
-
-  var mdData = { input: $form.find('textarea').val(), output: null };
-
-  N.parser.md2src(mdData, function () {
-    var parserData = {
-      input: mdData.output,
-      output: null,
-      options: parseRules
-    };
-
-    N.parser.src2ast(parserData, function () {
-      $preview.html(parserData.output.html());
-    });
-  });
+  editor = null;
 }
 
 
@@ -85,10 +65,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
-  // Load parser
+  // Load editor
   //
-  N.wire.before('forum.topic.post_reply', function load_parser(event, callback) {
-    N.loader.loadAssets('parser', callback);
+  N.wire.before('forum.topic.post_reply', function load_editor(event, callback) {
+    N.loader.loadAssets('mdedit', callback);
   });
 
 
@@ -113,9 +93,14 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       $('#postlist > :last').after($form);
     }
 
+    editor = new N.MDEdit({
+      editor_area: '.forum-reply__editor',
+      preview_area: '.forum-reply__preview',
+      parse_rules: parseRules
+    });
+
     $form.fadeIn();
 
-    $form.find('textarea').on('input propertychange', _.debounce(updatePreview, 500));
   });
 
 
@@ -125,13 +110,11 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   N.wire.on('forum.topic.post_reply:save', function save() {
     // Save reply on server
 
-    var mdData = { input: $form.find('textarea').val(), output: null };
-
-    N.parser.md2src(mdData, function () {
+    editor.getSrc(function (src) {
       var data = {
         section_hid: pageParams.section_hid,
         topic_hid:   pageParams.hid,
-        post_text:   mdData.output
+        post_text:   src
       };
 
       if (parentPostId) {
