@@ -4,6 +4,7 @@
 
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 
+var bag = new window.Bag();
 var $form;
 var pageParams;
 var parentPostId;
@@ -25,6 +26,16 @@ function removeEditor() {
 }
 
 
+function draftID() {
+  return [
+    'reply',
+    parentPostId,
+    pageParams.section_hid,
+    pageParams.hid
+  ].join('_');
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Init on page load
 //
@@ -33,16 +44,33 @@ N.wire.on('navigate.done:forum.topic', function init_forum_post_reply(data) {
 });
 
 
-// Free resources on page exit
+// Free resources and save draft on page exit
 //
 N.wire.before('navigate.exit:forum.topic', function tear_down_forum_post_reply() {
-  removeEditor();
+  if (!$form) {
+    return;
+  }
+
+  editor.getSrc(function (src) {
+    bag.set(draftID(), src, function () {
+      removeEditor();
+    });
+  });
 });
+
 
 // terminate editor if user tries to edit post on the same page
 //
 N.wire.on('forum.topic.post_edit', function click_edit() {
-  removeEditor();
+  if (!$form) {
+    return;
+  }
+
+  editor.getSrc(function (src) {
+    bag.set(draftID(), src, function () {
+      removeEditor();
+    });
+  });
 });
 
 
@@ -72,13 +100,27 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
+  // Save draft and remove old form if editor already open
+  //
+  N.wire.before('forum.topic.post_reply', function load_editor(event, callback) {
+    if ($form) {
+      editor.getSrc(function (src) {
+        bag.set(draftID(), src, function () {
+          removeEditor();
+          callback();
+        });
+      });
+
+      return;
+    }
+
+    callback();
+  });
+
+
   // Click on post reply link or toolbar reply button
   //
   N.wire.on('forum.topic.post_reply', function click_reply(event) {
-    removeEditor();
-
-    // TODO: load draft
-
     parentPostId = $(event.target).data('post-id');
 
     $form = $(N.runtime.render('forum.topic.post_reply'));
@@ -96,8 +138,19 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     editor = new N.MDEdit({
       editor_area: '.forum-reply__editor',
       preview_area: '.forum-reply__preview',
-      parse_rules: parseRules
+      parse_rules: parseRules,
+      toolbar_buttuns: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
     });
+
+
+    bag.get(draftID(), function (err, data) {
+      if (err) {
+        return;
+      }
+
+      editor.setSrc(data);
+    });
+
 
     $form.fadeIn();
 
@@ -123,10 +176,12 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
       N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
         removeEditor();
-        // TODO: remove draft
 
-        // TODO: append new posts
-        window.location = res.redirect_url;
+        bag.remove(draftID(), function () {
+
+          // TODO: append new posts
+          window.location = res.redirect_url;
+        });
       });
     });
   });
@@ -138,11 +193,13 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
-  // on Cancel button remove editor and store draft
+  // on Cancel button remove editor and remove draft
   //
   N.wire.on('forum.topic.post_reply:cancel', function cancel() {
-    $form.fadeOut(function () {
-      removeEditor();
+    bag.remove(draftID(), function () {
+      $form.fadeOut(function () {
+        removeEditor();
+      });
     });
   });
 
