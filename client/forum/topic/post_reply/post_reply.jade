@@ -4,7 +4,6 @@
 
   .forum-reply__content
     .forum-reply__editor
-    .forum-reply__preview
     .forum-reply__buttons.clearfix
       .forum-reply__buttons-blk.pull-right
         button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.topic.post_reply:cancel')=self.t('cancel')
@@ -14,3 +13,4 @@
         button.forum-reply__save.btn.btn-primary(data-on-click='forum.topic.post_reply:save')=self.t('reply')
       .forum-reply__buttons-blk.pull-left
         button.forum-reply__options.btn.btn-link=self.t('options')
+    .forum-reply__preview
