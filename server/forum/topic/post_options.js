@@ -11,10 +11,19 @@ module.exports = function (N, apiPath) {
 
   // Check user permission
   //
-  N.wire.on(apiPath, function check_permissions(env) {
+  N.wire.before(apiPath, function check_permissions(env) {
     if (env.user_info.is_guest) {
       return N.io.NOT_FOUND;
     }
+  });
+
+
+  // Fill post options
+  //
+  N.wire.before(apiPath, function fill_post_options(env) {
+
+    // TODO: fetch
+    env.res.post_options = { nomlinks: false, nosmiles: false };
   });
 
 

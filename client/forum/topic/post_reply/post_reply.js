@@ -11,6 +11,7 @@ var parentPostId;
 var $preview;
 var parseRules;
 var editor;
+var postOptions;
 
 
 function removeEditor() {
@@ -85,9 +86,11 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       return;
     }
 
-    N.io.rpc('forum.topic.parse_rules').done(function (res) {
+    N.io.rpc('forum.topic.post_options').done(function (res) {
       parseRules = res.parse_rules;
       parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
+
+      postOptions = res.post_options;
       callback();
     });
   });
@@ -118,6 +121,47 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
+  // Click on options button
+  //
+  N.wire.on('forum.topic.post_reply:options', function click_options() {
+    var $options = $form.find('.forum-reply__options');
+
+    function updateOptions() {
+
+      var rules = {
+        cleanupRules: parseRules.cleanupRules,
+        smiles: {},
+        medialinkProviders: []
+      };
+
+      if (!postOptions.nomlinks) {
+        rules.medialinkProviders = parseRules.medialinkProviders;
+      }
+
+      if (!postOptions.nosmiles) {
+        rules.smiles = parseRules.smiles;
+      }
+
+      editor.setOptions({ parse_rules: rules });
+      editor.updatePreview();
+    }
+
+    $options.find('.forum-reply__medialinks').change(function () {
+
+      postOptions.nomlinks = !$(this).prop('checked');
+      updateOptions();
+    });
+
+    $options.find('.forum-reply__smiles').change(function () {
+
+      postOptions.nosmiles = !$(this).prop('checked');
+      updateOptions();
+    });
+
+    $options.toggle();
+  });
+
+
   // Click on post reply link or toolbar reply button
   //
   N.wire.on('forum.topic.post_reply', function click_reply(event) {
@@ -127,6 +171,9 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     $form.hide();
 
     $preview = $form.find('.forum-reply__preview');
+
+    $form.find('.forum-reply__medialinks').prop('checked', !postOptions.nomlinks);
+    $form.find('.forum-reply__smiles').prop('checked', !postOptions.nosmiles);
 
     // Find parent, to attach editor after. For new reply - last child
     if (parentPostId) {
@@ -139,7 +186,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       editor_area: '.forum-reply__editor',
       preview_area: '.forum-reply__preview',
       parse_rules: parseRules,
-      toolbar_buttuns: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
+      toolbar_buttons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
     });
 
 
@@ -165,9 +212,12 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     editor.getSrc(function (src) {
       var data = {
-        section_hid: pageParams.section_hid,
-        topic_hid:   pageParams.hid,
-        post_text:   src
+        section_hid:     pageParams.section_hid,
+        topic_hid:       pageParams.hid,
+        post_text:       src,
+        attach_list:     editor.getAttachments(),
+        option_nomlinks: postOptions.nomlinks,
+        option_nosmiles: postOptions.nosmiles
       };
 
       if (parentPostId) {

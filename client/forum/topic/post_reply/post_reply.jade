@@ -6,11 +6,22 @@
     .forum-reply__editor
     .forum-reply__buttons.clearfix
       .forum-reply__buttons-blk.pull-right
-        button.forum-reply__cancel.btn.btn-mini(data-on-click='forum.topic.post_reply:cancel')=self.t('cancel')
+        button.forum-reply__cancel.btn.btn-link(data-on-click='forum.topic.post_reply:cancel')=self.t('cancel')
         | 
-        button.forum-reply__toggle_preview.btn.btn-info(data-on-click='forum.topic.post_reply:preview_toggle')=self.t('preview_toggle')
+        button.forum-reply__toggle_preview.btn.btn-link(data-on-click='forum.topic.post_reply:preview_toggle')=self.t('preview_toggle')
         | 
         button.forum-reply__save.btn.btn-primary(data-on-click='forum.topic.post_reply:save')=self.t('reply')
       .forum-reply__buttons-blk.pull-left
-        button.forum-reply__options.btn.btn-link=self.t('options')
+        button.forum-reply__options-button.btn.btn-link(data-on-click='forum.topic.post_reply:options')=self.t('options')
+        .forum-reply__options
+          .checkbox
+            label
+              label
+                input.forum-reply__medialinks(type='checkbox')
+                = self.t('options_medialinks')
+          .checkbox
+            label
+              label
+                input.forum-reply__smiles(type='checkbox')
+                = self.t('options_smiles')
     .forum-reply__preview

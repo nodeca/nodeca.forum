@@ -30,6 +30,13 @@ each post in self.posts
         .av-l
     .forum-post__content
       .forum-post__message !{post.text}
+      ul.forum-post__attachments.clearfix
+        each attach in post.attach_list
+          - var preview = self.link_to('core.gridfs', { bucket: attach + '_sm' })
+          - var imageUrl = self.link_to('core.gridfs', { bucket: attach })
+          li.forum-post__attachment
+            a(href=imageUrl)
+              img.thumb__image(src=preview)
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-left
           li.forum-post__control-item

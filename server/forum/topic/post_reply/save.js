@@ -2,6 +2,7 @@
 
 'use strict';
 
+var async      = require('async');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 // topic and post statuses
@@ -11,10 +12,13 @@ var statuses = require('../../_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_hid:      { type: 'integer', required: true },
-    parent_post_id: { type: 'string' },
-    post_text:      { type: 'string', required: true },
-    section_hid:    { type: 'integer', required: true }
+    topic_hid:       { type: 'integer', required: true },
+    parent_post_id:  { type: 'string' },
+    post_text:       { type: 'string', required: true },
+    section_hid:     { type: 'integer', required: true },
+    attach_list:     { type: 'array', required: true },
+    option_nomlinks: { type: 'boolean', required: true },
+    option_nosmiles: { type: 'boolean', required: true }
   });
 
 
@@ -119,9 +123,20 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Save post options
+  //
+  N.wire.before(apiPath, function save_options(/*env, callback*/) {
+    // TODO: implementation
+  });
+
+
   // Parse user input to HTML
   //
   N.wire.before(apiPath, function parse_text(env, callback) {
+
+    var providers = env.params.option_nomlinks ?
+                    [] :
+                    medialinks(N.config.medialinks.providers, N.config.medialinks.content);
 
     var data = {
       input: env.params.post_text,
@@ -129,8 +144,8 @@ module.exports = function (N, apiPath) {
       options:
       {
         cleanupRules: N.config.parser.cleanup,
-        smiles: N.config.smiles,
-        medialinkProviders: medialinks(N.config.medialinks.providers, N.config.medialinks.content)
+        smiles: env.params.option_nosmiles ? {} : N.config.smiles,
+        medialinkProviders: providers
       }
     };
 
@@ -148,12 +163,40 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check attachments owner
+  //
+  N.wire.before(apiPath, function check_attachments(env, callback) {
+
+    async.each(env.params.attach_list, function (attach, next) {
+
+      N.models.users.Media.count(
+        { file_id: attach, exists: true, user_id: env.session.user_id  },
+        function (err, count) {
+
+          if (err) {
+            next(err);
+            return;
+          }
+
+          if (count === 0) {
+            next(N.io.FORBIDDEN);
+            return;
+          }
+
+          next();
+        }
+      );
+    }, callback);
+  });
+
+
   // Save new post
   //
   N.wire.on(apiPath, function save_new_post(env, callback) {
 
     var post = new N.models.forum.Post();
 
+    post.attach_list = env.params.attach_list;
     post.text = env.params.post_text;
     post.ip = env.req.ip;
     post.st = statuses.post.VISIBLE;
