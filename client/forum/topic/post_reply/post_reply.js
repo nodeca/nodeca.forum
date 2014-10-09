@@ -142,7 +142,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         rules.smiles = parseRules.smiles;
       }
 
-      editor.setOptions({ parse_rules: rules });
+      editor.setOptions({ parseRules: rules });
       editor.updatePreview();
     }
 
@@ -183,10 +183,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     }
 
     editor = new N.MDEdit({
-      editor_area: '.forum-reply__editor',
-      preview_area: '.forum-reply__preview',
-      parse_rules: parseRules,
-      toolbar_buttons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
+      editArea: '.forum-reply__editor',
+      previewArea: '.forum-reply__preview',
+      parseRules: parseRules,
+      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
     });
 
 
@@ -215,7 +215,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         section_hid:     pageParams.section_hid,
         topic_hid:       pageParams.hid,
         post_text:       src,
-        attach_list:     editor.getAttachments(),
+        attach_list:     editor.attachments,
         option_nomlinks: postOptions.nomlinks,
         option_nosmiles: postOptions.nosmiles
       };
