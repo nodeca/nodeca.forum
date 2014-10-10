@@ -14,6 +14,8 @@ var _         = require('lodash');
 var async     = require('async');
 var Charlatan = require('charlatan');
 
+var Parser    = require('nodeca.core/lib/parser');
+
 // topic and post statuses
 var statuses = require('../../server/forum/_lib/statuses.js');
 
@@ -24,6 +26,7 @@ var Post;
 var User;
 var UserGroup;
 var settings;
+var parser = new Parser();
 
 
 var CATEGORY_COUNT = 3;
@@ -48,28 +51,35 @@ var postDay = 0;
 
 var createPost = function (topic, callback) {
 
-  var post = new Post({
-    text: Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join(' '),
-    fmt: 'txt',
+  var md = Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join('\n\n');
+  var mdData = { input: md, output: null };
 
-    st: statuses.post.VISIBLE,
-    topic: topic._id,
+  parser.md2src(mdData, function () {
 
-    user: users[Charlatan.Helpers.rand(USER_COUNT)],
+    var post = new Post({
+      html: mdData.output,
+      md: md,
 
-    ts: new Date(2010, 0, postDay++)
-  });
+      st: statuses.post.VISIBLE,
+      topic: topic._id,
 
-  post.save(function (err, post) {
-    if (err) {
-      callback(err);
-      return;
-    }
+      user: users[Charlatan.Helpers.rand(USER_COUNT)],
 
-    User.update({ _id: post.user }, { $inc: { post_count: 1 } }, function (err) {
-      callback(err, post);
+      ts: new Date(2010, 0, postDay++)
+    });
+
+    post.save(function (err, post) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      User.update({ _id: post.user }, { $inc: { post_count: 1 } }, function (err) {
+        callback(err, post);
+      });
     });
   });
+
 };
 
 var createTopic = function (section, post_count, callback) {

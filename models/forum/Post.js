@@ -17,7 +17,9 @@ module.exports = function (N, collectionName) {
   , user            : Schema.ObjectId
   , ts              : { type: Date, 'default': Date.now }    // timestamp
   , ip              : String  // ip address
-  , text            : String
+
+  , html            : String  // displayed HTML
+  , md              : String  // markdown source
 
   // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
   // constants should be defined globally
@@ -25,7 +27,11 @@ module.exports = function (N, collectionName) {
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
 
-  , attach_list     : [ Schema.ObjectId ]
+  // All post attachments
+  , attach_refs     : [ Schema.ObjectId ]  // all attachments
+
+  // Attachments on tail of post
+  , attach_tail     : [ { id: Schema.ObjectId, name: String } ]
   },
   {
     versionKey : false

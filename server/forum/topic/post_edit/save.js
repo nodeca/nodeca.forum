@@ -6,10 +6,18 @@ var medialinks = require('nodeca.core/lib/parser/medialinks');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id:     { type: 'string', required: true },
-    section_hid: { type: 'integer', required: true },
-    topic_hid:   { type: 'integer', required: true },
-    post_text:   { type: 'string' }
+    post_id:         { type: 'string', required: true },
+    section_hid:     { type: 'integer', required: true },
+    topic_hid:       { type: 'integer', required: true },
+    post_md:         { type: 'string', required: true },
+    attach_tail:     {
+      type: 'array',
+      required: true,
+      uniqueItems: true,
+      items: { format: 'mongo' }
+    },
+    option_nomlinks: { type: 'boolean', required: true },
+    option_nosmiles: { type: 'boolean', required: true }
   });
 
 

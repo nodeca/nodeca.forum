@@ -19,7 +19,6 @@ function removeEditor() {
     return;
   }
 
-  // TODO: save draft
   $form.remove();
   $form = null;
   $preview = null;
@@ -52,10 +51,8 @@ N.wire.before('navigate.exit:forum.topic', function tear_down_forum_post_reply()
     return;
   }
 
-  editor.getSrc(function (src) {
-    bag.set(draftID(), src, function () {
-      removeEditor();
-    });
+  bag.set(draftID(), editor.ace.getValue(), function () {
+    removeEditor();
   });
 });
 
@@ -67,10 +64,8 @@ N.wire.on('forum.topic.post_edit', function click_edit() {
     return;
   }
 
-  editor.getSrc(function (src) {
-    bag.set(draftID(), src, function () {
-      removeEditor();
-    });
+  bag.set(draftID(), editor.ace.getValue(), function () {
+    removeEditor();
   });
 });
 
@@ -107,11 +102,9 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   //
   N.wire.before('forum.topic.post_reply', function load_editor(event, callback) {
     if ($form) {
-      editor.getSrc(function (src) {
-        bag.set(draftID(), src, function () {
-          removeEditor();
-          callback();
-        });
+      bag.set(draftID(), editor.ace.getValue(), function () {
+        removeEditor();
+        callback();
       });
 
       return;
@@ -195,7 +188,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         return;
       }
 
-      editor.setSrc(data);
+      editor.ace.setValue(data);
     });
 
 
@@ -210,30 +203,29 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   N.wire.on('forum.topic.post_reply:save', function save() {
     // Save reply on server
 
-    editor.getSrc(function (src) {
-      var data = {
-        section_hid:     pageParams.section_hid,
-        topic_hid:       pageParams.hid,
-        post_text:       src,
-        attach_list:     editor.attachments,
-        option_nomlinks: postOptions.nomlinks,
-        option_nosmiles: postOptions.nosmiles
-      };
+    var data = {
+      section_hid:     pageParams.section_hid,
+      topic_hid:       pageParams.hid,
+      post_md:         editor.ace.getValue(),
+      attach_tail:     editor.attachments,
+      option_nomlinks: postOptions.nomlinks,
+      option_nosmiles: postOptions.nosmiles
+    };
 
-      if (parentPostId) {
-        data.parent_post_id = parentPostId;
-      }
+    if (parentPostId) {
+      data.parent_post_id = parentPostId;
+    }
 
-      N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
-        removeEditor();
+    N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
+      removeEditor();
 
-        bag.remove(draftID(), function () {
+      bag.remove(draftID(), function () {
 
-          // TODO: append new posts
-          window.location = res.redirect_url;
-        });
+        // TODO: append new posts
+        window.location = res.redirect_url;
       });
     });
+
   });
 
 
