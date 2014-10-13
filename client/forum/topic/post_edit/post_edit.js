@@ -89,19 +89,15 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     $targetPost.after($form);
 
-    editor = new N.MDEdit({
-      editArea: '.forum-edit__editor',
-      previewArea: '.forum-edit__preview',
-      parseRules: parseRules,
-      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
-    });
-
     N.io.rpc('forum.topic.post_edit.fetch', { post_id: postId }).done(function (res) {
-      editor.attachments = res.attach_tail;
-      editor.ace.setValue(res.md);
-
-      editor.updatePreview();
-      editor.updateAttachments();
+      editor = new N.MDEdit({
+        editArea: '.forum-edit__editor',
+        previewArea: '.forum-edit__preview',
+        parseRules: parseRules,
+        toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
+        attachments: res.attach_tail,
+        markdown: res.md
+      });
 
       $form.fadeIn();
     });
@@ -114,7 +110,14 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   N.wire.on('forum.topic.post_edit:save', function save() {
 
     // TODO: implement save
-    N.io.rpc('forum.topic.post_edit.save', pageParams).done(function (res) {
+
+    var data = {
+      topic_hid:       pageParams.hid,
+      post_md:         editor.markdown,
+      attach_tail:     editor.attachments
+    };
+
+    N.io.rpc('forum.topic.post_edit.save', data).done(function (res) {
       $form.fadeOut();
       removeEditor();
       $('#post' + postId + ' .forum-post__message').html(res.html);

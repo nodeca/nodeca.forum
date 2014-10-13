@@ -136,7 +136,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       }
 
       editor.setOptions({ parseRules: rules });
-      editor.updatePreview();
     }
 
     $options.find('.forum-reply__medialinks').change(function () {
@@ -175,25 +174,18 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       $('#postlist > :last').after($form);
     }
 
-    editor = new N.MDEdit({
-      editArea: '.forum-reply__editor',
-      previewArea: '.forum-reply__preview',
-      parseRules: parseRules,
-      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
+    bag.get(draftID(), function (__, data) {
+
+      editor = new N.MDEdit({
+        editArea: '.forum-reply__editor',
+        previewArea: '.forum-reply__preview',
+        parseRules: parseRules,
+        toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
+        markdown: data || ''
+      });
     });
-
-
-    bag.get(draftID(), function (err, data) {
-      if (err) {
-        return;
-      }
-
-      editor.ace.setValue(data);
-    });
-
 
     $form.fadeIn();
-
   });
 
 
@@ -206,7 +198,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var data = {
       section_hid:     pageParams.section_hid,
       topic_hid:       pageParams.hid,
-      post_md:         editor.ace.getValue(),
+      post_md:         editor.markdown,
       attach_tail:     editor.attachments,
       option_nomlinks: postOptions.nomlinks,
       option_nosmiles: postOptions.nosmiles
