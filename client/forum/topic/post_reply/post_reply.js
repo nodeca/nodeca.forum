@@ -2,6 +2,8 @@
 
 'use strict';
 
+var _ = require('lodash');
+
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 var bag = new window.Bag();
@@ -199,7 +201,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       section_hid:     pageParams.section_hid,
       topic_hid:       pageParams.hid,
       post_md:         editor.markdown,
-      attach_tail:     editor.attachments,
+      attach_tail:     _.map(editor.attachments, function (v) { return v.id; }),
       option_nomlinks: postOptions.nomlinks,
       option_nosmiles: postOptions.nosmiles
     };

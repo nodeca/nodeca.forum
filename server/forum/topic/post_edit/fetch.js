@@ -1,8 +1,6 @@
 // Get post src html, update post
 'use strict';
 
-var _ = require('lodash');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -47,8 +45,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function fill_data(env) {
     env.res.md = env.data.post.md;
-    env.res.attach_tail = _.map(env.data.post.attach_tail, function (attach) {
-      return attach.id;
-    });
+    env.res.attach_tail = env.data.post.attach_tail;
   });
 };

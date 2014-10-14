@@ -194,6 +194,13 @@ module.exports = function (N, apiPath) {
       result.push(src);
     });
 
+    ast.find('a').each(function () {
+      src = $(this).attr('href');
+      src = src.replace(urlCutRE, '$1');
+
+      result.push(src);
+    });
+
     result = _.uniq(result);
 
     env.data.attach_refs = result;
