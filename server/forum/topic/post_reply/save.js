@@ -159,7 +159,8 @@ module.exports = function (N, apiPath) {
         {
           cleanupRules: N.config.parser.cleanup,
           smiles: env.params.option_nosmiles ? {} : N.config.smiles,
-          medialinkProviders: providers
+          medialinkProviders: providers,
+          baseUrl: env.origin.req.headers.host // TODO: get real domains from config
         }
       };
 
@@ -185,18 +186,32 @@ module.exports = function (N, apiPath) {
     var ast = env.data.ast;
     var result = [];
     var src;
-    var urlCutRE = /\/files\/([0-9a-f]{24}).*/;
+    var MEDIA_ID_RE = /.*?\/files\/([0-9a-f]{24}).*/;
 
+    // Find all images in post
     ast.find('img').each(function () {
       src = $(this).attr('src');
-      src = src.replace(urlCutRE, '$1');
+
+      if (!MEDIA_ID_RE.test(src)) {
+        return;
+      }
+
+      // Get file_id from url
+      src = src.replace(MEDIA_ID_RE, '$1');
 
       result.push(src);
     });
 
+    // Find all links in post
     ast.find('a').each(function () {
       src = $(this).attr('href');
-      src = src.replace(urlCutRE, '$1');
+
+      if (!MEDIA_ID_RE.test(src)) {
+        return;
+      }
+
+      // Get file_id from url
+      src = src.replace(MEDIA_ID_RE, '$1');
 
       result.push(src);
     });
