@@ -20,10 +20,19 @@ module.exports = function (N, apiPath) {
 
   // Fill post options
   //
-  N.wire.before(apiPath, function fill_post_options(env) {
+  N.wire.before(apiPath, function fill_post_options(env, callback) {
 
-    // TODO: fetch
-    env.res.post_options = { nomlinks: false, nosmiles: false };
+    var userStore = N.settings.getStore('user');
+
+    userStore.get([ 'edit_no_mlinks', 'edit_no_smiles' ], { user_id: env.session.user_id }, {}, function (err, data) {
+      if (err) {
+        callback(err);
+      }
+
+      env.res.post_options = { no_mlinks: data.edit_no_mlinks.value, no_smiles: data.edit_no_smiles.value };
+      callback();
+    });
+
   });
 
 

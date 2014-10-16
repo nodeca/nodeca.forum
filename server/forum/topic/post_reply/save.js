@@ -13,18 +13,18 @@ var statuses   = require('../../_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_hid:       { type: 'integer', required: true },
-    parent_post_id:  { type: 'string' },
-    section_hid:     { type: 'integer', required: true },
-    post_md:         { type: 'string', required: true },
-    attach_tail:     {
+    topic_hid:        { type: 'integer', required: true },
+    parent_post_id:   { type: 'string' },
+    section_hid:      { type: 'integer', required: true },
+    post_md:          { type: 'string', required: true },
+    attach_tail:      {
       type: 'array',
       required: true,
       uniqueItems: true,
       items: { format: 'mongo' }
     },
-    option_nomlinks: { type: 'boolean', required: true },
-    option_nosmiles: { type: 'boolean', required: true }
+    option_no_mlinks: { type: 'boolean', required: true },
+    option_no_smiles: { type: 'boolean', required: true }
   });
 
 
@@ -131,8 +131,13 @@ module.exports = function (N, apiPath) {
 
   // Save post options
   //
-  N.wire.before(apiPath, function save_options(/*env, callback*/) {
-    // TODO: implementation
+  N.wire.before(apiPath, function save_options(env, callback) {
+    var userStore = N.settings.getStore('user');
+
+    userStore.set({
+      edit_no_mlinks: { value: env.params.option_no_mlinks },
+      edit_no_smiles: { value: env.params.option_no_smiles }
+    }, { user_id: env.session.user_id }, callback);
   });
 
 
@@ -140,7 +145,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function parse_text(env, callback) {
 
-    var providers = env.params.option_nomlinks ?
+    var providers = env.params.option_no_mlinks ?
                     [] :
                     medialinks(N.config.medialinks.providers, N.config.medialinks.content);
 
@@ -158,7 +163,7 @@ module.exports = function (N, apiPath) {
         options:
         {
           cleanupRules: N.config.parser.cleanup,
-          smiles: env.params.option_nosmiles ? {} : N.config.smiles,
+          smiles: env.params.option_no_smiles ? {} : N.config.smiles,
           medialinkProviders: providers,
           baseUrl: env.origin.req.headers.host // TODO: get real domains from config
         }
@@ -266,6 +271,10 @@ module.exports = function (N, apiPath) {
     post.md = env.params.post_md;
     post.ip = env.req.ip;
     post.st = statuses.post.VISIBLE;
+    post.params = {
+      no_mlinks: env.params.option_no_mlinks,
+      no_smiles: env.params.option_no_smiles
+    };
     // TODO: hellbanned
 
     if (env.data.parent_post) {

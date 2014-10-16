@@ -30,6 +30,9 @@ module.exports = function (N, collectionName) {
   // All post attachments
   , attach_refs     : [ Schema.ObjectId ]  // all attachments
 
+  // Post params
+  , params          : { no_mlinks: Boolean, no_smiles: Boolean }
+
   // Attachments on tail of post
   , attach_tail     : [ {
       file_id: Schema.ObjectId,

@@ -129,11 +129,11 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         medialinkProviders: []
       };
 
-      if (!postOptions.nomlinks) {
+      if (!postOptions.no_mlinks) {
         rules.medialinkProviders = parseRules.medialinkProviders;
       }
 
-      if (!postOptions.nosmiles) {
+      if (!postOptions.no_smiles) {
         rules.smiles = parseRules.smiles;
       }
 
@@ -142,13 +142,13 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     $options.find('.forum-reply__medialinks').change(function () {
 
-      postOptions.nomlinks = !$(this).prop('checked');
+      postOptions.no_mlinks = !$(this).prop('checked');
       updateOptions();
     });
 
     $options.find('.forum-reply__smiles').change(function () {
 
-      postOptions.nosmiles = !$(this).prop('checked');
+      postOptions.no_smiles = !$(this).prop('checked');
       updateOptions();
     });
 
@@ -166,8 +166,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     $preview = $form.find('.forum-reply__preview');
 
-    $form.find('.forum-reply__medialinks').prop('checked', !postOptions.nomlinks);
-    $form.find('.forum-reply__smiles').prop('checked', !postOptions.nosmiles);
+    $form.find('.forum-reply__medialinks').prop('checked', !postOptions.no_mlinks);
+    $form.find('.forum-reply__smiles').prop('checked', !postOptions.no_smiles);
 
     // Find parent, to attach editor after. For new reply - last child
     if (parentPostId) {
@@ -202,8 +202,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       topic_hid:       pageParams.hid,
       post_md:         editor.markdown,
       attach_tail:     _.map(editor.attachments, function (v) { return v.file_id; }),
-      option_nomlinks: postOptions.nomlinks,
-      option_nosmiles: postOptions.nosmiles
+      option_no_mlinks: postOptions.no_mlinks,
+      option_no_smiles: postOptions.no_smiles
     };
 
     if (parentPostId) {
