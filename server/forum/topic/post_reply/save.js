@@ -221,6 +221,7 @@ module.exports = function (N, apiPath) {
     env.data.attach_refs = result;
   });
 
+  // TODO: check attach_refs!!!
 
   // Fetch tail attachments
   //
@@ -239,16 +240,14 @@ module.exports = function (N, apiPath) {
       file_id: { $in: tail },
       exists: true,
       user_id: env.session.user_id
-    }).lean(true).select('file_id file_name').exec(function (err, attachments) {
+    }).lean(true).select('file_id file_name type').exec(function (err, attachments) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      env.data.attach_tail = _.map(attachments, function (attach) {
-        return { id: attach.file_id, name: attach.file_name };
-      });
+      env.data.attach_tail = attachments;
 
       callback();
     });

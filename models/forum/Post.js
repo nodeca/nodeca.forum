@@ -31,7 +31,11 @@ module.exports = function (N, collectionName) {
   , attach_refs     : [ Schema.ObjectId ]  // all attachments
 
   // Attachments on tail of post
-  , attach_tail     : [ { id: Schema.ObjectId, name: String } ]
+  , attach_tail     : [ {
+      file_id: Schema.ObjectId,
+      file_name: String,
+      type: { type: String, enum: [ 'image', 'binary' ] }
+    } ]
   },
   {
     versionKey : false

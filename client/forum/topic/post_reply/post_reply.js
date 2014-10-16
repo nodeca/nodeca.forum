@@ -201,7 +201,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       section_hid:     pageParams.section_hid,
       topic_hid:       pageParams.hid,
       post_md:         editor.markdown,
-      attach_tail:     _.map(editor.attachments, function (v) { return v.id; }),
+      attach_tail:     _.map(editor.attachments, function (v) { return v.file_id; }),
       option_nomlinks: postOptions.nomlinks,
       option_nosmiles: postOptions.nosmiles
     };

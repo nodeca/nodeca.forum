@@ -30,17 +30,19 @@ each post in self.posts
         .av-l
     .forum-post__content
       .forum-post__message !{post.html}
+
       ul.attachments.clearfix
         if post.attach_tail
           each attach in post.attach_tail
-            - var url = self.link_to('core.gridfs', { bucket: attach.id })
+            - var url = self.link_to('core.gridfs', { bucket: attach.file_id })
             li.attachment
-              if (attach.name && attach.name !== '')
-                a.attachment__link(href=url)= attach.name
-              else
-                - var preview = self.link_to('core.gridfs', { bucket: attach.id + '_sm' })
-                a.attachment__link(href=url)
+              if (attach.type === 'image')
+                - var preview = self.link_to('core.gridfs', { bucket: attach.file_id + '_sm' })
+                a.attachment__link-image(href=url)
                   img.thumb__image(src=preview)
+              else
+                a.attachment__link-file(href=url)= attach.file_name
+
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-left
           li.forum-post__control-item
