@@ -1,0 +1,9 @@
+en-US:
+  title: Create new topic
+  topic_title: Topic title
+  err_required_fields_empty: You shoud fill topic title and text
+  create: Create
+  options: options
+  preview_toggle: Preview
+  options_medialinks: Convert media links
+  options_smiles: Convert smiles

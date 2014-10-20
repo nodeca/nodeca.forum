@@ -13,7 +13,6 @@ router:
           type: integer
           default: 1
 
-
     forum.topic:
       "/f{section_hid}/topic{hid}(/page{page})":
         section_hid:
@@ -26,6 +25,12 @@ router:
           match: /[1-9]\d*/
           type: integer
           default: 1
+
+    forum.topic_create:
+      "/f{section_hid}/create":
+        section_hid:
+          match: /\d+/
+          type: integer
 
     admin.forum.section.index:
       "/forum/section": ~
