@@ -191,7 +191,7 @@ module.exports = function (N, apiPath) {
     var ast = env.data.ast;
     var result = [];
     var src;
-    var MEDIA_ID_RE = /.*?\/files\/([0-9a-f]{24}).*/;
+    var MEDIA_ID_RE = /.*?\/(files|member[0-9]+\/media)\/([0-9a-f]{24}).*/;
 
     // Find all images in post
     ast.find('img').each(function () {
@@ -202,7 +202,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Get file_id from url
-      src = src.replace(MEDIA_ID_RE, '$1');
+      src = src.replace(MEDIA_ID_RE, '$2');
 
       result.push(src);
     });
@@ -216,7 +216,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Get file_id from url
-      src = src.replace(MEDIA_ID_RE, '$1');
+      src = src.replace(MEDIA_ID_RE, '$2');
 
       result.push(src);
     });

@@ -34,7 +34,7 @@ each post in self.posts
       ul.attachments.clearfix
         if post.attach_tail
           each attach in post.attach_tail
-            - var url = self.link_to('core.gridfs', { bucket: attach.file_id })
+            - var url = self.link_to('users.media', { user_hid: user.hid, file_id: attach.file_id })
             li.attachment
               if (attach.type === 'image')
                 - var preview = self.link_to('core.gridfs', { bucket: attach.file_id + '_sm' })
