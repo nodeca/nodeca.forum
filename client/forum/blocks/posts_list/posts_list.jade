@@ -6,7 +6,7 @@
 
 each post in self.posts
   - var user = self.users[post.user];
-  article.forum-post.clearfix(id='post#{post._id}', itemscope, itemtype='http://schema.org/WebPageElement')
+  article.forum-post.clearfix(id='post#{post._id}', data-user-hid=user.hid, itemscope, itemtype='http://schema.org/WebPageElement')
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
         time.forum-post__time(
@@ -31,17 +31,7 @@ each post in self.posts
     .forum-post__content
       .forum-post__message !{post.html}
 
-      ul.attachments.clearfix
-        if post.attach_tail
-          each attach in post.attach_tail
-            - var url = self.link_to('users.media', { user_hid: user.hid, file_id: attach.file_id })
-            li.attachment
-              if (attach.type === 'image')
-                - var preview = self.link_to('core.gridfs', { bucket: attach.file_id + '_sm' })
-                a.attachment__link-image(href=url)
-                  img.thumb__image(src=preview)
-              else
-                a.attachment__link-file(href=url)= attach.file_name
+      !=self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user })
 
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-left

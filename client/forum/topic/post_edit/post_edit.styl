@@ -23,14 +23,19 @@
 .forum-edit__editor
   margin-bottom (baseLineHeight/2)
 
-.forum-edit__editor > textarea
-  font-family sansWideFontFamily
-  box-sizing border-box
-  width 100%
-  margin 0
-  min-height 150px
-  box-shadow none
-
-.forum-edit__options
+.forum-edit__options-button
   padding-left 0
   padding-right 0
+
+.forum-edit__preview
+  margin-top (baseLineHeight/2)
+  width 100%
+  border-top  1px dashed black
+  padding-top (baseLineHeight/2)
+
+.forum-edit__editor > .mdedit__editor
+  min-height 150px
+  width 100%
+
+.forum-edit__options
+  display none

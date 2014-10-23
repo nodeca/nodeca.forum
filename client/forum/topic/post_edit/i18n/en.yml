@@ -1,4 +1,7 @@
 en-US:
+  save: Save
   cancel: Cancel
   options: options
-  save: Save
+  preview_toggle: Preview
+  options_medialinks: Convert media links
+  options_smiles: Convert smiles

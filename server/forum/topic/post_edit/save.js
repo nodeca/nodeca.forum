@@ -1,129 +1,183 @@
 // Get post src html, update post
 'use strict';
 
+var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
+var $          = require('nodeca.core/lib/parser/cheequery');
 
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id:         { type: 'string', required: true },
-    section_hid:     { type: 'integer', required: true },
-    topic_hid:       { type: 'integer', required: true },
-    post_md:         { type: 'string', required: true },
-    attach_tail:     {
+    post_id:          { type: 'string', required: true },
+    post_md:          { type: 'string', required: true },
+    attach_tail:      {
       type: 'array',
       required: true,
       uniqueItems: true,
       items: { format: 'mongo' }
     },
-    option_nomlinks: { type: 'boolean', required: true },
-    option_nosmiles: { type: 'boolean', required: true }
+    option_no_mlinks: { type: 'boolean', required: true },
+    option_no_smiles: { type: 'boolean', required: true }
   });
 
 
-  // Fetch section info
+  // Fetch post data and check permissions
   //
-  N.wire.before(apiPath, function fetch_section_info(env, callback) {
+  N.wire.before(apiPath, function fetch_post_data(env, callback) {
+    N.wire.emit('server:forum.topic.post_edit.fetch', env, callback);
+  });
 
-    N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true).exec(function (err, section) {
+
+  // Save post options
+  //
+  N.wire.before(apiPath, function save_options(env, callback) {
+    var userStore = N.settings.getStore('user');
+
+    userStore.set({
+      edit_no_mlinks: { value: env.params.option_no_mlinks },
+      edit_no_smiles: { value: env.params.option_no_smiles }
+    }, { user_id: env.session.user_id }, callback);
+  });
+
+
+  // Parse user input to HTML
+  //
+  N.wire.before(apiPath, function parse_text(env, callback) {
+
+    var providers = env.params.option_no_mlinks ?
+      [] :
+      medialinks(N.config.medialinks.providers, N.config.medialinks.content);
+
+    var mdData = { input: env.params.post_md, output: null };
+
+    N.parser.md2src(mdData, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+      var srcData = {
+        input: mdData.output,
+        output: null, // will be cheerio instance
+        options:
+        {
+          cleanupRules: N.config.parser.cleanup,
+          smiles: env.params.option_no_smiles ? {} : N.config.smiles,
+          medialinkProviders: providers,
+          baseUrl: env.origin.req.headers.host // TODO: get real domains from config
+        }
+      };
 
-      env.data.section = section;
-      callback();
+      N.parser.src2ast(srcData, function (err) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          env.data.ast = srcData.output;
+          env.data.post_html = srcData.output.html();
+          // TODO: save data.output.text() for search reasons
+          callback();
+        }
+      );
     });
   });
 
 
-  // Fetch post
+  // Fetch attachments from post body
   //
-  N.wire.before(apiPath, function fetch_post(env, callback) {
-    N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true).exec(function (err, post) {
+  N.wire.before(apiPath, function fetch_attachments(env) {
+    var ast = env.data.ast;
+    var result = [];
+    var src;
+    var MEDIA_ID_RE = /.*?\/(files|member[0-9]+\/media)\/([0-9a-f]{24}).*/;
+
+    // Find all images in post
+    ast.find('img').each(function () {
+      src = $(this).attr('src');
+
+      if (!MEDIA_ID_RE.test(src)) {
+        return;
+      }
+
+      // Get file_id from url
+      src = src.replace(MEDIA_ID_RE, '$2');
+
+      result.push(src);
+    });
+
+    // Find all links in post
+    ast.find('a').each(function () {
+      src = $(this).attr('href');
+
+      if (!MEDIA_ID_RE.test(src)) {
+        return;
+      }
+
+      // Get file_id from url
+      src = src.replace(MEDIA_ID_RE, '$2');
+
+      result.push(src);
+    });
+
+    result = _.uniq(result);
+
+    env.data.attach_refs = result;
+  });
+
+  // TODO: check attach_refs!!!
+
+  // Fetch tail attachments
+  //
+  N.wire.before(apiPath, function check_attachments(env, callback) {
+    var tail = env.params.attach_tail;
+    var refs = env.data.attach_refs;
+
+    // Remove refs from tail
+    tail = _.remove(tail, function(id) {
+      return refs.indexOf(id) === -1;
+    });
+
+    env.data.attach_refs = _.union(refs, tail);
+
+    N.models.users.Media.find({
+      file_id: { $in: tail },
+      exists: true,
+      user_id: env.session.user_id
+    }).lean(true).select('file_id file_name type').exec(function (err, attachments) {
+
       if (err) {
         callback(err);
         return;
       }
 
-      // TODO: check post status and permissions
-      if (!post) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+      env.data.attach_tail = attachments;
 
-      env.data.post = post;
       callback();
     });
-  });
-
-
-  // Check permissions
-  //
-  N.wire.before(apiPath, function check_permissions(env) {
-    // TODO: check post ts (user can edit only posts not older than 30 minutes)
-    if (!env.session.user_id || env.session.user_id.toString() !== env.data.post.user.toString()) {
-      return N.io.FORBIDDEN;
-    }
-
-    // TODO: check moderator permissions to edit post
   });
 
 
   // Update post
   //
-  N.wire.on(apiPath, function update_post(env, callback) {
-    if (!env.params.post_text) {
-      callback();
-      return;
-    }
-
-    var data = {
-      input: env.params.post_text,
-      output: null, // will be cheerio instance
-      options:
-      {
-        cleanupRules: N.config.parser.cleanup,
-        smiles: N.config.smiles,
-        medialinkProviders: medialinks(N.config.medialinks.providers, N.config.medialinks.content)
-      }
+  N.wire.on(apiPath, function post_update(env, callback) {
+    var updateData = {
+      attach_tail: env.data.attach_tail,
+      attach_refs: env.data.attach_refs,
+      html:        env.data.post_html,
+      md:          env.params.post_md,
+      params:      { no_mlinks: env.params.option_no_mlinks, no_smiles: env.params.option_no_smiles }
     };
 
-    N.parser.src2ast(data, function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    N.models.forum.Post.update({ _id: env.params.post_id }, updateData, function (err) {
 
-        // TODO: save data.output.text() for search reasons
-        env.data.post.text = data.output.html();
-        N.models.forum.Post.update({ _id: env.params.post_id }, { text: env.data.post.text }, callback);
-      }
-    );
-  });
-
-
-  // Fill post src html
-  //
-  N.wire.after(apiPath, function get_src_html(env, callback) {
-    var data = {
-      input: env.data.post.text,
-      output: null // will be cheerio instance
-    };
-
-    N.parser.html2ast(data, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      env.res.html = env.data.post.text;
-      env.res.src = data.output.html();
+      env.res.post = { html: updateData.html, attach_tail: updateData.attach_tail };
+
       callback();
     });
   });

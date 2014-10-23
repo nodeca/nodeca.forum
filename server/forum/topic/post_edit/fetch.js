@@ -1,31 +1,38 @@
 // Get post src html, update post
 'use strict';
 
+// topic and post statuses
+var statuses   = require('../../_lib/statuses.js');
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     post_id: { type: 'string', required: true }
   });
 
-
   // Fetch post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
-    N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true).exec(function (err, post) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    N.models.forum.Post.findOne({ _id: env.params.post_id, user: env.session.user_id })
+      .lean(true).exec(function (err, post) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      // TODO: check post status and permissions
-      if (!post) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+        if (!post) {
+          callback(N.io.NOT_FOUND);
+          return;
+        }
 
-      env.data.post = post;
-      callback();
-    });
+        if (post.st !== statuses.post.VISIBLE && post.st !== statuses.post.HB) {
+          callback(N.io.NOT_FOUND);
+          return;
+        }
+
+        env.data.post = post;
+        callback();
+      });
   });
 
 
@@ -46,5 +53,6 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function fill_data(env) {
     env.res.md = env.data.post.md;
     env.res.attach_tail = env.data.post.attach_tail;
+    env.res.params = env.data.post.params;
   });
 };
