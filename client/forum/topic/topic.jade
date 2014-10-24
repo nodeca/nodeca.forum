@@ -43,6 +43,7 @@ article#content.forum-topic-root
 
           if self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN)
             button.btn.btn-primary.icon.icon-plus.pull-right(
+              data-on-click='forum.topic.post_reply'
               type='button'
               title=self.t('post_add')
             )
