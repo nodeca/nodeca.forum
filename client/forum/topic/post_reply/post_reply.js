@@ -152,7 +152,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       updateOptions();
     });
 
-    $options.toggle();
+    $options.slideToggle();
   });
 
 
@@ -229,7 +229,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
 
   N.wire.on('forum.topic.post_reply:preview_toggle', function preview_toggle() {
-    $preview.fadeToggle();
+    $preview.slideToggle();
     // TODO: save preview visibility
   });
 

@@ -66,14 +66,14 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   // Show/hide post preview
   //
   N.wire.on('forum.topic.post_edit:preview_toggle', function toggle_options() {
-    $('.forum-edit__preview').toggle();
+    $('.forum-edit__preview').slideToggle();
   });
 
 
   // Show/hide post options
   //
   N.wire.on('forum.topic.post_edit:options', function toggle_options() {
-    $('.forum-edit__options').toggle();
+    $('.forum-edit__options').slideToggle();
   });
 
 
