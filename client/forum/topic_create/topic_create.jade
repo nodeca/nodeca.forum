@@ -1,5 +1,7 @@
 #content.topic-create
 
+  != self.partial('@common.blocks.breadcrumbs')
+
   header.page-head
     h1.page-head__title(itemprop='name')= self.t('title')
 

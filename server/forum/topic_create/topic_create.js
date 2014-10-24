@@ -63,4 +63,29 @@ module.exports = function (N, apiPath) {
       callback();
     });
   });
+
+
+  // Fill breadcrumbs info
+  //
+  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
+
+    N.models.forum.Section.getParentList(env.data.section._id, function(err, parents) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      // add current section
+      parents.push(env.data.section._id);
+      N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
+    });
+  });
+
+
+  // Fill head meta
+  //
+  N.wire.after(apiPath, function fill_meta(env) {
+    env.res.head = env.res.head || {};
+    env.res.head.title = env.t('title');
+  });
 };
