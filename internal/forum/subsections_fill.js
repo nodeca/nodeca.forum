@@ -159,7 +159,7 @@ module.exports = function (N, apiPath) {
 
   // Sanitize subsections
   //
-  N.wire.after(apiPath, function sanitize(env, callback) {
+  N.wire.after(apiPath, function sanitize_sections(env, callback) {
     env.extras.settings.fetch([ 'can_see_hellbanned' ], function (err, settings) {
       if (err) {
         callback(err);
