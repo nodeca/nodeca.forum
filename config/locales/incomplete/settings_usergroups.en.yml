@@ -2,10 +2,6 @@ i18n:
   en-US:
     admin:
       core:
-        category_names:
-          perm_forum: Forum
-          perm_moderator: Forum moderation
-
         setting_names:
           forum_can_view: Show Forum
           forum_can_reply: Reply Topics

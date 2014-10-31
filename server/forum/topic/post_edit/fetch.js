@@ -10,6 +10,7 @@ module.exports = function (N, apiPath) {
     post_id: { type: 'string', required: true }
   });
 
+
   // Fetch post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
@@ -38,13 +39,28 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env) {
-    // TODO: check post ts (user can edit only posts not older than 30 minutes)
+  N.wire.before(apiPath, function check_permissions(env, callback) {
+
     if (!env.session.user_id || env.session.user_id.toString() !== env.data.post.user.toString()) {
-      return N.io.FORBIDDEN;
+      callback(N.io.FORBIDDEN);
+      return;
     }
 
-    // TODO: check moderator permissions to edit post
+    env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
+        callback(N.io.FORBIDDEN);
+        return;
+      }
+
+      // TODO: check moderator permissions to edit post
+      callback();
+    });
   });
 
 

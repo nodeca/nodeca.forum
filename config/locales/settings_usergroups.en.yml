@@ -1,0 +1,10 @@
+i18n:
+  en-US:
+    admin:
+      core:
+        category_names:
+          perm_forum: Forum
+          perm_moderator: Forum moderation
+
+        setting_names:
+          forum_edit_max_time: Max time to edit post after create (minutes)

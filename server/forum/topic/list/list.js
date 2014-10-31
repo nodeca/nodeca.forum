@@ -375,7 +375,7 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('fetch public settings for renderer');
 
-    env.extras.settings.fetch('forum_can_reply', function (err, forum_can_reply) {
+    env.extras.settings.fetch([ 'forum_can_reply', 'forum_edit_max_time' ], function (err, result) {
       env.extras.puncher.stop();
 
       if (err) {
@@ -384,7 +384,8 @@ module.exports = function (N, apiPath) {
       }
 
       env.res.settings = env.res.settings || {};
-      env.res.settings.forum_can_reply = forum_can_reply;
+      env.res.settings.forum_can_reply = result.forum_can_reply;
+      env.res.settings.forum_edit_max_time = result.forum_edit_max_time;
 
       env.extras.puncher.stop(); // Close main page scope
 

@@ -1,0 +1,8 @@
+setting_schemas:
+  usergroup:
+
+    forum_edit_max_time:
+      default: 30
+      category_key: forum
+      type: number
+      priority: 40

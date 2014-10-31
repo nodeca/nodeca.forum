@@ -40,6 +40,7 @@ each post in self.posts
           li.forum-post__control-item
             a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
+
           if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
             li.forum-post__control-item
               a.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
@@ -47,15 +48,18 @@ each post in self.posts
                 data-on-click='forum.topic.post_reply'
                 data-post-id=post._id
               )= self.t('reply')
-          li.forum-post__control-item
-            a.forum-post__action-link(
-              href='#'
-              data-on-click='forum.topic.post_edit'
-              data-post-id='#{post._id}'
-            )= self.t('edit')
-            //- TODO: show edit button only if user have permissions to do this
-          li.forum-post__control-item
-            a.forum-post__action-link(href='#')= self.t('delete')
+
+          if (user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || post.ts > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
+            li.forum-post__control-item
+              a.forum-post__action-link(
+                href='#'
+                data-on-click='forum.topic.post_edit'
+                data-post-id='#{post._id}'
+              )= self.t('edit')
+
+            li.forum-post__control-item
+              a.forum-post__action-link(href='#')= self.t('delete')
+
           li.forum-post__control-item
             a.forum-post__vote-down.icon.icon-vote-down(href='#')
             span.forum-post__vote-count +47
