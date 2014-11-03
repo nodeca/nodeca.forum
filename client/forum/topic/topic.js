@@ -22,6 +22,21 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Delete post button handler
+  //
+  N.wire.on('forum.topic.post_delete', function post_delete(event) {
+    var postId = $(event.target).data('post-id');
+    var moderatorAction = $(event.target).data('moderator-action') || false;
+    var $post = $('#post' + postId);
+
+    N.io.rpc('forum.topic.post_destroy', { post_id: postId, moderator_action: moderatorAction }).done(function () {
+      $post.fadeOut(function () {
+        $post.remove();
+      });
+    });
+  });
+
+
   // "More posts" button logic
   //
   N.wire.on('forum.topic.append_next_page', function append_next_page(event) {

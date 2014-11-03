@@ -9,6 +9,7 @@ var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 var $form;
 var postId;
+var moderatorAction;
 var parseRules;
 var editor;
 var postOptions;
@@ -125,6 +126,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     var $button = $(event.target);
 
+    moderatorAction = $button.data('moderator-action') || false;
     postId = $button.data('post-id');
 
     var $targetPost = $('#post' + postId);
@@ -134,25 +136,26 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     $targetPost.after($form);
 
-    N.io.rpc('forum.topic.post_edit.fetch', { post_id: postId }).done(function (res) {
-      postOptions = res.params;
+    N.io.rpc('forum.topic.post_edit.fetch', { post_id: postId, moderator_action: moderatorAction })
+      .done(function (res) {
+        postOptions = res.params;
 
-      $('.forum-edit__medialinks').prop('checked', !postOptions.no_mlinks);
-      $('.forum-edit__smiles').prop('checked', !postOptions.no_smiles);
+        $('.forum-edit__medialinks').prop('checked', !postOptions.no_mlinks);
+        $('.forum-edit__smiles').prop('checked', !postOptions.no_smiles);
 
-      editor = new N.MDEdit({
-        editArea: '.forum-edit__editor',
-        previewArea: '.forum-edit__preview',
-        parseRules: parseRules,
-        toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-        attachments: res.attach_tail,
-        markdown: res.md
+        editor = new N.MDEdit({
+          editArea: '.forum-edit__editor',
+          previewArea: '.forum-edit__preview',
+          parseRules: parseRules,
+          toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
+          attachments: res.attach_tail,
+          markdown: res.md
+        });
+
+        updatePostOptions();
+
+        $form.fadeIn();
       });
-
-      updatePostOptions();
-
-      $form.fadeIn();
-    });
   });
 
 
@@ -164,9 +167,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var $post = $('#post' + postId);
 
     var data = {
-      post_id:         postId,
-      post_md:         editor.markdown,
-      attach_tail:     _.map(editor.attachments, function (v) { return v.file_id; }),
+      moderator_action: moderatorAction,
+      post_id:          postId,
+      post_md:          editor.markdown,
+      attach_tail:      _.map(editor.attachments, function (v) { return v.file_id; }),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

@@ -65,7 +65,12 @@ var createPost = function (topic, callback) {
 
       user: users[Charlatan.Helpers.rand(USER_COUNT)],
 
-      ts: new Date(2010, 0, postDay++)
+      ts: new Date(2010, 0, postDay++),
+
+      params: {
+        no_mlinks: false,
+        no_smiles: false
+      }
     });
 
     post.save(function (err, post) {

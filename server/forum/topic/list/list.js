@@ -368,6 +368,7 @@ module.exports = function (N, apiPath) {
     });
   });
 
+
   // Add permissions, required to render posts list
   //
   N.wire.after(apiPath, function expose_settings(env, callback) {
@@ -375,22 +376,24 @@ module.exports = function (N, apiPath) {
     env.extras.settings.params.section_id = env.data.topic.section;
     env.extras.puncher.start('fetch public settings for renderer');
 
-    env.extras.settings.fetch([ 'forum_can_reply', 'forum_edit_max_time' ], function (err, result) {
-      env.extras.puncher.stop();
+    env.extras.settings.fetch(
+      [ 'forum_can_reply', 'forum_edit_max_time', 'forum_mod_can_edit_posts', 'forum_mod_can_delete_posts' ],
+      function (err, result) {
+        env.extras.puncher.stop();
 
-      if (err) {
-        callback(err);
-        return;
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        env.res.settings = env.res.settings || {};
+        _.assign(env.res.settings, result);
+
+        env.extras.puncher.stop(); // Close main page scope
+
+        callback();
       }
-
-      env.res.settings = env.res.settings || {};
-      env.res.settings.forum_can_reply = result.forum_can_reply;
-      env.res.settings.forum_edit_max_time = result.forum_edit_max_time;
-
-      env.extras.puncher.stop(); // Close main page scope
-
-      callback();
-    });
+    );
   });
 
 };

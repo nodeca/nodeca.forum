@@ -69,12 +69,12 @@
 
 .forum-post__content
   font-family sansWideFontFamily
-  overflow hidden
   margin-right 10px
 
 .forum-post__message
-    margin-bottom 10px
-    min-height 75px
+  overflow hidden
+  margin-bottom 10px
+  min-height 75px
 
 .forum-post__controls-blk
   margin 0
@@ -82,10 +82,13 @@
   list-style none
 
 .forum-post__control-item
-    display inline-block
-    margin-right: 15px
-    &:last-child
-      margin-right: 0
+  display inline-block
+  margin-right: 15px
+  &:last-child
+    margin-right: 0
+  .dropdown-menu
+    right 0
+    left auto
 
 a.forum-post__action-link
   color grayDark

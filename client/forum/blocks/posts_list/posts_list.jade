@@ -58,9 +58,35 @@ each post in self.posts
               )= self.t('edit')
 
             li.forum-post__control-item
-              a.forum-post__action-link(href='#')= self.t('delete')
+              a.forum-post__action-link(
+                href='#'
+                data-on-click='forum.topic.post_delete'
+                data-post-id='#{post._id}'
+              )= self.t('delete')
 
           li.forum-post__control-item
             a.forum-post__vote-down.icon.icon-vote-down(href='#')
             span.forum-post__vote-count +47
             a.forum-post__vote-up.icon.icon-vote-up(href='#')
+
+          if (self.settings.forum_mod_can_edit_posts || self.settings.forum_mod_can_delete_posts)
+            li.forum-post__control-item
+              .dropdown
+                button.btn.btn-link.dropdown-toggle(data-toggle='dropdown')
+                  span.caret
+                ul.dropdown-menu
+                  li.presentation
+                    if (self.settings.forum_mod_can_edit_posts)
+                      a(
+                        href='#'
+                        data-on-click='forum.topic.post_edit'
+                        data-post-id='#{post._id}'
+                        data-moderator-action='true'
+                      )= self.t('edit')
+                    if (self.settings.forum_mod_can_delete_posts)
+                      a(
+                        href='#'
+                        data-on-click='forum.topic.post_delete'
+                        data-post-id='#{post._id}'
+                        data-moderator-action='true'
+                      )= self.t('delete')
