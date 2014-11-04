@@ -31,8 +31,7 @@ function removeEditor() {
 function draftID() {
   return [
     'reply',
-    parentPostId,
-    pageParams.section_hid,
+    // topic hid
     pageParams.hid
   ].join('_');
 }
@@ -46,29 +45,17 @@ N.wire.on('navigate.done:forum.topic', function init_forum_post_reply(data) {
 });
 
 
-// Free resources and save draft on page exit
+// Free resources on page exit
 //
 N.wire.before('navigate.exit:forum.topic', function tear_down_forum_post_reply() {
-  if (!$form) {
-    return;
-  }
-
-  bag.set(draftID(), editor.ace.getValue(), function () {
-    removeEditor();
-  });
+  removeEditor();
 });
 
 
 // terminate editor if user tries to edit post on the same page
 //
 N.wire.on('forum.topic.post_edit', function click_edit() {
-  if (!$form) {
-    return;
-  }
-
-  bag.set(draftID(), editor.ace.getValue(), function () {
-    removeEditor();
-  });
+  removeEditor();
 });
 
 
@@ -100,19 +87,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
-  // Save draft and remove old form if editor already open
+  // Remove old form if editor already open
   //
-  N.wire.before('forum.topic.post_reply', function load_editor(event, callback) {
-    if ($form) {
-      bag.set(draftID(), editor.ace.getValue(), function () {
-        removeEditor();
-        callback();
-      });
-
-      return;
-    }
-
-    callback();
+  N.wire.before('forum.topic.post_reply', function load_editor() {
+    removeEditor();
   });
 
 
@@ -185,6 +163,11 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
         markdown: data || ''
       });
+
+      // Save draft when user stops input text
+      editor.ace.getSession().on('change', _.debounce(function () {
+        bag.set(draftID(), editor.ace.getValue());
+      }, 500));
     });
 
     $form.fadeIn(function () {
