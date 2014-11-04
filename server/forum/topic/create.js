@@ -1,15 +1,19 @@
-// Get post src html, update post
+// Create new topic
+//
 'use strict';
 
 var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var $          = require('nodeca.core/lib/parser/cheequery');
 
+// topic and post statuses
+var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    moderator_action: { type: 'boolean', required: true },
-    post_id:          { type: 'string', required: true },
+    section_hid:      { type: 'integer', required: true },
+    topic_title:      { type: 'string', required: true },
     post_md:          { type: 'string', required: true },
     attach_tail:      {
       type: 'array',
@@ -22,12 +26,58 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch post data and check permissions
+  // Check auth
   //
-  N.wire.before(apiPath, function fetch_post_data(env, callback) {
-    N.wire.emit('server:forum.topic.post_edit.fetch', env, callback);
+  N.wire.before(apiPath, function check_user_auth(env) {
+    if (env.user_info.is_guest) {
+      return N.io.FORBIDDEN;
+    }
   });
 
+
+  // Fetch section info
+  //
+  N.wire.before(apiPath, function fetch_section_info(env, callback) {
+
+    N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true).exec(function (err, section) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!section) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.section = section;
+      callback();
+    });
+  });
+
+
+  // Check permissions
+  //
+  N.wire.before(apiPath, function check_permissions(env, callback) {
+    env.extras.settings.params.section_id = env.data.section._id;
+
+    env.extras.settings.fetch('forum_can_start_topics', function (err, canStartTopics) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!canStartTopics) {
+        callback(N.io.FORBIDDEN);
+        return;
+      }
+
+      callback();
+    });
+  });
+
+  // TODO: move code below to internal method (copy-paste from forum.topic.post_replay.save)
 
   // Save post options
   //
@@ -159,27 +209,70 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Update post
+  // Create new topic
   //
-  N.wire.on(apiPath, function post_update(env, callback) {
-    var updateData = {
-      attach_tail: env.data.attach_tail,
-      attach_refs: env.data.attach_refs,
-      html:        env.data.post_html,
-      md:          env.params.post_md,
-      params:      { no_mlinks: env.params.option_no_mlinks, no_smiles: env.params.option_no_smiles }
+  N.wire.on(apiPath, function check_permissions(env, callback) {
+    var topic = new N.models.forum.Topic();
+    var post = new N.models.forum.Post();
+
+    // Fill post data
+    post.user = env.session.user_id;
+    post.ts = Date.now();
+    post.attach_tail = env.data.attach_tail;
+    post.attach_refs = env.data.attach_refs;
+    post.html = env.data.post_html;
+    post.md = env.params.post_md;
+    post.ip = env.req.ip;
+    post.st = statuses.post.VISIBLE;
+    post.params = {
+      no_mlinks: env.params.option_no_mlinks,
+      no_smiles: env.params.option_no_smiles
     };
 
-    N.models.forum.Post.update({ _id: env.params.post_id }, updateData, function (err) {
+    // Fill topic data
+    topic.title = env.params.topic_title;
+    topic.section = env.data.section._id;
+
+    // TODO: hellbanned
+    topic.st = statuses.topic.OPEN;
+    topic.ste = statuses.topic.OPEN;
+
+    topic.cache = {};
+
+    topic.cache.post_count = 1;
+
+    topic.cache.first_post = post._id;
+    topic.cache.first_ts = post.ts;
+    topic.cache.first_user = post.user;
+
+    topic.cache.last_post = post._id;
+    topic.cache.last_ts = post.ts;
+    topic.cache.last_user = post.user;
+
+    topic.cache.attach_count = post.attach_refs.length;
+
+    _.assign(topic.cache_hb, topic.cache);
+
+    topic.save(function (err) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      env.res.post = { html: updateData.html, attach_tail: updateData.attach_tail };
+      post.topic = topic._id;
 
-      callback();
+      post.save(function (err) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        env.res.topic_hid = topic.hid;
+
+        callback();
+      });
     });
   });
 };

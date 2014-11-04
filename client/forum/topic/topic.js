@@ -29,7 +29,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var moderatorAction = $(event.target).data('moderator-action') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post_destroy', { post_id: postId, moderator_action: moderatorAction }).done(function () {
+    N.io.rpc('forum.topic.post.destroy', { post_id: postId, moderator_action: moderatorAction }).done(function () {
       $post.fadeOut(function () {
         $post.remove();
       });

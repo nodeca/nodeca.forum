@@ -1,14 +1,14 @@
-// Remove post by id
+// Get post src html, update post
 'use strict';
 
 // topic and post statuses
-var statuses   = require('../_lib/statuses.js');
+var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
 
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id: { type: 'string', required: true },
-    moderator_action: { type: 'boolean', required: true }
+    moderator_action: { type: 'boolean', required: true },
+    post_id: { type: 'string', required: true }
   });
 
 
@@ -60,14 +60,14 @@ module.exports = function (N, apiPath) {
 
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch('forum_mod_can_delete_posts', function (err, forum_mod_can_delete_posts) {
+    env.extras.settings.fetch('forum_mod_can_edit_posts', function (err, forum_mod_can_edit_posts) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      if (forum_mod_can_delete_posts) {
+      if (forum_mod_can_edit_posts) {
         callback();
         return;
       }
@@ -89,28 +89,17 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        // TODO: check is last post
         callback();
       });
     });
   });
 
 
-  // Remove post
+  // Fill post data
   //
-  N.wire.on(apiPath, function delete_post(env, callback) {
-    // TODO: check is topic empty
-
-    N.models.forum.Post.remove({ _id: env.data.post._id }, function (err) {
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      callback();
-    });
+  N.wire.on(apiPath, function fill_data(env) {
+    env.res.md = env.data.post.md;
+    env.res.attach_tail = env.data.post.attach_tail;
+    env.res.params = env.data.post.params;
   });
-
-  // TODO: log moderator actions
 };

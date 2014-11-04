@@ -1,5 +1,5 @@
-// Create new topic
-//
+// Save new reply
+
 'use strict';
 
 var _          = require('lodash');
@@ -7,13 +7,15 @@ var medialinks = require('nodeca.core/lib/parser/medialinks');
 var $          = require('nodeca.core/lib/parser/cheequery');
 
 // topic and post statuses
-var statuses   = require('../_lib/statuses.js');
+var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
+
 
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
+    topic_hid:        { type: 'integer', required: true },
+    parent_post_id:   { type: 'string' },
     section_hid:      { type: 'integer', required: true },
-    topic_title:      { type: 'string', required: true },
     post_md:          { type: 'string', required: true },
     attach_tail:      {
       type: 'array',
@@ -26,11 +28,11 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check auth
+  // Check user permission
   //
-  N.wire.before(apiPath, function check_user_auth(env) {
+  N.wire.before(apiPath, function check_permissions(env) {
     if (env.user_info.is_guest) {
-      return N.io.FORBIDDEN;
+      return N.io.NOT_FOUND;
     }
   });
 
@@ -56,20 +58,19 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check permissions
+  // Check permission to reply in this section
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
+  N.wire.before(apiPath, function check_can_reply(env, callback) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    env.extras.settings.fetch('forum_can_start_topics', function (err, canStartTopics) {
-
+    env.extras.settings.fetch('forum_can_reply', function (err, forum_can_reply) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (!canStartTopics) {
-        callback(N.io.FORBIDDEN);
+      if (!forum_can_reply) {
+        callback(N.io.NOT_FOUND);
         return;
       }
 
@@ -77,7 +78,56 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // TODO: move code below to internal method (copy-paste from forum.topic.post_replay.save)
+
+  // Fetch topic info
+  //
+  N.wire.before(apiPath, function fetch_topic(env, callback) {
+    N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true).exec(function (err, topic) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      // TODO: check topic status and permissions
+      if (!topic) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.topic = topic;
+      callback();
+    });
+  });
+
+
+  // Fetch parent post
+  //
+  N.wire.before(apiPath, function fetch_parent_post(env, callback) {
+    if (!env.params.parent_post_id) {
+      callback();
+      return;
+    }
+
+    N.models.forum.Post.findOne({ _id: env.params.parent_post_id }).lean(true).exec(function (err, post) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      // TODO: check post status and permissions
+      if (!post) {
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('error_invalid_parent_post')
+        });
+        return;
+      }
+
+      env.data.parent_post = post;
+      callback();
+    });
+  });
+
 
   // Save post options
   //
@@ -96,8 +146,8 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function parse_text(env, callback) {
 
     var providers = env.params.option_no_mlinks ?
-      [] :
-      medialinks(N.config.medialinks.providers, N.config.medialinks.content);
+                    [] :
+                    medialinks(N.config.medialinks.providers, N.config.medialinks.content);
 
     var mdData = { input: env.params.post_md, output: null };
 
@@ -209,15 +259,12 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Create new topic
+  // Save new post
   //
-  N.wire.on(apiPath, function check_permissions(env, callback) {
-    var topic = new N.models.forum.Topic();
+  N.wire.on(apiPath, function save_new_post(env, callback) {
+
     var post = new N.models.forum.Post();
 
-    // Fill post data
-    post.user = env.session.user_id;
-    post.ts = Date.now();
     post.attach_tail = env.data.attach_tail;
     post.attach_refs = env.data.attach_refs;
     post.html = env.data.post_html;
@@ -228,51 +275,35 @@ module.exports = function (N, apiPath) {
       no_mlinks: env.params.option_no_mlinks,
       no_smiles: env.params.option_no_smiles
     };
-
-    // Fill topic data
-    topic.title = env.params.topic_title;
-    topic.section = env.data.section._id;
-
     // TODO: hellbanned
-    topic.st = statuses.topic.OPEN;
-    topic.ste = statuses.topic.OPEN;
 
-    topic.cache = {};
+    if (env.data.parent_post) {
+      post.to = env.data.parent_post;
+    }
 
-    topic.cache.post_count = 1;
+    post.topic = env.data.topic._id;
+    post.user = env.session.user_id;
 
-    topic.cache.first_post = post._id;
-    topic.cache.first_ts = post.ts;
-    topic.cache.first_user = post.user;
-
-    topic.cache.last_post = post._id;
-    topic.cache.last_ts = post.ts;
-    topic.cache.last_user = post.user;
-
-    topic.cache.attach_count = post.attach_refs.length;
-
-    _.assign(topic.cache_hb, topic.cache);
-
-    topic.save(function (err) {
-
+    post.save(function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      post.topic = topic._id;
+      env.data.new_post = post;
 
-      post.save(function (err) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.res.topic_hid = topic.hid;
-
-        callback();
-      });
+      callback();
     });
+  });
+
+
+  // Fill url of new post
+  //
+  N.wire.after(apiPath, function process_response(env) {
+
+    // TODO: create internal method to get real post url
+    env.res.redirect_url = N.router.linkTo('forum.topic',
+      { section_hid: env.params.section_hid, hid: env.params.topic_hid, page: 9999 }
+    ) + '#post' + env.data.new_post._id;
   });
 };

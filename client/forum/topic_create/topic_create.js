@@ -41,7 +41,7 @@ N.wire.before('navigate.done:' + module.apiPath, function load_editor(event, cal
 // Fetch post options
 //
 N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, callback) {
-  N.io.rpc('forum.topic.post_options').done(function (res) {
+  N.io.rpc('forum.topic.post.options').done(function (res) {
     parseRules = res.parse_rules;
     parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
     postOptions = res.post_options;
@@ -126,7 +126,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       N.wire.emit('notify', t('err_required_fields_empty'));
     }
 
-    N.io.rpc('forum.topic_create.save', data).done(function (res) {
+    N.io.rpc('forum.topic.create', data).done(function (res) {
       N.wire.emit('navigate.to', {
         apiPath: 'forum.topic',
         params: {

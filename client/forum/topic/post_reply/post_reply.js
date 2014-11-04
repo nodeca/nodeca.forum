@@ -83,7 +83,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       return;
     }
 
-    N.io.rpc('forum.topic.post_options').done(function (res) {
+    N.io.rpc('forum.topic.post.options').done(function (res) {
       parseRules = res.parse_rules;
       parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
 
@@ -215,7 +215,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       data.parent_post_id = parentPostId;
     }
 
-    N.io.rpc('forum.topic.post_reply.save', data).done(function (res) {
+    N.io.rpc('forum.topic.post.reply.create', data).done(function (res) {
       removeEditor();
 
       bag.remove(draftID(), function () {

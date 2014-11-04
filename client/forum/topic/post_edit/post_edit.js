@@ -103,7 +103,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       return;
     }
 
-    N.io.rpc('forum.topic.post_options').done(function (res) {
+    N.io.rpc('forum.topic.post.options').done(function (res) {
       parseRules = res.parse_rules;
       parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
       callback();
@@ -136,7 +136,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     $targetPost.after($form);
 
-    N.io.rpc('forum.topic.post_edit.fetch', { post_id: postId, moderator_action: moderatorAction })
+    N.io.rpc('forum.topic.post.edit.index', { post_id: postId, moderator_action: moderatorAction })
       .done(function (res) {
         postOptions = res.params;
 
@@ -175,7 +175,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       option_no_smiles: postOptions.no_smiles
     };
 
-    N.io.rpc('forum.topic.post_edit.save', data).done(function (res) {
+    N.io.rpc('forum.topic.post.edit.update', data).done(function (res) {
       $form.fadeOut();
       removeEditor();
 
