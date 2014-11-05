@@ -77,7 +77,7 @@ module.exports = function (N, apiPath) {
     });
   });
 
-  // TODO: move code below to internal method (copy-paste from forum.topic.post_replay.save)
+  // TODO: move code below to internal method (copy-paste from forum.topic.post.replay.create)
 
   // Save post options
   //

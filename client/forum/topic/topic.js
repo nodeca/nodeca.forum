@@ -29,7 +29,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var moderatorAction = $(event.target).data('moderator-action') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.destroy', { post_id: postId, moderator_action: moderatorAction }).done(function () {
+    N.io.rpc('forum.topic.post.destroy', { post_id: postId, moderator_action: moderatorAction }).done(function (res) {
+
+      // If whole topic deleted redirect to section
+      if (res.is_topic) {
+        N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } });
+        return;
+      }
+
       $post.fadeOut(function () {
         $post.remove();
       });

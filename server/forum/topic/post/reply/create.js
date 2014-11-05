@@ -297,6 +297,38 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Update topic counters
+  //
+  N.wire.after(apiPath, function update_topic(env, callback) {
+
+    var post = env.data.new_post;
+    var incData = {};
+
+    if (post.st === statuses.post.VISIBLE) {
+      incData['cache.post_count'] = 1;
+      incData['cache.attach_count'] = post.attach_refs.length;
+    }
+
+    incData['cache_hb.post_count'] = 1;
+    incData['cache_hb.attach_count'] = post.attach_refs.length;
+
+
+    N.models.forum.Topic.update(
+      { _id: env.data.topic._id },
+      { $inc: incData },
+      function (err) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        N.models.forum.Topic.updateCache(env.data.topic._id, false, callback);
+      }
+    );
+  });
+
+
   // Fill url of new post
   //
   N.wire.after(apiPath, function process_response(env) {

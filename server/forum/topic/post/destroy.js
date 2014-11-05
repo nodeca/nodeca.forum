@@ -96,20 +96,71 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Remove post
+  // Remove post or topic
   //
   N.wire.on(apiPath, function delete_post(env, callback) {
-    // TODO: check is topic empty
+    var topic = env.data.topic;
+    var post = env.data.post;
 
-    N.models.forum.Post.remove({ _id: env.data.post._id }, function (err) {
+    // Check delete first post
+    if (topic.cache_hb.first_post.equals(post._id) || topic.cache.first_post.equals(post._id)) {
 
-      if (err) {
-        callback(err);
-        return;
-      }
+      env.data.is_topic = env.res.is_topic = true;
 
+      // TODO: statuses history
+      N.models.forum.Topic.update(
+        { _id: topic._id },
+        { st: statuses.topic.DELETED },
+        callback
+      );
+      return;
+    }
+
+    env.data.is_topic = env.res.is_topic = false;
+
+    // TODO: statuses history
+    N.models.forum.Post.update(
+      { _id: post._id },
+      { st: statuses.post.DELETED },
+      callback
+    );
+  });
+
+
+  // Update topic counters
+  //
+  N.wire.after(apiPath, function update_topic(env, callback) {
+
+    // If whole topic deleted don't update cache
+    if (env.data.is_topic) {
       callback();
-    });
+      return;
+    }
+
+    var incData = {};
+
+    if (env.data.post.st === statuses.post.VISIBLE) {
+      incData['cache.post_count'] = -1;
+      incData['cache.attach_count'] = -env.data.post.attach_refs.length;
+    }
+
+    incData['cache_hb.post_count'] = -1;
+    incData['cache_hb.attach_count'] = -env.data.post.attach_refs.length;
+
+
+    N.models.forum.Topic.update(
+      { _id: env.data.topic._id },
+      { $inc: incData },
+      function (err) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        N.models.forum.Topic.updateCache(env.data.topic._id, true, callback);
+      }
+    );
   });
 
   // TODO: log moderator actions

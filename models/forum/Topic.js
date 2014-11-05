@@ -101,6 +101,62 @@ module.exports = function (N, collectionName) {
     });
   });
 
+
+  // Update cache last_post, last_user, last_ts
+  //
+  // - topicID  - id of topic to update
+  // - full     - update 'cache' even if last post is hellbanned
+  //
+  Topic.statics.updateCache = function (topicID, full, callback) {
+    var updateData = {};
+
+    N.models.forum.Post
+      .findOne({ topic: topicID, st: { $or: [ statuses.post.VISIBLE, statuses.post.HB ] } })
+      .sort('-_id')
+      .select('_id user ts st')
+      .exec(function (err, post) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        if (post.st === statuses.post.VISIBLE) {
+          updateData['cache.last_post'] = post._id;
+          updateData['cache.last_user'] = post.user;
+          updateData['cache.last_ts'] = post.ts;
+        }
+
+        updateData['cache_hb.last_post'] = post._id;
+        updateData['cache_hb.last_user'] = post.user;
+        updateData['cache_hb.last_ts'] = post.ts;
+
+        if (!full || post.st === statuses.post.VISIBLE) {
+          N.models.forum.Topic.update({ _id: topicID }, updateData, callback);
+          return;
+        }
+
+        N.models.forum.Post
+          .findOne({ topic: topicID, st: statuses.post.VISIBLE })
+          .sort('-_id')
+          .select('_id user ts')
+          .exec(function (err, post) {
+
+            if (err) {
+              callback(err);
+              return;
+            }
+
+            updateData['cache.last_post'] = post._id;
+            updateData['cache.last_user'] = post.user;
+            updateData['cache.last_ts'] = post.ts;
+
+            N.models.forum.Topic.update({ _id: topicID }, updateData, callback);
+          });
+      });
+  };
+
+
   // Hide hellbanned info for regular users for security reasons.
   // This method works with raw object.
   //

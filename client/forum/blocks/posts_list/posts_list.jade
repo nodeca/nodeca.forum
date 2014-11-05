@@ -49,7 +49,7 @@ each post in self.posts
                 data-post-id=post._id
               )= self.t('reply')
 
-          if (user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || post.ts > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
+          if (user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
             li.forum-post__control-item
               a.forum-post__action-link(
                 href='#'
