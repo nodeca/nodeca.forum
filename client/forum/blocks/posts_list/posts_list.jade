@@ -58,10 +58,12 @@ each post in self.posts
               )= self.t('edit')
 
             li.forum-post__control-item
+              - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
               a.forum-post__action-link(
                 href='#'
-                data-on-click='forum.topic.post_delete'
+                data-on-click=action
                 data-post-id='#{post._id}'
+                data-topic-hid='#{self.topic.hid}'
               )= self.t('delete')
 
           li.forum-post__control-item
@@ -84,9 +86,11 @@ each post in self.posts
                         data-moderator-action='true'
                       )= self.t('edit')
                     if (self.settings.forum_mod_can_delete_posts)
+                      - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
                       a(
                         href='#'
-                        data-on-click='forum.topic.post_delete'
+                        data-on-click=action
                         data-post-id='#{post._id}'
+                        data-topic-hid='#{self.topic.hid}'
                         data-moderator-action='true'
                       )= self.t('delete')

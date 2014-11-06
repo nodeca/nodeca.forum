@@ -96,32 +96,15 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Remove post or topic
+  // Remove post
   //
   N.wire.on(apiPath, function delete_post(env, callback) {
-    var topic = env.data.topic;
     var post = env.data.post;
-
-    // Check delete first post
-    if (topic.cache_hb.first_post.equals(post._id) || topic.cache.first_post.equals(post._id)) {
-
-      env.data.is_topic = env.res.is_topic = true;
-
-      // TODO: statuses history
-      N.models.forum.Topic.update(
-        { _id: topic._id },
-        { st: statuses.topic.DELETED },
-        callback
-      );
-      return;
-    }
-
-    env.data.is_topic = env.res.is_topic = false;
 
     // TODO: statuses history
     N.models.forum.Post.update(
       { _id: post._id },
-      { st: statuses.post.DELETED },
+      { st: statuses.post.DELETED, $unset: { ste: 1 } },
       callback
     );
   });
@@ -130,13 +113,6 @@ module.exports = function (N, apiPath) {
   // Update topic counters
   //
   N.wire.after(apiPath, function update_topic(env, callback) {
-
-    // If whole topic deleted don't update cache
-    if (env.data.is_topic) {
-      callback();
-      return;
-    }
-
     var incData = {};
 
     if (env.data.post.st === statuses.post.VISIBLE) {

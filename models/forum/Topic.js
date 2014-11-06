@@ -111,7 +111,7 @@ module.exports = function (N, collectionName) {
     var updateData = {};
 
     N.models.forum.Post
-      .findOne({ topic: topicID, st: { $or: [ statuses.post.VISIBLE, statuses.post.HB ] } })
+      .findOne({ topic: topicID, $or: [ { st: statuses.post.VISIBLE }, { st: statuses.post.HB } ] })
       .sort('-_id')
       .select('_id user ts st')
       .exec(function (err, post) {

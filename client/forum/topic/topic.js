@@ -22,6 +22,18 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Delete topic button handler
+  //
+  N.wire.on('forum.topic.topic_delete', function topic_delete(event) {
+    var topicHid = $(event.target).data('topic-hid');
+    var moderatorAction = $(event.target).data('moderator-action') || false;
+
+    N.io.rpc('forum.topic.destroy', { topic_hid: topicHid, moderator_action: moderatorAction }).done(function () {
+      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } });
+    });
+  });
+
+
   // Delete post button handler
   //
   N.wire.on('forum.topic.post_delete', function post_delete(event) {
@@ -29,14 +41,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var moderatorAction = $(event.target).data('moderator-action') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.destroy', { post_id: postId, moderator_action: moderatorAction }).done(function (res) {
-
-      // If whole topic deleted redirect to section
-      if (res.is_topic) {
-        N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } });
-        return;
-      }
-
+    N.io.rpc('forum.topic.post.destroy', { post_id: postId, moderator_action: moderatorAction }).done(function () {
       $post.fadeOut(function () {
         $post.remove();
       });

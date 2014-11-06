@@ -326,6 +326,8 @@ module.exports = function (N, apiPath) {
         'ste'
       ])
     );
+
+    env.res.topic.cache = { first_post: env.data.topic.cache.first_post };
   });
 
 
