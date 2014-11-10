@@ -41,8 +41,9 @@ article#content.forum-index__root
 
   footer
     .page-summary
-      .page-summary__head= self.t('total_active.all', { count: 710, interval: 30 })
-        .hlist.page-summary__subhead
+      .page-summary__head
+        = self.t('total_active.all', { count: 710, interval: 30 })
+        ul.hlist.page-summary__subhead
           li.hlist-item= self.t('total_active.members', 128)
           li.hlist-item= self.t('total_active.guests', 567)
           li.hlist-item= self.t('total_active.anonymous', 6)
