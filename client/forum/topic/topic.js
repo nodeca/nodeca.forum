@@ -22,6 +22,18 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Pin/unpin topic button handler
+  //
+  N.wire.on('forum.topic.pin', function topic_pin(event) {
+    var $button = $(event.target);
+    var topicHid = $button.data('topic-hid');
+
+    N.io.rpc('forum.topic.pin', { topic_hid: topicHid }).done(function (res) {
+      $button.text(res.pinned ? t('unpin') : t('pin'));
+    });
+  });
+
+
   // Delete topic button handler
   //
   N.wire.on('forum.topic.topic_delete', function topic_delete(event) {

@@ -1,0 +1,6 @@
+setting_schemas:
+  section_moderator:
+    forum_mod_can_pin_topic:
+      priority: 560
+      type: boolean
+      default: false

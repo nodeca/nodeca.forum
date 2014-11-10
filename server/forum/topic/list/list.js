@@ -379,7 +379,13 @@ module.exports = function (N, apiPath) {
     env.extras.puncher.start('fetch public settings for renderer');
 
     env.extras.settings.fetch(
-      [ 'forum_can_reply', 'forum_edit_max_time', 'forum_mod_can_edit_posts', 'forum_mod_can_delete_posts' ],
+      [
+        'forum_can_reply',
+        'forum_edit_max_time',
+        'forum_mod_can_edit_posts',
+        'forum_mod_can_delete_posts',
+        'forum_mod_can_pin_topic'
+      ],
       function (err, result) {
         env.extras.puncher.stop();
 

@@ -30,7 +30,13 @@ article#content.forum-topic-root
               li: a(href='#')= self.t('close')
               li.divider
               li.dropdown-header= self.t('mod_actions')
-              li: a(href='#')= self.t('pin')
+              if self.settings.forum_mod_can_pin_topic && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.CLOSED || self.topic.st === status.topic.PINNED)
+                li: a(
+                  href='#'
+                  data-on-click='forum.topic.pin'
+                  data-topic-hid='#{self.topic.hid}'
+                )= self.topic.st === status.topic.PINNED ? self.t('unpin') : self.t('pin')
+
               li: a(href='#')= self.t('history')
               li: a(href='#')= self.t('approve')
               li: a(href='#')= self.t('merge')

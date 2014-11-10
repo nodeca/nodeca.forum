@@ -6,3 +6,9 @@ setting_schemas:
       category_key: forum
       type: number
       priority: 40
+
+    forum_mod_can_pin_topic:
+      priority: 500
+      category_key: perm_moderator
+      type: boolean
+      default: false
