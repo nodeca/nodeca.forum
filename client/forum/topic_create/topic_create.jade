@@ -7,9 +7,7 @@
 
   .clearfix
     .topic-create__content
-      .form-group
-        label= self.t('topic_title')
-        input.topic-create__title.form-control
+      input.topic-create__title.form-control(placeholder=self.t('topic_title'))
       .topic-create__editor
       .topic-create__buttons.clearfix
         .topic-create__buttons-blk.pull-right
@@ -29,4 +27,4 @@
                 label
                   input.topic-create__smiles(type='checkbox' data-on-change='forum.topic_create:opt_smiles')
                   = self.t('options_smiles')
-      .topic-create__preview
+      .topic-create__preview.mdedit-preview
