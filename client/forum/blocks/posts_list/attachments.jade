@@ -1,10 +1,10 @@
 ul.attachments.clearfix
   if self.post.attach_tail
     each attach in self.post.attach_tail
-      - var url = self.link_to('users.media', { user_hid: self.user.hid, file_id: attach.file_id })
+      - var url = self.link_to('users.media', { user_hid: self.user.hid, media_id: attach.media_id })
       li.attachment
         if (attach.type === 'image')
-          - var preview = self.link_to('core.gridfs', { bucket: attach.file_id + '_sm' })
+          - var preview = self.link_to('core.gridfs', { bucket: attach.media_id + '_sm' })
           a.attachment__link-image(href=url)
             img.thumb__image(src=preview)
         else

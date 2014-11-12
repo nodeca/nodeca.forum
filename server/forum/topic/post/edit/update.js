@@ -141,11 +141,11 @@ module.exports = function (N, apiPath) {
 
     env.data.attach_refs = _.union(refs, tail);
 
-    N.models.users.Media.find({
-      file_id: { $in: tail },
+    N.models.users.MediaInfo.find({
+      media_id: { $in: tail },
       exists: true,
       user_id: env.session.user_id
-    }).lean(true).select('file_id file_name type').exec(function (err, attachments) {
+    }).lean(true).select('media_id file_name type').exec(function (err, attachments) {
 
       if (err) {
         callback(err);

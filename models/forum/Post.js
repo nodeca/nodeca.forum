@@ -35,7 +35,7 @@ module.exports = function (N, collectionName) {
 
   // Attachments on tail of post
   , attach_tail     : [ {
-      file_id: Schema.ObjectId,
+      media_id: Schema.ObjectId,
       file_name: String,
       type: { type: String, enum: [ 'image', 'binary' ] }
     } ]

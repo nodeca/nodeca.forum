@@ -170,7 +170,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       moderator_action: moderatorAction,
       post_id:          postId,
       post_md:          editor.markdown,
-      attach_tail:      _.map(editor.attachments, function (v) { return v.file_id; }),
+      attach_tail:      _.map(editor.attachments, function (v) { return v.media_id; }),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

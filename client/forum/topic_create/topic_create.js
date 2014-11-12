@@ -116,7 +116,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       section_hid:      sectionHid,
       post_md:          editor.markdown,
       topic_title:      $('.topic-create__title').val(),
-      attach_tail:      _.map(editor.attachments, function (v) { return v.file_id; }),
+      attach_tail:      _.map(editor.attachments, function (v) { return v.media_id; }),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };
