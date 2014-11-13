@@ -22,6 +22,7 @@ function removeEditor() {
 
   $form.remove();
   $form = null;
+  $('#post' + postId).fadeIn();
 }
 
 
@@ -154,7 +155,9 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
         updatePostOptions();
 
-        $form.fadeIn();
+        $targetPost.fadeOut(function () {
+          $form.fadeIn();
+        });
       });
   });
 
