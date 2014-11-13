@@ -124,6 +124,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     if (data.topic_title === '' || data.post_md === '') {
       N.wire.emit('notify', t('err_required_fields_empty'));
+      return;
     }
 
     N.io.rpc('forum.topic.create', data).done(function (res) {
