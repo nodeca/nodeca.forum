@@ -22,7 +22,7 @@ function removeEditor() {
 
   $form.remove();
   $form = null;
-  $('#post' + postId).fadeIn();
+  $('#post' + postId).fadeIn('fast');
 }
 
 
@@ -68,14 +68,14 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   // Show/hide post preview
   //
   N.wire.on('forum.topic.post_edit:preview_toggle', function toggle_options() {
-    $('.forum-edit__preview').slideToggle();
+    $('.forum-edit__preview').slideToggle('fast');
   });
 
 
   // Show/hide post options
   //
   N.wire.on('forum.topic.post_edit:options', function toggle_options() {
-    $('.forum-edit__options').slideToggle();
+    $('.forum-edit__options').slideToggle('fast');
   });
 
 
@@ -155,8 +155,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
         updatePostOptions();
 
-        $targetPost.fadeOut(function () {
-          $form.fadeIn();
+        $targetPost.fadeOut('fast', function () {
+          $form.fadeIn('fast');
         });
       });
   });
@@ -179,7 +179,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     };
 
     N.io.rpc('forum.topic.post.edit.update', data).done(function (res) {
-      $form.fadeOut();
+      $form.fadeOut('fast');
       removeEditor();
 
       $post.find('.forum-post__message').html(res.post.html);
@@ -196,7 +196,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   // On Cancel button remove editor
   //
   N.wire.on('forum.topic.post_edit:cancel', function cancel() {
-    $form.fadeOut(function () {
+    $form.fadeOut('fast', function () {
       removeEditor();
     });
   });

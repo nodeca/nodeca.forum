@@ -130,7 +130,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       updateOptions();
     });
 
-    $options.slideToggle();
+    $options.slideToggle('fast');
   });
 
 
@@ -140,7 +140,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     parentPostId = $(event.target).data('post-id');
 
     $form = $(N.runtime.render('forum.topic.post_reply'));
-    $form.hide();
+    $form.hide('fast');
 
     $preview = $form.find('.forum-reply__preview');
 
@@ -170,7 +170,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       }, 500));
     });
 
-    $form.fadeIn(function () {
+    $form.fadeIn('fast', function () {
       if (!parentPostId) {
         // Scroll page to opened form
         $('html, body').animate({ scrollTop: $form.offset().top }, 200);
@@ -212,7 +212,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
 
   N.wire.on('forum.topic.post_reply:preview_toggle', function preview_toggle() {
-    $preview.slideToggle();
+    $preview.slideToggle('fast');
     // TODO: save preview visibility
   });
 
@@ -221,7 +221,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   //
   N.wire.on('forum.topic.post_reply:cancel', function cancel() {
     bag.remove(draftID(), function () {
-      $form.fadeOut(function () {
+      $form.fadeOut('fast', function () {
         removeEditor();
       });
     });

@@ -97,7 +97,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Show/hide post options
   //
   N.wire.on('forum.topic_create:options', function toggle_options() {
-    $('.topic-create__options').slideToggle();
+    $('.topic-create__options').slideToggle('fast');
   });
 
 
@@ -120,7 +120,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Show/hide preview
   //
   N.wire.on('forum.topic_create:preview_toggle', function toggle_preview() {
-    $('.topic-create__preview').slideToggle();
+    $('.topic-create__preview').slideToggle('fast');
   });
 
 
