@@ -5,9 +5,10 @@
 
 var _ = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
-
+var bag = new window.Bag();
 
 var editor, parseRules, postOptions, sectionHid;
+var draftKey = 'topic_create';
 
 
 // Update post options
@@ -53,18 +54,32 @@ N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, c
 // Init on page load
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+  var $title = $('.topic-create__title');
+
   sectionHid = data.params.section_hid;
 
-  editor = new N.MDEdit({
-    editArea: '.topic-create__editor',
-    previewArea: '.topic-create__preview',
-    parseRules: parseRules,
-    toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$'
-  });
+  bag.get(draftKey, function (__, data) {
+    $title.val(data ? data.title : '');
 
-  $('.topic-create__medialinks').prop('checked', !postOptions.no_mlinks);
-  $('.topic-create__smiles').prop('checked', !postOptions.no_smiles);
-  updatePostOptions();
+    editor = new N.MDEdit({
+      editArea: '.topic-create__editor',
+      previewArea: '.topic-create__preview',
+      parseRules: parseRules,
+      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
+      markdown: data ? data.md : ''
+    });
+
+    editor.ace.getSession().on('change', _.debounce(function () {
+      bag.set(draftKey, {
+        md: editor.ace.getValue(),
+        title: $title.val()
+      });
+    }, 500));
+
+    $('.topic-create__medialinks').prop('checked', !postOptions.no_mlinks);
+    $('.topic-create__smiles').prop('checked', !postOptions.no_smiles);
+    updatePostOptions();
+  });
 });
 
 
@@ -128,12 +143,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     }
 
     N.io.rpc('forum.topic.create', data).done(function (res) {
-      N.wire.emit('navigate.to', {
-        apiPath: 'forum.topic',
-        params: {
-          section_hid: sectionHid,
-          hid: res.topic_hid
-        }
+      bag.remove(draftKey, function () {
+        N.wire.emit('navigate.to', {
+          apiPath: 'forum.topic',
+          params: {
+            section_hid: sectionHid,
+            hid: res.topic_hid
+          }
+        });
       });
     });
   });
