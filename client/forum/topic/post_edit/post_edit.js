@@ -132,14 +132,14 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     var $targetPost = $('#post' + postId);
 
-    $form = $(N.runtime.render('forum.topic.post_edit'));
-    $form.hide();
-
-    $targetPost.after($form);
-
     N.io.rpc('forum.topic.post.edit.index', { post_id: postId, moderator_action: moderatorAction })
       .done(function (res) {
         postOptions = res.params;
+
+        $form = $(N.runtime.render('forum.topic.post_edit', { user: res.users[res.user_id] }));
+        $form.hide();
+
+        $targetPost.after($form);
 
         $('.forum-edit__medialinks').prop('checked', !postOptions.no_mlinks);
         $('.forum-edit__smiles').prop('checked', !postOptions.no_smiles);

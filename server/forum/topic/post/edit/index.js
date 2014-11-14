@@ -98,6 +98,10 @@ module.exports = function (N, apiPath) {
   // Fill post data
   //
   N.wire.on(apiPath, function fill_data(env) {
+    env.data.users = env.data.users || [];
+    env.data.users.push(env.data.post.user);
+
+    env.res.user_id = env.data.post.user;
     env.res.md = env.data.post.md;
     env.res.attach_tail = env.data.post.attach_tail;
     env.res.params = env.data.post.params;
