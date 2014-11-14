@@ -157,6 +157,13 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
         $targetPost.fadeOut('fast', function () {
           $form.fadeIn('fast');
+
+          // Scroll page to opened form
+          var editorPosition = $form.offset().top - $('#content').offset().top;
+
+          if ($(window).scrollTop() > editorPosition) {
+            $('html, body').animate({ scrollTop: editorPosition }, 'fast');
+          }
         });
       });
   });

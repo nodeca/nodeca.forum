@@ -170,12 +170,12 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       }, 500));
     });
 
-    $form.fadeIn('fast', function () {
-      if (!parentPostId) {
-        // Scroll page to opened form
-        $('html, body').animate({ scrollTop: $form.offset().top }, 200);
-      }
-    });
+    $form.fadeIn('fast');
+
+    if (!parentPostId) {
+      // Scroll page to opened form
+      $('html, body').animate({ scrollTop: $form.offset().top - $('#content').offset().top }, 'fast');
+    }
   });
 
 
