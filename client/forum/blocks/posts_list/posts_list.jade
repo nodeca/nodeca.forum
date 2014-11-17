@@ -41,6 +41,32 @@ each post in self.posts
             a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
 
+          if (self.settings.forum_mod_can_edit_posts || self.settings.forum_mod_can_delete_posts)
+            li.forum-post__control-item.dropdown.dropup
+              button.btn.btn-link.dropdown-toggle(
+                data-toggle='dropdown'
+                role='button'
+              )
+                span.caret
+              ul.dropdown-menu(role='menu')
+                li.presentation
+                  if (self.settings.forum_mod_can_edit_posts)
+                    a(
+                      href='#'
+                      data-on-click='forum.topic.post_edit'
+                      data-post-id='#{post._id}'
+                      data-moderator-action='true'
+                    )= self.t('edit')
+                  if (self.settings.forum_mod_can_delete_posts)
+                    - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
+                    a(
+                      href='#'
+                      data-on-click=action
+                      data-post-id='#{post._id}'
+                      data-topic-hid='#{self.topic.hid}'
+                      data-moderator-action='true'
+                    )= self.t('delete')
+
           if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
             li.forum-post__control-item
               a.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
@@ -70,27 +96,3 @@ each post in self.posts
             a.forum-post__vote-down.icon.icon-vote-down(href='#')
             span.forum-post__vote-count +47
             a.forum-post__vote-up.icon.icon-vote-up(href='#')
-
-          if (self.settings.forum_mod_can_edit_posts || self.settings.forum_mod_can_delete_posts)
-            li.forum-post__control-item
-              .dropdown
-                button.btn.btn-link.dropdown-toggle(data-toggle='dropdown')
-                  span.caret
-                ul.dropdown-menu
-                  li.presentation
-                    if (self.settings.forum_mod_can_edit_posts)
-                      a(
-                        href='#'
-                        data-on-click='forum.topic.post_edit'
-                        data-post-id='#{post._id}'
-                        data-moderator-action='true'
-                      )= self.t('edit')
-                    if (self.settings.forum_mod_can_delete_posts)
-                      - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
-                      a(
-                        href='#'
-                        data-on-click=action
-                        data-post-id='#{post._id}'
-                        data-topic-hid='#{self.topic.hid}'
-                        data-moderator-action='true'
-                      )= self.t('delete')
