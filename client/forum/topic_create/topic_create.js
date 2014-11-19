@@ -66,13 +66,15 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       previewArea: '.topic-create__preview',
       parseRules: parseRules,
       toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-      markdown: data ? data.md : ''
+      markdown: data ? data.md : '',
+      attachments: data ? data.attachments : []
     });
 
     editor.ace.getSession().on('change', _.debounce(function () {
       bag.set(draftKey, {
         md: editor.ace.getValue(),
-        title: $title.val()
+        title: $title.val(),
+        attachments: editor.attachments
       });
     }, 500));
 
