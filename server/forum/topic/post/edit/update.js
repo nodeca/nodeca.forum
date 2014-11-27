@@ -143,7 +143,7 @@ module.exports = function (N, apiPath) {
 
     N.models.users.MediaInfo.find({
       media_id: { $in: tail },
-      exists: true,
+      type: { $in: N.models.users.MediaInfo.types.LIST_VISIBLE },
       user_id: env.session.user_id
     }).lean(true).select('media_id file_name type').exec(function (err, attachments) {
 

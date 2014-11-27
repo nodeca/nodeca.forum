@@ -37,7 +37,7 @@ module.exports = function (N, collectionName) {
   , attach_tail     : [ {
       media_id: Schema.ObjectId,
       file_name: String,
-      type: { type: String, enum: [ 'image', 'binary' ] }
+      type: { type: Number }
     } ]
   },
   {
