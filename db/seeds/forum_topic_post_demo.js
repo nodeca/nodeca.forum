@@ -199,19 +199,12 @@ var createUsers = function (callback) {
     }, function (cb) {
 
       async.timesSeries(USER_COUNT, function (current_user, next_user) {
-        var nick = Charlatan.Internet.userName();
-        var first_name = Charlatan.Name.firstName();
-        var last_name = Charlatan.Name.lastName();
         var user = new User({
-          first_name: first_name,
-          last_name: last_name,
-          nick: nick,
-          name: first_name + ' (' + nick + ') ' + last_name,
-
-          email: Charlatan.Internet.email(),
-
-          joined_ts: new Date(),
-
+          first_name: Charlatan.Name.firstName(),
+          last_name:  Charlatan.Name.lastName(),
+          nick:       Charlatan.Internet.userName(),
+          email:      Charlatan.Internet.email(),
+          joined_ts:  new Date(),
           usergroups: userGroupsByName.members
         });
         user.save(next_user);
