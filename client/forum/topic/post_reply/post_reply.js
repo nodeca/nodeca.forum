@@ -163,13 +163,12 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         parseRules: parseRules,
         toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
         markdown: data ? data.md : '',
-        attachments: data ? data.attachments : []
+        attachments: data ? data.attachments : [],
+        onChange: _.debounce(function () {
+          bag.set(draftID(), { md: editor.ace.getValue(), attachments: editor.attachments });
+        }, 500)
       });
 
-      // Save draft when user stops input text
-      editor.ace.getSession().on('change', _.debounce(function () {
-        bag.set(draftID(), { md: editor.ace.getValue(), attachments: editor.attachments });
-      }, 500));
     });
 
     $form.fadeIn('fast');

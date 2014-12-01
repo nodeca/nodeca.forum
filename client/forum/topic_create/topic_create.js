@@ -69,16 +69,15 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       parseRules: parseRules,
       toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
       markdown: data ? data.md : '',
-      attachments: data ? data.attachments : []
+      attachments: data ? data.attachments : [],
+      onChange: _.debounce(function () {
+        bag.set(draftKey, {
+          md: editor.ace.getValue(),
+          title: $title.val(),
+          attachments: editor.attachments
+        });
+      }, 500)
     });
-
-    editor.ace.getSession().on('change', _.debounce(function () {
-      bag.set(draftKey, {
-        md: editor.ace.getValue(),
-        title: $title.val(),
-        attachments: editor.attachments
-      });
-    }, 500));
 
     $('.topic-create__medialinks').prop('checked', !postOptions.no_mlinks);
     $('.topic-create__smiles').prop('checked', !postOptions.no_smiles);
