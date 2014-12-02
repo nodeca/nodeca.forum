@@ -3,12 +3,14 @@
 
 'use strict';
 
-var _ = require('lodash');
-var medialinks = require('nodeca.core/lib/parser/medialinks');
-var bag = new window.Bag();
+var _          = require('lodash');
 
-var editor, parseRules, postOptions, sectionHid;
+var medialinks = require('nodeca.core/lib/parser/medialinks');
+var Bag        = require('bag.js');
+
+var bag = new Bag();
 var draftKey = 'topic_create';
+var editor, parseRules, postOptions, sectionHid;
 
 
 // Update post options

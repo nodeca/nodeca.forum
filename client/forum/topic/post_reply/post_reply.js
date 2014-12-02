@@ -2,11 +2,12 @@
 
 'use strict';
 
-var _ = require('lodash');
+var _          = require('lodash');
 
 var medialinks = require('nodeca.core/lib/parser/medialinks');
+var Bag        = require('bag.js');
 
-var bag = new window.Bag();
+var bag = new Bag();
 var $form;
 var pageParams;
 var parentPostId;
