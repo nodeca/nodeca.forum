@@ -7,7 +7,7 @@ var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var Bag        = require('bag.js');
 
-var bag = new Bag();
+var bag = new Bag({ prefix: 'nodeca_drafts' });
 var $form;
 var pageParams;
 var parentPostId;
@@ -31,9 +31,10 @@ function removeEditor() {
 
 function draftID() {
   return [
-    'reply',
+    'post_reply',
     // topic hid
-    pageParams.hid
+    pageParams.hid,
+    N.runtime.user_hid
   ].join('_');
 }
 

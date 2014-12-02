@@ -8,8 +8,8 @@ var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var Bag        = require('bag.js');
 
-var bag = new Bag();
-var draftKey = 'topic_create';
+var bag = new Bag({ prefix: 'nodeca_drafts' });
+var draftKey;
 var editor, parseRules, postOptions, sectionHid;
 
 
@@ -58,6 +58,7 @@ N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, c
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   var $title = $('.topic-create__title');
 
+  draftKey = 'topic_create_' + N.runtime.user_hid;
   sectionHid = data.params.section_hid;
 
   bag.get(draftKey, function (__, data) {
