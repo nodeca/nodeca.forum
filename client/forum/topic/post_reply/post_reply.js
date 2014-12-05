@@ -163,10 +163,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         previewArea: '.forum-reply__preview',
         parseRules: parseRules,
         toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-        markdown: data ? data.md : '',
+        text: data ? data.md : '',
         attachments: data ? data.attachments : [],
         onChange: _.debounce(function () {
-          bag.set(draftID(), { md: editor.ace.getValue(), attachments: editor.attachments });
+          bag.set(draftID(), { md: editor.text(), attachments: editor.attachments() });
         }, 500)
       });
 
@@ -190,8 +190,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var data = {
       section_hid:     pageParams.section_hid,
       topic_hid:       pageParams.hid,
-      post_md:         editor.markdown,
-      attach_tail:     _.map(editor.attachments, function (v) { return v.media_id; }),
+      post_md:         editor.text(),
+      attach_tail:     _.map(editor.attachments(), function (v) { return v.media_id; }),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

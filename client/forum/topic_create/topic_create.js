@@ -69,13 +69,13 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       previewArea: '.topic-create__preview',
       parseRules: parseRules,
       toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-      markdown: data ? data.md : '',
+      text: data ? data.md : '',
       attachments: data ? data.attachments : [],
       onChange: _.debounce(function () {
         bag.set(draftKey, {
-          md: editor.ace.getValue(),
+          md: editor.text(),
           title: $title.val(),
-          attachments: editor.attachments
+          attachments: editor.attachments()
         });
       }, 500)
     });
@@ -133,9 +133,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic_create:save', function create_topic() {
     var data = {
       section_hid:      sectionHid,
-      post_md:          editor.markdown,
+      post_md:          editor.text(),
       topic_title:      $('.topic-create__title').val(),
-      attach_tail:      _.map(editor.attachments, function (v) { return v.media_id; }),
+      attach_tail:      _.map(editor.attachments(), function (v) { return v.media_id; }),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

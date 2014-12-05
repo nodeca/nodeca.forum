@@ -150,7 +150,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
           parseRules: parseRules,
           toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
           attachments: res.attach_tail,
-          markdown: res.md
+          text: res.md
         });
 
         updatePostOptions();
@@ -179,8 +179,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var data = {
       moderator_action: moderatorAction,
       post_id:          postId,
-      post_md:          editor.markdown,
-      attach_tail:      _.map(editor.attachments, function (v) { return v.media_id; }),
+      post_md:          editor.text(),
+      attach_tail:      _.map(editor.attachments(), function (v) { return v.media_id; }),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };
