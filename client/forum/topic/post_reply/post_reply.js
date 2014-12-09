@@ -136,13 +136,52 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
+  var draft;
+
+  // Fetch draft data
+  //
+  N.wire.before('forum.topic.post_reply', function fetch_draft(__, callback) {
+    draft = {
+      text: '',
+      attachments: []
+    };
+
+    bag.get(draftID(), function (__, data) {
+
+      if (!data) {
+        callback();
+        return;
+      }
+
+      draft.text = data.text || '';
+
+      if (!data.attachments || data.attachments.length === 0) {
+        callback();
+        return;
+      }
+
+      var params = {
+        media_ids: _.pluck(data.attachments, 'media_id')
+      };
+
+      N.io.rpc('forum.topic.attachments_check', params).done(function (res) {
+        draft.attachments = data.attachments.filter(function (attach) {
+          return res.media_ids.indexOf(attach.media_id) !== -1;
+        });
+
+        callback();
+      });
+    });
+  });
+
+
   // Click on post reply link or toolbar reply button
   //
   N.wire.on('forum.topic.post_reply', function click_reply(event) {
     parentPostId = $(event.target).data('post-id');
 
     $form = $(N.runtime.render('forum.topic.post_reply'));
-    $form.hide('fast');
+    $form.hide(0);
 
     $preview = $form.find('.forum-reply__preview');
 
@@ -156,21 +195,22 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       $('#postlist > :last').after($form);
     }
 
-    bag.get(draftID(), function (__, data) {
-
-      editor = new N.MDEdit({
-        editArea: '.forum-reply__editor',
-        previewArea: '.forum-reply__preview',
-        parseRules: parseRules,
-        toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-        text: data ? data.md : '',
-        attachments: data ? data.attachments : [],
-        onChange: _.debounce(function () {
-          bag.set(draftID(), { md: editor.text(), attachments: editor.attachments() });
-        }, 500)
-      });
-
+    editor = new N.MDEdit({
+      editArea: '.forum-reply__editor',
+      previewArea: '.forum-reply__preview',
+      parseRules: parseRules,
+      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
+      text: draft.text,
+      attachments: draft.attachments,
+      onChange: _.debounce(function () {
+        bag.set(draftID(), {
+          text: editor.text(),
+          attachments: editor.attachments()
+        });
+      }, 500)
     });
+
+    draft = null;
 
     $form.fadeIn('fast');
 

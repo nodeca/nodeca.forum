@@ -137,7 +137,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         postOptions = res.params;
 
         $form = $(N.runtime.render('forum.topic.post_edit', { user: res.users[res.user_id] }));
-        $form.hide();
+        $form.hide(0);
 
         $targetPost.after($form);
 

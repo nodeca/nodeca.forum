@@ -53,37 +53,79 @@ N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, c
 });
 
 
+var draft;
+
+// Fetch draft data
+//
+N.wire.before('navigate.done:' + module.apiPath, function fetch_draft(__, callback) {
+  draftKey = 'topic_create_' + N.runtime.user_hid;
+
+  draft = {
+    title: '',
+    text: '',
+    attachments: []
+  };
+
+  bag.get(draftKey, function (__, data) {
+
+    if (!data) {
+      callback();
+      return;
+    }
+
+    draft.title = data.title || '';
+    draft.text = data.text || '';
+
+    if (!data.attachments || data.attachments.length === 0) {
+      callback();
+      return;
+    }
+
+    var params = {
+      media_ids: _.pluck(data.attachments, 'media_id')
+    };
+
+    N.io.rpc('forum.topic.attachments_check', params).done(function (res) {
+      draft.attachments = data.attachments.filter(function (attach) {
+        return res.media_ids.indexOf(attach.media_id) !== -1;
+      });
+
+      callback();
+    });
+  });
+});
+
+
 // Init on page load
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   var $title = $('.topic-create__title');
 
-  draftKey = 'topic_create_' + N.runtime.user_hid;
   sectionHid = data.params.section_hid;
 
-  bag.get(draftKey, function (__, data) {
-    $title.val(data ? data.title : '');
+  $title.val(draft.title);
 
-    editor = new N.MDEdit({
-      editArea: '.topic-create__editor',
-      previewArea: '.topic-create__preview',
-      parseRules: parseRules,
-      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-      text: data ? data.md : '',
-      attachments: data ? data.attachments : [],
-      onChange: _.debounce(function () {
-        bag.set(draftKey, {
-          md: editor.text(),
-          title: $title.val(),
-          attachments: editor.attachments()
-        });
-      }, 500)
-    });
-
-    $('.topic-create__medialinks').prop('checked', !postOptions.no_mlinks);
-    $('.topic-create__smiles').prop('checked', !postOptions.no_smiles);
-    updatePostOptions();
+  editor = new N.MDEdit({
+    editArea: '.topic-create__editor',
+    previewArea: '.topic-create__preview',
+    parseRules: parseRules,
+    toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
+    text: draft.text,
+    attachments: draft.attachments,
+    onChange: _.debounce(function () {
+      bag.set(draftKey, {
+        text: editor.text(),
+        title: $title.val(),
+        attachments: editor.attachments()
+      });
+    }, 500)
   });
+
+  draft = null;
+
+  $('.topic-create__medialinks').prop('checked', !postOptions.no_mlinks);
+  $('.topic-create__smiles').prop('checked', !postOptions.no_smiles);
+  updatePostOptions();
 });
 
 
