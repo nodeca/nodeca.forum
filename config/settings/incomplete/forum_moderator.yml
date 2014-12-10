@@ -12,7 +12,3 @@ setting_schemas:
     forum_mod_can_edit_titles:
       extends: true
       priority: 550
-
-    forum_mod_can_manage_pending:
-      extends: true
-      priority: 560

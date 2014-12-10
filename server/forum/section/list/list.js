@@ -135,7 +135,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function define_visible_statuses_and_sort(env, callback) {
 
-    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_manage_pending' ], function (err, settings) {
+    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
 
       if (err) {
         callback(err);
@@ -146,18 +146,13 @@ module.exports = function (N, apiPath) {
       env.data.statuses = [ statuses.topic.OPEN, statuses.topic.CLOSED ];
       var st = env.data.statuses;
 
-      if (settings.can_see_hellbanned || env.user_info.hb) {
+      if (can_see_hellbanned || env.user_info.hb) {
         st.push(statuses.topic.HB);
-      }
-
-      if (settings.forum_mod_can_manage_pending) {
-        st.push(statuses.topic.PENDING);
-        st.push(statuses.topic.DELETED);
       }
 
       // Define sorting order
       env.data.topic_sort = {};
-      if (env.session && (env.user_info.hb || settings.can_see_hellbanned)) {
+      if (env.session && (env.user_info.hb || can_see_hellbanned)) {
         env.data.topic_sort['cache_hb.last_ts'] = -1;
       } else {
         env.data.topic_sort['cache.last_ts'] = -1;

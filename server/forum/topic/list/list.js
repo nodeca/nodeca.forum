@@ -184,7 +184,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function get_permissions(env, callback) {
 
-    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_manage_pending' ], function (err, settings) {
+    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
 
       if (err) {
         callback(err);
@@ -196,14 +196,9 @@ module.exports = function (N, apiPath) {
       st.paginated = [ statuses.post.VISIBLE ];
       st.visible = [ statuses.post.VISIBLE ];
 
-      if (settings.can_see_hellbanned || env.user_info.hb) {
+      if (can_see_hellbanned || env.user_info.hb) {
         st.paginated.push(statuses.post.HB);
         st.visible.push(statuses.post.HB);
-      }
-
-      if (settings.forum_mod_can_manage_pending) {
-        st.visible.push(statuses.topic.PENDING);
-        st.visible.push(statuses.topic.DELETED);
       }
 
       callback();
