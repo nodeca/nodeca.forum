@@ -1,26 +1,18 @@
 setting_schemas:
   section_moderator:
-    forum_mod_visible:
-      priority: 500
-      type: boolean
-      default: true
+
+    forum_mod_can_delete_topics:
+      priority: 530
+      extends: true
+
+    forum_mod_can_delete_posts:
+      priority: 540
+      extends: true
 
     forum_mod_can_edit_titles:
       extends: true
-      priority: 510
-
-    forum_mod_can_edit_posts:
-      extends: true
-      priority: 520
-
-    forum_mod_can_delete_topics:
-      extends: true
-      priority: 530
-
-    forum_mod_can_delete_posts:
-      extends: true
-      priority: 540
+      priority: 550
 
     forum_mod_can_manage_pending:
       extends: true
-      priority: 550
+      priority: 560

@@ -28,6 +28,10 @@
               label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
             // /ko
 
+            // ko if: 'number' === type
+            input.form-control(type="number", data-bind="value: value, valueUpdate: 'keyup', attr: { id: elementId }")
+            // /ko
+
             // ko if: localizedHelp
             span.help-block(data-bind="text: localizedHelp")
             // /ko

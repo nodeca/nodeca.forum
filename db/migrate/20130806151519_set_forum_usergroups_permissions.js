@@ -20,7 +20,13 @@ module.exports.up = function (N, cb) {
 
           group.raw_settings = _.assign({}, group.raw_settings, {
             forum_can_reply: { value: true },
-            forum_can_start_topics: { value: true }
+            forum_can_start_topics: { value: true },
+            forum_mod_can_pin_topic: { value: true },
+            forum_mod_can_edit_posts: { value: true },
+            forum_mod_can_delete_topics: { value: true },
+            forum_mod_can_delete_posts: { value: true },
+            forum_mod_can_edit_titles: { value: true },
+            forum_mod_can_manage_pending: { value: true }
           });
           group.save(callback);
         });

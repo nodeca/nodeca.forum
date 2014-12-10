@@ -7,5 +7,9 @@ i18n:
           perm_moderator: Forum moderation
 
         setting_names:
+          forum_can_view: Show Forum
+          forum_can_reply: Reply Topics
+          forum_can_start_topics: Start Topics
           forum_edit_max_time: Max time to edit post after create (minutes)
           forum_mod_can_pin_topic: Pin topic
+          forum_mod_can_edit_posts: Edit posts

@@ -24,7 +24,7 @@ function Setting(name, schema, value, overriden) {
     read: function () {
       if (this.overriden()) {
         // Use overriden.
-        return this._value();
+        return this.type === 'number' ? Number(this._value()) : this._value();
 
       } else if (N.runtime.page_data.parent_settings &&
                  N.runtime.page_data.parent_settings[this.name] &&

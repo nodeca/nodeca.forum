@@ -1,6 +1,15 @@
 setting_schemas:
   section_moderator:
-    forum_mod_can_pin_topic:
-      priority: 560
+
+    forum_mod_visible:
+      priority: 500
       type: boolean
-      default: false
+      default: true
+
+    forum_mod_can_pin_topic:
+      priority: 510
+      extends: true
+
+    forum_mod_can_edit_posts:
+      priority: 520
+      extends: true

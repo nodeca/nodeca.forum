@@ -1,34 +1,5 @@
 setting_schemas:
   usergroup:
-    forum_can_view:
-      priority: 10
-      category_key: forum
-      type: boolean
-      default: true
-
-    forum_can_reply:
-      priority: 30
-      category_key: forum
-      type: boolean
-      default: false
-
-    forum_can_start_topics:
-      priority: 40
-      category_key: forum
-      type: boolean
-      default: false
-
-    forum_mod_can_edit_titles:
-      priority: 500
-      category_key: perm_moderator
-      type: boolean
-      default: false
-
-    forum_mod_can_edit_posts:
-      priority: 510
-      category_key: perm_moderator
-      type: boolean
-      default: false
 
     forum_mod_can_delete_topics:
       priority: 520
@@ -42,8 +13,14 @@ setting_schemas:
       type: boolean
       default: false
 
+    forum_mod_can_edit_titles:
+      priority: 550
+      category_key: perm_moderator
+      type: boolean
+      default: false
+
     forum_mod_can_manage_pending:
-      priority: 540
+      priority: 560
       category_key: perm_moderator
       type: boolean
       default: false

@@ -1,6 +1,24 @@
 setting_schemas:
   usergroup:
 
+    forum_can_view:
+      priority: 10
+      category_key: forum
+      type: boolean
+      default: true
+
+    forum_can_reply:
+      priority: 20
+      category_key: forum
+      type: boolean
+      default: false
+
+    forum_can_start_topics:
+      priority: 30
+      category_key: forum
+      type: boolean
+      default: false
+
     forum_edit_max_time:
       default: 30
       category_key: forum
@@ -9,6 +27,12 @@ setting_schemas:
 
     forum_mod_can_pin_topic:
       priority: 500
+      category_key: perm_moderator
+      type: boolean
+      default: false
+
+    forum_mod_can_edit_posts:
+      priority: 510
       category_key: perm_moderator
       type: boolean
       default: false
