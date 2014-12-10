@@ -1,3 +1,5 @@
+- var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 } }
+
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
@@ -12,7 +14,7 @@ each topic in self.topics
   - lp_ts   = topic.cache.last_ts
   - replies = topic.cache.post_count - 1;
   - views   = topic.views_count;
-  .forum-topicline
+  .forum-topicline(class=(topic.st === status.topic.PINNED) ? 'forum-topicline__m-pinned' : '')
     .row
       .col-sm-7
         .forum-topicline__summary

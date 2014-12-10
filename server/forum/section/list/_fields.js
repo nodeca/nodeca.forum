@@ -8,5 +8,7 @@ exports.topic_in = [
   'title',
   'views_count',
   'cache',
-  'cache_hb'
+  'cache_hb',
+  'st',
+  'ste'
 ];

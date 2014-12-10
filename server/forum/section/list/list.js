@@ -254,32 +254,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Add topics into to response & collect user ids
-  //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
-
-    env.extras.puncher.start('collect user ids');
-
-    env.res.topics = env.data.topics;
-
-    env.data.users = env.data.users || [];
-
-    // collect users from topics
-    env.data.topics.forEach(function (doc) {
-      if (doc.cache.first_user) {
-        env.data.users.push(doc.cache.first_user);
-      }
-      if (doc.cache.last_user) {
-        env.data.users.push(doc.cache.last_user);
-      }
-    });
-
-    env.extras.puncher.stop();
-
-    callback();
-  });
-
-
   // Add section info to response
   //
   N.wire.after(apiPath, function fill_topic_info(env) {
@@ -317,6 +291,33 @@ module.exports = function (N, apiPath) {
     callback();
 
   });
+
+
+  // Add topics into to response & collect user ids
+  //
+  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {
+
+    env.extras.puncher.start('collect user ids');
+
+    env.res.topics = env.data.topics;
+
+    env.data.users = env.data.users || [];
+
+    // collect users from topics
+    env.data.topics.forEach(function (doc) {
+      if (doc.cache.first_user) {
+        env.data.users.push(doc.cache.first_user);
+      }
+      if (doc.cache.last_user) {
+        env.data.users.push(doc.cache.last_user);
+      }
+    });
+
+    env.extras.puncher.stop();
+
+    callback();
+  });
+
 
   // Add settings, required to render topics list
   //
