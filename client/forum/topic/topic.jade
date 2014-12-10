@@ -26,10 +26,12 @@ article#content.forum-topic-root
               span.caret
             ul.dropdown-menu
               li.visible-xxs-block: a(href='#')= self.t('subscribe')
-              li: a(href='#')= self.t('delete')
-              li: a(href='#')= self.t('close')
+              li.disabled: a(href='#')= self.t('delete')
+              li.disabled: a(href='#')= self.t('close')
               li.divider
               li.dropdown-header= self.t('mod_actions')
+              li.disabled: a(href='#')= self.t('delete')
+              li.disabled: a(href='#')= self.t('close')
               if self.settings.forum_mod_can_pin_topic && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.CLOSED || self.topic.st === status.topic.PINNED)
                 li: a(
                   href='#'
@@ -37,9 +39,7 @@ article#content.forum-topic-root
                   data-topic-hid='#{self.topic.hid}'
                 )= self.topic.st === status.topic.PINNED ? self.t('unpin') : self.t('pin')
 
-              li: a(href='#')= self.t('history')
-              li: a(href='#')= self.t('approve')
-              li: a(href='#')= self.t('merge')
+              li.disabled: a(href='#')= self.t('history')
 
           if self.runtime.is_member
             button.hidden-xxs.btn.btn-default.icon.icon-track.pull-right(
