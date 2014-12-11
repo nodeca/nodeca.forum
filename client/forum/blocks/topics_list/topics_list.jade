@@ -8,8 +8,8 @@ if self.show_page_number
   .forum-topicline__separator= self.t('page_separator', self.show_page_number)
 
 each topic in self.topics
-  - fp_user = self.users[topic.cache.first_user]
-  - lp_user = self.users[topic.cache.last_user]
+  - fp_user = self.users[topic.cache.first_user] || {}
+  - lp_user = self.users[topic.cache.last_user] || {}
   - fp_ts   = topic.cache.first_ts
   - lp_ts   = topic.cache.last_ts
   - replies = topic.cache.post_count - 1;

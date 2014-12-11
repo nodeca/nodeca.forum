@@ -6,7 +6,7 @@
 
 each post in self.posts
   - var user = self.users[post.user];
-  article.forum-post.clearfix(id='post#{post._id}', data-user-hid=user.hid, itemscope, itemtype='http://schema.org/WebPageElement')
+  article.forum-post.clearfix(id='post#{post._id}', data-user-hid=user ? user.hid : '', itemscope, itemtype='http://schema.org/WebPageElement')
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
         time.forum-post__time(
@@ -75,7 +75,7 @@ each post in self.posts
                 data-post-id=post._id
               )= self.t('reply')
 
-          if (user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
+          if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
             li.forum-post__control-item
               a.forum-post__action-link(
                 href='#'
