@@ -135,54 +135,18 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch attachments from post body
+  // Fetch `attach_refs` and `attach_tail`
   //
-  N.wire.before(apiPath, function fetch_attachments(env) {
-    var ast = env.data.ast;
-    var result = [];
-    var src;
-    var MEDIA_ID_RE = /.*?\/(files|member[0-9]+\/media)\/([0-9a-f]{24}).*/;
-
-    // Find all images in post
-    ast.find('img').each(function () {
-      src = $(this).attr('src');
-
-      if (!MEDIA_ID_RE.test(src)) {
-        return;
-      }
-
-      // Get file_id from url
-      src = src.replace(MEDIA_ID_RE, '$2');
-
-      result.push(src);
-    });
-
-    // Find all links in post
-    ast.find('a').each(function () {
-      src = $(this).attr('href');
-
-      if (!MEDIA_ID_RE.test(src)) {
-        return;
-      }
-
-      // Get file_id from url
-      src = src.replace(MEDIA_ID_RE, '$2');
-
-      result.push(src);
-    });
-
-    result = _.uniq(result);
-
-    env.data.attach_refs = result;
-  });
-
-  // TODO: check attach_refs!!!
-
-  // Fetch tail attachments
-  //
-  N.wire.before(apiPath, function check_attachments(env, callback) {
+  N.wire.before(apiPath, function fetch_attachments(env, callback) {
     var tail = env.params.attach_tail;
-    var refs = env.data.attach_refs;
+    var refs = [];
+
+    // Find all attachments inserted to text
+    env.data.ast.find('img[data-nd-media-id], a[data-nd-media-id]').each(function () {
+      refs.push($(this).data('nd-media-id'));
+    });
+
+    refs = _.uniq(refs);
 
     // Remove refs from tail
     tail = _.remove(tail, function(id) {
@@ -191,6 +155,7 @@ module.exports = function (N, apiPath) {
 
     env.data.attach_refs = _.union(refs, tail);
 
+    // Fetch tail attachments
     N.models.users.MediaInfo.find({
       media_id: { $in: tail },
       type: { $in: N.models.users.MediaInfo.types.LIST_VISIBLE },
@@ -202,6 +167,8 @@ module.exports = function (N, apiPath) {
         return;
       }
 
+      // TODO: check attach_refs owner
+      env.data.attach_refs = refs;
       env.data.attach_tail = attachments;
 
       callback();
