@@ -9,6 +9,3 @@ setting_schemas:
       priority: 540
       extends: true
 
-    forum_mod_can_edit_titles:
-      extends: true
-      priority: 550

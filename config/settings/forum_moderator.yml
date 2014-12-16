@@ -13,3 +13,7 @@ setting_schemas:
     forum_mod_can_edit_posts:
       priority: 520
       extends: true
+
+    forum_mod_can_edit_titles:
+      extends: true
+      priority: 550

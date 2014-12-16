@@ -4,7 +4,21 @@ article#content.forum-topic-root
   != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
-    h1.page-head__title(itemprop='name')= self.topic.title
+    - var user = self.users[self.topic.cache.first_user];
+    - var canEdit = (user && user._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || self.date(self.topic.cache.first_ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
+
+    h1.forum-topic-title.page-head__title(itemprop='name')
+      span.forum-topic-title__text= self.topic.title
+
+      if canEdit || self.settings.forum_mod_can_edit_titles
+        a.forum-topic-title__edit.icon-edit.icon(
+          href='#'
+          title=self.t('edit_title')
+          data-on-click='forum.topic.edit_title'
+          data-topic-id='#{self.topic._id}'
+          data-moderator-action='#{!canEdit}'
+        )
+
     if self.topic._seo_desc
       p.page-head__descr(itemprop='description')
         | #{self.topic._seo_desc}

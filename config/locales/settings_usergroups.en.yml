@@ -13,3 +13,4 @@ i18n:
           forum_edit_max_time: Max time to edit post after create (minutes)
           forum_mod_can_pin_topic: Pin topic
           forum_mod_can_edit_posts: Edit posts
+          forum_mod_can_edit_titles: Edit topic titles

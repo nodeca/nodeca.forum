@@ -34,6 +34,25 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Edit title button handler
+  //
+  N.wire.on('forum.topic.edit_title', function title_edit(event) {
+    var $button = $(event.target);
+    var $title = $('.forum-topic-title__text');
+
+    var data = {
+      topic_id: $button.data('topic-id'),
+      mod_action: $button.data('moderator-action') || false,
+      title: $title.text(),
+      new_title: null
+    };
+
+    N.wire.emit('forum.topic.title_edit_dlg', data, function () {
+      $title.text(data.new_title);
+    });
+  });
+
+
   // Delete topic button handler
   //
   N.wire.on('forum.topic.topic_delete', function topic_delete(event) {

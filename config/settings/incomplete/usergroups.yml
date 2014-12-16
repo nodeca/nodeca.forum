@@ -12,9 +12,3 @@ setting_schemas:
       category_key: perm_moderator
       type: boolean
       default: false
-
-    forum_mod_can_edit_titles:
-      priority: 550
-      category_key: perm_moderator
-      type: boolean
-      default: false

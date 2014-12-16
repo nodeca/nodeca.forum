@@ -8,7 +8,8 @@
 var _  = require('lodash');
 
 // collections fields filters
-var fields = require('./_fields.js');
+var postFields = require('./_fields.js').post_in;
+var topicFields = require('../../section/list/_fields.js').topic_in;
 
 // topic and post statuses
 var statuses = require('../../_lib/statuses.js');
@@ -77,6 +78,11 @@ module.exports = function (N, apiPath) {
         });
 
         env.data.topic = topic;
+
+        // Add topic info to response
+        env.res.topic = _.pick(topic, topicFields);
+
+
         callback();
       });
     });
@@ -266,7 +272,7 @@ module.exports = function (N, apiPath) {
       query.lt(env.data.last_post_id);
     }
 
-    query.select(fields.post_in.join(' '))
+    query.select(postFields.join(' '))
       .lean(true)
       .sort('_id')
       .exec(function (err, posts) {
@@ -303,26 +309,11 @@ module.exports = function (N, apiPath) {
       }
     });
 
+    env.data.users.push(env.data.topic.cache.first_user);
+
     env.extras.puncher.stop();
 
     callback();
-  });
-
-
-  // Add topic info to response
-  //
-  N.wire.after(apiPath, function fill_topic_info(env) {
-    env.res.topic = _.assign({}, env.res.topic,
-      _.pick(env.data.topic, [
-        '_id',
-        'hid',
-        'title',
-        'st',
-        'ste'
-      ])
-    );
-
-    env.res.topic.cache = { first_post: env.data.topic.cache.first_post };
   });
 
 
@@ -379,7 +370,8 @@ module.exports = function (N, apiPath) {
         'forum_edit_max_time',
         'forum_mod_can_edit_posts',
         'forum_mod_can_delete_posts',
-        'forum_mod_can_pin_topic'
+        'forum_mod_can_pin_topic',
+        'forum_mod_can_edit_titles'
       ],
       function (err, result) {
         env.extras.puncher.stop();
