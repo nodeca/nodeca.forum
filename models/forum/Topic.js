@@ -37,6 +37,8 @@ module.exports = function (N, collectionName) {
   , st              : Number
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects
+  , del_reason      : String
+
     // Cache
   , cache           : cache
   , cache_hb        : cache

@@ -41,7 +41,7 @@ each post in self.posts
             a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
 
-          if (self.settings.forum_mod_can_edit_posts || self.settings.forum_mod_can_delete_posts)
+          if (self.settings.forum_mod_can_edit_posts || self.settings.forum_mod_can_delete_topics)
             li.forum-post__control-item.dropdown.dropup
               button.btn.btn-link.dropdown-toggle(
                 data-toggle='dropdown'
@@ -57,13 +57,13 @@ each post in self.posts
                       data-post-id='#{post._id}'
                       data-as-moderator='true'
                     )= self.t('edit')
-                  if (self.settings.forum_mod_can_delete_posts)
+                  if (self.settings.forum_mod_can_delete_topics)
                     - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
                     a(
                       href='#'
                       data-on-click=action
                       data-post-id='#{post._id}'
-                      data-topic-hid='#{self.topic.hid}'
+                      data-topic-id='#{self.topic._id}'
                       data-as-moderator='true'
                     )= self.t('delete')
 
@@ -89,7 +89,7 @@ each post in self.posts
                 href='#'
                 data-on-click=action
                 data-post-id='#{post._id}'
-                data-topic-hid='#{self.topic.hid}'
+                data-topic-id='#{self.topic._id}'
               )= self.t('delete')
 
           li.forum-post__control-item

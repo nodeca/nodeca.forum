@@ -4,4 +4,3 @@ i18n:
       core:
         setting_names:
           forum_mod_can_delete_topics: Delete topics
-          forum_mod_can_delete_posts: Delete posts

@@ -1,0 +1,9 @@
+en-US:
+  title: Delete topic
+  title_moderator: Moderation delete topic
+  confirmation_text: Are you sure you want to delete topic?
+  reason_input_help: Deletion reason
+  apply: OK
+  cancel: Cancel
+  delete_soft: Soft delete
+  delete_hard: Hard delete

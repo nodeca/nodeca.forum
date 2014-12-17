@@ -4,8 +4,3 @@ setting_schemas:
     forum_mod_can_delete_topics:
       priority: 530
       extends: true
-
-    forum_mod_can_delete_posts:
-      priority: 540
-      extends: true
-

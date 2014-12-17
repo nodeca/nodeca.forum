@@ -26,6 +26,7 @@ module.exports = function (N, collectionName) {
   , st              : Number
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
+  , del_reason      : String
 
   // Post attachments without attachments in quotes
   , attach_refs     : [ Schema.ObjectId ]  // all attachments

@@ -369,8 +369,8 @@ module.exports = function (N, apiPath) {
         'forum_can_reply',
         'forum_edit_max_time',
         'forum_can_close_topic',
+        'forum_mod_can_delete_topics',
         'forum_mod_can_edit_posts',
-        'forum_mod_can_delete_posts',
         'forum_mod_can_pin_topic',
         'forum_mod_can_edit_titles',
         'forum_mod_can_close_topic'

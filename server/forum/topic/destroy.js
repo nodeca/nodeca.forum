@@ -7,7 +7,9 @@ var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_hid: { type: 'integer', minimum: 1, required: true },
+    topic_id:     { type: 'string', required: true },
+    reason:       { type: 'string' },
+    method:       { type: 'string', enum: [ 'hard', 'soft' ], required: true },
     as_moderator: { type: 'boolean', required: true }
   });
 
@@ -15,7 +17,7 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ hid: env.params.topic_hid })
+    N.models.forum.Topic.findOne({ _id: env.params.topic_id })
       .lean(true).exec(function (err, topic) {
         if (err) {
           callback(err);
@@ -66,55 +68,61 @@ module.exports = function (N, apiPath) {
 
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch(
-      [ 'forum_mod_can_delete_posts', 'forum_mod_can_delete_topics' ],
-      function (err, permissions) {
+    // Check moderator permissions
+
+    if (env.params.as_moderator) {
+      env.extras.settings.fetch('forum_mod_can_delete_topics', function (err, forum_mod_can_delete_topics) {
 
         if (err) {
           callback(err);
           return;
         }
 
-        // Check can moderator delete topic if in topic only one post
-        if (permissions.forum_mod_can_delete_posts && topic.cache.post_count === 1 && topic.cache_hb.post_count === 1) {
-          callback();
-          return;
-        }
-
-        // Check can moderator delete topic with multiple posts
-        if (permissions.forum_mod_can_delete_topics) {
-          callback();
-          return;
-        }
-
-        // Check owner of first post in topic
-        if (!env.session.user_id || env.session.user_id.toString() !== env.data.post.user.toString()) {
+        if (!forum_mod_can_delete_topics) {
           callback(N.io.FORBIDDEN);
           return;
         }
 
-        // User can't delete topic with answers
-        if (topic.cache.post_count !== 1 || topic.cache_hb.post_count !== 1) {
-          callback(N.io.FORBIDDEN);
-          return;
-        }
+        callback();
+      });
 
-        env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
+      return;
+    }
 
-          if (err) {
-            callback(err);
-            return;
-          }
+    // Check user permissions
 
-          if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-            callback(N.io.FORBIDDEN);
-            return;
-          }
+    // User can't hard delete topics
+    if (env.params.method === 'hard') {
+      callback(N.io.FORBIDDEN);
+      return;
+    }
 
-          callback();
-        });
+    // User can't delete topic with answers
+    if (topic.cache.post_count !== 1 || topic.cache_hb.post_count !== 1) {
+      callback(N.io.FORBIDDEN);
+      return;
+    }
+
+    // Check owner of first post in topic
+    if (env.session.user_id !== String(env.data.post.user)) {
+      callback(N.io.FORBIDDEN);
+      return;
+    }
+
+    env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
+
+      if (err) {
+        callback(err);
+        return;
       }
-    );
+
+      if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
+        callback(N.io.FORBIDDEN);
+        return;
+      }
+
+      callback();
+    });
   });
 
 
@@ -122,11 +130,19 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function delete_topic(env, callback) {
     var topic = env.data.topic;
+    var update = {
+      st: env.params.method === 'hard' ? statuses.topic.DELETED_HARD : statuses.topic.DELETED,
+      $unset: { ste: 1 }
+    };
+
+    if (env.params.reason) {
+      update.del_reason = env.params.reason;
+    }
 
     // TODO: statuses history
     N.models.forum.Topic.update(
       { _id: topic._id },
-      { st: statuses.topic.DELETED, $unset: { ste: 1 } },
+      update,
       callback
     );
   });
