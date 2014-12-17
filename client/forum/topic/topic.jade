@@ -1,11 +1,14 @@
 - var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 } }
+- var topicOwner = self.users[self.topic.cache.first_user]
 
-article#content.forum-topic-root
+article#content.forum-topic-root(
+  class=(self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN) ? 'forum-topic-root__m-open' : ''
+  class=(self.topic.st === status.topic.CLOSED || self.topic.ste === status.topic.CLOSED) ? 'forum-topic-root__m-closed' : ''
+)
   != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
-    - var user = self.users[self.topic.cache.first_user];
-    - var canEdit = (user && user._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || self.date(self.topic.cache.first_ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
+    - var canEdit = (topicOwner && topicOwner._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || self.date(self.topic.cache.first_ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
 
     h1.forum-topic-title.page-head__title(itemprop='name')
       span.forum-topic-title__text= self.topic.title
@@ -38,14 +41,43 @@ article#content.forum-topic-root
           .btn-group.pull-right
             button.btn.btn-default.dropdown-toggle(type='button' data-toggle='dropdown')
               span.caret
+
             ul.dropdown-menu
               li.visible-xxs-block: a(href='#')= self.t('subscribe')
               li.disabled: a(href='#')= self.t('delete')
-              li.disabled: a(href='#')= self.t('close')
+
+              if (topicOwner && topicOwner._id === self.runtime.user_id) && self.settings.forum_can_close_topic
+                li.forum-topic-menu__close
+                  a(href='#'
+                    data-on-click='forum.topic.close'
+                    data-topic-id='#{self.topic._id}'
+                  )= self.t('close')
+                li.forum-topic-menu__open
+                  a(href='#'
+                    data-on-click='forum.topic.close'
+                    data-topic-id='#{self.topic._id}'
+                    data-reopen='true'
+                  )= self.t('open')
+
               li.divider
               li.dropdown-header= self.t('mod_actions')
               li.disabled: a(href='#')= self.t('delete')
-              li.disabled: a(href='#')= self.t('close')
+
+              if self.settings.forum_mod_can_close_topic
+                li.forum-topic-menu__close
+                  a(href='#'
+                    data-on-click='forum.topic.close'
+                    data-topic-id='#{self.topic._id}'
+                    data-as-moderator='true'
+                  )= self.t('close')
+                li.forum-topic-menu__open
+                  a(href='#'
+                    data-on-click='forum.topic.close'
+                    data-topic-id='#{self.topic._id}'
+                    data-reopen='true'
+                    data-as-moderator='true'
+                  )= self.t('open')
+
               if self.settings.forum_mod_can_pin_topic && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.CLOSED || self.topic.st === status.topic.PINNED)
                 li: a(
                   href='#'
@@ -61,8 +93,8 @@ article#content.forum-topic-root
               title=self.t('subscribe')
             )
 
-          if self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN)
-            button.btn.btn-primary.icon.icon-plus.pull-right(
+          if self.settings.forum_can_reply
+            button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(
               data-on-click='forum.topic.post_reply'
               type='button'
               title=self.t('post_add')

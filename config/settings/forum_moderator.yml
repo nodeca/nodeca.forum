@@ -17,3 +17,7 @@ setting_schemas:
     forum_mod_can_edit_titles:
       extends: true
       priority: 550
+
+    forum_mod_can_close_topic:
+      extends: true
+      priority: 560

@@ -15,3 +15,7 @@ setting_schemas:
     forum_edit_max_time:
       extends: true
       priority: 40
+
+    forum_can_close_topic:
+      extends: true
+      priority: 50

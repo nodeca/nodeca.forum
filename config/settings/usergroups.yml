@@ -25,6 +25,12 @@ setting_schemas:
       type: number
       priority: 40
 
+    forum_can_close_topic:
+      priority: 50
+      category_key: forum
+      type: boolean
+      default: false
+
     forum_mod_can_pin_topic:
       priority: 500
       category_key: perm_moderator
@@ -39,6 +45,12 @@ setting_schemas:
 
     forum_mod_can_edit_titles:
       priority: 550
+      category_key: perm_moderator
+      type: boolean
+      default: false
+
+    forum_mod_can_close_topic:
+      priority: 560
       category_key: perm_moderator
       type: boolean
       default: false

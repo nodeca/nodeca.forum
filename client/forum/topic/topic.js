@@ -34,6 +34,32 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Close/open topic button handler
+  //
+  N.wire.on('forum.topic.close', function topic_close(event) {
+    var $button = $(event.target);
+
+    var data = {
+      topic_id: $button.data('topic-id'),
+      reopen: $button.data('reopen') || false,
+      as_moderator: $button.data('as-moderator') || false
+    };
+
+    N.io.rpc('forum.topic.close', data).done(function () {
+      if (data.reopen) {
+        $('.forum-topic-root')
+          .removeClass('forum-topic-root__m-closed')
+          .addClass('forum-topic-root__m-open');
+
+      } else {
+        $('.forum-topic-root')
+          .removeClass('forum-topic-root__m-open')
+          .addClass('forum-topic-root__m-closed');
+      }
+    });
+  });
+
+
   // Edit title button handler
   //
   N.wire.on('forum.topic.edit_title', function title_edit(event) {

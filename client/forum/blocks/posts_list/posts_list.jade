@@ -67,9 +67,9 @@ each post in self.posts
                       data-as-moderator='true'
                     )= self.t('delete')
 
-          if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))
+          if self.settings.forum_can_reply
             li.forum-post__control-item
-              a.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
+              a.forum-post__reply.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
                 href='#'
                 data-on-click='forum.topic.post_reply'
                 data-post-id=post._id

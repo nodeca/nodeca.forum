@@ -14,7 +14,10 @@ each topic in self.topics
   - lp_ts   = topic.cache.last_ts
   - replies = topic.cache.post_count - 1;
   - views   = topic.views_count;
-  .forum-topicline(class=(topic.st === status.topic.PINNED) ? 'forum-topicline__m-pinned' : '')
+  .forum-topicline(
+    class=(topic.st === status.topic.PINNED) ? 'forum-topicline__m-pinned' : ''
+    class=(topic.st === status.topic.CLOSED || topic.ste === status.topic.CLOSED) ? 'forum-topicline__m-closed' : ''
+  )
     .row
       .col-sm-7
         .forum-topicline__summary

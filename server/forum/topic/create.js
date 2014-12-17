@@ -202,7 +202,6 @@ module.exports = function (N, apiPath) {
 
     // TODO: hellbanned
     topic.st = statuses.topic.OPEN;
-    topic.ste = statuses.topic.OPEN;
 
     topic.cache = {};
 
