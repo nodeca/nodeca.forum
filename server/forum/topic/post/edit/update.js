@@ -8,7 +8,6 @@ var $          = require('nodeca.core/lib/parser/cheequery');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    moderator_action: { type: 'boolean', required: true },
     post_id:          { type: 'string', required: true },
     post_md:          { type: 'string', required: true },
     attach_tail:      {
@@ -18,7 +17,8 @@ module.exports = function (N, apiPath) {
       items: { format: 'mongo' }
     },
     option_no_mlinks: { type: 'boolean', required: true },
-    option_no_smiles: { type: 'boolean', required: true }
+    option_no_smiles: { type: 'boolean', required: true },
+    as_moderator:     { type: 'boolean', required: true }
   });
 
 

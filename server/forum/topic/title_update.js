@@ -7,9 +7,9 @@
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    moderator_action: { type: 'boolean', required: true },
     topic_id:         { format: 'mongo', required: true },
-    title:            { type: 'string', minLength: 1, required: true }
+    title:            { type: 'string', minLength: 1, required: true },
+    as_moderator:     { type: 'boolean', required: true }
   });
 
 
@@ -51,7 +51,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Permit as moderator
-      if (forum_mod_can_edit_titles && env.params.moderator_action) {
+      if (forum_mod_can_edit_titles && env.params.as_moderator) {
         callback();
         return;
       }

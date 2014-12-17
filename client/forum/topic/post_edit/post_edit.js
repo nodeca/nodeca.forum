@@ -9,7 +9,7 @@ var medialinks = require('nodeca.core/lib/parser/medialinks');
 
 var $form;
 var postId;
-var moderatorAction;
+var asModerator;
 var parseRules;
 var editor;
 var postOptions;
@@ -127,12 +127,12 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     var $button = $(event.target);
 
-    moderatorAction = $button.data('moderator-action') || false;
+    asModerator = $button.data('as-moderator') || false;
     postId = $button.data('post-id');
 
     var $targetPost = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.edit.index', { post_id: postId, moderator_action: moderatorAction })
+    N.io.rpc('forum.topic.post.edit.index', { post_id: postId, as_moderator: asModerator })
       .done(function (res) {
         postOptions = res.params;
 
@@ -177,7 +177,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var $post = $('#post' + postId);
 
     var data = {
-      moderator_action: moderatorAction,
+      as_moderator:     asModerator,
       post_id:          postId,
       post_md:          editor.text(),
       attach_tail:      _.map(editor.attachments(), function (v) { return v.media_id; }),

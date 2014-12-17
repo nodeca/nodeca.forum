@@ -55,7 +55,7 @@ each post in self.posts
                       href='#'
                       data-on-click='forum.topic.post_edit'
                       data-post-id='#{post._id}'
-                      data-moderator-action='true'
+                      data-as-moderator='true'
                     )= self.t('edit')
                   if (self.settings.forum_mod_can_delete_posts)
                     - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
@@ -64,7 +64,7 @@ each post in self.posts
                       data-on-click=action
                       data-post-id='#{post._id}'
                       data-topic-hid='#{self.topic.hid}'
-                      data-moderator-action='true'
+                      data-as-moderator='true'
                     )= self.t('delete')
 
           if (self.settings.forum_can_reply && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.OPEN))

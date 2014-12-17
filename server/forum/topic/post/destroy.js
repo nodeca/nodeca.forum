@@ -8,7 +8,7 @@ module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     post_id: { type: 'string', required: true },
-    moderator_action: { type: 'boolean', required: true }
+    as_moderator: { type: 'boolean', required: true }
   });
 
 

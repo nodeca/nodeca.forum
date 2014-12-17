@@ -2,7 +2,7 @@
 //
 // options:
 // - topic_id
-// - mod_action - true: edit as moderator, false: edit as user
+// - as_moderator - true: edit as moderator, false: edit as user
 // - title - old title of topic
 // - new_title - out, new title of topic
 //
@@ -28,7 +28,7 @@ N.wire.once('forum.topic.title_edit_dlg', function init_handlers() {
     }
 
     var data = {
-      moderator_action: params.mod_action,
+      as_moderator: params.as_moderator,
       topic_id: params.topic_id,
       title: title
     };

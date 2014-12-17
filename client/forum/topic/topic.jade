@@ -16,7 +16,7 @@ article#content.forum-topic-root
           title=self.t('edit_title')
           data-on-click='forum.topic.edit_title'
           data-topic-id='#{self.topic._id}'
-          data-moderator-action='#{!canEdit}'
+          data-as-moderator='#{!canEdit}'
         )
 
     if self.topic._seo_desc

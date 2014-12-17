@@ -42,8 +42,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     var data = {
       topic_id: $button.data('topic-id'),
-      mod_action: $button.data('moderator-action') || false,
       title: $title.text(),
+      as_moderator: $button.data('as-moderator') || false,
       new_title: null
     };
 
@@ -57,9 +57,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.topic.topic_delete', function topic_delete(event) {
     var topicHid = $(event.target).data('topic-hid');
-    var moderatorAction = $(event.target).data('moderator-action') || false;
+    var asModerator = $(event.target).data('as-moderator') || false;
 
-    N.io.rpc('forum.topic.destroy', { topic_hid: topicHid, moderator_action: moderatorAction }).done(function () {
+    N.io.rpc('forum.topic.destroy', { topic_hid: topicHid, as_moderator: asModerator }).done(function () {
       N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } });
     });
   });
@@ -69,10 +69,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.topic.post_delete', function post_delete(event) {
     var postId = $(event.target).data('post-id');
-    var moderatorAction = $(event.target).data('moderator-action') || false;
+    var asModerator = $(event.target).data('as-moderator') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.destroy', { post_id: postId, moderator_action: moderatorAction }).done(function () {
+    N.io.rpc('forum.topic.post.destroy', { post_id: postId, as_moderator: asModerator }).done(function () {
       $post.fadeOut(function () {
         $post.remove();
       });
