@@ -7,6 +7,7 @@ article#content.forum-topic-root(
   class=(self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN) ? 'forum-topic-root__m-open' : ''
   class=(self.topic.st === status.topic.CLOSED || self.topic.ste === status.topic.CLOSED) ? 'forum-topic-root__m-closed' : ''
   class=(self.topic.st === status.topic.DELETED) ? 'forum-topic-root__m-deleted' : ''
+  class=(self.topic.st === status.topic.PINNED) ? 'forum-topic-root__m-pinned' : ''
 )
   != self.partial('@common.blocks.breadcrumbs')
 
@@ -81,12 +82,18 @@ article#content.forum-topic-root(
                     data-as-moderator='true'
                   )= self.t('open')
 
-              if self.settings.forum_mod_can_pin_topic && (self.topic.st === status.topic.OPEN || self.topic.st === status.topic.CLOSED || self.topic.st === status.topic.PINNED)
-                li: a(
-                  href='#'
-                  data-on-click='forum.topic.pin'
-                  data-topic-hid='#{self.topic.hid}'
-                )= self.topic.st === status.topic.PINNED ? self.t('unpin') : self.t('pin')
+              if self.settings.forum_mod_can_pin_topic
+                li.forum-topic-menu__pin
+                  a(href='#'
+                    data-on-click='forum.topic.pin'
+                    data-topic-id='#{self.topic._id}'
+                  )=self.t('pin')
+                li.forum-topic-menu__unpin
+                  a(href='#'
+                    data-on-click='forum.topic.pin'
+                    data-topic-id='#{self.topic._id}'
+                    data-unpin='true'
+                  )=self.t('unpin')
 
               li.disabled: a(href='#')= self.t('history')
 

@@ -8,6 +8,8 @@ en-US:
   history: History
   edit_title: Edit title
   undelete_topic_done: Topic undeleted
+  pin_topic_done: Topic pinned
+  unpin_topic_done: Topic unpinned
 
   mod_actions: Moderation
 

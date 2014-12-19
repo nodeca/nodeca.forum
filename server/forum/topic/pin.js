@@ -7,28 +7,40 @@ var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_hid: { type: 'integer', minimum: 1, required: true }
+    topic_id: { format: 'mongo', required: true },
+    unpin:    { type: 'boolean', required: true }
   });
 
 
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ hid: env.params.topic_hid })
-      .lean(true).exec(function (err, topic) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    var query = { _id: env.params.topic_id };
 
-        if (!topic) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
+    if (env.params.unpin) {
+      query.st = statuses.topic.PINNED;
+    } else {
+      query.$in = { st: [ statuses.topic.OPEN, statuses.topic.CLOSED ] };
+    }
 
-        env.data.topic = topic;
-        callback();
-      });
+    N.models.forum.Topic
+        .findOne({ _id: env.params.topic_id })
+        .lean(true)
+        .exec(function (err, topic) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!topic) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.topic = topic;
+      callback();
+    });
   });
 
 
@@ -62,26 +74,23 @@ module.exports = function (N, apiPath) {
   // Pin/unpin topic
   //
   N.wire.on(apiPath, function pin_topic(env, callback) {
-    // TODO: statuses history
-
     var topic = env.data.topic;
 
-    if (topic.st === statuses.topic.PINNED) {
-      env.res.pinned = false;
-
+    // Pin topic
+    if (!env.params.unpin) {
       N.models.forum.Topic.update(
         { _id: topic._id },
-        { st: topic.ste, $unset: { ste: 1 } },
+        { st: statuses.topic.PINNED, ste: topic.st },
         callback
       );
+
       return;
     }
 
-    env.res.pinned = true;
-
+    // Unpin topic
     N.models.forum.Topic.update(
       { _id: topic._id },
-      { st: statuses.topic.PINNED, ste: topic.st },
+      { st: topic.ste, $unset: { ste: 1 } },
       callback
     );
   });

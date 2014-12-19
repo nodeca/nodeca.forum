@@ -26,10 +26,17 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.topic.pin', function topic_pin(event) {
     var $button = $(event.target);
-    var topicHid = $button.data('topic-hid');
+    var topicId = $button.data('topic-id');
+    var unpin = $button.data('unpin') || false;
 
-    N.io.rpc('forum.topic.pin', { topic_hid: topicHid }).done(function (res) {
-      $button.text(res.pinned ? t('unpin') : t('pin'));
+    N.io.rpc('forum.topic.pin', { topic_id: topicId, unpin: unpin }).done(function () {
+      if (unpin) {
+        $('.forum-topic-root').removeClass('forum-topic-root__m-pinned');
+        N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
+      } else {
+        $('.forum-topic-root').addClass('forum-topic-root__m-pinned');
+        N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
+      }
     });
   });
 

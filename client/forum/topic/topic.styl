@@ -3,17 +3,16 @@
 .forum-postlist
   margin-top 10px
 
-.forum-topic-menu__close
-  display none
-
 .forum-topic-menu__open
   display none
 
-.forum-topic-root__m-open
-  .forum-topic-menu__close
-    display block
+.forum-topic-menu__unpin
+  display none
 
 .forum-topic-root__m-closed
+  .forum-topic-menu__close
+    display none
+
   .forum-topic-menu__open
     display block
 
@@ -24,6 +23,12 @@
     display none
 
 .forum-topic-root__m-deleted
+  .forum-topic-menu__close
+    display none
+
+  .forum-topic-menu__pin
+    display none
+
   .forum-topic-menu__reply
     display none
 
@@ -36,3 +41,10 @@
 
     .forum-post__undelete
       display block
+
+.forum-topic-root__m-pinned
+  .forum-topic-menu__unpin
+    display block
+
+  .forum-topic-menu__pin
+    display none
