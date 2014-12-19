@@ -1,5 +1,7 @@
-// Remove topic by hid
+// Remove topic by id
 'use strict';
+
+var _ = require('lodash');
 
 // topic and post statuses
 var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
@@ -25,6 +27,11 @@ module.exports = function (N, apiPath) {
         }
 
         if (!topic) {
+          callback(N.io.NOT_FOUND);
+          return;
+        }
+
+        if (topic.st === statuses.topic.DELETED || topic.st === statuses.topic.DELETED_HARD) {
           callback(N.io.NOT_FOUND);
           return;
         }
@@ -132,7 +139,10 @@ module.exports = function (N, apiPath) {
     var topic = env.data.topic;
     var update = {
       st: env.params.method === 'hard' ? statuses.topic.DELETED_HARD : statuses.topic.DELETED,
-      $unset: { ste: 1 }
+      $unset: { ste: 1 },
+      $push: {
+        st_hist: _.pick(topic, [ 'st', 'ste' ])
+      }
     };
 
     if (env.params.reason) {

@@ -14,6 +14,10 @@ setting_schemas:
       priority: 520
       extends: true
 
+    forum_mod_can_delete_topics:
+      priority: 530
+      extends: true
+
     forum_mod_can_edit_titles:
       extends: true
       priority: 550

@@ -1,6 +1,0 @@
-i18n:
-  en-US:
-    admin:
-      core:
-        setting_names:
-          forum_mod_can_delete_topics: Delete topics

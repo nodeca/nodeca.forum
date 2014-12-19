@@ -6,7 +6,13 @@
 
 each post in self.posts
   - var user = self.users[post.user];
-  article.forum-post.clearfix(id='post#{post._id}', data-user-hid=user ? user.hid : '', itemscope, itemtype='http://schema.org/WebPageElement')
+  article.forum-post.clearfix(
+    id='post#{post._id}'
+    class=(post.st === status.post.DELETED) ? 'forum-post__m-deleted' : ''
+    data-user-hid=user ? user.hid : ''
+    itemscope
+    itemtype='http://schema.org/WebPageElement'
+  )
     footer.forum-post__meta.clearfix
       .forum-post__meta-blk.pull-right
         time.forum-post__time(
@@ -49,45 +55,48 @@ each post in self.posts
               )
                 span.caret
               ul.dropdown-menu.dropdown-menu-right(role='menu')
-                li.presentation
-                  if (self.settings.forum_mod_can_edit_posts)
-                    a(
-                      href='#'
+                if (self.settings.forum_mod_can_edit_posts)
+                  li
+                    a(href='#'
                       data-on-click='forum.topic.post_edit'
                       data-post-id='#{post._id}'
                       data-as-moderator='true'
                     )= self.t('edit')
-                  if (self.settings.forum_mod_can_delete_topics)
-                    - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
-                    a(
-                      href='#'
-                      data-on-click=action
+                if (self.settings.forum_mod_can_delete_topics)
+                  li.forum-post__delete
+                    a(href='#'
+                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
                       data-post-id='#{post._id}'
                       data-topic-id='#{self.topic._id}'
                       data-as-moderator='true'
                     )= self.t('delete')
+                  li.forum-post__undelete
+                    a(href='#'
+                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
+                      data-post-id='#{post._id}'
+                      data-topic-id='#{self.topic._id}'
+                    )= self.t('undelete')
 
           if self.settings.forum_can_reply
-            li.forum-post__control-item
-              a.forum-post__reply.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
+            li.forum-post__reply.forum-post__control-item
+              a.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
                 href='#'
                 data-on-click='forum.topic.post_reply'
                 data-post-id=post._id
               )= self.t('reply')
 
           if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
-            li.forum-post__control-item
+            li.forum-post__edit.forum-post__control-item
               a.forum-post__action-link(
                 href='#'
                 data-on-click='forum.topic.post_edit'
                 data-post-id='#{post._id}'
               )= self.t('edit')
 
-            li.forum-post__control-item
-              - var action = String(self.topic.cache.first_post) === String(post._id) ? 'forum.topic.topic_delete' : 'forum.topic.post_delete';
+            li.forum-post__delete.forum-post__control-item
               a.forum-post__action-link(
                 href='#'
-                data-on-click=action
+                data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
                 data-post-id='#{post._id}'
                 data-topic-id='#{self.topic._id}'
               )= self.t('delete')

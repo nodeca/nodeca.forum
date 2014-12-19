@@ -16,3 +16,4 @@ i18n:
           forum_mod_can_edit_posts: Edit posts
           forum_mod_can_edit_titles: Edit topic titles
           forum_mod_can_close_topic: Close topics
+          forum_mod_can_delete_topics: Delete topics

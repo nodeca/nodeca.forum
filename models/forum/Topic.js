@@ -38,6 +38,12 @@ module.exports = function (N, collectionName) {
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects
   , del_reason      : String
+    // State history
+  , st_hist         : [ new Schema({ // explicit definition to remove `_id` field
+      st: Number,
+      ste: Number,
+      del_reason: String
+    }, { _id: false }) ]
 
     // Cache
   , cache           : cache

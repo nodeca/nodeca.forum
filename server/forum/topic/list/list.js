@@ -186,11 +186,11 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Get visible post statuses
+  // Define post visible and paginated statuses
   //
   N.wire.before(apiPath, function get_permissions(env, callback) {
 
-    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_delete_topics' ], function (err, settings) {
 
       if (err) {
         callback(err);
@@ -202,9 +202,13 @@ module.exports = function (N, apiPath) {
       st.paginated = [ statuses.post.VISIBLE ];
       st.visible = [ statuses.post.VISIBLE ];
 
-      if (can_see_hellbanned || env.user_info.hb) {
+      if (settings.can_see_hellbanned || env.user_info.hb) {
         st.paginated.push(statuses.post.HB);
         st.visible.push(statuses.post.HB);
+      }
+
+      if (settings.forum_mod_can_delete_topics) {
+        st.visible.push(statuses.post.DELETED);
       }
 
       callback();

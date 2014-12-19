@@ -27,6 +27,12 @@ module.exports = function (N, collectionName) {
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
   , del_reason      : String
+  // State history
+  , st_hist         : [ new Schema({ // explicit definition to remove `_id` field
+      st: Number,
+      ste: Number,
+      del_reason: String
+    }, { _id: false }) ]
 
   // Post attachments without attachments in quotes
   , attach_refs     : [ Schema.ObjectId ]  // all attachments
@@ -35,11 +41,11 @@ module.exports = function (N, collectionName) {
   , params          : { no_mlinks: Boolean, no_smiles: Boolean }
 
   // Attachments on tail of post
-  , attach_tail     : [ {
+  , attach_tail     : [ new Schema({ // explicit definition to remove `_id` field
       media_id: Schema.ObjectId,
       file_name: String,
       type: { type: Number }
-    } ]
+    }, { _id: false }) ]
   },
   {
     versionKey : false

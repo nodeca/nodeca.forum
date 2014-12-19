@@ -22,7 +22,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
-  // Pin/unpin topic button handler
+  // Pin/unpin topic handler
   //
   N.wire.on('forum.topic.pin', function topic_pin(event) {
     var $button = $(event.target);
@@ -34,7 +34,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Close/open topic button handler
+  // Close/open topic handler
   //
   N.wire.on('forum.topic.close', function topic_close(event) {
     var $button = $(event.target);
@@ -60,7 +60,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Edit title button handler
+  // Edit title handler
   //
   N.wire.on('forum.topic.edit_title', function title_edit(event) {
     var $button = $(event.target);
@@ -79,7 +79,28 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Delete topic button handler
+  // Undelete topic handler
+  N.wire.on('forum.topic.topic_undelete', function topic_undelete(event) {
+    var topicId = $(event.target).data('topic-id');
+
+    N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function () {
+      $('.forum-topic-root').removeClass('forum-topic-root__m-deleted');
+      N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
+    });
+  });
+
+
+  // Undelete post handler
+  N.wire.on('forum.topic.post_undelete', function post_undelete(event) {
+    var postId = $(event.target).data('post-id');
+
+    N.io.rpc('forum.topic.post.undelete', { post_id: postId }).done(function () {
+      $('#post' + postId).removeClass('forum-post__m-deleted');
+    });
+  });
+
+
+  // Delete topic handler
   //
   N.wire.on('forum.topic.topic_delete', function topic_delete(event) {
     var $button = $(event.target);
@@ -95,7 +116,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Delete post button handler
+  // Delete post handler
   //
   N.wire.on('forum.topic.post_delete', function post_delete(event) {
     var $button = $(event.target);
@@ -108,6 +129,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     };
 
     N.wire.emit('forum.topic.post_delete_dlg', data, function () {
+      if (N.runtime.page_data.settings.forum_mod_can_delete_topics) {
+        $post.addClass('forum-post__m-deleted');
+        return;
+      }
+
       $post.fadeOut(function () {
         $post.remove();
       });

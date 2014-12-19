@@ -1,4 +1,4 @@
-// Remove post by id
+// Undelete removed post by id
 'use strict';
 
 var _ = require('lodash');
@@ -9,10 +9,7 @@ var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id:      { type: 'string', required: true },
-    reason:       { type: 'string' },
-    method:       { type: 'string', enum: [ 'hard', 'soft' ], required: true },
-    as_moderator: { type: 'boolean', required: true }
+    post_id: { type: 'string', required: true }
   });
 
 
@@ -31,7 +28,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.post.VISIBLE && post.st !== statuses.post.HB) {
+        if (post.st !== statuses.post.DELETED) {
           callback(N.io.NOT_FOUND);
           return;
         }
@@ -63,53 +60,19 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function check_permissions(env, callback) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    // We can't delete first port. Topic operation should be requested instead
+    // We can't undelete first port. Topic operation should be requested instead
     if (String(env.data.topic.cache.first_post) === String(env.data.post._id)) {
       callback(N.io.FORBIDDEN);
       return;
     }
 
-    // Check moderator permissions
-
-    if (env.params.as_moderator) {
-      env.extras.settings.fetch('forum_mod_can_delete_topics', function (err, forum_mod_can_delete_topics) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        if (!forum_mod_can_delete_topics) {
-          callback(N.io.FORBIDDEN);
-          return;
-        }
-
-        callback();
-      });
-
-      return;
-    }
-
-    // Check user permissions
-
-    // User can't hard delete posts
-    if (env.params.method === 'hard') {
-      callback(N.io.FORBIDDEN);
-      return;
-    }
-
-    // Check post owner
-    if (env.session.user_id !== String(env.data.post.user)) {
-      callback(N.io.FORBIDDEN);
-      return;
-    }
-
-    env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
+    env.extras.settings.fetch('forum_mod_can_delete_topics', function (err, forum_mod_can_delete_topics) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
+      if (!forum_mod_can_delete_topics) {
         callback(N.io.FORBIDDEN);
         return;
       }
@@ -119,21 +82,20 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Remove post
+  // Undelete post
   //
-  N.wire.on(apiPath, function delete_post(env, callback) {
+  N.wire.on(apiPath, function undelete_post(env, callback) {
     var post = env.data.post;
+    var previousSt = post.st_hist[post.st_hist.length - 1];
+
     var update = {
-      st: env.params.method === 'hard' ? statuses.post.DELETED_HARD : statuses.post.DELETED,
-      $unset: { ste: 1 },
       $push: {
-        st_hist: _.pick(post, [ 'st', 'ste' ])
-      }
+        st_hist: _.pick(post, [ 'st', 'ste', 'del_reason' ])
+      },
+      $unset: { del_reason: 1 }
     };
 
-    if (env.params.reason) {
-      update.del_reason = env.params.reason;
-    }
+    _.assign(update, previousSt);
 
     N.models.forum.Post.update(
       { _id: post._id },
@@ -146,15 +108,16 @@ module.exports = function (N, apiPath) {
   // Update topic counters
   //
   N.wire.after(apiPath, function update_topic(env, callback) {
+    var previousSt = env.data.post.st_hist[env.data.post.st_hist.length - 1];
     var incData = {};
 
-    if (env.data.post.st === statuses.post.VISIBLE) {
-      incData['cache.post_count'] = -1;
-      incData['cache.attach_count'] = -env.data.post.attach_refs.length;
+    if (previousSt.st === statuses.post.VISIBLE) {
+      incData['cache.post_count'] = 1;
+      incData['cache.attach_count'] = env.data.post.attach_refs.length;
     }
 
-    incData['cache_hb.post_count'] = -1;
-    incData['cache_hb.attach_count'] = -env.data.post.attach_refs.length;
+    incData['cache_hb.post_count'] = 1;
+    incData['cache_hb.attach_count'] = env.data.post.attach_refs.length;
 
 
     N.models.forum.Topic.update(

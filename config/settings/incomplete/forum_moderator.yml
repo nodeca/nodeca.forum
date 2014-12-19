@@ -1,6 +1,0 @@
-setting_schemas:
-  section_moderator:
-
-    forum_mod_can_delete_topics:
-      priority: 530
-      extends: true

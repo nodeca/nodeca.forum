@@ -1,9 +1,12 @@
 - var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 } }
 - var topicOwner = self.users[self.topic.cache.first_user]
 
+- self.add_raw_data('settings', self.settings)
+
 article#content.forum-topic-root(
   class=(self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN) ? 'forum-topic-root__m-open' : ''
   class=(self.topic.st === status.topic.CLOSED || self.topic.ste === status.topic.CLOSED) ? 'forum-topic-root__m-closed' : ''
+  class=(self.topic.st === status.topic.DELETED) ? 'forum-topic-root__m-deleted' : ''
 )
   != self.partial('@common.blocks.breadcrumbs')
 
