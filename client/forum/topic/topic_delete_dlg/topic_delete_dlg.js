@@ -3,6 +3,8 @@
 // options:
 // - topicId
 // - asModerator
+// - canDeleteHard
+// - method - out. 'hard' or 'soft'
 //
 
 
@@ -29,6 +31,8 @@ N.wire.once('forum.topic.topic_delete_dlg', function init_handlers() {
     }
 
     N.io.rpc('forum.topic.destroy', data).done(function () {
+      params.method = data.method;
+
       $dialog
         .on('hidden.bs.modal', doneCallback)
         .modal('hide');

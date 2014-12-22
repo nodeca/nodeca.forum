@@ -28,11 +28,6 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.post.DELETED) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
         env.data.post = post;
         callback();
       });
@@ -66,19 +61,27 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    env.extras.settings.fetch('forum_mod_can_delete_topics', function (err, forum_mod_can_delete_topics) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    env.extras.settings.fetch(
+      [ 'forum_mod_can_delete_topics', 'forum_mod_can_see_hard_deleted_topics' ],
+      function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      if (!forum_mod_can_delete_topics) {
+        if (env.data.post.st === statuses.post.DELETED && settings.forum_mod_can_delete_topics) {
+          callback();
+          return;
+        }
+
+        if (env.data.post.st === statuses.post.DELETED_HARD && settings.forum_mod_can_see_hard_deleted_topics) {
+          callback();
+          return;
+        }
+
         callback(N.io.FORBIDDEN);
-        return;
       }
-
-      callback();
-    });
+    );
   });
 
 

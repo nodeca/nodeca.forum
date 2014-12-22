@@ -18,6 +18,7 @@ each topic in self.topics
     class=(topic.st === status.topic.PINNED) ? 'forum-topicline__m-pinned' : ''
     class=(topic.st === status.topic.CLOSED || topic.ste === status.topic.CLOSED) ? 'forum-topicline__m-closed' : ''
     class=(topic.st === status.topic.DELETED) ? 'forum-topicline__m-deleted' : ''
+    class=(topic.st === status.topic.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
   )
     .row
       .col-sm-7

@@ -28,11 +28,6 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (topic.st !== statuses.topic.DELETED) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
         env.data.topic = topic;
         callback();
       });
@@ -44,20 +39,27 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function check_permissions(env, callback) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch('forum_mod_can_delete_topics', function (err, forum_mod_can_delete_topics) {
+    env.extras.settings.fetch(
+      [ 'forum_mod_can_delete_topics', 'forum_mod_can_see_hard_deleted_topics' ],
+      function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      if (err) {
-        callback(err);
-        return;
-      }
+        if (env.data.topic.st === statuses.topic.DELETED && settings.forum_mod_can_delete_topics) {
+          callback();
+          return;
+        }
 
-      if (!forum_mod_can_delete_topics) {
+        if (env.data.topic.st === statuses.topic.DELETED_HARD && settings.forum_mod_can_see_hard_deleted_topics) {
+          callback();
+          return;
+        }
+
         callback(N.io.FORBIDDEN);
-        return;
       }
-
-      callback();
-    });
+    );
   });
 
 

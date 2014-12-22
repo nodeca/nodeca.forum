@@ -25,7 +25,9 @@ module.exports.up = function (N, cb) {
             forum_mod_can_edit_posts: { value: true },
             forum_mod_can_delete_topics: { value: true },
             forum_mod_can_edit_titles: { value: true },
-            forum_mod_can_close_topic: { value: true }
+            forum_mod_can_close_topic: { value: true },
+            forum_mod_can_hard_delete_topics: { value: true },
+            forum_mod_can_see_hard_deleted_topics: { value: true }
           });
           group.save(callback);
         });

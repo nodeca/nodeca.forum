@@ -72,19 +72,27 @@ module.exports = function (N, apiPath) {
     // Check moderator permissions
 
     if (env.params.as_moderator) {
-      env.extras.settings.fetch('forum_mod_can_delete_topics', function (err, forum_mod_can_delete_topics) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      env.extras.settings.fetch(
+        [ 'forum_mod_can_delete_topics', 'forum_mod_can_hard_delete_topics' ],
+        function (err, settings) {
+          if (err) {
+            callback(err);
+            return;
+          }
 
-        if (!forum_mod_can_delete_topics) {
-          callback(N.io.FORBIDDEN);
-          return;
-        }
+          if (!settings.forum_mod_can_delete_topics && env.params.method === 'soft') {
+            callback(N.io.FORBIDDEN);
+            return;
+          }
 
-        callback();
-      });
+          if (!settings.forum_mod_can_hard_delete_topics && env.params.method === 'hard') {
+            callback(N.io.FORBIDDEN);
+            return;
+          }
+
+          callback();
+        }
+      );
 
       return;
     }

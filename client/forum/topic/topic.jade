@@ -7,6 +7,7 @@ article#content.forum-topic-root(
   class=(self.topic.st === status.topic.OPEN || self.topic.ste === status.topic.OPEN) ? 'forum-topic-root__m-open' : ''
   class=(self.topic.st === status.topic.CLOSED || self.topic.ste === status.topic.CLOSED) ? 'forum-topic-root__m-closed' : ''
   class=(self.topic.st === status.topic.DELETED) ? 'forum-topic-root__m-deleted' : ''
+  class=(self.topic.st === status.topic.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === status.topic.PINNED) ? 'forum-topic-root__m-pinned' : ''
 )
   != self.partial('@common.blocks.breadcrumbs')

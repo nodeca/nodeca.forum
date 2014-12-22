@@ -8,7 +8,7 @@
         .modal-body
           p.text-danger=self.t('confirmation_text')
           input.form-control(type='text' name='reason' tabindex='1' placeholder=self.t('reason_input_help'))
-          if self.asModerator
+          if self.asModerator && self.canDeleteHard
             .radio
               label
                 input(type='radio' name='method' tabindex='2' value='soft' checked=true)

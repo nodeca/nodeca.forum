@@ -134,36 +134,41 @@ module.exports = function (N, apiPath) {
   // Define visible topic statuses and sorting order
   //
   N.wire.before(apiPath, function define_visible_statuses_and_sort(env, callback) {
+    env.extras.settings.fetch(
+      [ 'can_see_hellbanned', 'forum_mod_can_delete_topics', 'forum_mod_can_see_hard_deleted_topics' ],
+      function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_delete_topics' ], function (err, settings) {
+        // Define visible statuses
+        env.data.statuses = [ statuses.topic.OPEN, statuses.topic.CLOSED ];
+        var st = env.data.statuses;
 
-      if (err) {
-        callback(err);
-        return;
+        if (settings.forum_mod_can_delete_topics) {
+          st.push(statuses.topic.DELETED);
+        }
+
+        if (settings.forum_mod_can_see_hard_deleted_topics) {
+          st.push(statuses.topic.DELETED_HARD);
+        }
+
+        if (settings.can_see_hellbanned || env.user_info.hb) {
+          st.push(statuses.topic.HB);
+        }
+
+        // Define sorting order
+        env.data.topic_sort = {};
+        if (env.session && (env.user_info.hb || settings.can_see_hellbanned)) {
+          env.data.topic_sort['cache_hb.last_ts'] = -1;
+        } else {
+          env.data.topic_sort['cache.last_ts'] = -1;
+        }
+
+        callback();
       }
-
-      // Define visible statuses
-      env.data.statuses = [ statuses.topic.OPEN, statuses.topic.CLOSED ];
-      var st = env.data.statuses;
-
-      if (settings.forum_mod_can_delete_topics) {
-        st.push(statuses.topic.DELETED);
-      }
-
-      if (settings.can_see_hellbanned || env.user_info.hb) {
-        st.push(statuses.topic.HB);
-      }
-
-      // Define sorting order
-      env.data.topic_sort = {};
-      if (env.session && (env.user_info.hb || settings.can_see_hellbanned)) {
-        env.data.topic_sort['cache_hb.last_ts'] = -1;
-      } else {
-        env.data.topic_sort['cache.last_ts'] = -1;
-      }
-
-      callback();
-    });
+    );
   });
 
 

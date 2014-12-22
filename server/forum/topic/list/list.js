@@ -189,30 +189,35 @@ module.exports = function (N, apiPath) {
   // Define post visible and paginated statuses
   //
   N.wire.before(apiPath, function get_permissions(env, callback) {
+    env.extras.settings.fetch(
+      [ 'can_see_hellbanned', 'forum_mod_can_delete_topics', 'forum_mod_can_see_hard_deleted_topics' ],
+      function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    env.extras.settings.fetch([ 'can_see_hellbanned', 'forum_mod_can_delete_topics' ], function (err, settings) {
+        env.data.statuses = {};
+        var st = env.data.statuses;
+        st.paginated = [ statuses.post.VISIBLE ];
+        st.visible = [ statuses.post.VISIBLE ];
 
-      if (err) {
-        callback(err);
-        return;
+        if (settings.can_see_hellbanned || env.user_info.hb) {
+          st.paginated.push(statuses.post.HB);
+          st.visible.push(statuses.post.HB);
+        }
+
+        if (settings.forum_mod_can_delete_topics) {
+          st.visible.push(statuses.post.DELETED);
+        }
+
+        if (settings.forum_mod_can_see_hard_deleted_topics) {
+          st.visible.push(statuses.post.DELETED_HARD);
+        }
+
+        callback();
       }
-
-      env.data.statuses = {};
-      var st = env.data.statuses;
-      st.paginated = [ statuses.post.VISIBLE ];
-      st.visible = [ statuses.post.VISIBLE ];
-
-      if (settings.can_see_hellbanned || env.user_info.hb) {
-        st.paginated.push(statuses.post.HB);
-        st.visible.push(statuses.post.HB);
-      }
-
-      if (settings.forum_mod_can_delete_topics) {
-        st.visible.push(statuses.post.DELETED);
-      }
-
-      callback();
-    });
+    );
   });
 
 
@@ -374,6 +379,8 @@ module.exports = function (N, apiPath) {
         'forum_edit_max_time',
         'forum_can_close_topic',
         'forum_mod_can_delete_topics',
+        'forum_mod_can_hard_delete_topics',
+        'forum_mod_can_see_hard_deleted_topics',
         'forum_mod_can_edit_posts',
         'forum_mod_can_pin_topic',
         'forum_mod_can_edit_titles',

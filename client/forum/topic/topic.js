@@ -91,7 +91,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var topicId = $(event.target).data('topic-id');
 
     N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function () {
-      $('.forum-topic-root').removeClass('forum-topic-root__m-deleted');
+      $('.forum-topic-root')
+        .removeClass('forum-topic-root__m-deleted')
+        .removeClass('forum-topic-root__m-deleted-hard');
       N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
     });
   });
@@ -102,7 +104,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var postId = $(event.target).data('post-id');
 
     N.io.rpc('forum.topic.post.undelete', { post_id: postId }).done(function () {
-      $('#post' + postId).removeClass('forum-post__m-deleted');
+      $('#post' + postId)
+        .removeClass('forum-post__m-deleted')
+        .removeClass('forum-post__m-deleted-hard');
     });
   });
 
@@ -114,7 +118,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     var data = {
       topicId: $button.data('topic-id'),
-      asModerator: $button.data('as-moderator') || false
+      asModerator: $button.data('as-moderator') || false,
+      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
     };
 
     N.wire.emit('forum.topic.topic_delete_dlg', data, function () {
@@ -132,11 +137,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     var data = {
       postId: postId,
-      asModerator: $button.data('as-moderator') || false
+      asModerator: $button.data('as-moderator') || false,
+      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
+      method: null
     };
 
     N.wire.emit('forum.topic.post_delete_dlg', data, function () {
-      if (N.runtime.page_data.settings.forum_mod_can_delete_topics) {
+      if (N.runtime.page_data.settings.forum_mod_can_see_hard_deleted_topics && data.method === 'hard') {
+        $post.addClass('forum-post__m-deleted-hard');
+        return;
+      }
+
+      if (N.runtime.page_data.settings.forum_mod_can_delete_topics && data.method === 'soft') {
         $post.addClass('forum-post__m-deleted');
         return;
       }

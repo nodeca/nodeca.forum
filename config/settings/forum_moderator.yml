@@ -18,10 +18,18 @@ setting_schemas:
       priority: 530
       extends: true
 
+    forum_mod_can_hard_delete_topics:
+      priority: 540
+      extends: true
+
+    forum_mod_can_see_hard_deleted_topics:
+      priority: 550
+      extends: true
+
     forum_mod_can_edit_titles:
       extends: true
-      priority: 550
+      priority: 560
 
     forum_mod_can_close_topic:
       extends: true
-      priority: 560
+      priority: 570

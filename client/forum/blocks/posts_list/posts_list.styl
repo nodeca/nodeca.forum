@@ -25,6 +25,10 @@
   .forum-post__meta
     background #d9534f
 
+.forum-post__m-deleted-hard
+  .forum-post__meta
+    background #ff0000
+
 //
 // header
 //
@@ -141,7 +145,12 @@ a.forum-post__action-link
 .forum-post__undelete
   display none
 
-.forum-post__m-deleted
+.forum-post__del-reason
+  display none
+
+.forum-post__m-deleted, .forum-post__m-deleted-hard
+  .forum-post__del-reason
+    display block
   .forum-post__edit
     display none
   .forum-post__delete

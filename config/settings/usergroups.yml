@@ -20,10 +20,10 @@ setting_schemas:
       default: false
 
     forum_edit_max_time:
-      default: 30
+      priority: 40
       category_key: forum
       type: number
-      priority: 40
+      default: 30
 
     forum_can_close_topic:
       priority: 50
@@ -45,6 +45,18 @@ setting_schemas:
 
     forum_mod_can_delete_topics:
       priority: 520
+      category_key: perm_moderator
+      type: boolean
+      default: false
+
+    forum_mod_can_hard_delete_topics:
+      priority: 530
+      category_key: perm_moderator
+      type: boolean
+      default: false
+
+    forum_mod_can_see_hard_deleted_topics:
+      priority: 540
       category_key: perm_moderator
       type: boolean
       default: false

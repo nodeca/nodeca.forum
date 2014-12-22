@@ -9,6 +9,7 @@ each post in self.posts
   article.forum-post.clearfix(
     id='post#{post._id}'
     class=(post.st === status.post.DELETED) ? 'forum-post__m-deleted' : ''
+    class=(post.st === status.post.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
     data-user-hid=user ? user.hid : ''
     itemscope
     itemtype='http://schema.org/WebPageElement'
