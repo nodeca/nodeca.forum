@@ -105,3 +105,6 @@ each post in self.posts
             a.forum-post__vote-down.icon.icon-vote-down(href='#')
             span.forum-post__vote-count +47
             a.forum-post__vote-up.icon.icon-vote-up(href='#')
+
+      if post.del_reason
+        .forum-post__del-reason=self.t('del_reason', { text: post.del_reason })

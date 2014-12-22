@@ -10,5 +10,6 @@ exports.topic_in = [
   'cache',
   'cache_hb',
   'st',
-  'ste'
+  'ste',
+  'del_reason'
 ];

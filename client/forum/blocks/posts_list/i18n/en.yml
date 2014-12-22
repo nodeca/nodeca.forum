@@ -6,3 +6,4 @@ en-US:
   delete: Delete
   undelete: Undelete
   edit: Edit
+  del_reason: "Deletion reason: #{text}"

@@ -3,3 +3,4 @@ en-US:
   replies: "#{count} ((reply|replies))"
   views: "#{count} ((view|views))"
   stat: "#{count} ((reply|replies)) · Last #{last}, by #{name}"
+  del_reason: "Deletion reason: #{text}"

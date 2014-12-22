@@ -10,5 +10,6 @@ exports.post_in = [
   'user',
   'ts',
   'st',
-  'ste'
+  'ste',
+  'del_reason'
 ];
