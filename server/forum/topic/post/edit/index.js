@@ -7,7 +7,7 @@ var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id: { type: 'string', required: true },
+    post_id: { format: 'mongo', required: true },
     as_moderator: { type: 'boolean', required: true }
   });
 

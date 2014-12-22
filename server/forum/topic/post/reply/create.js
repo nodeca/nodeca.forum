@@ -14,7 +14,7 @@ module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     topic_hid:        { type: 'integer', required: true },
-    parent_post_id:   { type: 'string' },
+    parent_post_id:   { format: 'mongo' },
     section_hid:      { type: 'integer', required: true },
     post_md:          { type: 'string', required: true },
     attach_tail:      {

@@ -9,7 +9,7 @@ var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_id:     { type: 'string', required: true },
+    topic_id:     { format: 'mongo', required: true },
     reason:       { type: 'string' },
     method:       { type: 'string', enum: [ 'hard', 'soft' ], required: true },
     as_moderator: { type: 'boolean', required: true }

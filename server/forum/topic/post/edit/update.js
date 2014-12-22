@@ -8,7 +8,7 @@ var $          = require('nodeca.core/lib/parser/cheequery');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id:          { type: 'string', required: true },
+    post_id:          { format: 'mongo', required: true },
     post_md:          { type: 'string', required: true },
     attach_tail:      {
       type: 'array',
