@@ -1,0 +1,3 @@
+en-US:
+  destroy:
+    err_perm_expired: You can not delete this post anymore

@@ -118,7 +118,10 @@ module.exports = function (N, apiPath) {
       }
 
       if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-        callback(N.io.FORBIDDEN);
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_perm_expired')
+        });
         return;
       }
 

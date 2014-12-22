@@ -113,7 +113,10 @@ module.exports = function (N, apiPath) {
 
     // User can't delete topic with answers
     if (topic.cache.post_count !== 1 || topic.cache_hb.post_count !== 1) {
-      callback(N.io.FORBIDDEN);
+      callback({
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_delete_topic_with_answers')
+      });
       return;
     }
 
@@ -131,7 +134,10 @@ module.exports = function (N, apiPath) {
       }
 
       if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-        callback(N.io.FORBIDDEN);
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_perm_expired')
+        });
         return;
       }
 

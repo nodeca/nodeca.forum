@@ -57,7 +57,8 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        callback(N.io.FORBIDDEN);
+        // We should not show, that topic exists if no permissions
+        callback(N.io.NOT_FOUND);
       }
     );
   });

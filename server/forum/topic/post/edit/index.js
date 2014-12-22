@@ -67,7 +67,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (forum_mod_can_edit_posts) {
+      if (forum_mod_can_edit_posts && env.params.as_moderator) {
         callback();
         return;
       }
@@ -85,7 +85,10 @@ module.exports = function (N, apiPath) {
         }
 
         if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-          callback(N.io.FORBIDDEN);
+          callback({
+            code: N.io.CLIENT_ERROR,
+            message: env.t('@forum.topic.post.edit.err_perm_expired')
+          });
           return;
         }
 
