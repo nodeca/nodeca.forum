@@ -20,7 +20,10 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
     N.models.forum.Topic
-      .findOne({ _id: env.params.topic_id })
+      .findOne({
+        _id: env.params.topic_id,
+        st: { $in: [ statuses.topic.OPEN, statuses.topic.CLOSED, statuses.topic.PINNED, statuses.topic.HB ] }
+      })
       .lean(true)
       .exec(function (err, topic) {
 

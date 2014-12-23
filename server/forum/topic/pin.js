@@ -20,11 +20,11 @@ module.exports = function (N, apiPath) {
     if (env.params.unpin) {
       query.st = statuses.topic.PINNED;
     } else {
-      query.$in = { st: [ statuses.topic.OPEN, statuses.topic.CLOSED ] };
+      query.st = { $in: [ statuses.topic.OPEN, statuses.topic.CLOSED, statuses.topic.PINNED ] };
     }
 
     N.models.forum.Topic
-        .findOne({ _id: env.params.topic_id })
+        .findOne(query)
         .lean(true)
         .exec(function (err, topic) {
 
@@ -57,11 +57,6 @@ module.exports = function (N, apiPath) {
       }
 
       if (!forum_mod_can_pin_topic) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
-
-      if ([ statuses.topic.OPEN, statuses.topic.CLOSED, statuses.topic.PINNED ].indexOf(env.data.topic.st) === -1) {
         callback(N.io.FORBIDDEN);
         return;
       }
