@@ -137,9 +137,7 @@ module.exports = function (N, apiPath) {
     var update = {
       st: env.params.method === 'hard' ? statuses.DELETED_HARD : statuses.DELETED,
       $unset: { ste: 1 },
-      $push: {
-        st_hist: _.pick(post, [ 'st', 'ste' ])
-      }
+      prev_st: _.pick(post, [ 'st', 'ste' ])
     };
 
     if (env.params.reason) {

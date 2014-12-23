@@ -67,16 +67,12 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function undelete_topic(env, callback) {
     var topic = env.data.topic;
-    var previousSt = topic.st_hist[topic.st_hist.length - 1];
 
     var update = {
-      $push: {
-        st_hist: _.pick(topic, [ 'st', 'ste', 'del_reason' ])
-      },
-      $unset: { del_reason: 1 }
+      $unset: { del_reason: 1, prev_st: 1 }
     };
 
-    _.assign(update, previousSt);
+    _.assign(update, topic.prev_st);
 
     N.models.forum.Topic.update(
       { _id: topic._id },

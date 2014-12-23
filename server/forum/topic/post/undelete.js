@@ -89,16 +89,12 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function undelete_post(env, callback) {
     var post = env.data.post;
-    var previousSt = post.st_hist[post.st_hist.length - 1];
 
     var update = {
-      $push: {
-        st_hist: _.pick(post, [ 'st', 'ste', 'del_reason' ])
-      },
-      $unset: { del_reason: 1 }
+      $unset: { del_reason: 1, prev_st: 1 }
     };
 
-    _.assign(update, previousSt);
+    _.assign(update, post.prev_st);
 
     N.models.forum.Post.update(
       { _id: post._id },
@@ -112,10 +108,9 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function update_topic(env, callback) {
     var statuses = N.models.forum.Post.statuses;
-    var previousSt = env.data.post.st_hist[env.data.post.st_hist.length - 1];
     var incData = {};
 
-    if (previousSt.st === statuses.VISIBLE) {
+    if (env.data.post.prev_st.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
       incData['cache.attach_count'] = env.data.post.attach_refs.length;
     }
