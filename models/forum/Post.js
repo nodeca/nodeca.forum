@@ -4,10 +4,17 @@
 var Mongoose = require('mongoose');
 var Schema   = Mongoose.Schema;
 
-// topic and post statuses
-var statuses = require('../../server/forum/_lib/statuses.js');
 
 module.exports = function (N, collectionName) {
+
+  var statuses = {
+    VISIBLE:      1,
+    HB:           2, // hellbanned
+    PENDING:      3,
+    DELETED:      4,
+    DELETED_HARD: 5
+  };
+
 
   var Post = new Schema({
     topic          : Schema.ObjectId
@@ -62,6 +69,11 @@ module.exports = function (N, collectionName) {
   , _id: 1
   });
 
+
+  // Export statuses
+  //
+  Post.statics.statuses = statuses;
+
   // Hide hellbanned info for regular users for security reasons.
   // This method works with raw object.
   //
@@ -72,7 +84,7 @@ module.exports = function (N, collectionName) {
     options = options || {};
 
     // sanitize statuses
-    if (post.st === statuses.post.HB) {
+    if (post.st === statuses.HB) {
       if (!options.keep_statuses) {
         post.st = post.ste;
         delete post.ste;

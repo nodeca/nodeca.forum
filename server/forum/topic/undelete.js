@@ -3,9 +3,6 @@
 
 var _ = require('lodash');
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -37,6 +34,8 @@ module.exports = function (N, apiPath) {
   // Check permissions
   //
   N.wire.before(apiPath, function check_permissions(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
+
     env.extras.settings.params.section_id = env.data.topic.section;
 
     env.extras.settings.fetch(
@@ -47,12 +46,12 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (env.data.topic.st === statuses.topic.DELETED && settings.forum_mod_can_delete_topics) {
+        if (env.data.topic.st === statuses.DELETED && settings.forum_mod_can_delete_topics) {
           callback();
           return;
         }
 
-        if (env.data.topic.st === statuses.topic.DELETED_HARD && settings.forum_mod_can_see_hard_deleted_topics) {
+        if (env.data.topic.st === statuses.DELETED_HARD && settings.forum_mod_can_see_hard_deleted_topics) {
           callback();
           return;
         }

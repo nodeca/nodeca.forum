@@ -6,10 +6,6 @@ var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var $          = require('nodeca.core/lib/parser/cheequery');
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -229,7 +225,7 @@ module.exports = function (N, apiPath) {
   // Save new post
   //
   N.wire.on(apiPath, function save_new_post(env, callback) {
-
+    var statuses = N.models.forum.Post.statuses;
     var post = new N.models.forum.Post();
 
     post.attach_tail = env.data.attach_tail;
@@ -237,7 +233,7 @@ module.exports = function (N, apiPath) {
     post.html = env.data.post_html;
     post.md = env.params.post_md;
     post.ip = env.req.ip;
-    post.st = statuses.post.VISIBLE;
+    post.st = statuses.VISIBLE;
     post.params = {
       no_mlinks: env.params.option_no_mlinks,
       no_smiles: env.params.option_no_smiles
@@ -267,11 +263,11 @@ module.exports = function (N, apiPath) {
   // Update topic counters
   //
   N.wire.after(apiPath, function update_topic(env, callback) {
-
+    var statuses = N.models.forum.Post.statuses;
     var post = env.data.new_post;
     var incData = {};
 
-    if (post.st === statuses.post.VISIBLE) {
+    if (post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
       incData['cache.attach_count'] = post.attach_refs.length;
     }

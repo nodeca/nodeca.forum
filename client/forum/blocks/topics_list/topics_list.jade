@@ -1,4 +1,4 @@
-- var status = { topic: { OPEN: 1, CLOSED: 2, PINNED: 3, PENDING: 4, DELETED: 5, DELETED_HARD: 6, HB: 7 } }
+- var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
 
 //- This template is used for:
 //- - the whole page generation
@@ -15,10 +15,10 @@ each topic in self.topics
   - replies = topic.cache.post_count - 1;
   - views   = topic.views_count;
   .forum-topicline(
-    class=(topic.st === status.topic.PINNED) ? 'forum-topicline__m-pinned' : ''
-    class=(topic.st === status.topic.CLOSED || topic.ste === status.topic.CLOSED) ? 'forum-topicline__m-closed' : ''
-    class=(topic.st === status.topic.DELETED) ? 'forum-topicline__m-deleted' : ''
-    class=(topic.st === status.topic.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
+    class=(topic.st === topicStatuses.PINNED) ? 'forum-topicline__m-pinned' : ''
+    class=(topic.st === topicStatuses.CLOSED || topic.ste === topicStatuses.CLOSED) ? 'forum-topicline__m-closed' : ''
+    class=(topic.st === topicStatuses.DELETED) ? 'forum-topicline__m-deleted' : ''
+    class=(topic.st === topicStatuses.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
   )
     .row
       .col-sm-7

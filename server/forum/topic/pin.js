@@ -1,9 +1,6 @@
 // Pin/unpin topic by hid
 'use strict';
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -15,12 +12,13 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
     var query = { _id: env.params.topic_id };
 
     if (env.params.unpin) {
-      query.st = statuses.topic.PINNED;
+      query.st = statuses.PINNED;
     } else {
-      query.st = { $in: [ statuses.topic.OPEN, statuses.topic.CLOSED, statuses.topic.PINNED ] };
+      query.st = { $in: [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ] };
     }
 
     N.models.forum.Topic
@@ -69,13 +67,14 @@ module.exports = function (N, apiPath) {
   // Pin/unpin topic
   //
   N.wire.on(apiPath, function pin_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
 
     // Pin topic
     if (!env.params.unpin) {
       N.models.forum.Topic.update(
         { _id: topic._id },
-        { st: statuses.topic.PINNED, ste: topic.st },
+        { st: statuses.PINNED, ste: topic.st },
         callback
       );
 

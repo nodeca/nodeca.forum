@@ -3,9 +3,6 @@
 
 var _ = require('lodash');
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -53,6 +50,8 @@ module.exports = function (N, apiPath) {
   // Check permissions
   //
   N.wire.before(apiPath, function check_permissions(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+
     env.extras.settings.params.section_id = env.data.topic.section;
 
     // We can't undelete first port. Topic operation should be requested instead
@@ -69,12 +68,12 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (env.data.post.st === statuses.post.DELETED && settings.forum_mod_can_delete_topics) {
+        if (env.data.post.st === statuses.DELETED && settings.forum_mod_can_delete_topics) {
           callback();
           return;
         }
 
-        if (env.data.post.st === statuses.post.DELETED_HARD && settings.forum_mod_can_see_hard_deleted_topics) {
+        if (env.data.post.st === statuses.DELETED_HARD && settings.forum_mod_can_see_hard_deleted_topics) {
           callback();
           return;
         }
@@ -112,10 +111,11 @@ module.exports = function (N, apiPath) {
   // Update topic counters
   //
   N.wire.after(apiPath, function update_topic(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
     var previousSt = env.data.post.st_hist[env.data.post.st_hist.length - 1];
     var incData = {};
 
-    if (previousSt.st === statuses.post.VISIBLE) {
+    if (previousSt.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
       incData['cache.attach_count'] = env.data.post.attach_refs.length;
     }

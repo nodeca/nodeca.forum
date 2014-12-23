@@ -6,9 +6,6 @@ var _          = require('lodash');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var $          = require('nodeca.core/lib/parser/cheequery');
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -190,7 +187,7 @@ module.exports = function (N, apiPath) {
     post.html = env.data.post_html;
     post.md = env.params.post_md;
     post.ip = env.req.ip;
-    post.st = statuses.post.VISIBLE;
+    post.st = N.models.forum.Post.statuses.VISIBLE;
     post.params = {
       no_mlinks: env.params.option_no_mlinks,
       no_smiles: env.params.option_no_smiles
@@ -201,7 +198,7 @@ module.exports = function (N, apiPath) {
     topic.section = env.data.section._id;
 
     // TODO: hellbanned
-    topic.st = statuses.topic.OPEN;
+    topic.st = N.models.forum.Topic.statuses.OPEN;
 
     topic.cache = {};
 

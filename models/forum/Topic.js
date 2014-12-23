@@ -4,12 +4,26 @@
 var Mongoose = require('mongoose');
 var Schema = Mongoose.Schema;
 
-// topic and post statuses
-var statuses = require('../../server/forum/_lib/statuses.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, collectionName) {
+
+  // Topic statuses are optimized for paged fetches & indexes
+  // Some statises can have extended info in additionsl field:
+  //
+  // - PINNED, HB - status_ext contains OPEN/CLOSED/PENDING state
+  //
+  var statuses = {
+    OPEN:         1,
+    CLOSED:       2,
+    PINNED:       3,
+    PENDING:      4,
+    DELETED:      5,
+    DELETED_HARD: 6,
+    HB:           7 // hellbanned
+  };
+
 
   var cache = {
     post_count      : { type: Number, 'default': 0 }
@@ -89,6 +103,11 @@ module.exports = function (N, collectionName) {
 
   ////////////////////////////////////////////////////////////////////////////////
 
+  // Export statuses
+  //
+  Topic.statics.statuses = statuses;
+
+
   // Set 'hid' for the new topic.
   // This hook should always be the last one to avoid counter increment on error
   Topic.pre('save', function (callback) {
@@ -116,10 +135,11 @@ module.exports = function (N, collectionName) {
   // - full     - update 'cache' even if last post is hellbanned
   //
   Topic.statics.updateCache = function (topicID, full, callback) {
+    var Post = N.models.forum.Post;
     var updateData = {};
 
     N.models.forum.Post
-      .findOne({ topic: topicID, $or: [ { st: statuses.post.VISIBLE }, { st: statuses.post.HB } ] })
+      .findOne({ topic: topicID, $or: [ { st: Post.statuses.VISIBLE }, { st: Post.statuses.HB } ] })
       .sort('-_id')
       .select('_id user ts st')
       .exec(function (err, post) {
@@ -129,7 +149,7 @@ module.exports = function (N, collectionName) {
           return;
         }
 
-        if (post.st === statuses.post.VISIBLE) {
+        if (post.st === Post.statuses.VISIBLE) {
           updateData['cache.last_post'] = post._id;
           updateData['cache.last_user'] = post.user;
           updateData['cache.last_ts'] = post.ts;
@@ -139,13 +159,13 @@ module.exports = function (N, collectionName) {
         updateData['cache_hb.last_user'] = post.user;
         updateData['cache_hb.last_ts'] = post.ts;
 
-        if (!full || post.st === statuses.post.VISIBLE) {
+        if (!full || post.st === Post.statuses.VISIBLE) {
           N.models.forum.Topic.update({ _id: topicID }, updateData, callback);
           return;
         }
 
         N.models.forum.Post
-          .findOne({ topic: topicID, st: statuses.post.VISIBLE })
+          .findOne({ topic: topicID, st: Post.statuses.VISIBLE })
           .sort('-_id')
           .select('_id user ts')
           .exec(function (err, post) {
@@ -176,7 +196,7 @@ module.exports = function (N, collectionName) {
     options = options || {};
 
     // sanitize statuses
-    if (topic.st === statuses.topic.HB) {
+    if (topic.st === statuses.HB) {
       if (!options.keep_statuses) {
         topic.st = topic.ste;
         delete topic.ste;

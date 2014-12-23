@@ -11,10 +11,6 @@ var _  = require('lodash');
 var postFields = require('./_fields.js').post_in;
 var topicFields = require('../../section/list/_fields.js').topic_in;
 
-// topic and post statuses
-var statuses = require('../../_lib/statuses.js');
-
-
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, apiPath) {
@@ -189,6 +185,8 @@ module.exports = function (N, apiPath) {
   // Define post visible and paginated statuses
   //
   N.wire.before(apiPath, function get_permissions(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+
     env.extras.settings.fetch(
       [ 'can_see_hellbanned', 'forum_mod_can_delete_topics', 'forum_mod_can_see_hard_deleted_topics' ],
       function (err, settings) {
@@ -199,20 +197,20 @@ module.exports = function (N, apiPath) {
 
         env.data.statuses = {};
         var st = env.data.statuses;
-        st.paginated = [ statuses.post.VISIBLE ];
-        st.visible = [ statuses.post.VISIBLE ];
+        st.paginated = [ statuses.VISIBLE ];
+        st.visible = [ statuses.VISIBLE ];
 
         if (settings.can_see_hellbanned || env.user_info.hb) {
-          st.paginated.push(statuses.post.HB);
-          st.visible.push(statuses.post.HB);
+          st.paginated.push(statuses.HB);
+          st.visible.push(statuses.HB);
         }
 
         if (settings.forum_mod_can_delete_topics) {
-          st.visible.push(statuses.post.DELETED);
+          st.visible.push(statuses.DELETED);
         }
 
         if (settings.forum_mod_can_see_hard_deleted_topics) {
-          st.visible.push(statuses.post.DELETED_HARD);
+          st.visible.push(statuses.DELETED_HARD);
         }
 
         callback();

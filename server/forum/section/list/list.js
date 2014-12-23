@@ -9,9 +9,6 @@ var _     = require('lodash');
 // collections fields filters
 var fields = require('./_fields.js');
 
-// topic and post statuses
-var statuses = require('../../_lib/statuses.js');
-
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, apiPath) {
@@ -142,20 +139,22 @@ module.exports = function (N, apiPath) {
           return;
         }
 
+        var statuses = Topic.statuses;
+
         // Define visible statuses
-        env.data.statuses = [ statuses.topic.OPEN, statuses.topic.CLOSED ];
+        env.data.statuses = [ statuses.OPEN, statuses.CLOSED ];
         var st = env.data.statuses;
 
         if (settings.forum_mod_can_delete_topics) {
-          st.push(statuses.topic.DELETED);
+          st.push(statuses.DELETED);
         }
 
         if (settings.forum_mod_can_see_hard_deleted_topics) {
-          st.push(statuses.topic.DELETED_HARD);
+          st.push(statuses.DELETED_HARD);
         }
 
         if (settings.can_see_hellbanned || env.user_info.hb) {
-          st.push(statuses.topic.HB);
+          st.push(statuses.HB);
         }
 
         // Define sorting order
@@ -238,7 +237,7 @@ module.exports = function (N, apiPath) {
     // fetch pinned topics
     Topic.find()
       .where('section').equals(env.data.section._id)
-      .where('st').equals(statuses.topic.PINNED)
+      .where('st').equals(Topic.statuses.PINNED)
       .select(fields.topic_in.join(' '))
       .sort(env.data.topic_sort)
       .lean(true)

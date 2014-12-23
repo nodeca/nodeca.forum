@@ -3,9 +3,6 @@
 
 var _ = require('lodash');
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -19,6 +16,8 @@ module.exports = function (N, apiPath) {
   // Fetch post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+
     N.models.forum.Post.findOne({ _id: env.params.post_id })
       .lean(true).exec(function (err, post) {
         if (err) {
@@ -31,7 +30,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.post.VISIBLE && post.st !== statuses.post.HB) {
+        if (post.st !== statuses.VISIBLE && post.st !== statuses.HB) {
           callback(N.io.NOT_FOUND);
           return;
         }
@@ -133,9 +132,10 @@ module.exports = function (N, apiPath) {
   // Remove post
   //
   N.wire.on(apiPath, function delete_post(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
     var post = env.data.post;
     var update = {
-      st: env.params.method === 'hard' ? statuses.post.DELETED_HARD : statuses.post.DELETED,
+      st: env.params.method === 'hard' ? statuses.DELETED_HARD : statuses.DELETED,
       $unset: { ste: 1 },
       $push: {
         st_hist: _.pick(post, [ 'st', 'ste' ])
@@ -157,9 +157,10 @@ module.exports = function (N, apiPath) {
   // Update topic counters
   //
   N.wire.after(apiPath, function update_topic(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
     var incData = {};
 
-    if (env.data.post.st === statuses.post.VISIBLE) {
+    if (env.data.post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = -1;
       incData['cache.attach_count'] = -env.data.post.attach_refs.length;
     }

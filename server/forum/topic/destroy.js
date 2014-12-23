@@ -3,9 +3,6 @@
 
 var _ = require('lodash');
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -19,6 +16,8 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
+
     N.models.forum.Topic.findOne({ _id: env.params.topic_id })
       .lean(true).exec(function (err, topic) {
         if (err) {
@@ -31,7 +30,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (topic.st === statuses.topic.DELETED || topic.st === statuses.topic.DELETED_HARD) {
+        if (topic.st === statuses.DELETED || topic.st === statuses.DELETED_HARD) {
           callback(N.io.NOT_FOUND);
           return;
         }
@@ -45,6 +44,8 @@ module.exports = function (N, apiPath) {
   // Fetch first post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+
     N.models.forum.Post.findOne({ _id: env.data.topic.cache.first_post })
       .lean(true).exec(function (err, post) {
         if (err) {
@@ -57,7 +58,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.post.VISIBLE && post.st !== statuses.post.HB) {
+        if (post.st !== statuses.VISIBLE && post.st !== statuses.HB) {
           callback(N.io.NOT_FOUND);
           return;
         }
@@ -149,9 +150,11 @@ module.exports = function (N, apiPath) {
   // Remove topic
   //
   N.wire.on(apiPath, function delete_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
+
     var topic = env.data.topic;
     var update = {
-      st: env.params.method === 'hard' ? statuses.topic.DELETED_HARD : statuses.topic.DELETED,
+      st: env.params.method === 'hard' ? statuses.DELETED_HARD : statuses.DELETED,
       $unset: { ste: 1 },
       $push: {
         st_hist: _.pick(topic, [ 'st', 'ste' ])

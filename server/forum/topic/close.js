@@ -3,10 +3,6 @@
 
 'use strict';
 
-// topic and post statuses
-var statuses = require('nodeca.forum/server/forum/_lib/statuses.js');
-
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -19,10 +15,12 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
+
     N.models.forum.Topic
       .findOne({
         _id: env.params.topic_id,
-        st: { $in: [ statuses.topic.OPEN, statuses.topic.CLOSED, statuses.topic.PINNED, statuses.topic.HB ] }
+        st: { $in: [ statuses.OPEN, statuses.CLOSED, statuses.PINNED, statuses.HB ] }
       })
       .lean(true)
       .exec(function (err, topic) {
@@ -76,11 +74,12 @@ module.exports = function (N, apiPath) {
   // Update topic status
   //
   N.wire.on(apiPath, function update_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
     var update;
-    var newStatus = env.params.reopen ? statuses.topic.OPEN : statuses.topic.CLOSED;
+    var newStatus = env.params.reopen ? statuses.OPEN : statuses.CLOSED;
 
-    if (topic.st === statuses.topic.PINNED || topic.st === statuses.topic.HB) {
+    if (topic.st === statuses.PINNED || topic.st === statuses.HB) {
       update = { ste: newStatus };
     } else {
       update = { st: newStatus };

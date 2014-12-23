@@ -1,9 +1,6 @@
 // Get post src html, update post
 'use strict';
 
-// topic and post statuses
-var statuses   = require('nodeca.forum/server/forum/_lib/statuses.js');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -15,6 +12,8 @@ module.exports = function (N, apiPath) {
   // Fetch post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+
     N.models.forum.Post.findOne({ _id: env.params.post_id })
       .lean(true).exec(function (err, post) {
         if (err) {
@@ -27,7 +26,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.post.VISIBLE && post.st !== statuses.post.HB) {
+        if (post.st !== statuses.VISIBLE && post.st !== statuses.HB) {
           callback(N.io.NOT_FOUND);
           return;
         }
