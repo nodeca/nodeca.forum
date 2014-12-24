@@ -1,6 +1,0 @@
-en-US:
-  title: Edit title
-  title_input_name: 'New title:'
-  apply: OK
-  cancel: Cancel
-  err_empty_title: Topic title should not be empty

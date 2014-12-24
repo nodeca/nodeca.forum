@@ -74,15 +74,34 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var $title = $('.forum-topic-title__text');
 
     var data = {
-      topic_id: $button.data('topic-id'),
-      title: $title.text(),
-      as_moderator: $button.data('as-moderator') || false,
-      new_title: null
+      selector: '.forum-topic-title',
+      value: $title.text(),
+      update: function (value, callback) {
+
+        // If value is empty - show error
+        if ($.trim(value) === '') {
+          callback(true);
+          return;
+        }
+
+        // If value is equals to old value - close `microedit` without request
+        if (value === $title.text()) {
+          callback();
+          return;
+        }
+
+        N.io.rpc('forum.topic.title_update', {
+          as_moderator: $button.data('as-moderator') || false,
+          topic_id: $button.data('topic-id'),
+          title: value
+        }).done(function () {
+          $title.text(value);
+          callback();
+        });
+      }
     };
 
-    N.wire.emit('forum.topic.title_edit_dlg', data, function () {
-      $title.text(data.new_title);
-    });
+    N.wire.emit('common.blocks.microedit', data);
   });
 
 
