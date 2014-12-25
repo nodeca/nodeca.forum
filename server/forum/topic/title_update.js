@@ -3,6 +3,7 @@
 
 'use strict';
 
+var punycode = require('punycode');
 
 module.exports = function (N, apiPath) {
 
@@ -10,6 +11,26 @@ module.exports = function (N, apiPath) {
     topic_id:         { format: 'mongo', required: true },
     title:            { type: 'string', minLength: 1, required: true },
     as_moderator:     { type: 'boolean', required: true }
+  });
+
+
+  // Check title length
+  //
+  N.wire.before(apiPath, function check_title_length(env, callback) {
+    env.extras.settings.fetch('topic_title_min_length', function (err, topic_title_min_length) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (punycode.ucs2.decode(env.params.title.trim()).length < topic_title_min_length) {
+        // Real check is done on the client, no need to care about details here
+        callback(N.io.BAD_REQUEST);
+        return;
+      }
+
+      callback();
+    });
   });
 
 
@@ -86,7 +107,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function update_topic(env, callback) {
     N.models.forum.Topic.update(
       { _id: env.data.topic._id },
-      { title: env.params.title },
+      { title: env.params.title.trim() },
       callback
     );
   });

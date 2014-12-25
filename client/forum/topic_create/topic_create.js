@@ -4,6 +4,7 @@
 'use strict';
 
 var _          = require('lodash');
+var punycode   = require('punycode');
 
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var Bag        = require('bag.js');
@@ -182,9 +183,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       option_no_smiles: postOptions.no_smiles
     };
 
+    if (punycode.ucs2.decode(data.topic_title.trim()).length < N.runtime.page_data.settings.topic_title_min_length) {
+      N.wire.emit('notify', t('err_title_length', { min_length: N.runtime.page_data.settings.topic_title_min_length }));
+      return;
+    }
 
-    if (data.topic_title === '' || data.post_md === '') {
-      N.wire.emit('notify', t('err_required_fields_empty'));
+    if (data.post_md === '') {
+      N.wire.emit('notify', t('err_text_empty'));
       return;
     }
 

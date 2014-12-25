@@ -3,6 +3,7 @@
 'use strict';
 
 var _          = require('lodash');
+var punycode   = require('punycode');
 var medialinks = require('nodeca.core/lib/parser/medialinks');
 var $          = require('nodeca.core/lib/parser/cheequery');
 
@@ -29,6 +30,26 @@ module.exports = function (N, apiPath) {
     if (env.user_info.is_guest) {
       return N.io.FORBIDDEN;
     }
+  });
+
+
+  // Check title length
+  //
+  N.wire.before(apiPath, function check_title_length(env, callback) {
+    env.extras.settings.fetch('topic_title_min_length', function (err, topic_title_min_length) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (punycode.ucs2.decode(env.params.topic_title.trim()).length < topic_title_min_length) {
+        // Real check is done on the client, no need to care about details here
+        callback(N.io.BAD_REQUEST);
+        return;
+      }
+
+      callback();
+    });
   });
 
 
@@ -194,7 +215,7 @@ module.exports = function (N, apiPath) {
     };
 
     // Fill topic data
-    topic.title = env.params.topic_title;
+    topic.title = env.params.topic_title.trim();
     topic.section = env.data.section._id;
 
     // TODO: hellbanned

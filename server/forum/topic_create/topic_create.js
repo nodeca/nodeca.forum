@@ -65,6 +65,23 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill settings
+  //
+  N.wire.after(apiPath, function fill_settings(env, callback) {
+    env.extras.settings.fetch('topic_title_min_length', function (err, topic_title_min_length) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.settings = env.res.settings || {};
+      env.res.settings.topic_title_min_length = topic_title_min_length;
+
+      callback();
+    });
+  });
+
+
   // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {

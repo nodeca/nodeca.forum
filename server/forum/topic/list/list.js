@@ -373,6 +373,7 @@ module.exports = function (N, apiPath) {
 
     env.extras.settings.fetch(
       [
+        'topic_title_min_length',
         'forum_can_reply',
         'forum_edit_max_time',
         'forum_can_close_topic',

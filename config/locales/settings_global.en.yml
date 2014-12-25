@@ -12,4 +12,5 @@ i18n:
 
         setting_names:
           topics_per_page: Topics per page
+          topic_title_min_length: Min title length
           posts_per_page: Posts per page

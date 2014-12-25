@@ -1,7 +1,8 @@
 en-US:
   title: Create new topic
   topic_title: Topic title
-  err_required_fields_empty: You shoud fill topic title and text
+  err_text_empty: You shoud fill text
+  err_title_length: "Title should have at least #{min_length} ((character|characters)):min_length"
   create: Create
   options: options
   preview_toggle: Preview

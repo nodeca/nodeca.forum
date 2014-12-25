@@ -3,6 +3,8 @@
 
 'use strict';
 
+var punycode   = require('punycode');
+
 // Topic state
 //
 // - topic_hid:             topic's human id
@@ -78,9 +80,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       value: $title.text(),
       update: function (value, callback) {
 
-        // If value is empty - show error
-        if ($.trim(value) === '') {
-          callback(true);
+        if (punycode.ucs2.decode(value.trim()).length < N.runtime.page_data.settings.topic_title_min_length) {
+          callback(t('error_title_length', { min_length: N.runtime.page_data.settings.topic_title_min_length }));
           return;
         }
 
@@ -95,7 +96,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           topic_id: $button.data('topic-id'),
           title: value
         }).done(function () {
-          $title.text(value);
+          $title.text(value.trim());
           callback();
         });
       }

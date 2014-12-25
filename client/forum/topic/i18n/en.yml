@@ -18,3 +18,4 @@ en-US:
   title_with_page: "#{title} - page #{page}"
 
   error_no_more_posts: Ups! No more posts in this topic.
+  error_title_length: "Title should have at least #{min_length} ((character|characters)):min_length"

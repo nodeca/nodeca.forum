@@ -13,6 +13,12 @@ setting_schemas:
       category_key: forum
       default: 30
 
+    topic_title_min_length:
+      type: number
+      group_key: forum_general
+      category_key: topic
+      default: 3
+
     posts_per_page:
       type: number
       group_key: forum_general
