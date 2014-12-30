@@ -3,11 +3,10 @@
 
 'use strict';
 
-var _          = require('lodash');
-var punycode   = require('punycode');
+var _        = require('lodash');
+var punycode = require('punycode');
 
-var medialinks = require('nodeca.core/lib/parser/medialinks');
-var Bag        = require('bag.js');
+var Bag      = require('bag.js');
 
 var bag = new Bag({ prefix: 'nodeca_drafts' });
 var draftKey;
@@ -19,17 +18,9 @@ var editor, parseRules, postOptions, sectionHid;
 function updatePostOptions() {
   var rules = {
     cleanupRules: parseRules.cleanupRules,
-    smiles: {},
-    medialinkProviders: []
+    smiles: postOptions.no_smiles ? {} : parseRules.smiles,
+    noMedialinks: postOptions.no_mlinks
   };
-
-  if (!postOptions.no_mlinks) {
-    rules.medialinkProviders = parseRules.medialinkProviders;
-  }
-
-  if (!postOptions.no_smiles) {
-    rules.smiles = parseRules.smiles;
-  }
 
   editor.setOptions({ parseRules: rules });
 }
@@ -47,7 +38,6 @@ N.wire.before('navigate.done:' + module.apiPath, function load_editor(event, cal
 N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, callback) {
   N.io.rpc('forum.topic.post.options').done(function (res) {
     parseRules = res.parse_rules;
-    parseRules.medialinkProviders = medialinks(parseRules.medialinks.providers, parseRules.medialinks.content, true);
     postOptions = res.post_options;
     callback();
   });

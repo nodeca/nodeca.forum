@@ -16,9 +16,6 @@ var Charlatan = require('charlatan');
 
 var Parser    = require('nodeca.core/lib/parser');
 
-// topic and post statuses
-var statuses = require('../../server/forum/_lib/statuses.js');
-
 var Category;
 var Section;
 var Topic;
@@ -60,7 +57,7 @@ var createPost = function (topic, callback) {
       html: mdData.output,
       md: md,
 
-      st: statuses.post.VISIBLE,
+      st: Post.statuses.VISIBLE,
       topic: topic._id,
 
       user: users[Charlatan.Helpers.rand(USER_COUNT)],
@@ -95,7 +92,7 @@ var createTopic = function (section, post_count, callback) {
   var topic = new Topic({
     title: Charlatan.Lorem.sentence().slice(0, -1),
 
-    st: statuses.topic.OPEN,
+    st: Topic.statuses.OPEN,
     section: section._id,
 
     views_count: Charlatan.Helpers.rand(1000)

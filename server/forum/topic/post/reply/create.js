@@ -2,9 +2,8 @@
 
 'use strict';
 
-var _          = require('lodash');
-var medialinks = require('nodeca.core/lib/parser/medialinks');
-var $          = require('nodeca.core/lib/parser/cheequery');
+var _ = require('lodash');
+var $ = require('nodeca.core/lib/parser/cheequery');
 
 module.exports = function (N, apiPath) {
 
@@ -141,10 +140,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function parse_text(env, callback) {
 
-    var providers = env.params.option_no_mlinks ?
-                    [] :
-                    medialinks(N.config.medialinks.providers, N.config.medialinks.content);
-
     var mdData = { input: env.params.post_md, output: null };
 
     N.parser.md2src(mdData, function (err) {
@@ -160,7 +155,7 @@ module.exports = function (N, apiPath) {
         {
           cleanupRules: N.config.parser.cleanup,
           smiles: env.params.option_no_smiles ? {} : N.config.smiles,
-          medialinkProviders: providers,
+          noMedialinks: env.params.option_no_mlinks,
           baseUrl: env.origin.req.headers.host // TODO: get real domains from config
         }
       };
