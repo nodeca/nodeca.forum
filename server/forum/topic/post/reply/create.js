@@ -2,9 +2,6 @@
 
 'use strict';
 
-var _ = require('lodash');
-var $ = require('nodeca.core/lib/parser/cheequery');
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -16,7 +13,14 @@ module.exports = function (N, apiPath) {
       type: 'array',
       required: true,
       uniqueItems: true,
-      items: { format: 'mongo' }
+      items: {
+        type: 'object',
+        properties: {
+          media_id: { format: 'mongo', required: true },
+          file_name: 'string',
+          type: 'integer'
+        }
+      }
     },
     option_no_mlinks: { type: 'boolean', required: true },
     option_no_smiles: { type: 'boolean', required: true }
@@ -136,84 +140,56 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Parse user input to HTML
+  // Prepare parse options
   //
-  N.wire.before(apiPath, function parse_text(env, callback) {
+  N.wire.before(apiPath, function prepare_options(env, callback) {
+    // groups should be sorted, to avoid cache duplication
+    var g_ids = env.extras.settings.params.usergroup_ids.map(function (g) { return g.toString(); }).sort();
 
-    var mdData = { input: env.params.post_md, output: null };
+    N.settings.getByCategory(
+      'forum_markup',
+      { usergroup_ids: g_ids },
+      { alias: true },
+      function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    N.parser.md2src(mdData, function (err) {
-      if (err) {
-        callback(err);
-        return;
+        if (env.params.option_no_mlinks) {
+          settings.medialinks = false;
+        }
+
+        if (env.params.option_no_smiles) {
+          settings.smiles = false;
+        }
+
+        env.data.parse_options = settings;
+        callback();
       }
-
-      var srcData = {
-        input: mdData.output,
-        output: null, // will be cheerio instance
-        options:
-        {
-          cleanupRules: N.config.parser.cleanup,
-          smiles: env.params.option_no_smiles ? {} : N.config.smiles,
-          noMedialinks: env.params.option_no_mlinks,
-          baseUrl: env.origin.req.headers.host // TODO: get real domains from config
-        }
-      };
-
-      N.parser.src2ast(srcData, function (err) {
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          env.data.ast = srcData.output;
-          env.data.post_html = srcData.output.html();
-          // TODO: save data.output.text() for search reasons
-          callback();
-        }
-      );
-    });
+    );
   });
 
 
-  // Fetch `attach_refs` and `attach_tail`
+  // Parse user input to HTML
   //
-  N.wire.before(apiPath, function fetch_attachments(env, callback) {
-    var tail = env.params.attach_tail;
-    var refs = [];
+  N.wire.before(apiPath, function parse_text(env, callback) {
+    N.parse(
+      {
+        text: env.params.post_md,
+        attachments: env.params.attach_tail,
+        options: env.data.parse_options
+      },
+      function (err, result) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    // Find all attachments inserted to text
-    env.data.ast.find('img[data-nd-media-id], a[data-nd-media-id]').each(function () {
-      refs.push($(this).data('nd-media-id'));
-    });
-
-    refs = _.uniq(refs);
-
-    // Remove refs from tail
-    tail = _.remove(tail, function(id) {
-      return refs.indexOf(id) === -1;
-    });
-
-    env.data.attach_refs = _.union(refs, tail);
-
-    // Fetch tail attachments
-    N.models.users.MediaInfo.find({
-      media_id: { $in: tail },
-      type: { $in: N.models.users.MediaInfo.types.LIST_VISIBLE },
-      user_id: env.session.user_id
-    }).lean(true).select('media_id file_name type').exec(function (err, attachments) {
-
-      if (err) {
-        callback(err);
-        return;
+        env.data.parse_result = result;
+        callback();
       }
-
-      // TODO: check attach_refs owner
-      env.data.attach_refs = refs;
-      env.data.attach_tail = attachments;
-
-      callback();
-    });
+    );
   });
 
 
@@ -223,16 +199,13 @@ module.exports = function (N, apiPath) {
     var statuses = N.models.forum.Post.statuses;
     var post = new N.models.forum.Post();
 
-    post.attach_tail = env.data.attach_tail;
-    post.attach_refs = env.data.attach_refs;
-    post.html = env.data.post_html;
-    post.md = env.params.post_md;
+    post.attach_tail = env.data.parse_result.attachments.tail;
+    post.attach_refs = env.data.parse_result.attachments.refs;
+    post.html = env.data.parse_result.html;
+    post.md = env.data.parse_result.srcText;
     post.ip = env.req.ip;
     post.st = statuses.VISIBLE;
-    post.params = {
-      no_mlinks: env.params.option_no_mlinks,
-      no_smiles: env.params.option_no_smiles
-    };
+    post.params = env.data.parse_result.options;
     // TODO: hellbanned
 
     if (env.data.parent_post) {

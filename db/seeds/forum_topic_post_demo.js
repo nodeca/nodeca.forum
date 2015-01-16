@@ -14,7 +14,6 @@ var _         = require('lodash');
 var async     = require('async');
 var Charlatan = require('charlatan');
 
-var Parser    = require('nodeca.core/lib/parser');
 
 var Category;
 var Section;
@@ -23,7 +22,7 @@ var Post;
 var User;
 var UserGroup;
 var settings;
-var parser = new Parser();
+var parser;
 
 
 var CATEGORY_COUNT = 3;
@@ -49,39 +48,58 @@ var postDay = 0;
 var createPost = function (topic, callback) {
 
   var md = Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join('\n\n');
-  var mdData = { input: md, output: null };
+  var user = users[Charlatan.Helpers.rand(USER_COUNT)];
 
-  parser.md2src(mdData, function () {
-
-    var post = new Post({
-      html: mdData.output,
-      md: md,
-
-      st: Post.statuses.VISIBLE,
-      topic: topic._id,
-
-      user: users[Charlatan.Helpers.rand(USER_COUNT)],
-
-      ts: new Date(2010, 0, postDay++),
-
-      params: {
-        no_mlinks: false,
-        no_smiles: false
-      }
-    });
-
-    post.save(function (err, post) {
+  settings.getByCategory(
+    'forum_markup',
+    { usergroup_ids: user.usergroups },
+    { alias: true },
+    function (err, settings) {
       if (err) {
         callback(err);
         return;
       }
 
-      User.update({ _id: post.user }, { $inc: { post_count: 1 } }, function (err) {
-        callback(err, post);
-      });
-    });
-  });
+      parser(
+        {
+          text: md,
+          attachments: [],
+          options: settings
+        },
+        function (err, result) {
+          if (err) {
+            callback(err);
+            return;
+          }
 
+          var post = new Post({
+            html: result.html,
+            md: result.srcText,
+
+            st: Post.statuses.VISIBLE,
+            topic: topic._id,
+
+            user: user,
+
+            ts: new Date(2010, 0, postDay++),
+
+            params: result.options
+          });
+
+          post.save(function (err, post) {
+            if (err) {
+              callback(err);
+              return;
+            }
+
+            User.update({ _id: post.user }, { $inc: { post_count: 1 } }, function (err) {
+              callback(err, post);
+            });
+          });
+        }
+      );
+    }
+  );
 };
 
 var createTopic = function (section, post_count, callback) {
@@ -430,6 +448,7 @@ module.exports = function (N, callback) {
   User      = N.models.users.User;
   UserGroup = N.models.users.UserGroup;
   settings  = N.settings;
+  parser    = N.parse;
 
   async.series([
     createUsers,

@@ -11,7 +11,7 @@ var $form;
 var pageParams;
 var parentPostId;
 var $preview;
-var parseRules;
+var parseOptions;
 var editor;
 var postOptions;
 
@@ -66,13 +66,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   // Fetch parse rules
   //
   N.wire.before('forum.topic.post_reply', function fetch_parse_rules(event, callback) {
-    if (parseRules) {
-      callback();
-      return;
-    }
-
     N.io.rpc('forum.topic.post.options').done(function (res) {
-      parseRules = res.parse_rules;
+      parseOptions = res.parse_options;
       postOptions = res.post_options;
       callback();
     });
@@ -99,14 +94,12 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var $options = $form.find('.forum-reply__options');
 
     function updateOptions() {
-
-      var rules = {
-        cleanupRules: parseRules.cleanupRules,
-        smiles: postOptions.no_smiles ? {} : parseRules.smiles,
-        noMedialinks: postOptions.no_mlinks
-      };
-
-      editor.setOptions({ parseRules: rules });
+      editor.setOptions({
+        parseOptions: _.assign({}, parseOptions, {
+          medialinks: postOptions.no_mlinks ? false : parseOptions.medialinks,
+          smiles: postOptions.no_smiles ? false : parseOptions.smiles
+        })
+      });
     }
 
     $options.find('.forum-reply__medialinks').change(function () {
@@ -187,7 +180,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     editor = new N.MDEdit({
       editArea: '.forum-reply__editor',
       previewArea: '.forum-reply__preview',
-      parseRules: parseRules,
+      parseOptions: _.assign({}, parseOptions, {
+        medialinks: postOptions.no_mlinks ? false : parseOptions.medialinks,
+        smiles: postOptions.no_smiles ? false : parseOptions.smiles
+      }),
       toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
       text: draft.text,
       attachments: draft.attachments,
@@ -220,7 +216,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       section_hid:     pageParams.section_hid,
       topic_hid:       pageParams.hid,
       post_md:         editor.text(),
-      attach_tail:     _.map(editor.attachments(), function (v) { return v.media_id; }),
+      attach_tail:     editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

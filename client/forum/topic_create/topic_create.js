@@ -10,19 +10,18 @@ var Bag      = require('bag.js');
 
 var bag = new Bag({ prefix: 'nodeca_drafts' });
 var draftKey;
-var editor, parseRules, postOptions, sectionHid;
+var editor, parseOptions, postOptions, sectionHid;
 
 
 // Update post options
 //
 function updatePostOptions() {
-  var rules = {
-    cleanupRules: parseRules.cleanupRules,
-    smiles: postOptions.no_smiles ? {} : parseRules.smiles,
-    noMedialinks: postOptions.no_mlinks
-  };
-
-  editor.setOptions({ parseRules: rules });
+  editor.setOptions({
+    parseOptions: _.assign({}, parseOptions, {
+      medialinks: postOptions.no_mlinks ? false : parseOptions.medialinks,
+      smiles: postOptions.no_smiles ? false : parseOptions.smiles
+    })
+  });
 }
 
 
@@ -37,7 +36,7 @@ N.wire.before('navigate.done:' + module.apiPath, function load_editor(event, cal
 //
 N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, callback) {
   N.io.rpc('forum.topic.post.options').done(function (res) {
-    parseRules = res.parse_rules;
+    parseOptions = res.parse_options;
     postOptions = res.post_options;
     callback();
   });
@@ -99,7 +98,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   editor = new N.MDEdit({
     editArea: '.topic-create__editor',
     previewArea: '.topic-create__preview',
-    parseRules: parseRules,
+    parseOptions: {},
     toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
     text: draft.text,
     attachments: draft.attachments,
@@ -124,7 +123,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 //
 N.wire.on('navigate.exit:' + module.apiPath, function page_exit() {
   editor = null;
-  parseRules = null;
+  parseOptions = null;
   postOptions = null;
 });
 
@@ -168,7 +167,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       section_hid:      sectionHid,
       post_md:          editor.text(),
       topic_title:      $('.topic-create__title').val(),
-      attach_tail:      _.map(editor.attachments(), function (v) { return v.media_id; }),
+      attach_tail:      editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

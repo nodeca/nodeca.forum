@@ -9,6 +9,7 @@ i18n:
         category_names:
           forum: Forum
           topic: Topic
+          forum_markup: Forum markup
 
         setting_names:
           topics_per_page: Topics per page

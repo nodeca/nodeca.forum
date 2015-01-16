@@ -34,12 +34,25 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill parser options
+  // Fill parse options
   //
-  N.wire.on(apiPath, function fill_parser_options(env) {
-    env.res.parse_rules = {
-      cleanupRules: N.config.parser.cleanup,
-      smiles: N.config.smiles
-    };
+  N.wire.on(apiPath, function fill_parse_options(env, callback) {
+    // groups should be sorted, to avoid cache duplication
+    var g_ids = env.extras.settings.params.usergroup_ids.map(function (g) { return g.toString(); }).sort();
+
+    N.settings.getByCategory(
+      'forum_markup',
+      { usergroup_ids: g_ids },
+      { alias: true },
+      function (err, settings) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        env.res.parse_options = settings;
+        callback();
+      }
+    );
   });
 };

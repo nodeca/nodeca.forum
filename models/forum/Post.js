@@ -44,7 +44,7 @@ module.exports = function (N, collectionName) {
   , attach_refs     : [ Schema.ObjectId ]  // all attachments
 
   // Post params
-  , params          : { no_mlinks: Boolean, no_smiles: Boolean }
+  , params          : [ Schema.Types.Mixed ]
 
   // Attachments on tail of post
   , attach_tail     : [ new Schema({ // explicit definition to remove `_id` field

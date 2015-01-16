@@ -8,7 +8,7 @@ var _ = require('lodash');
 var $form;
 var postId;
 var asModerator;
-var parseRules;
+var parseOptions;
 var editor;
 var postOptions;
 
@@ -27,16 +27,13 @@ function removeEditor() {
 // Update post options
 //
 function updatePostOptions() {
-  var rules = {
-    cleanupRules: parseRules.cleanupRules,
-    smiles: postOptions.no_smiles ? {} : parseRules.smiles,
-    noMedialinks: postOptions.no_mlinks
-  };
-
-  editor.setOptions({ parseRules: rules });
+  editor.setOptions({
+    parseOptions: _.assign({}, parseOptions, {
+      medialinks: postOptions.no_mlinks ? false : parseOptions.medialinks,
+      smiles: postOptions.no_smiles ? false : parseOptions.smiles
+    })
+  });
 }
-
-// TODO: draft
 
 
 // Free resources on page exit
@@ -85,22 +82,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
-  ///////////////////////////////////////////////////////////////////////////////
-  // Fetch parse rules
-  //
-  N.wire.before('forum.topic.post_edit', function fetch_parse_rules(event, callback) {
-    if (parseRules) {
-      callback();
-      return;
-    }
-
-    N.io.rpc('forum.topic.post.options').done(function (res) {
-      parseRules = res.parse_rules;
-      callback();
-    });
-  });
-
-
   // Load parser
   //
   N.wire.before('forum.topic.post_edit', function load_parser(event, callback) {
@@ -123,12 +104,17 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     N.io.rpc('forum.topic.post.edit.index', { post_id: postId, as_moderator: asModerator })
       .done(function (res) {
-        postOptions = res.params;
+        parseOptions = res.params;
 
         $form = $(N.runtime.render('forum.topic.post_edit', { user: res.users[res.user_id] }));
         $form.hide(0);
 
         $targetPost.after($form);
+
+        postOptions = {
+          no_mlinks: !parseOptions.medialinks,
+          no_smiles: false // TODO
+        };
 
         $('.forum-edit__medialinks').prop('checked', !postOptions.no_mlinks);
         $('.forum-edit__smiles').prop('checked', !postOptions.no_smiles);
@@ -136,7 +122,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         editor = new N.MDEdit({
           editArea: '.forum-edit__editor',
           previewArea: '.forum-edit__preview',
-          parseRules: parseRules,
+          parseOptions: {},
           toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
           attachments: res.attach_tail,
           text: res.md
@@ -169,7 +155,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       as_moderator:     asModerator,
       post_id:          postId,
       post_md:          editor.text(),
-      attach_tail:      _.map(editor.attachments(), function (v) { return v.media_id; }),
+      attach_tail:      editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };
