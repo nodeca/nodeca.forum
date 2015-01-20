@@ -9,9 +9,9 @@ module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     section_hid:      { type: 'integer', required: true },
-    topic_title:      { type: 'string', required: true },
-    post_md:          { type: 'string', required: true },
-    attach_tail:      {
+    title:            { type: 'string', required: true },
+    txt:              { type: 'string', required: true },
+    attach:           {
       type: 'array',
       required: true,
       uniqueItems: true,
@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (punycode.ucs2.decode(env.params.topic_title.trim()).length < topic_title_min_length) {
+      if (punycode.ucs2.decode(env.params.title.trim()).length < topic_title_min_length) {
         // Real check is done on the client, no need to care about details here
         callback(N.io.BAD_REQUEST);
         return;
@@ -116,12 +116,9 @@ module.exports = function (N, apiPath) {
   // Prepare parse options
   //
   N.wire.before(apiPath, function prepare_options(env, callback) {
-    // groups should be sorted, to avoid cache duplication
-    var g_ids = env.extras.settings.params.usergroup_ids.map(function (g) { return g.toString(); }).sort();
-
     N.settings.getByCategory(
       'forum_markup',
-      { usergroup_ids: g_ids },
+      { usergroup_ids: env.extras.settings.params.usergroup_ids },
       { alias: true },
       function (err, settings) {
         if (err) {
@@ -146,11 +143,11 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.before(apiPath, function parse_text(env, callback) {
+  N.wire.on(apiPath, function parse_text(env, callback) {
     N.parse(
       {
-        text: env.params.post_md,
-        attachments: env.params.attach_tail,
+        text: env.params.txt,
+        attachments: env.params.attach,
         options: env.data.parse_options
       },
       function (err, result) {
@@ -168,23 +165,25 @@ module.exports = function (N, apiPath) {
 
   // Create new topic
   //
-  N.wire.on(apiPath, function check_permissions(env, callback) {
+  N.wire.after(apiPath, function create_topic(env, callback) {
     var topic = new N.models.forum.Topic();
     var post = new N.models.forum.Post();
 
     // Fill post data
     post.user = env.session.user_id;
     post.ts = Date.now();
-    post.attach_tail = env.data.parse_result.attachments.tail;
-    post.attach_refs = env.data.parse_result.attachments.refs;
+    post.attach = env.params.attach.map(function (attach) {
+      return attach.media_id;
+    });
+    post.tail = env.data.parse_result.tail;
     post.html = env.data.parse_result.html;
-    post.md = env.data.parse_result.srcText;
+    post.md = env.params.txt;
     post.ip = env.req.ip;
     post.st = N.models.forum.Post.statuses.VISIBLE;
-    post.params = env.data.parse_result.options;
+    post.params = env.data.parse_options;
 
     // Fill topic data
-    topic.title = env.params.topic_title.trim();
+    topic.title = env.params.title.trim();
     topic.section = env.data.section._id;
 
     // TODO: hellbanned
@@ -202,7 +201,7 @@ module.exports = function (N, apiPath) {
     topic.cache.last_ts = post.ts;
     topic.cache.last_user = post.user;
 
-    topic.cache.attach_count = post.attach_refs.length;
+    topic.cache.attach_count = post.attach.length;
 
     _.assign(topic.cache_hb, topic.cache);
 

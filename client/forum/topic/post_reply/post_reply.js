@@ -213,10 +213,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     // Save reply on server
 
     var data = {
-      section_hid:     pageParams.section_hid,
-      topic_hid:       pageParams.hid,
-      post_md:         editor.text(),
-      attach_tail:     editor.attachments(),
+      section_hid:      pageParams.section_hid,
+      topic_hid:        pageParams.hid,
+      txt:              editor.text(),
+      attach:           editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };

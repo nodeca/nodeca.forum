@@ -38,7 +38,8 @@ each post in self.posts
     .forum-post__content
       .forum-post__message !{post.html}
 
-      !=self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user })
+      .forum-post__tail
+        !=self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user })
 
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-left

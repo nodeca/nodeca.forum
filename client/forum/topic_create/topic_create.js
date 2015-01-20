@@ -165,19 +165,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic_create:save', function create_topic() {
     var data = {
       section_hid:      sectionHid,
-      post_md:          editor.text(),
-      topic_title:      $('.topic-create__title').val(),
-      attach_tail:      editor.attachments(),
+      txt:              editor.text(),
+      title:            $('.topic-create__title').val(),
+      attach:           editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };
 
-    if (punycode.ucs2.decode(data.topic_title.trim()).length < N.runtime.page_data.settings.topic_title_min_length) {
+    if (punycode.ucs2.decode(data.title.trim()).length < N.runtime.page_data.settings.topic_title_min_length) {
       N.wire.emit('notify', t('err_title_length', { min_length: N.runtime.page_data.settings.topic_title_min_length }));
       return;
     }
 
-    if (data.post_md === '') {
+    if (data.txt === '') {
       N.wire.emit('notify', t('err_text_empty'));
       return;
     }

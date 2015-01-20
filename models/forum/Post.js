@@ -40,14 +40,13 @@ module.exports = function (N, collectionName) {
       ste: Number
     }
 
-  // Post attachments without attachments in quotes
-  , attach_refs     : [ Schema.ObjectId ]  // all attachments
+  , attach     : [ Schema.ObjectId ]  // all attachments
 
   // Post params
   , params          : [ Schema.Types.Mixed ]
 
-  // Attachments on tail of post
-  , attach_tail     : [ new Schema({ // explicit definition to remove `_id` field
+  // Info to build post tail
+  , tail     : [ new Schema({ // explicit definition to remove `_id` field
       media_id: Schema.ObjectId,
       file_name: String,
       type: { type: Number }

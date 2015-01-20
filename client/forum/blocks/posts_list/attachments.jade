@@ -1,8 +1,8 @@
 - var mTypes = '$$ JSON.stringify(N.models.users.MediaInfo.types) $$'
 
-if self.post.attach_tail && self.post.attach_tail.length
+if self.post.tail && self.post.tail.length
   ul.thumb-grid.thumb-grid__m-responsive.thumb-grid__m-tight
-    each media in self.post.attach_tail
+    each media in self.post.tail
       - var href = self.link_to('users.media', { user_hid: self.user.hid, media_id: media.media_id })
 
       li.thumb-grid__item

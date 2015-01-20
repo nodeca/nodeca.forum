@@ -74,7 +74,7 @@ var createPost = function (topic, callback) {
 
           var post = new Post({
             html: result.html,
-            md: result.srcText,
+            md: md,
 
             st: Post.statuses.VISIBLE,
             topic: topic._id,
@@ -83,7 +83,7 @@ var createPost = function (topic, callback) {
 
             ts: new Date(2010, 0, postDay++),
 
-            params: result.options
+            params: settings
           });
 
           post.save(function (err, post) {

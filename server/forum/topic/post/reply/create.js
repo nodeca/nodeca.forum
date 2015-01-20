@@ -8,8 +8,8 @@ module.exports = function (N, apiPath) {
     topic_hid:        { type: 'integer', required: true },
     parent_post_id:   { format: 'mongo' },
     section_hid:      { type: 'integer', required: true },
-    post_md:          { type: 'string', required: true },
-    attach_tail:      {
+    txt:              { type: 'string', required: true },
+    attach:           {
       type: 'array',
       required: true,
       uniqueItems: true,
@@ -143,12 +143,9 @@ module.exports = function (N, apiPath) {
   // Prepare parse options
   //
   N.wire.before(apiPath, function prepare_options(env, callback) {
-    // groups should be sorted, to avoid cache duplication
-    var g_ids = env.extras.settings.params.usergroup_ids.map(function (g) { return g.toString(); }).sort();
-
     N.settings.getByCategory(
       'forum_markup',
-      { usergroup_ids: g_ids },
+      { usergroup_ids: env.extras.settings.params.usergroup_ids },
       { alias: true },
       function (err, settings) {
         if (err) {
@@ -173,11 +170,11 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.before(apiPath, function parse_text(env, callback) {
+  N.wire.on(apiPath, function parse_text(env, callback) {
     N.parse(
       {
-        text: env.params.post_md,
-        attachments: env.params.attach_tail,
+        text: env.params.txt,
+        attachments: env.params.attach,
         options: env.data.parse_options
       },
       function (err, result) {
@@ -195,17 +192,19 @@ module.exports = function (N, apiPath) {
 
   // Save new post
   //
-  N.wire.on(apiPath, function save_new_post(env, callback) {
+  N.wire.after(apiPath, function save_new_post(env, callback) {
     var statuses = N.models.forum.Post.statuses;
     var post = new N.models.forum.Post();
 
-    post.attach_tail = env.data.parse_result.attachments.tail;
-    post.attach_refs = env.data.parse_result.attachments.refs;
+    post.tail = env.data.parse_result.tail;
+    post.attach = env.params.attach.map(function (attach) {
+      return attach.media_id;
+    });
     post.html = env.data.parse_result.html;
-    post.md = env.data.parse_result.srcText;
+    post.md = env.params.txt;
     post.ip = env.req.ip;
     post.st = statuses.VISIBLE;
-    post.params = env.data.parse_result.options;
+    post.params = env.data.parse_options;
     // TODO: hellbanned
 
     if (env.data.parent_post) {
@@ -237,11 +236,11 @@ module.exports = function (N, apiPath) {
 
     if (post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
-      incData['cache.attach_count'] = post.attach_refs.length;
+      incData['cache.attach_count'] = post.attach.length;
     }
 
     incData['cache_hb.post_count'] = 1;
-    incData['cache_hb.attach_count'] = post.attach_refs.length;
+    incData['cache_hb.attach_count'] = post.attach.length;
 
 
     N.models.forum.Topic.update(

@@ -124,7 +124,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
           previewArea: '.forum-edit__preview',
           parseOptions: {},
           toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
-          attachments: res.attach_tail,
+          attachments: res.attachments,
           text: res.md
         });
 
@@ -154,8 +154,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     var data = {
       as_moderator:     asModerator,
       post_id:          postId,
-      post_md:          editor.text(),
-      attach_tail:      editor.attachments(),
+      txt:              editor.text(),
+      attach:           editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,
       option_no_smiles: postOptions.no_smiles
     };
@@ -165,7 +165,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       removeEditor();
 
       $post.find('.forum-post__message').html(res.post.html);
-      $post.find('.attachments').replaceWith(
+      $post.find('.forum-post__tail').replaceWith(
         N.runtime.render('forum.blocks.posts_list.attachments', {
           post: res.post,
           user: { hid: $post.data('user-hid') }

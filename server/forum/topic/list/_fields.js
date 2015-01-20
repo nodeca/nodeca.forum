@@ -5,7 +5,7 @@
 exports.post_in = [
   '_id',
   'to',
-  'attach_tail',
+  'tail',
   'html',
   'user',
   'ts',

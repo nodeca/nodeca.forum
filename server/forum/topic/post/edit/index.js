@@ -1,6 +1,9 @@
 // Get post src html, update post
 'use strict';
 
+var async = require('async');
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -97,6 +100,28 @@ module.exports = function (N, apiPath) {
   });
 
 
+  N.wire.before(apiPath, function fetch_attachments(env, callback) {
+    env.data.attachments = [];
+
+    async.each(env.data.post.attach, function (mediaId, next) {
+      N.models.users.MediaInfo
+          .findOne({ media_id: mediaId })
+          .select('media_id file_name type')
+          .lean(true)
+          .exec(function (err, result) {
+
+        if (err) {
+          next(err);
+          return;
+        }
+
+        env.data.attachments.push(result);
+        next();
+      });
+    }, callback);
+  });
+
+
   // Fill post data
   //
   N.wire.on(apiPath, function fill_data(env) {
@@ -105,7 +130,7 @@ module.exports = function (N, apiPath) {
 
     env.res.user_id = env.data.post.user;
     env.res.md = env.data.post.md;
-    env.res.attach_tail = env.data.post.attach_tail;
+    env.res.attachments = env.data.attachments;
     env.res.params = env.data.post.params;
   });
 };

@@ -5,8 +5,8 @@ module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     post_id:          { format: 'mongo', required: true },
-    post_md:          { type: 'string', required: true },
-    attach_tail:      {
+    txt:              { type: 'string', required: true },
+    attach:           {
       type: 'array',
       required: true,
       uniqueItems: true,
@@ -47,12 +47,9 @@ module.exports = function (N, apiPath) {
   // Prepare parse options
   //
   N.wire.before(apiPath, function prepare_options(env, callback) {
-    // groups should be sorted, to avoid cache duplication
-    var g_ids = env.extras.settings.params.usergroup_ids.map(function (g) { return g.toString(); }).sort();
-
     N.settings.getByCategory(
       'forum_markup',
-      { usergroup_ids: g_ids },
+      { usergroup_ids: env.extras.settings.params.usergroup_ids },
       { alias: true },
       function (err, settings) {
         if (err) {
@@ -77,11 +74,11 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.before(apiPath, function parse_text(env, callback) {
+  N.wire.on(apiPath, function parse_text(env, callback) {
     N.parse(
       {
-        text: env.params.post_md,
-        attachments: env.params.attach_tail,
+        text: env.params.txt,
+        attachments: env.params.attach,
         options: env.data.parse_options
       },
       function (err, result) {
@@ -99,13 +96,13 @@ module.exports = function (N, apiPath) {
 
   // Update post
   //
-  N.wire.on(apiPath, function post_update(env, callback) {
+  N.wire.after(apiPath, function post_update(env, callback) {
     var updateData = {
-      attach_tail: env.data.parse_result.attachments.tail,
-      attach_refs: env.data.parse_result.attachments.refs,
-      html:        env.data.parse_result.html,
-      md:          env.data.parse_result.srcText,
-      params:      env.data.parse_result.options
+      tail:   env.data.parse_result.tail,
+      attach: env.params.attach.map(function (attach) { return attach.media_id; }),
+      html:   env.data.parse_result.html,
+      md:     env.params.txt,
+      params: env.data.parse_options
     };
 
     N.models.forum.Post.update({ _id: env.params.post_id }, updateData, function (err) {
@@ -115,7 +112,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.post = { html: updateData.html, attach_tail: updateData.attach_tail };
+      env.res.post = { html: updateData.html, tail: updateData.tail };
 
       callback();
     });
