@@ -184,7 +184,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
         medialinks: postOptions.no_mlinks ? false : parseOptions.medialinks,
         smiles: postOptions.no_smiles ? false : parseOptions.smiles
       }),
-      toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
       text: draft.text,
       attachments: draft.attachments,
       onChange: _.debounce(function () {

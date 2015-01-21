@@ -123,7 +123,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
           editArea: '.forum-edit__editor',
           previewArea: '.forum-edit__preview',
           parseOptions: {},
-          toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
           attachments: res.attachments,
           text: res.md
         });

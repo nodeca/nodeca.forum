@@ -99,7 +99,6 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     editArea: '.topic-create__editor',
     previewArea: '.topic-create__preview',
     parseOptions: {},
-    toolbarButtons: '$$ JSON.stringify(N.config.mdedit.toolbar) $$',
     text: draft.text,
     attachments: draft.attachments,
     onChange: _.debounce(function () {
