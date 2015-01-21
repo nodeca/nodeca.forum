@@ -116,7 +116,7 @@ module.exports = function (N, apiPath) {
       var s_ids = subsections.map(function (s) { return s._id.toString(); });
 
       // groups should be sorted, to avoid cache duplication
-      var g_ids = env.extras.settings.params.usergroup_ids.map(function (g) { return g.toString(); }).sort();
+      var g_ids = env.extras.settings.params.usergroup_ids.sort();
 
       filterVisibility(s_ids, g_ids, function (err, visibility) {
         if (err) {
