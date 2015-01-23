@@ -78,6 +78,13 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check attachments owner
+  //
+  N.wire.before(apiPath, function attachments_check_owner(env, callback) {
+    N.wire.emit('internal:users.attachments_check_owner', env, callback);
+  });
+
+
   // Fetch topic info
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
