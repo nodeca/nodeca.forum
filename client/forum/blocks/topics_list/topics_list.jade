@@ -24,11 +24,15 @@ each topic in self.topics
       .col-sm-7
         .forum-topicline__summary
           h2.forum-topicline__title
+            span.forum-topicline__pinned-marker.icon.icon-pin.icon-sm.icon-dimmed.icon-space-after(title=self.t('pinned'))
+            span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-sm.icon-dimmed.icon-space-after(title=self.t('bookmarked'))
+            span.forum-topicline__deleted-marker.icon.icon-deleted.icon-sm.icon-dimmed.icon-space-after(title=self.t('deleted'))
+            span.forum-topicline__closed-marker.icon.icon-closed.icon-sm.icon-dimmed.icon-space-after(title=self.t('closed'))
             a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
           //-a.mark-i-attach._tip(href="#")=topic.attach_count
 
           if topic.del_reason
-            .forum-topicline__del-reason=self.t('del_reason', { text: topic.del_reason })
+            .forum-topicline__meta-deleted=self.t('del_reason', { text: topic.del_reason })
 
           .forum-topicline__meta.hidden-xs
             if fp_user

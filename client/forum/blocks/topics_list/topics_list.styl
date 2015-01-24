@@ -26,17 +26,6 @@
 .forum-topicline__separator + .forum-topicline
   border-top 0
 
-.forum-topicline__m-pinned
-  background #fafafa
-
-.forum-topicline__m-closed
-  background #e7e7e7
-
-.forum-topicline__m-deleted
-  opacity 0.5
-
-.forum-topicline__m-deleted-hard
-  opacity 0.3
 
 //
 // First column
@@ -46,17 +35,6 @@
   padding-left 5px
   padding-right 20px
   position relative
-
-.forum-topicline__unread-marker
-  position absolute
-  display none
-  left 5px
-  top 50%
-  line-height 0
-  width 1px
-  height 20px
-  margin-top -10px
-  background-color grayLighter
 
 .forum-topicline__title
   font-family sansWideFontFamily
@@ -73,6 +51,7 @@
     color linkColorHover
 
 .forum-topicline__meta
+.forum-topicline__meta-deleted
 .forum-topicline__microstat
   color grayLight
   margin-left 10px
@@ -158,7 +137,25 @@ a.forum-topicline__lpost-user-link
 
 // Markers
 //
-.unread
+.forum-topicline__unread-marker
+.forum-topicline__pinned-marker
+.forum-topicline__closed-marker
+.forum-topicline__deleted-marker
+.forum-topicline__bookmarked-marker
+  display none
+
+
+.forum-topicline__unread-marker
+  position absolute
+  left 5px
+  top 50%
+  line-height 0
+  width 1px
+  height 20px
+  margin-top -10px
+  background-color grayLighter
+
+.forum-topicline__m-unread
   .forum-topicline__summary
     padding-left 15px
   .forum-topicline__title
@@ -170,10 +167,30 @@ a.forum-topicline__lpost-user-link
     width 2px
 
 
-.forum-topicline__summary .icon-closed
-  display inline-block
-  &:before
-    margin-right 0
-    margin-left .2em
-    font-size 90%
-    opacity .3
+.forum-topicline__m-pinned
+  .forum-topicline__pinned-marker
+    display inline-block
+
+
+.forum-topicline__m-closed
+  .forum-topicline__closed-marker
+    display inline-block
+  opacity .8
+
+
+.forum-topicline__m-deleted
+.forum-topicline__m-deleted-hard
+  opacity 0.7
+  &:hover
+    opacity 1
+  .forum-topicline__deleted-marker
+    display inline-block
+  .forum-topicline__meta
+  .forum-topicline__microstat
+  .forum-topicline__lpost
+  .forum-topicline__counters
+    display none !important
+
+.forum-topicline__m-bookmarked
+  .forum-topicline__bookmarked-marker
+    display inline-block

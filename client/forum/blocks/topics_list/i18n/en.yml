@@ -4,3 +4,7 @@ en-US:
   views: "#{count} ((view|views))"
   stat: "#{count} ((reply|replies)) · Last #{last}, by #{name}"
   del_reason: "Deletion reason: #{text}"
+  pinned: Pinned topic
+  closed: Closed topic
+  deleted: Deleted topic
+  bookmarked: You bookmarked this topic
