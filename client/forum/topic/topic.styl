@@ -3,32 +3,36 @@
 .forum-postlist
   margin-top 10px
 
-.forum-topic-menu__open
+.forum-topic-title__edit
+  color gray
+
+.forum-topic__closed-mark
   display none
 
+.forum-topic-menu__open
 .forum-topic-menu__unpin
   display none
 
 .forum-topic-root__m-closed
-  .forum-topic-menu__close
-    display none
+  .forum-topic__closed-mark
+    display inline-block
 
   .forum-topic-menu__open
     display block
-
+  .forum-topic-menu__close
   .forum-topic-menu__reply
     display none
 
   .forum-post__reply
     display none
 
-.forum-topic-root__m-deleted, .forum-topic-root__m-deleted-hard
+.forum-topic-root__m-deleted
+.forum-topic-root__m-deleted-hard
+  .forum-topic-title__text
+    text-decoration line-through
+
   .forum-topic-menu__close
-    display none
-
   .forum-topic-menu__pin
-    display none
-
   .forum-topic-menu__reply
     display none
 
@@ -45,7 +49,6 @@
 .forum-topic-root__m-pinned
   .forum-topic-menu__unpin
     display block
-
   .forum-topic-menu__pin
     display none
 

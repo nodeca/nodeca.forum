@@ -2,10 +2,12 @@
 - var topicOwner = self.users[self.topic.cache.first_user]
 
 - self.add_raw_data('settings', self.settings)
+- var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
+- var isClosed = (self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED);
 
 article#content.forum-topic-root(
-  class=(self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN) ? 'forum-topic-root__m-open' : ''
-  class=(self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED) ? 'forum-topic-root__m-closed' : ''
+  class=isOpen ? 'forum-topic-root__m-open' : ''
+  class=isClosed ? 'forum-topic-root__m-closed' : ''
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
   class=(self.topic.st === topicStatuses.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''
@@ -16,9 +18,11 @@ article#content.forum-topic-root(
     - var canEdit = (topicOwner && topicOwner._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || self.date(self.topic.cache.first_ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
 
     h1.forum-topic-title.page-head__title(itemprop='name')
+      span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
+
       span.forum-topic-title__text= self.topic.title
 
-      if canEdit || self.settings.forum_mod_can_edit_titles
+      if isOpen && (canEdit || self.settings.forum_mod_can_edit_titles)
         a.forum-topic-title__edit.icon.icon-edit.icon-dimmed.icon-space-before(
           href='#'
           title=self.t('edit_title')
