@@ -28,22 +28,13 @@ article#content.forum-section-root
               button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
                 span.caret
               ul.dropdown-menu
-                li.disabled.visible-xxs-block: a(href='#')= self.t('mark_read')
-                li.disabled.visible-xxs-block: a(href='#')= self.t('subscribe')
-                li.visible-xxs-block.divider
-                li.dropdown-header= self.t('mod_actions')
                 li.disabled: a(href='#')= self.t('announce')
                 li.disabled: a(href='#')= self.t('add_moderator')
                 li.disabled: a(href='#')= self.t('mass_move')
                 li.disabled: a(href='#')= self.t('mass_prune')
 
             if self.runtime.is_member
-              button.hidden-xxs.btn.btn-default.icon.icon-track.pull-right(
-                type='button'
-                title=self.t('subscribe')
-              )
-
-              button.hidden-xxs.btn.btn-default.icon.icon-check.pull-right(
+              button.btn.btn-default.icon.icon-check.pull-right(
                 type='button'
                 title=self.t('mark_read')
               )
@@ -75,3 +66,13 @@ article#content.forum-section-root
     else
       p.forum-section__notopics
         != self.t('no_topics')
+
+    //- Tracking options
+    if self.runtime.is_member
+      footer.forum-section__tracking
+        button.forum-section__tracking-btn.btn.btn-sm.btn-default(type='button')
+          span.icon.icon-track-normal.icon-space-after
+          | #{self.t('tracking')}
+
+        span.forum-section__tracking-text
+          | You will receive notifications because you subscribed this section

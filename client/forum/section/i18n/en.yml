@@ -2,7 +2,6 @@ en-US:
   no_topics: No topics yet.
 
   mark_read: Mark all read
-  subscribe: Subscribe
   announce: Announce
   add_moderator: Add moderator
   mass_move: Mass move
@@ -13,5 +12,7 @@ en-US:
   topic_create: New topic
   more_topics: More topics
   title_with_page: "#{title} - page #{page}"
+
+  tracking: Tracking
 
   error_no_more_topics: Ups! No more topics in this section.

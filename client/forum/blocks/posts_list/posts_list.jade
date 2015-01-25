@@ -38,25 +38,25 @@ each post in self.posts
     .forum-post__content
       .forum-post__message !{post.html}
 
-      .forum-post__tail
-        !=self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user })
+      - var tail = self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user });
+      if tail
+        .forum-post__tail
+          !=tail
 
       footer.forum-post__controls.clearfix
-        ul.forum-post__controls-blk.pull-left
-          li.forum-post__control-item
-            a.forum-post__action-link(href='#')= self.t('report')
-          li.forum-post__control-item
-            a.forum-post__action-link(href='#')= self.t('ip_show')
         ul.forum-post__controls-blk.pull-right
 
           if (self.settings.forum_mod_can_edit_posts || self.settings.forum_mod_can_delete_topics)
             li.forum-post__control-item.dropdown.dropup
-              button.btn.btn-link.dropdown-toggle(
+              button.btn.forum-post__action.dropdown-toggle(
                 data-toggle='dropdown'
                 role='button'
               )
                 span.caret
               ul.dropdown-menu.dropdown-menu-right(role='menu')
+                li.forum-post__control-item
+                  a(href='#')= self.t('ip_info')
+
                 if (self.settings.forum_mod_can_edit_posts)
                   li
                     a(href='#'
@@ -79,34 +79,59 @@ each post in self.posts
                       data-topic-id='#{self.topic._id}'
                     )= self.t('undelete')
 
-          if self.settings.forum_can_reply
-            li.forum-post__reply.forum-post__control-item
-              a.forum-post__action-link.icon.icon-space-after.icon-dimmed.icon-reply(
-                href='#'
-                data-on-click='forum.topic.post_reply'
-                data-post-id=post._id
-              )= self.t('reply')
+          li.forum-post__control-item.forum-post__vote-up
+            button.btn.forum-post__action(title= self.t('vote_up'))
+              span.icon.icon-vote-up
+
+          li.forum-post__control-item.forum-post__vote-down
+            button.btn.forum-post__action(title= self.t('vote_down'))
+              span.icon.icon-vote-down
+
+          li.forum-post__control-item
+            button.btn.forum-post__action(title= self.t('report'))
+              span.icon.icon-report
+
+          li.forum-post__control-item.forum-post__bookmark-add
+            button.btn.forum-post__action(title= self.t('bookmark_add'))
+              span.icon.icon-bookmark-empty
+          li.forum-post__control-item.forum-post__bookmark-remove
+            button.btn.forum-post__action(title= self.t('bookmark_remove'))
+              span.icon.icon-bookmark
 
           if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
             li.forum-post__edit.forum-post__control-item
-              a.forum-post__action-link(
-                href='#'
+              button.btn.forum-post__action(
                 data-on-click='forum.topic.post_edit'
                 data-post-id='#{post._id}'
-              )= self.t('edit')
+              )
+                span.icon.icon-edit
 
             li.forum-post__delete.forum-post__control-item
-              a.forum-post__action-link(
-                href='#'
+              button.btn.forum-post__action(
                 data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
                 data-post-id='#{post._id}'
                 data-topic-id='#{self.topic._id}'
-              )= self.t('delete')
+                title=self.t('delete')
+              )
+                span.icon.icon-trash
 
-          li.forum-post__control-item
-            a.forum-post__vote-down.icon.icon-vote-down(href='#')
-            span.forum-post__vote-count +47
-            a.forum-post__vote-up.icon.icon-vote-up(href='#')
+          if self.settings.forum_can_reply
+            li.forum-post__reply.forum-post__control-item
+              button.btn.forum-post__action(
+                data-on-click='forum.topic.post_reply'
+                data-post-id=post._id
+                title=self.t('reply')
+              )
+                span.icon.icon-reply
+
+          - var votes = Math.random() * 3 > 2
+          if (votes)
+            li.forum-post__control-item
+              button.btn.forum-post__action(
+                data-post-id='#{post._id}'
+                title=self.t('vote_details')
+              )
+                | +#{Math.floor(Math.random()*20) + 1}
 
       if post.del_reason
         .forum-post__del-reason=self.t('del_reason', { text: post.del_reason })

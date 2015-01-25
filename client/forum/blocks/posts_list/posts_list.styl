@@ -82,11 +82,9 @@
   overflow-x hidden
 
 .forum-post__message
-  min-height 75px
+  min-height 60px
 
 .forum-post__controls
-  margin-top 20px
-.forum-post__message + .forum-post__controls
   margin-top 10px
 
 .forum-post__controls-blk
@@ -96,66 +94,55 @@
 
 .forum-post__control-item
   display inline-block
-  margin-right: 15px
+  margin-right: 0px
   &:last-child
     margin-right: 0
 
-a.forum-post__action-link
-  color grayDark
-  text-decoration underline
+.forum-post__action
+  background-color white
+  color gray
 
-
-// votes
-.forum-post__vote-up
-  margin-left .1em
-  margin-right 0
-  color #080
-  text-shadow 1px 1px 1px rgba(127, 127, 127, 0.5)
   &:hover
-    color #4c4
-    text-decoration none
+  &:focus
+  &:active
+    background-color grayLightest
 
-.forum-post__vote-down
-  margin-left 0
-  margin-right .1em
-  color #c00
-  text-shadow 1px 1px 1px rgba(127, 127, 127, 0.5)
-  &:hover
-    color #f44
-    text-decoration none
+  .icon:before
+    font-size 120%
+    top 1px
+
+.forum-post__reply
+  .forum-post__action
+    color #428bca
 
 //
 // Hovering magick
 //
 
 .forum-post
-  .forum-post__action-link
-  .forum-post__vote-up
-  .forum-post__vote-down
+  .forum-post__action
     transition opacity .3s ease
     opacity .2
-.forum-post:hover
-  .forum-post__action-link
-  .forum-post__vote-up
-  .forum-post__vote-down
-    opacity 1
+  &:hover
+    .forum-post__action
+      opacity 1
 
 // Actions states
-
-.forum-post__undelete
+.forum-post__bookmark-remove
   display none
 
+.forum-post__undelete
 .forum-post__del-reason
   display none
 
-.forum-post__m-deleted, .forum-post__m-deleted-hard
+.forum-post__m-deleted
+.forum-post__m-deleted-hard
+
   .forum-post__del-reason
-    display block
-  .forum-post__edit
-    display none
-  .forum-post__delete
-    display none
-  .forum-post__reply
-    display none
   .forum-post__undelete
     display block
+
+  .forum-post__edit
+  .forum-post__delete
+  .forum-post__reply
+    display none

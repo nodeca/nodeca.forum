@@ -1,5 +1,4 @@
 en-US:
-  subscribe: Subscribe
   delete: Delete
   close: Close
   open: Open
@@ -16,6 +15,8 @@ en-US:
   post_add: Add reply
   more_posts: More posts
   title_with_page: "#{title} - page #{page}"
+
+  tracking: Tracking
 
   error_no_more_posts: Ups! No more posts in this topic.
   error_title_length: "Title should have at least #{min_length} ((character|characters)):min_length"

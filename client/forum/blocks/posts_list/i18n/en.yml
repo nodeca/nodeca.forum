@@ -1,7 +1,12 @@
 en-US:
   page_separator: "page #{value}"
-  report: Report
-  ip_show: IP
+  report: Report to moderator
+  vote_up: Vote up
+  vote_down: Vote down
+  vote_details: Show details
+  bookmark: Add to bookmarks
+  bookmark_remove: Remove from bookmarks
+  ip_info: IP info
   reply: Reply
   delete: Delete
   undelete: Undelete

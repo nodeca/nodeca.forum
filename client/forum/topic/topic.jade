@@ -48,7 +48,6 @@ article#content.forum-topic-root(
               span.caret
 
             ul.dropdown-menu
-              li.visible-xxs-block: a(href='#')= self.t('subscribe')
               li.disabled: a(href='#')= self.t('delete')
 
               if (topicOwner && topicOwner._id === self.runtime.user_id) && self.settings.forum_can_close_topic
@@ -98,12 +97,6 @@ article#content.forum-topic-root(
 
               li.disabled: a(href='#')= self.t('history')
 
-          if self.runtime.is_member
-            button.hidden-xxs.btn.btn-default.icon.icon-track.pull-right(
-              type='button'
-              title=self.t('subscribe')
-            )
-
           if self.settings.forum_can_reply
             button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(
               data-on-click='forum.topic.post_reply'
@@ -122,3 +115,14 @@ article#content.forum-topic-root(
     href=self.link_to(self.apiPath, link_params)
     data-on-click="forum.topic.append_next_page"
   )= self.t('more_posts')
+
+  //- Tracking options
+  if self.runtime.is_member
+    footer.forum-topic__tracking
+      button.forum-topic__tracking-btn.btn.btn-sm.btn-default(type='button')
+        span.icon.icon-track-instant.icon-space-after
+        | #{self.t('tracking')}
+
+      span.forum-topic__tracking-text
+        | You will receive notifications because you replied this topic
+
