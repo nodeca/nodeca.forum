@@ -80,22 +80,22 @@ each post in self.posts
                     )= self.t('undelete')
 
           li.forum-post__control-item.forum-post__vote-up
-            button.btn.forum-post__action(title= self.t('vote_up'))
+            button.btn.forum-post__action(title=self.t('vote_up'))
               span.icon.icon-vote-up
 
           li.forum-post__control-item.forum-post__vote-down
-            button.btn.forum-post__action(title= self.t('vote_down'))
+            button.btn.forum-post__action(title=self.t('vote_down'))
               span.icon.icon-vote-down
 
           li.forum-post__control-item
-            button.btn.forum-post__action(title= self.t('report'))
+            button.btn.forum-post__action(title=self.t('report'))
               span.icon.icon-report
 
           li.forum-post__control-item.forum-post__bookmark-add
-            button.btn.forum-post__action(title= self.t('bookmark_add'))
+            button.btn.forum-post__action(title=self.t('bookmark_add'))
               span.icon.icon-bookmark-empty
           li.forum-post__control-item.forum-post__bookmark-remove
-            button.btn.forum-post__action(title= self.t('bookmark_remove'))
+            button.btn.forum-post__action(title=self.t('bookmark_remove'))
               span.icon.icon-bookmark
 
           if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
