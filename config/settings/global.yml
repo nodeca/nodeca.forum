@@ -4,6 +4,9 @@ setting_groups:
   forum_general:
     parent: forum
 
+  forum_editor:
+    parent: forum
+
 
 setting_schemas:
   global:

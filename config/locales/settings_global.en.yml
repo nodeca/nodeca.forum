@@ -5,6 +5,7 @@ i18n:
         group_names:
           forum: Forum
           forum_general: General
+          forum_editor: Editor
 
         category_names:
           forum: Forum
