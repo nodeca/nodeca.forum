@@ -56,11 +56,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     N.io.rpc('forum.topic.close', data).done(function () {
       if (data.reopen) {
+        N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
         $('.forum-topic-root')
           .removeClass('forum-topic-root__m-closed')
           .addClass('forum-topic-root__m-open');
 
       } else {
+        N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
         $('.forum-topic-root')
           .removeClass('forum-topic-root__m-open')
           .addClass('forum-topic-root__m-closed');
