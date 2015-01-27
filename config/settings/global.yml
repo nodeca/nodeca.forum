@@ -27,3 +27,10 @@ setting_schemas:
       group_key: forum_general
       category_key: topic
       default: 25
+
+    forum_edit_max_time:
+      priority: 40
+      group_key: forum_editor
+      category_key: topic
+      type: number
+      default: 30
