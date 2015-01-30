@@ -9,17 +9,17 @@
 .forum-topic__closed-mark
   display none
 
-.forum-topic-menu__open
-.forum-topic-menu__unpin
+.forum-topic-title__edit
   display none
+
+.forum-topic-root__m-open
+  .forum-topic-title__edit
+    display inline
 
 .forum-topic-root__m-closed
   .forum-topic__closed-mark
     display inline-block
 
-  .forum-topic-menu__open
-    display block
-  .forum-topic-menu__close
   .forum-topic-menu__reply
     display none
 
@@ -31,8 +31,6 @@
   .forum-topic-title__text
     text-decoration line-through
 
-  .forum-topic-menu__close
-  .forum-topic-menu__pin
   .forum-topic-menu__reply
     display none
 
@@ -45,13 +43,6 @@
 
     .forum-post__undelete
       display block
-
-.forum-topic-root__m-pinned
-  .forum-topic-menu__unpin
-    display block
-  .forum-topic-menu__pin
-    display none
-
 
 // TODO: move to separate block when menu complete
 .forum-topic__tracking

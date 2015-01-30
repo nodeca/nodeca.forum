@@ -163,7 +163,8 @@ module.exports = function (N, apiPath) {
       update.del_reason = env.params.reason;
     }
 
-    // TODO: statuses history
+    env.res.topic = { st: update.st };
+
     N.models.forum.Topic.update(
       { _id: topic._id },
       update,

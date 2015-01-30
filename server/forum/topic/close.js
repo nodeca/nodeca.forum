@@ -15,15 +15,29 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    var statuses = N.models.forum.Topic.statuses;
+    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    N.models.forum.Topic
-      .findOne({
-        _id: env.params.topic_id,
-        st: { $in: [ statuses.OPEN, statuses.CLOSED, statuses.PINNED, statuses.HB ] }
-      })
-      .lean(true)
-      .exec(function (err, topic) {
+      env.data.can_see_hellbanned = can_see_hellbanned;
+
+      var statuses = N.models.forum.Topic.statuses;
+      var st = { $in: [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ] };
+
+      // Add `HB` only for hellbanned users and for users who can see hellbanned
+      if (env.user_info.hb || can_see_hellbanned) {
+        st.$in.push(statuses.HB);
+      }
+
+      N.models.forum.Topic
+          .findOne({
+            _id: env.params.topic_id,
+            st: st
+          })
+          .lean(true)
+          .exec(function (err, topic) {
 
         if (err) {
           callback(err);
@@ -38,6 +52,7 @@ module.exports = function (N, apiPath) {
         env.data.topic = topic;
         callback();
       });
+    });
   });
 
 
@@ -84,6 +99,16 @@ module.exports = function (N, apiPath) {
     } else {
       update = { st: newStatus };
     }
+
+    var res = { st: update.st || topic.st, ste: update.ste || topic.ste };
+
+    // Show `ste` instead `st` for hellbanned users in hellbanned topic
+    if (env.user_info.hb && res.st === statuses.HB && !env.data.can_see_hellbanned) {
+      res.st = res.ste;
+      delete res.ste;
+    }
+
+    env.res.topic = res;
 
     N.models.forum.Topic.update(
       { _id: topic._id },

@@ -3,11 +3,12 @@
 
 'use strict';
 
-var punycode   = require('punycode');
+var _        = require('lodash');
+var punycode = require('punycode');
 
 // Topic state
 //
-// - topic_hid:             topic's human id
+// - topic_hid:       topic's human id
 // - section_hid:     id of the current section
 // - page:            topic's next page
 //
@@ -24,21 +25,46 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
-  // Pin/unpin topic handler
+  // Update topic menu for new topic state
+  //
+  // topic:
+  // - st
+  // - ste
+  //
+  var updateTopicMenu = function (topic, callback) {
+    var params = {};
+
+    N.wire.emit('navigate.get_page_raw', params, function () {
+      // - reset previous `st` and `ste`
+      // - set new `st` and `ste`
+      var menuData = _.merge({}, params.data, { topic: { st: null, ste: null } }, { topic: topic });
+
+      $('.forum-topic__dropdown').replaceWith(
+        N.runtime.render('forum.topic.topic_dropdown_menu', menuData)
+      );
+
+      callback();
+    });
+  };
+
+
+  // Pin/unpin topic
   //
   N.wire.on('forum.topic.pin', function topic_pin(event) {
     var $button = $(event.target);
     var topicId = $button.data('topic-id');
     var unpin = $button.data('unpin') || false;
 
-    N.io.rpc('forum.topic.pin', { topic_id: topicId, unpin: unpin }).done(function () {
-      if (unpin) {
-        $('.forum-topic-root').removeClass('forum-topic-root__m-pinned');
-        N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
-      } else {
-        $('.forum-topic-root').addClass('forum-topic-root__m-pinned');
-        N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
-      }
+    N.io.rpc('forum.topic.pin', { topic_id: topicId, unpin: unpin }).done(function (res) {
+      updateTopicMenu(res.topic, function () {
+        if (unpin) {
+          $('.forum-topic-root').removeClass('forum-topic-root__m-pinned');
+          N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
+        } else {
+          $('.forum-topic-root').addClass('forum-topic-root__m-pinned');
+          N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
+        }
+      });
     });
   });
 
@@ -54,19 +80,21 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       as_moderator: $button.data('as-moderator') || false
     };
 
-    N.io.rpc('forum.topic.close', data).done(function () {
-      if (data.reopen) {
-        N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
-        $('.forum-topic-root')
-          .removeClass('forum-topic-root__m-closed')
-          .addClass('forum-topic-root__m-open');
+    N.io.rpc('forum.topic.close', data).done(function (res) {
+      updateTopicMenu(res.topic, function () {
+        if (data.reopen) {
+          N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
+          $('.forum-topic-root')
+            .removeClass('forum-topic-root__m-closed')
+            .addClass('forum-topic-root__m-open');
 
-      } else {
-        N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
-        $('.forum-topic-root')
-          .removeClass('forum-topic-root__m-open')
-          .addClass('forum-topic-root__m-closed');
-      }
+        } else {
+          N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
+          $('.forum-topic-root')
+            .removeClass('forum-topic-root__m-open')
+            .addClass('forum-topic-root__m-closed');
+        }
+      });
     });
   });
 
@@ -109,19 +137,23 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
 
   // Undelete topic handler
+  //
   N.wire.on('forum.topic.topic_undelete', function topic_undelete(event) {
     var topicId = $(event.target).data('topic-id');
 
-    N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function () {
-      $('.forum-topic-root')
-        .removeClass('forum-topic-root__m-deleted')
-        .removeClass('forum-topic-root__m-deleted-hard');
-      N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
+    N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function (res) {
+      updateTopicMenu(res.topic, function () {
+        $('.forum-topic-root')
+          .removeClass('forum-topic-root__m-deleted')
+          .removeClass('forum-topic-root__m-deleted-hard');
+        N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
+      });
     });
   });
 
 
   // Undelete post handler
+  //
   N.wire.on('forum.topic.post_undelete', function post_undelete(event) {
     var postId = $(event.target).data('post-id');
 

@@ -2,19 +2,12 @@ en-US:
   closed: Topic closed
 
   delete: Delete
-  close: Close
-  open: Open
-  pin: Pin
-  unpin: Unpin
-  history: History
   edit_title: Edit title
   undelete_topic_done: Topic undeleted
   pin_topic_done: Topic pinned
   unpin_topic_done: Topic unpinned
   open_topic_done: Topic opened
   close_topic_done: Topic closed
-
-  mod_actions: Moderation
 
   post_add: Add reply
   more_posts: More posts
@@ -24,3 +17,13 @@ en-US:
 
   error_no_more_posts: Ups! No more posts in this topic.
   error_title_length: "Title should have at least #{min_length} ((character|characters)):min_length"
+
+  topic_dropdown_menu:
+    mod_actions: Moderation
+    close: Close
+    open: Open
+    pin: Pin
+    unpin: Unpin
+    history: History
+    delete: Delete
+    undelete: Undelete

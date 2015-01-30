@@ -37,6 +37,8 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
+
     N.models.forum.Topic
         .findOne({ _id: env.params.topic_id })
         .lean(true)
@@ -48,6 +50,12 @@ module.exports = function (N, apiPath) {
       }
 
       if (!topic) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      // Can edit titles only in opened topics
+      if (topic.st !== statuses.OPEN && topic.ste !== statuses.OPEN) {
         callback(N.io.NOT_FOUND);
         return;
       }

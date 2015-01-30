@@ -1,0 +1,133 @@
+- var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
+- var topicOwner = self.users[self.topic.cache.first_user]
+
+- var items = []
+
+
+if topicOwner && topicOwner._id === self.runtime.user_id
+
+  if self.settings.forum_edit_max_time === 0 || self.date(self.topic.cache.first_ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000
+    if self.topic.st !== topicStatuses.DELETED && self.topic.st !== topicStatuses.DELETED_HARD
+      - items.push('delete')
+
+  if self.settings.forum_can_close_topic
+    if self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN
+      - items.push('close')
+    if self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED
+      - items.push('open')
+
+if items.length > 0
+  - items.push('divider')
+
+- items.push('header')
+
+if self.settings.forum_mod_can_delete_topics
+  if self.topic.st === topicStatuses.DELETED || self.topic.st === topicStatuses.DELETED_HARD
+    - items.push('mod_undelete')
+  else
+    - items.push('mod_delete')
+
+if self.settings.forum_mod_can_close_topic
+  if self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN
+    - items.push('mod_close')
+  if self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED
+    - items.push('mod_open')
+
+if self.settings.forum_mod_can_pin_topic
+  if self.topic.st === topicStatuses.PINNED
+    - items.push('mod_unpin')
+  if self.topic.st === topicStatuses.OPEN || self.topic.st === topicStatuses.CLOSED
+    - items.push('mod_pin')
+
+- items.push('mod_history')
+
+
+//- If last item is header - remove it
+if items.length > 0 && items[items.length - 1] === 'header'
+  - items.pop()
+
+//- If last item is devider - remove it
+if items.length > 0 && items[items.length - 1] === 'divider'
+  - items.pop()
+
+
+.forum-topic__dropdown.btn-group.pull-right(class=items.length === 0 ? 'hidden' : '')
+  if items.length > 0
+
+    button.btn.btn-default.dropdown-toggle(type='button' data-toggle='dropdown')
+      span.caret
+
+    ul.dropdown-menu
+
+      each item in items
+        case item
+
+          when 'divider'
+            li.divider
+
+          when 'header'
+            li.dropdown-header= self.t('mod_actions')
+
+          when 'mod_history'
+            //- TODO
+            li.disabled: a(href='#')= self.t('history')
+
+          when 'delete'
+            li: a(href='#'
+              data-on-click='forum.topic.topic_delete'
+              data-topic-id='#{self.topic._id}'
+            )= self.t('delete')
+
+          when 'close'
+            li: a(href='#'
+              data-on-click='forum.topic.close'
+              data-topic-id='#{self.topic._id}'
+            )= self.t('close')
+
+          when 'open'
+            li: a(href='#'
+              data-on-click='forum.topic.close'
+              data-topic-id='#{self.topic._id}'
+              data-reopen='true'
+            )= self.t('open')
+
+          when 'mod_delete'
+            li: a(href='#'
+            data-on-click='forum.topic.topic_delete'
+            data-topic-id='#{self.topic._id}'
+            data-as-moderator='true'
+            )= self.t('delete')
+
+          when 'mod_undelete'
+            li: a(href='#'
+            data-on-click='forum.topic.topic_undelete'
+            data-topic-id='#{self.topic._id}'
+            )= self.t('undelete')
+
+          when 'mod_close'
+            li: a(href='#'
+            data-on-click='forum.topic.close'
+            data-topic-id='#{self.topic._id}'
+            data-as-moderator='true'
+            )= self.t('close')
+
+          when 'mod_open'
+            li: a(href='#'
+            data-on-click='forum.topic.close'
+            data-topic-id='#{self.topic._id}'
+            data-reopen='true'
+            data-as-moderator='true'
+            )= self.t('open')
+
+          when 'mod_pin'
+            li: a(href='#'
+              data-on-click='forum.topic.pin'
+              data-topic-id='#{self.topic._id}'
+            )=self.t('pin')
+
+          when 'mod_unpin'
+            li: a(href='#'
+              data-on-click='forum.topic.pin'
+              data-topic-id='#{self.topic._id}'
+              data-unpin='true'
+            )=self.t('unpin')

@@ -22,7 +22,7 @@ article#content.forum-topic-root(
 
       span.forum-topic-title__text= self.topic.title
 
-      if isOpen && (canEdit || self.settings.forum_mod_can_edit_titles)
+      if canEdit || self.settings.forum_mod_can_edit_titles
         a.forum-topic-title__edit.icon.icon-edit.icon-dimmed.icon-space-before(
           href='#'
           title=self.t('edit_title')
@@ -47,59 +47,7 @@ article#content.forum-topic-root(
               - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
               != self.partial('@common.blocks.pagination', pgn_params)
 
-          .btn-group.pull-right
-            button.btn.btn-default.dropdown-toggle(type='button' data-toggle='dropdown')
-              span.caret
-
-            ul.dropdown-menu
-              li.disabled: a(href='#')= self.t('delete')
-
-              if (topicOwner && topicOwner._id === self.runtime.user_id) && self.settings.forum_can_close_topic
-                li.forum-topic-menu__close
-                  a(href='#'
-                    data-on-click='forum.topic.close'
-                    data-topic-id='#{self.topic._id}'
-                  )= self.t('close')
-                li.forum-topic-menu__open
-                  a(href='#'
-                    data-on-click='forum.topic.close'
-                    data-topic-id='#{self.topic._id}'
-                    data-reopen='true'
-                  )= self.t('open')
-
-              li.divider
-              li.dropdown-header= self.t('mod_actions')
-              li.disabled: a(href='#')= self.t('delete')
-
-              if self.settings.forum_mod_can_close_topic
-                li.forum-topic-menu__close
-                  a(href='#'
-                    data-on-click='forum.topic.close'
-                    data-topic-id='#{self.topic._id}'
-                    data-as-moderator='true'
-                  )= self.t('close')
-                li.forum-topic-menu__open
-                  a(href='#'
-                    data-on-click='forum.topic.close'
-                    data-topic-id='#{self.topic._id}'
-                    data-reopen='true'
-                    data-as-moderator='true'
-                  )= self.t('open')
-
-              if self.settings.forum_mod_can_pin_topic
-                li.forum-topic-menu__pin
-                  a(href='#'
-                    data-on-click='forum.topic.pin'
-                    data-topic-id='#{self.topic._id}'
-                  )=self.t('pin')
-                li.forum-topic-menu__unpin
-                  a(href='#'
-                    data-on-click='forum.topic.pin'
-                    data-topic-id='#{self.topic._id}'
-                    data-unpin='true'
-                  )=self.t('unpin')
-
-              li.disabled: a(href='#')= self.t('history')
+          != self.partial('topic_dropdown_menu')
 
           if self.settings.forum_can_reply
             button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(

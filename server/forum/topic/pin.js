@@ -70,8 +70,12 @@ module.exports = function (N, apiPath) {
     var statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
 
-    // Pin topic
     if (!env.params.unpin) {
+
+      // Fill response
+      env.res.topic = { st: statuses.PINNED, ste: topic.st };
+
+      // Pin topic
       N.models.forum.Topic.update(
         { _id: topic._id },
         { st: statuses.PINNED, ste: topic.st },
@@ -80,6 +84,9 @@ module.exports = function (N, apiPath) {
 
       return;
     }
+
+    // Fill response
+    env.res.topic = { st: topic.ste };
 
     // Unpin topic
     N.models.forum.Topic.update(

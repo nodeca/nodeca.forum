@@ -74,6 +74,8 @@ module.exports = function (N, apiPath) {
 
     _.assign(update, topic.prev_st);
 
+    env.res.topic = { st: update.st, ste: update.ste };
+
     N.models.forum.Topic.update(
       { _id: topic._id },
       update,
