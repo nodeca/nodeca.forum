@@ -39,9 +39,6 @@ if self.settings.forum_mod_can_pin_topic
   if self.topic.st === topicStatuses.OPEN || self.topic.st === topicStatuses.CLOSED
     - items.push('mod_pin')
 
-- items.push('mod_history')
-
-
 //- If last item is header - remove it
 if items.length > 0 && items[items.length - 1] === 'header'
   - items.pop()
@@ -50,6 +47,8 @@ if items.length > 0 && items[items.length - 1] === 'header'
 if items.length > 0 && items[items.length - 1] === 'divider'
   - items.pop()
 
+if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
+  - items.push('mod_history')
 
 .forum-topic__dropdown.btn-group.pull-right(class=items.length === 0 ? 'hidden' : '')
   if items.length > 0
