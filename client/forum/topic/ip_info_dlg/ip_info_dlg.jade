@@ -1,0 +1,9 @@
+.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+        h4.modal-title=self.t('title')
+      .modal-body= self.ip
+      .modal-footer
+        button.btn.btn-default(type='button' tabindex='4' data-dismiss='modal')=self.t('cancel')

@@ -25,6 +25,15 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Show post IP
+  //
+  N.wire.on('forum.topic.post_show_ip', function post_show_ip(event) {
+    var postId = $(event.target).data('post-id');
+
+    N.wire.emit('forum.topic.ip_info_dlg', { postId: postId });
+  });
+
+
   // Update topic menu for new topic state
   //
   // topic:
