@@ -61,26 +61,58 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // Sanitize topic data
-      env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
-        if (err) {
-          callback(err);
-          return;
+      var visibleSt = [
+        Topic.statuses.OPEN,
+        Topic.statuses.CLOSED,
+        Topic.statuses.PINNED
+      ];
+
+      env.extras.settings.params.section_id = topic.section;
+
+      env.extras.settings.fetch(
+        [
+          'can_see_hellbanned',
+          'forum_mod_can_delete_topics',
+          'forum_mod_can_see_hard_deleted_topics'
+        ],
+        function (err, settings) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          if (env.user_info.hb || settings.can_see_hellbanned) {
+            visibleSt.push(Topic.statuses.HB);
+          }
+
+          if (settings.forum_mod_can_delete_topics) {
+            visibleSt.push(Topic.statuses.DELETED);
+          }
+
+          if (settings.forum_mod_can_see_hard_deleted_topics) {
+            visibleSt.push(Topic.statuses.DELETED_HARD);
+          }
+
+          if (visibleSt.indexOf(topic.st) === -1) {
+            callback(N.io.NOT_FOUND);
+            return;
+          }
+
+          // Sanitize topic data
+          Topic.sanitize(topic, {
+            keep_statuses: settings.can_see_hellbanned,
+            keep_data: env.user_info.hb || settings.can_see_hellbanned
+          });
+
+          env.data.topic = topic;
+
+          // Add topic info to response
+          env.res.topic = _.pick(topic, topicFields);
+
+
+          callback();
         }
-
-        Topic.sanitize(topic, {
-          keep_statuses: can_see_hellbanned,
-          keep_data: env.user_info.hb || can_see_hellbanned
-        });
-
-        env.data.topic = topic;
-
-        // Add topic info to response
-        env.res.topic = _.pick(topic, topicFields);
-
-
-        callback();
-      });
+      );
     });
   });
 
