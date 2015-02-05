@@ -5,7 +5,7 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    // topic id
+    // Topic hid
     hid: {
       type: 'integer',
       minimum: 1,
@@ -13,7 +13,8 @@ module.exports = function (N, apiPath) {
     },
     section_hid: {
       type: 'integer',
-      minimum: 1
+      minimum: 1,
+      required: true
     },
     page: {
       type: 'integer',
@@ -23,38 +24,47 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Just subcall forum.topic.list, that enchances `env`
+  var buildPostIds = require('./list/_build_posts_ids_by_page.js')(N);
+
+
+  // `params.section_hid` can be wrong (old link to moved topic).
+  // If `params.section_hid` not correct - redirect to proper location.
   //
-  N.wire.on(apiPath, function get_posts(env, callback) {
-    env.extras.puncher.start('process topic');
-
-    N.wire.emit('server:forum.topic.list', env, callback);
-  });
-
-
-  // `params.section_hid` can be wrong (old link to moved topic)
-  // If params.section_hid defined, and not correct - redirect to proper location
+  // Redirect here to avoid fetching posts twice.
   //
-  // Making redirect here is not optimal, because posts will be fetched twice.
-  // But that's not crilital, and avoid logic duplication (permissions check and other)
-  //
-  N.wire.after(apiPath, function fix_section_hid(env) {
-    if (!env.params.hasOwnProperty('section_hid')) {
-      return null;
-    }
-
+  function buildPostIdsAndCheckRedirect(env, callback) {
     if (env.data.section.hid !== +env.params.section_hid) {
-      return {
+      callback({
         code: N.io.REDIRECT,
         head: {
           'Location': N.router.linkTo('forum.topic', {
-            hid:       env.data.topic.hid,
+            hid:         env.data.topic.hid,
             section_hid: env.data.section.hid,
-            page:     env.params.page || 1
+            page:        env.params.page || 1
           })
         }
-      };
+      });
+      return;
     }
+
+    buildPostIds(env, callback);
+  }
+
+
+  // Fetch posts subcall
+  //
+  N.wire.on(apiPath, function fetch_posts_list(env, callback) {
+    env.data.topic_hid = env.params.hid;
+    env.data.build_posts_ids = buildPostIdsAndCheckRedirect;
+
+    N.wire.emit('internal:forum.post_list', env, callback);
+  });
+
+
+  // Fill additional topic fields
+  //
+  N.wire.after(apiPath, function fill_topic_fields(env) {
+    env.res.topic.title = env.data.topic.title;
   });
 
 

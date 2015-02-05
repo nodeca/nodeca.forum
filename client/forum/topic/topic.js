@@ -249,7 +249,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var $button = $(event.currentTarget);
 
     // request for the next page
-    N.io.rpc( 'forum.topic.list', { hid: topicState.topic_hid, page: topicState.page + 1 }).done(function (res) {
+    N.io.rpc('forum.topic.list.by_page', { topic_hid: topicState.topic_hid, page: topicState.page + 1 })
+        .done(function (res) {
+
       // if no posts - just disable 'More' button
       if (!res.posts || !res.posts.length) {
         N.wire.emit('notify', {
