@@ -89,6 +89,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   };
 
 
+  // Expand deleted or hellbanned post
+  //
+  N.wire.on('forum.topic.post_expand', function post_expand(event) {
+    var postId = $(event.currentTarget).data('post-id');
+
+    N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
+        .done(function (res) {
+
+      $('#post' + postId).replaceWith(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
+    });
+  });
+
+
   // Pin/unpin topic
   //
   N.wire.on('forum.topic.pin', function topic_pin(event) {
@@ -214,7 +227,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Delete post handler
   //
   N.wire.on('forum.topic.post_delete', function post_delete(event) {
-    var $button = $(event.target);
+    var $button = $(event.currentTarget);
     var postId = $button.data('post-id');
     var $post = $('#post' + postId);
 
@@ -226,18 +239,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     };
 
     N.wire.emit('forum.topic.post_delete_dlg', data, function () {
-      if (N.runtime.page_data.settings.forum_mod_can_see_hard_deleted_topics && data.method === 'hard') {
-        $post.addClass('forum-post__m-deleted-hard');
-        return;
-      }
+      N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
+          .done(function (res) {
 
-      if (N.runtime.page_data.settings.forum_mod_can_delete_topics && data.method === 'soft') {
-        $post.addClass('forum-post__m-deleted');
-        return;
-      }
+        if (res.posts.length === 0) {
+          $post.fadeOut(function () {
+            $post.remove();
+          });
 
-      $post.fadeOut(function () {
-        $post.remove();
+          return;
+        }
+
+        $post.replaceWith(N.runtime.render('forum.blocks.posts_list', res));
       });
     });
   });

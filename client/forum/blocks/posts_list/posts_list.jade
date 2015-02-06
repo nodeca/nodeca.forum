@@ -6,144 +6,193 @@
 
 each post in self.posts
   - var user = self.users[post.user];
-  article.forum-post.clearfix(
-    id='post#{post._id}'
-    class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
-    class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
-    data-user-hid=user ? user.hid : ''
-    itemscope
-    itemtype='http://schema.org/WebPageElement'
-  )
-    footer.forum-post__meta.clearfix
-      .forum-post__meta-blk.pull-right
-        time.forum-post__time(
+  - var collapsed = !self.expand && [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) !== -1
+
+  if !collapsed
+
+    article.forum-post.clearfix(
+      id='post#{post._id}'
+      class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
+      class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
+      class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
+      data-user-hid=user ? user.hid : ''
+      itemscope
+      itemtype='http://schema.org/WebPageElement'
+    )
+
+      footer.forum-post__meta.clearfix
+        .forum-post__meta-blk.pull-right
+          time.forum-post__time(
+            itemprop='datePublished'
+            datetime=self.date(post.ts, 'iso')
+          ) #{self.date(post.ts, 'date')}
+          - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
+          a.forum-post__link.icon.icon-link(href=_post_anchor)
+          input.forum-post__check(type='checkbox')
+        .forum-post__meta-blk.pull-left
+          if user
+            a.forum-post__author._ucard-popover(
+              href=self.link_to('users.member', { user_hid: user.hid })
+              data-user-id=post.user
+            ) #{user.name}
+      .forum-post__aside
+        if user
+          a.forum-post__userpic(href='#')
+            img.av-l(alt='#{user.name}' src=self.link_to('core.gridfs', { bucket: user.avatar_id }))
+        else
+          .av-l
+      .forum-post__content
+        .forum-post__message !{post.html}
+
+        - var tail = self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user });
+        if tail
+          .forum-post__tail
+            !=tail
+
+        footer.forum-post__controls.clearfix
+          ul.forum-post__controls-blk.pull-right
+
+            - var showDropdown = false
+            - showDropdown = showDropdown || self.settings.forum_mod_can_edit_posts
+            - showDropdown = showDropdown || self.settings.forum_mod_can_delete_topics
+            - showDropdown = showDropdown || self.settings.can_see_ip
+
+            if showDropdown
+
+                li.forum-post__control-item.dropdown.dropup
+                  button.btn.forum-post__action.dropdown-toggle(
+                    data-toggle='dropdown'
+                    role='button'
+                  )
+                    span.caret
+                  ul.dropdown-menu.dropdown-menu-right(role='menu')
+
+                    if self.settings.can_see_ip
+                      li.forum-post__control-item
+                        a(href='#'
+                          data-post-id='#{post._id}'
+                          data-on-click='forum.topic.post_show_ip'
+                        )= self.t('ip_info')
+
+                    if self.settings.forum_mod_can_edit_posts
+                      li
+                        a(href='#'
+                          data-on-click='forum.topic.post_edit'
+                          data-post-id='#{post._id}'
+                          data-as-moderator='true'
+                        )= self.t('edit')
+
+                    if self.settings.forum_mod_can_delete_topics
+                      li.forum-post__delete
+                        a(href='#'
+                          data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                          data-post-id='#{post._id}'
+                          data-topic-id='#{self.topic._id}'
+                          data-as-moderator='true'
+                        )= self.t('delete')
+                      li.forum-post__undelete
+                        a(href='#'
+                          data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
+                          data-post-id='#{post._id}'
+                          data-topic-id='#{self.topic._id}'
+                        )= self.t('undelete')
+
+            li.forum-post__control-item.forum-post__vote-up
+              button.btn.forum-post__action(title=self.t('vote_up'))
+                span.icon.icon-vote-up
+
+            li.forum-post__control-item.forum-post__vote-down
+              button.btn.forum-post__action(title=self.t('vote_down'))
+                span.icon.icon-vote-down
+
+            li.forum-post__control-item
+              button.btn.forum-post__action(title=self.t('report'))
+                span.icon.icon-report
+
+            li.forum-post__control-item.forum-post__bookmark-add
+              button.btn.forum-post__action(title=self.t('bookmark_add'))
+                span.icon.icon-bookmark-empty
+            li.forum-post__control-item.forum-post__bookmark-remove
+              button.btn.forum-post__action(title=self.t('bookmark_remove'))
+                span.icon.icon-bookmark
+
+            if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
+              li.forum-post__edit.forum-post__control-item
+                button.btn.forum-post__action(
+                  data-on-click='forum.topic.post_edit'
+                  data-post-id='#{post._id}'
+                )
+                  span.icon.icon-edit
+
+              li.forum-post__delete.forum-post__control-item
+                button.btn.forum-post__action(
+                  data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                  data-post-id='#{post._id}'
+                  data-topic-id='#{self.topic._id}'
+                  title=self.t('delete')
+                )
+                  span.icon.icon-trash
+
+            if self.settings.forum_can_reply
+              li.forum-post__reply.forum-post__control-item
+                button.btn.forum-post__action(
+                  data-on-click='forum.topic.post_reply'
+                  data-post-id=post._id
+                  title=self.t('reply')
+                )
+                  span.icon.icon-reply
+
+            - var votes = Math.random() * 3 > 2
+            if (votes)
+              li.forum-post__control-item
+                button.btn.forum-post__action(
+                  data-post-id='#{post._id}'
+                  title=self.t('vote_details')
+                )
+                  | +#{Math.floor(Math.random()*20) + 1}
+  else
+
+    article.forum-post.forum-post__m-collapsed.clearfix(
+      id='post#{post._id}'
+      class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
+      class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
+      class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
+      data-user-hid=user ? user.hid : ''
+      itemscope
+      itemtype='http://schema.org/WebPageElement'
+    )
+
+      footer.forum-post__meta.clearfix
+        .forum-post__meta-blk.pull-right
+          time.forum-post__time(
           itemprop='datePublished'
           datetime=self.date(post.ts, 'iso')
-        ) #{self.date(post.ts, 'date')}
-        - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
-        a.forum-post__link.icon.icon-link(href=_post_anchor)
-        input.forum-post__check(type='checkbox')
-      .forum-post__meta-blk.pull-left
-        if user
-          a.forum-post__author._ucard-popover(
+          ) #{self.date(post.ts, 'date')}
+        .forum-post__meta-blk.pull-left
+          if user
+            a.forum-post__author._ucard-popover(
             href=self.link_to('users.member', { user_hid: user.hid })
             data-user-id=post.user
-          ) #{user.name}
-    .forum-post__aside
-      if user
-        a.forum-post__userpic(href='#')
-          img.av-l(alt='#{user.name}' src=self.link_to('core.gridfs', { bucket: user.avatar_id }))
-      else
-        .av-l
-    .forum-post__content
-      .forum-post__message !{post.html}
+            ) #{user.name}
 
-      - var tail = self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user });
-      if tail
-        .forum-post__tail
-          !=tail
+      .forum-post__content
+        case post.st
+          when postStatuses.DELETED
+           =self.t('del_post_text')
+          when postStatuses.DELETED_HARD
+           =self.t('del_hard_post_text')
+          when postStatuses.HB
+           =self.t('hb_post_text')
+
+        if post.del_reason
+          .forum-post__del-reason=self.t('del_reason', { text: post.del_reason })
 
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-right
-
-          - var showDropdown = false
-          - showDropdown = showDropdown || self.settings.forum_mod_can_edit_posts
-          - showDropdown = showDropdown || self.settings.forum_mod_can_delete_topics
-          - showDropdown = showDropdown || self.settings.can_see_ip
-
-          if showDropdown
-
-              li.forum-post__control-item.dropdown.dropup
-                button.btn.forum-post__action.dropdown-toggle(
-                  data-toggle='dropdown'
-                  role='button'
-                )
-                  span.caret
-                ul.dropdown-menu.dropdown-menu-right(role='menu')
-
-                  if self.settings.can_see_ip
-                    li.forum-post__control-item
-                      a(href='#'
-                        data-post-id='#{post._id}'
-                        data-on-click='forum.topic.post_show_ip'
-                      )= self.t('ip_info')
-
-                  if self.settings.forum_mod_can_edit_posts
-                    li
-                      a(href='#'
-                        data-on-click='forum.topic.post_edit'
-                        data-post-id='#{post._id}'
-                        data-as-moderator='true'
-                      )= self.t('edit')
-
-                  if self.settings.forum_mod_can_delete_topics
-                    li.forum-post__delete
-                      a(href='#'
-                        data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
-                        data-post-id='#{post._id}'
-                        data-topic-id='#{self.topic._id}'
-                        data-as-moderator='true'
-                      )= self.t('delete')
-                    li.forum-post__undelete
-                      a(href='#'
-                        data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
-                        data-post-id='#{post._id}'
-                        data-topic-id='#{self.topic._id}'
-                      )= self.t('undelete')
-
-          li.forum-post__control-item.forum-post__vote-up
-            button.btn.forum-post__action(title=self.t('vote_up'))
-              span.icon.icon-vote-up
-
-          li.forum-post__control-item.forum-post__vote-down
-            button.btn.forum-post__action(title=self.t('vote_down'))
-              span.icon.icon-vote-down
-
           li.forum-post__control-item
-            button.btn.forum-post__action(title=self.t('report'))
-              span.icon.icon-report
-
-          li.forum-post__control-item.forum-post__bookmark-add
-            button.btn.forum-post__action(title=self.t('bookmark_add'))
-              span.icon.icon-bookmark-empty
-          li.forum-post__control-item.forum-post__bookmark-remove
-            button.btn.forum-post__action(title=self.t('bookmark_remove'))
-              span.icon.icon-bookmark
-
-          if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
-            li.forum-post__edit.forum-post__control-item
-              button.btn.forum-post__action(
-                data-on-click='forum.topic.post_edit'
-                data-post-id='#{post._id}'
-              )
-                span.icon.icon-edit
-
-            li.forum-post__delete.forum-post__control-item
-              button.btn.forum-post__action(
-                data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
-                data-post-id='#{post._id}'
-                data-topic-id='#{self.topic._id}'
-                title=self.t('delete')
-              )
-                span.icon.icon-trash
-
-          if self.settings.forum_can_reply
-            li.forum-post__reply.forum-post__control-item
-              button.btn.forum-post__action(
-                data-on-click='forum.topic.post_reply'
-                data-post-id=post._id
-                title=self.t('reply')
-              )
-                span.icon.icon-reply
-
-          - var votes = Math.random() * 3 > 2
-          if (votes)
-            li.forum-post__control-item
-              button.btn.forum-post__action(
-                data-post-id='#{post._id}'
-                title=self.t('vote_details')
-              )
-                | +#{Math.floor(Math.random()*20) + 1}
-
-      if post.del_reason
-        .forum-post__del-reason=self.t('del_reason', { text: post.del_reason })
+            button.btn.forum-post__action(
+            data-on-click='forum.topic.post_expand'
+            title=self.t('expand')
+            data-post-id='#{post._id}'
+          )
+              span.icon.icon-expand

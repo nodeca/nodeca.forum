@@ -19,6 +19,7 @@ module.exports = {
   ],
 
   topic: [
+    '_id',
     'hid',
     'cache',
     'cache_hb',

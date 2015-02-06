@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
       minimum: 1,
       required: true
     },
-    post_ids: {
+    posts_ids: {
       type: 'array',
       required: true,
       uniqueItems: true,
@@ -24,7 +24,7 @@ module.exports = function (N, apiPath) {
 
 
   function buildPostIds(env, callback) {
-    env.data.post_ids = env.params.post_ids;
+    env.data.posts_ids = env.params.posts_ids;
     callback();
   }
 
