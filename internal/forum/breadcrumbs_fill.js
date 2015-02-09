@@ -46,8 +46,6 @@ module.exports = function (N, apiPath) {
     var env     = data.env;
     var parents = data.parents;
 
-    env.extras.puncher.start('build breadcrumbs');
-
     // first element - always link to forum root
     env.res.breadcrumbs = [ {
       text: env.t('@common.menus.navbar.forum'),
@@ -56,7 +54,6 @@ module.exports = function (N, apiPath) {
 
     // no parents - we are on the root
     if (_.isEmpty(parents)) {
-      env.extras.puncher.stop();
       callback();
       return;
     }
@@ -79,8 +76,6 @@ module.exports = function (N, apiPath) {
           };
         })
       );
-
-      env.extras.puncher.stop();
 
       callback();
     });

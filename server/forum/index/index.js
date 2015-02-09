@@ -13,8 +13,6 @@ module.exports = function (N, apiPath) {
   // Request handler
   //
   N.wire.on(apiPath, function forum_index(env, callback) {
-    env.extras.puncher.start('process index');
-
     N.wire.emit('internal:forum.subsections_fill', env, callback);
   });
 
@@ -28,7 +26,5 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
     env.res.head.title = env.t('title');
-
-    env.extras.puncher.stop(); // Close main page scope
   });
 };

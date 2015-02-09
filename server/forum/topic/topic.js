@@ -115,7 +115,5 @@ module.exports = function (N, apiPath) {
       env.t('title_with_page', { title: topic.title, page: env.params.page })
     :
       topic.title;
-
-    env.extras.puncher.stop(); // Close first scope
   });
 };

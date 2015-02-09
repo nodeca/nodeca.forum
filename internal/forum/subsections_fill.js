@@ -97,9 +97,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_subsections_tree_info(env, callback) {
 
-    env.extras.puncher.start('fill subsections'); // closed in the last handler
-    env.extras.puncher.start('fill subsections tree structure');
-
     // We need to show 3 levels [0,1,2] for index, 2 levels [0,1] for section
     N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
       env.data.section ? 2 : 3, function (err, subsections) {
@@ -108,9 +105,6 @@ module.exports = function (N, apiPath) {
         callback(err);
         return;
       }
-
-      env.extras.puncher.stop({ count: subsections.length });
-      env.extras.puncher.start('filter subsections visibility');
 
       // sections order is always fixed, no needs to sort.
       var s_ids = subsections.map(function (s) { return s._id.toString(); });
@@ -125,7 +119,6 @@ module.exports = function (N, apiPath) {
         }
 
         env.data.subsections_info = _.filter(subsections, function (s) { return visibility[s._id]; });
-        env.extras.puncher.stop({ count: env.data.subsections_info.length });
         callback(err);
       });
     });
@@ -152,7 +145,6 @@ module.exports = function (N, apiPath) {
           env.data.subsections.push(foundSection);
         });
 
-        env.extras.puncher.stop({ count: env.data.subsections.length });
         callback(err);
       });
   });
@@ -180,8 +172,6 @@ module.exports = function (N, apiPath) {
   // Fill response data
   //
   N.wire.after(apiPath, function subsections_fill_response(env) {
-
-    env.extras.puncher.start('fill response data');
 
     env.data.users = env.data.users || [];
 
@@ -221,8 +211,5 @@ module.exports = function (N, apiPath) {
     // build response tree
     var root = (env.data.section || {})._id || null;
     env.res.subsections = to_tree(env.data.subsections, root);
-
-    env.extras.puncher.stop();
-    env.extras.puncher.stop(); // close first scope
   });
 };
