@@ -18,9 +18,15 @@ setting_schemas:
 
     topic_title_min_length:
       type: number
-      group_key: forum_general
+      group_key: forum_editor
       category_key: topic
       default: 3
+
+    post_text_min_length:
+      type: number
+      group_key: forum_editor
+      category_key: post
+      default: 5
 
     posts_per_page:
       type: number

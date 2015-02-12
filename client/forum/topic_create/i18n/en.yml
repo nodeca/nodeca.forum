@@ -2,7 +2,7 @@ en-US:
   title: Create new topic
   topic_title: Topic title
   err_text_empty: You shoud fill text
-  err_title_length: "Title should have at least #{min_length} ((character|characters)):min_length"
+  err_title_too_short: "Title should have at least #{count} ((character|characters))"
   create: Create
   options: options
   preview_toggle: Preview

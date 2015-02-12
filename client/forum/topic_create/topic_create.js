@@ -172,7 +172,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     };
 
     if (punycode.ucs2.decode(data.title.trim()).length < N.runtime.page_data.settings.topic_title_min_length) {
-      N.wire.emit('notify', t('err_title_length', { min_length: N.runtime.page_data.settings.topic_title_min_length }));
+      N.wire.emit('notify', t('err_title_too_short', N.runtime.page_data.settings.topic_title_min_length));
       return;
     }
 

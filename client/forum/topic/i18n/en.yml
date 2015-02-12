@@ -16,7 +16,7 @@ en-US:
   tracking: Tracking
 
   error_no_more_posts: Ups! No more posts in this topic.
-  error_title_length: "Title should have at least #{min_length} ((character|characters)):min_length"
+  err_title_too_short: "Title should have at least #{count} ((character|characters))"
 
   topic_dropdown_menu:
     mod_actions: Moderation

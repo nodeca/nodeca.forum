@@ -1,6 +1,8 @@
 // Get post src html, update post
 'use strict';
 
+var punycode = require('punycode');
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -98,6 +100,28 @@ module.exports = function (N, apiPath) {
         callback();
       }
     );
+  });
+
+
+  // Check post length
+  //
+  N.wire.after(apiPath, function check_title_length(env, callback) {
+    env.extras.settings.fetch('post_text_min_length', function (err, post_text_min_length) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (punycode.ucs2.decode(env.data.parse_result.text.trim()).length < post_text_min_length) {
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('@forum.topic.post.edit.err_text_too_short', post_text_min_length)
+        });
+        return;
+      }
+
+      callback();
+    });
   });
 
 

@@ -95,7 +95,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   N.wire.on('forum.topic.post_edit', function click_edit(event) {
     removeEditor();
 
-    var $button = $(event.target);
+    var $button = $(event.currentTarget);
 
     asModerator = $button.data('as-moderator') || false;
     postId = $button.data('post-id');

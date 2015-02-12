@@ -224,7 +224,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
       data.parent_post_id = parentPostId;
     }
 
-    N.io.rpc('forum.topic.post.reply.create', data).done(function (res) {
+    N.io.rpc('forum.topic.post.reply', data).done(function (res) {
       removeEditor();
 
       bag.remove(draftID(), function () {

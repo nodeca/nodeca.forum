@@ -10,9 +10,11 @@ i18n:
         category_names:
           forum: Forum
           topic: Topic
+          post: Post
           forum_markup: Forum markup
 
         setting_names:
           topics_per_page: Topics per page
           topic_title_min_length: Min title length
+          post_text_min_length: Min post text length
           posts_per_page: Posts per page
