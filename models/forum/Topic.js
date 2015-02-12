@@ -52,6 +52,7 @@ module.exports = function (N, collectionName) {
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects
   , del_reason      : String
+  , del_by          : Schema.ObjectId
     // Previous state for deleted topics
   , prev_st         : {
       st: Number,

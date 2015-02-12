@@ -69,7 +69,7 @@ module.exports = function (N, apiPath) {
     var topic = env.data.topic;
 
     var update = {
-      $unset: { del_reason: 1, prev_st: 1 }
+      $unset: { del_reason: 1, prev_st: 1, del_by: 1 }
     };
 
     _.assign(update, topic.prev_st);

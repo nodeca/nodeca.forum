@@ -11,7 +11,8 @@ module.exports = {
     'ts',
     'st',
     'ste',
-    'del_reason'
+    'del_reason',
+    'del_by'
   ],
 
   section: [

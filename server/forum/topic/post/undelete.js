@@ -91,7 +91,7 @@ module.exports = function (N, apiPath) {
     var post = env.data.post;
 
     var update = {
-      $unset: { del_reason: 1, prev_st: 1 }
+      $unset: { del_reason: 1, prev_st: 1, del_by: 1 }
     };
 
     _.assign(update, post.prev_st);

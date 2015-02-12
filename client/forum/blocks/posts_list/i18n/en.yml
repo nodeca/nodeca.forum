@@ -12,6 +12,7 @@ en-US:
   undelete: Undelete
   edit: Edit
   del_reason: "Deletion reason: #{text}"
+  del_by: "Deleted by:"
   del_post_text: Post deleted.
   del_hard_post_text: Post hard deleted.
   hb_post_text: Post hellbanned.

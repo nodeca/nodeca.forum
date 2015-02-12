@@ -186,6 +186,15 @@ each post in self.posts
 
         if post.del_reason
           .forum-post__del-reason=self.t('del_reason', { text: post.del_reason })
+        if post.del_by
+          .forum-post__del-by
+            =self.t('del_by')
+            | 
+            - var delUser = self.users[post.del_by]
+            a.forum-post__author._ucard-popover(
+              href=self.link_to('users.member', { user_hid: delUser.hid })
+              data-user-id=post.del_by
+            ) #{delUser.name}
 
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-right

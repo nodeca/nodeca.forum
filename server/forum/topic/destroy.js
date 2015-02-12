@@ -156,7 +156,8 @@ module.exports = function (N, apiPath) {
     var update = {
       st: env.params.method === 'hard' ? statuses.DELETED_HARD : statuses.DELETED,
       $unset: { ste: 1 },
-      prev_st: _.pick(topic, [ 'st', 'ste' ])
+      prev_st: _.pick(topic, [ 'st', 'ste' ]),
+      del_by: env.session.user_id
     };
 
     if (env.params.reason) {

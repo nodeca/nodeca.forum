@@ -193,6 +193,9 @@ module.exports = function (N, apiPath) {
       if (post.user) {
         env.data.users.push(post.user);
       }
+      if (post.del_by) {
+        env.data.users.push(post.del_by);
+      }
     });
   });
 
