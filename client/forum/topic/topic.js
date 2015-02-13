@@ -256,6 +256,24 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Add/remove bookmark
+  //
+  N.wire.on('forum.topic.post_bookmark', function post_bookmark(event) {
+    var $button = $(event.currentTarget);
+    var postId = $button.data('post-id');
+    var remove = $button.data('remove') || false;
+    var $post = $('#post' + postId);
+
+    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove: remove }).done(function () {
+      if (remove) {
+        $post.removeClass('forum-post__m-bookmarked');
+      } else {
+        $post.addClass('forum-post__m-bookmarked');
+      }
+    });
+  });
+
+
   // "More posts" button logic
   //
   N.wire.on('forum.topic.append_next_page', function append_next_page(event) {

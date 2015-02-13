@@ -271,6 +271,30 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill bookmarks
+  //
+  N.wire.after(apiPath, function fill_bookmarks(env, callback) {
+    var postIds = env.data.topics.map(function (topic) {
+      return topic.cache.first_post;
+    });
+
+    N.models.forum.PostBookmark.find()
+        .where('user_id').equals(env.session.user_id)
+        .where('post_id').in(postIds)
+        .lean(true)
+        .exec(function (err, bookmarks) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.bookmarks = _.pluck(bookmarks, 'post_id');
+      callback();
+    });
+  });
+
+
   // Add topics into to response & collect user ids
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env, callback) {

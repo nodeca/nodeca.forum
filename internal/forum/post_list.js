@@ -10,15 +10,17 @@
 //   env:
 //     res:
 //       settings: { hid: ... }
-//       topic: ...    # sanitized, with restricted fields
-//       posts: ...    # array, sanitized, with restricted fields
-//       section: ...  # with restricted fields
+//       topic: ...     # sanitized, with restricted fields
+//       posts: ...     # array, sanitized, with restricted fields
+//       section: ...   # with restricted fields
+//       bookmarks: ... # array of bookmarks (posts _id)
 //     data:
 //       posts_visible_statuses: ...
 //       settings: ...
 //       topic: ...
 //       posts: ...
 //       section: ...
+//       bookmarks: ...
 //
 
 'use strict';
@@ -184,6 +186,25 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fetch bookmarks
+  //
+  N.wire.after(apiPath, function fetch_bookmarks(env, callback) {
+    N.models.forum.PostBookmark.find()
+        .where('user_id').equals(env.session.user_id)
+        .where('post_id').in(env.data.posts_ids)
+        .lean(true)
+        .exec(function (err, bookmarks) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.data.bookmarks = bookmarks;
+      callback();
+    });
+  });
+
   // Collect users
   //
   N.wire.after(apiPath, function process_posts(env) {
@@ -229,5 +250,8 @@ module.exports = function (N, apiPath) {
 
     // Fill settings
     env.res.settings = env.data.settings;
+
+    // Fill bookmarks
+    env.res.bookmarks = _.pluck(env.data.bookmarks, 'post_id');
   });
 };
