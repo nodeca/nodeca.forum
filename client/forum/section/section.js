@@ -6,8 +6,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   ////////////////////////////////////////////////////////////////////////////////
   // "More topics" button logic
 
-  N.wire.on('forum.section.append_next_page', function append_next_page(event) {
-    var $button = $(event.currentTarget);
+  N.wire.on('forum.section.append_next_page', function append_next_page(data) {
+    var $button = data.$this;
     var new_url = $button.attr('href');
 
     N.io.rpc('forum.section.list', { hid: $button.data('section'), page: $button.data('page') }).done(function (res) {

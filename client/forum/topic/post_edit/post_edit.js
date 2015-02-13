@@ -68,23 +68,23 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
   // Change convert medialinks option
   //
-  N.wire.on('forum.topic.post_edit:opt_medialinks', function opt_medialinks(event) {
-    postOptions.no_mlinks = !$(event.target).prop('checked');
+  N.wire.on('forum.topic.post_edit:opt_medialinks', function opt_medialinks(data) {
+    postOptions.no_mlinks = !data.$this.prop('checked');
     updatePostOptions();
   });
 
 
   // Change convert smiles option
   //
-  N.wire.on('forum.topic.post_edit:opt_smiles', function opt_smiles(event) {
-    postOptions.no_smiles = !$(event.target).prop('checked');
+  N.wire.on('forum.topic.post_edit:opt_smiles', function opt_smiles(data) {
+    postOptions.no_smiles = !data.$this.prop('checked');
     updatePostOptions();
   });
 
 
   // Load parser
   //
-  N.wire.before('forum.topic.post_edit', function load_parser(event, callback) {
+  N.wire.before('forum.topic.post_edit', function load_parser(data, callback) {
     N.loader.loadAssets('mdedit', callback);
   });
 
@@ -92,13 +92,11 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   ///////////////////////////////////////////////////////////////////////////////
   // Click on post edit link
   //
-  N.wire.on('forum.topic.post_edit', function click_edit(event) {
+  N.wire.on('forum.topic.post_edit', function click_edit(data) {
     removeEditor();
 
-    var $button = $(event.currentTarget);
-
-    asModerator = $button.data('as-moderator') || false;
-    postId = $button.data('post-id');
+    asModerator = data.$this.data('as-moderator') || false;
+    postId = data.$this.data('post-id');
 
     var $targetPost = $('#post' + postId);
 

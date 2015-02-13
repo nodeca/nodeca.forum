@@ -38,20 +38,19 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 });
 
 
-N.wire.before('admin.forum.section.destroy', function confirm_section_destroy(event, callback) {
+N.wire.before('admin.forum.section.destroy', function confirm_section_destroy(data, callback) {
   N.wire.emit(
     'admin.core.blocks.confirm',
-    t('message_confim_section_delete', { title: $(event.target).data('title') }),
+    t('message_confim_section_delete', { title: data.$this.data('title') }),
     callback
   );
 });
 
 
-N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
-  var $item = $(event.target)
-   , $container = $item.closest('.aforum-index__slist-item');
+N.wire.on('admin.forum.section.destroy', function section_destroy(data) {
+  var $container = data.$this.closest('.aforum-index__slist-item');
 
-  N.io.rpc('admin.forum.section.destroy', { _id: $item.data('id') })
+  N.io.rpc('admin.forum.section.destroy', { _id: data.$this.data('id') })
     .done(function () {
       // Remove all destroyed elements from DOM.
       $container.prev('._placeholder').remove();
@@ -63,8 +62,8 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(event) {
 });
 
 
-N.wire.on('admin.forum.section.select_moderator_nick', function section_select_moderator(event) {
-  var sectionId = $(event.currentTarget).data('section_id');
+N.wire.on('admin.forum.section.select_moderator_nick', function section_select_moderator(data) {
+  var sectionId = data.$this.data('section_id');
 
   // Render dialog window.
   $moderatorSelectDialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', {
@@ -116,8 +115,8 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
 });
 
 
-N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(form) {
-  var nick = form.fields.nick;
+N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(data) {
+  var nick = data.fields.nick;
 
   N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }).done(function (res) {
     if (_.isEmpty(res)) {
@@ -129,7 +128,7 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
       N.wire.emit('navigate.to', {
         apiPath: 'admin.forum.moderator.edit',
         params: {
-          section_id: form.fields.section_id,
+          section_id: data.fields.section_id,
           user_id: res[0]._id
         }
       });

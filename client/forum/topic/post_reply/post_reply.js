@@ -65,7 +65,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   ///////////////////////////////////////////////////////////////////////////////
   // Fetch parse rules
   //
-  N.wire.before('forum.topic.post_reply', function fetch_parse_rules(event, callback) {
+  N.wire.before('forum.topic.post_reply', function fetch_parse_rules(data, callback) {
     N.io.rpc('forum.topic.post.options').done(function (res) {
       parseOptions = res.parse_options;
       postOptions = res.post_options;
@@ -76,7 +76,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
   // Load editor
   //
-  N.wire.before('forum.topic.post_reply', function load_editor(event, callback) {
+  N.wire.before('forum.topic.post_reply', function load_editor(data, callback) {
     N.loader.loadAssets('mdedit', callback);
   });
 
@@ -159,8 +159,8 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
   // Click on post reply link or toolbar reply button
   //
-  N.wire.on('forum.topic.post_reply', function click_reply(event) {
-    parentPostId = $(event.target).data('post-id');
+  N.wire.on('forum.topic.post_reply', function click_reply(data) {
+    parentPostId = data.$this.data('post-id');
 
     $form = $(N.runtime.render('forum.topic.post_reply'));
     $form.hide(0);

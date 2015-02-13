@@ -29,8 +29,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Show post IP
   //
-  N.wire.on('forum.topic.post_show_ip', function post_show_ip(event) {
-    var postId = $(event.target).data('post-id');
+  N.wire.on('forum.topic.post_show_ip', function post_show_ip(data) {
+    var postId = data.$this.data('post-id');
 
     N.wire.emit('forum.topic.ip_info_dlg', { postId: postId });
   });
@@ -91,8 +91,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Expand deleted or hellbanned post
   //
-  N.wire.on('forum.topic.post_expand', function post_expand(event) {
-    var postId = $(event.currentTarget).data('post-id');
+  N.wire.on('forum.topic.post_expand', function post_expand(data) {
+    var postId = data.$this.data('post-id');
 
     N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
         .done(function (res) {
@@ -104,10 +104,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Pin/unpin topic
   //
-  N.wire.on('forum.topic.pin', function topic_pin(event) {
-    var $button = $(event.target);
-    var topicId = $button.data('topic-id');
-    var unpin = $button.data('unpin') || false;
+  N.wire.on('forum.topic.pin', function topic_pin(data) {
+    var topicId = data.$this.data('topic-id');
+    var unpin = data.$this.data('unpin') || false;
 
     N.io.rpc('forum.topic.pin', { topic_id: topicId, unpin: unpin }).done(function (res) {
       updateTopic(res.topic, function () {
@@ -123,16 +122,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Close/open topic handler
   //
-  N.wire.on('forum.topic.close', function topic_close(event) {
-    var $button = $(event.target);
-
-    var data = {
-      topic_id: $button.data('topic-id'),
-      reopen: $button.data('reopen') || false,
-      as_moderator: $button.data('as-moderator') || false
+  N.wire.on('forum.topic.close', function topic_close(data) {
+    var params = {
+      topic_id: data.$this.data('topic-id'),
+      reopen: data.$this.data('reopen') || false,
+      as_moderator: data.$this.data('as-moderator') || false
     };
 
-    N.io.rpc('forum.topic.close', data).done(function (res) {
+    N.io.rpc('forum.topic.close', params).done(function (res) {
       updateTopic(res.topic, function () {
         if (data.reopen) {
           N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
@@ -146,11 +143,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Edit title handler
   //
-  N.wire.on('forum.topic.edit_title', function title_edit(event) {
-    var $button = $(event.target);
+  N.wire.on('forum.topic.edit_title', function title_edit(data) {
     var $title = $('.forum-topic-title__text');
 
-    var data = {
+    var params = {
       selector: '.forum-topic-title',
       value: $title.text(),
       update: function (value, callback) {
@@ -167,8 +163,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         }
 
         N.io.rpc('forum.topic.title_update', {
-          as_moderator: $button.data('as-moderator') || false,
-          topic_id: $button.data('topic-id'),
+          as_moderator: data.$this.data('as-moderator') || false,
+          topic_id: data.$this.data('topic-id'),
           title: value
         }).done(function () {
           $title.text(value.trim());
@@ -177,14 +173,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       }
     };
 
-    N.wire.emit('common.blocks.microedit', data);
+    N.wire.emit('common.blocks.microedit', params);
   });
 
 
   // Undelete topic handler
   //
-  N.wire.on('forum.topic.topic_undelete', function topic_undelete(event) {
-    var topicId = $(event.target).data('topic-id');
+  N.wire.on('forum.topic.topic_undelete', function topic_undelete(data) {
+    var topicId = data.$this.data('topic-id');
 
     N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function (res) {
       updateTopic(res.topic, function () {
@@ -196,8 +192,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Undelete post handler
   //
-  N.wire.on('forum.topic.post_undelete', function post_undelete(event) {
-    var postId = $(event.target).data('post-id');
+  N.wire.on('forum.topic.post_undelete', function post_undelete(data) {
+    var postId = data.$this.data('post-id');
 
     N.io.rpc('forum.topic.post.undelete', { post_id: postId }).done(function () {
       $('#post' + postId)
@@ -209,16 +205,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Delete topic handler
   //
-  N.wire.on('forum.topic.topic_delete', function topic_delete(event) {
-    var $button = $(event.target);
-
-    var data = {
-      topicId: $button.data('topic-id'),
-      asModerator: $button.data('as-moderator') || false,
+  N.wire.on('forum.topic.topic_delete', function topic_delete(data) {
+    var params = {
+      topicId: data.$this.data('topic-id'),
+      asModerator: data.$this.data('as-moderator') || false,
       canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
     };
 
-    N.wire.emit('forum.topic.topic_delete_dlg', data, function () {
+    N.wire.emit('forum.topic.topic_delete_dlg', params, function () {
       N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } });
     });
   });
@@ -226,19 +220,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Delete post handler
   //
-  N.wire.on('forum.topic.post_delete', function post_delete(event) {
-    var $button = $(event.currentTarget);
-    var postId = $button.data('post-id');
+  N.wire.on('forum.topic.post_delete', function post_delete(data) {
+    var postId = data.$this.data('post-id');
     var $post = $('#post' + postId);
 
-    var data = {
+    var params = {
       postId: postId,
-      asModerator: $button.data('as-moderator') || false,
+      asModerator: data.$this.data('as-moderator') || false,
       canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
       method: null
     };
 
-    N.wire.emit('forum.topic.post_delete_dlg', data, function () {
+    N.wire.emit('forum.topic.post_delete_dlg', params, function () {
       N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
           .done(function (res) {
 
@@ -258,10 +251,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Add/remove bookmark
   //
-  N.wire.on('forum.topic.post_bookmark', function post_bookmark(event) {
-    var $button = $(event.currentTarget);
-    var postId = $button.data('post-id');
-    var remove = $button.data('remove') || false;
+  N.wire.on('forum.topic.post_bookmark', function post_bookmark(data) {
+    var postId = data.$this.data('post-id');
+    var remove = data.$this.data('remove') || false;
     var $post = $('#post' + postId);
 
     N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove: remove }).done(function () {
@@ -276,8 +268,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // "More posts" button logic
   //
-  N.wire.on('forum.topic.append_next_page', function append_next_page(event) {
-    var $button = $(event.currentTarget);
+  N.wire.on('forum.topic.append_next_page', function append_next_page(data) {
 
     // request for the next page
     N.io.rpc('forum.topic.list.by_page', { topic_hid: topicState.topic_hid, page: topicState.page + 1 })
@@ -289,7 +280,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           type: 'warning',
           message: t('error_no_more_posts')
         });
-        $button.addClass('hidden');
+        data.$this.addClass('hidden');
         return;
       }
 
@@ -300,10 +291,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       $('#postlist > :last').after($result);
 
       // store current url to replace it in browser
-      var currentUrl = $button.attr('href');
+      var currentUrl = data.$this.attr('href');
 
       // update button href with next page URL
-      $button.attr('href', N.router.linkTo('forum.topic', {
+      data.$this.attr('href', N.router.linkTo('forum.topic', {
         hid:          res.topic.hid,
         section_hid:  res.section.hid,
         page:         res.page.current + 1
@@ -311,7 +302,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // hide button if max page is reached
       if (res.page.current === res.page.max) {
-        $button.addClass('hidden');
+        data.$this.addClass('hidden');
       }
 
       // update pager

@@ -27,14 +27,14 @@ function updatePostOptions() {
 
 // Load editor
 //
-N.wire.before('navigate.done:' + module.apiPath, function load_editor(event, callback) {
+N.wire.before('navigate.done:' + module.apiPath, function load_editor(data, callback) {
   N.loader.loadAssets('mdedit', callback);
 });
 
 
 // Fetch post options
 //
-N.wire.before('navigate.done:' + module.apiPath, function fetch_options(event, callback) {
+N.wire.before('navigate.done:' + module.apiPath, function fetch_options(data, callback) {
   N.io.rpc('forum.topic.post.options').done(function (res) {
     parseOptions = res.parse_options;
     postOptions = res.post_options;
@@ -138,16 +138,16 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Change convert medialinks option
   //
-  N.wire.on('forum.topic_create:opt_medialinks', function opt_medialinks(event) {
-    postOptions.no_mlinks = !$(event.target).prop('checked');
+  N.wire.on('forum.topic_create:opt_medialinks', function opt_medialinks(data) {
+    postOptions.no_mlinks = !data.$this.prop('checked');
     updatePostOptions();
   });
 
 
   // Change convert smiles option
   //
-  N.wire.on('forum.topic_create:opt_smiles', function opt_smiles(event) {
-    postOptions.no_smiles = !$(event.target).prop('checked');
+  N.wire.on('forum.topic_create:opt_smiles', function opt_smiles(data) {
+    postOptions.no_smiles = !data.$this.prop('checked');
     updatePostOptions();
   });
 
