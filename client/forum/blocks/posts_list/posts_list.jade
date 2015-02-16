@@ -110,23 +110,24 @@ each post in self.posts
               button.btn.forum-post__action(title=self.t('report'))
                 span.icon.icon-report
 
+            if self.runtime.is_member
 
-            li.forum-post__control-item.forum-post__bookmark-add
-              button.btn.forum-post__action(
-                data-on-click='forum.topic.post_bookmark'
-                data-post-id='#{post._id}'
-                title=self.t('bookmark_add')
-              )
-                span.icon.icon-bookmark-empty
+              li.forum-post__control-item.forum-post__bookmark-add
+                button.btn.forum-post__action(
+                  data-on-click='forum.topic.post_bookmark'
+                  data-post-id='#{post._id}'
+                  title=self.t('bookmark_add')
+                )
+                  span.icon.icon-bookmark-empty
 
-            li.forum-post__control-item.forum-post__bookmark-remove
-              button.btn.forum-post__action(
-                data-on-click='forum.topic.post_bookmark'
-                data-post-id='#{post._id}'
-                data-remove='true'
-                title=self.t('bookmark_remove')
-              )
-                span.icon.icon-bookmark
+              li.forum-post__control-item.forum-post__bookmark-remove
+                button.btn.forum-post__action(
+                  data-on-click='forum.topic.post_bookmark'
+                  data-post-id='#{post._id}'
+                  data-remove='true'
+                  title=self.t('bookmark_remove')
+                )
+                  span.icon.icon-bookmark
 
             if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
               li.forum-post__edit.forum-post__control-item
