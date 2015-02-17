@@ -12,7 +12,9 @@ module.exports = {
     'st',
     'ste',
     'del_reason',
-    'del_by'
+    'del_by',
+    'votes_up',
+    'votes_down'
   ],
 
   section: [
@@ -42,6 +44,8 @@ module.exports = {
     'forum_mod_can_edit_posts',
     'forum_mod_can_pin_topic',
     'forum_mod_can_edit_titles',
-    'forum_mod_can_close_topic'
+    'forum_mod_can_close_topic',
+    'can_vote',
+    'votes_add_max_time'
   ]
 };

@@ -33,6 +33,11 @@ module.exports = function (N, collectionName) {
   , st              : Number
   , ste             : Number  // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects)
+
+  // Aggregated votes values. Displayed like `total: 2, up: 7, down: 5`
+  , votes_up        : { type: Number, default: 0 }
+  , votes_down      : { type: Number, default: 0 }
+
   , del_reason      : String
   , del_by          : Schema.ObjectId
   // Previous state for deleted posts

@@ -190,6 +190,24 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Vote post
+  //
+  N.wire.on('forum.topic.post_vote', function post_vote(data) {
+    var postId = data.$this.data('post-id');
+    var value = +data.$this.data('value');
+    var $post = $('#post' + postId);
+    var topicHid = topicState.topic_hid;
+
+    N.io.rpc('forum.topic.post.vote', { post_id: postId, value: value }).done(function () {
+
+      // Update whole post to correctly update votes counters and modifiers
+      N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).done(function (res) {
+        $post.replaceWith(N.runtime.render('forum.blocks.posts_list', res));
+      });
+    });
+  });
+
+
   // Undelete post handler
   //
   N.wire.on('forum.topic.post_undelete', function post_undelete(data) {

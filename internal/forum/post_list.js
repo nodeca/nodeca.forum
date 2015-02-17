@@ -205,6 +205,28 @@ module.exports = function (N, apiPath) {
     });
   });
 
+
+  // Fetch votes
+  //
+  N.wire.after(apiPath, function fetch_votes(env, callback) {
+    N.models.users.Vote.find()
+        .where('from').equals(env.session.user_id)
+        .where('to').in(env.data.posts_ids)
+        .lean(true)
+        .select('to value')
+        .exec(function (err, votes) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.data.votes = votes;
+      callback();
+    });
+  });
+
+
   // Collect users
   //
   N.wire.after(apiPath, function process_posts(env) {
@@ -253,5 +275,10 @@ module.exports = function (N, apiPath) {
 
     // Fill bookmarks
     env.res.bookmarks = _.pluck(env.data.bookmarks, 'post_id');
+
+    // Fill votes
+    env.res.votes = _.mapValues(_.indexBy(env.data.votes || [], 'to'), function (vote) {
+      return vote.value;
+    });
   });
 };
