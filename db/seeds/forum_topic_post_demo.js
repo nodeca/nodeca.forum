@@ -20,6 +20,7 @@ var Section;
 var Topic;
 var Post;
 var User;
+var Vote;
 var UserGroup;
 var settings;
 var parser;
@@ -33,6 +34,7 @@ var POST_COUNT_IN_BIG_TOPIC  = 100;
 var USER_COUNT = 200;
 var MAX_MODERATOR_COUNT = 3;
 var MAX_SUB_SECTION_COUNT = 3;
+var MAX_VOTES = 10;
 
 var display_order = 0;
 
@@ -102,6 +104,35 @@ var createPost = function (topic, callback) {
   );
 };
 
+var addVotes = function (post, callback) {
+  var votes = 0;
+
+  async.timesSeries(Charlatan.Helpers.rand(MAX_VOTES), function (__, next) {
+    var user = users[Charlatan.Helpers.rand(USER_COUNT)];
+    var value = Math.random() > 0.5 ? Vote.values.UP : Vote.values.DOWN;
+
+    var vote = new Vote({
+      to: post._id,
+      from: user._id,
+      for: post.user,
+      type: Vote.types.FORUM_POST,
+      value: value
+    });
+
+    votes += value;
+
+    vote.save(next);
+
+  }, function (err) {
+    if (err) {
+      callback(err);
+      return;
+    }
+
+    post.update({ votes: votes }, callback);
+  });
+};
+
 var createTopic = function (section, post_count, callback) {
 
   var first_post;
@@ -134,7 +165,8 @@ var createTopic = function (section, post_count, callback) {
           }
 
           last_post = post;
-          next();
+
+          addVotes(post, next);
         });
       }, function (err) {
         // update topic
@@ -447,6 +479,7 @@ module.exports = function (N, callback) {
   Post      = N.models.forum.Post;
   User      = N.models.users.User;
   UserGroup = N.models.users.UserGroup;
+  Vote      = N.models.users.Vote;
   settings  = N.settings;
   parser    = N.parse;
 
