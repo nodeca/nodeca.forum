@@ -26,7 +26,8 @@ module.exports = {
     'cache',
     'cache_hb',
     'st',
-    'ste'
+    'ste',
+    'title'
   ],
 
   settings: [
