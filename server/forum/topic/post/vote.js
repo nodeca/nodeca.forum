@@ -122,12 +122,13 @@ module.exports = function (N, apiPath) {
   // Add vote or set vote value
   //
   N.wire.on(apiPath, function set_vote(env, callback) {
-    var oldValue = env.data.vote ? env.data.vote.value : 0;
-    var newValue = env.params.value === 1 ? N.models.users.Vote.values.UP : N.models.users.Vote.values.DOWN;
+    var values = N.models.users.Vote.values;
+    var oldValue = env.data.vote ? env.data.vote.value : values.NONE;
+    var newValue = env.params.value === 1 ? values.UP : values.DOWN;
 
     // If user click again to same button - reset vote
     if (oldValue === newValue) {
-      newValue = N.models.users.Vote.values.NONE;
+      newValue = values.NONE;
     }
 
     env.data.value = { old: oldValue, new: newValue };
@@ -160,31 +161,14 @@ module.exports = function (N, apiPath) {
   // Update post
   //
   N.wire.after(apiPath, function update_post(env, callback) {
-    var data = {
+    var update = {
       $inc: {
-        votes_up: 0,
-        votes_down: 0
+        // Increment for new value and decrement for old value
+        votes: env.data.value.new - env.data.value.old
       }
     };
 
-    if (env.data.value.old === N.models.users.Vote.values.UP) {
-      data.$inc.votes_up -= 1;
-    } else if (env.data.value.old === N.models.users.Vote.values.DOWN) {
-      data.$inc.votes_down -= 1;
-    }
-
-    if (env.data.value.new === N.models.users.Vote.values.UP) {
-      data.$inc.votes_up += 1;
-    } else if (env.data.value.new === N.models.users.Vote.values.DOWN) {
-      data.$inc.votes_down += 1;
-    }
-
-    if (data.$inc.votes_down === 0 && data.$inc.votes_up === 0) {
-      callback();
-      return;
-    }
-
-    N.models.forum.Post.update({ _id: env.params.post_id }, data, function (err) {
+    N.models.forum.Post.update({ _id: env.params.post_id }, update, function (err) {
       if (err) {
         callback(err);
         return;

@@ -13,8 +13,7 @@ module.exports = {
     'ste',
     'del_reason',
     'del_by',
-    'votes_up',
-    'votes_down'
+    'votes'
   ],
 
   section: [
