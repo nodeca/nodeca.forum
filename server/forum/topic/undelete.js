@@ -83,5 +83,38 @@ module.exports = function (N, apiPath) {
     );
   });
 
+
+  // Restore votes
+  //
+  N.wire.after(apiPath, function restore_votes(env, callback) {
+    var st = N.models.forum.Post.statuses;
+
+    // IDs list can be very large for big topics, but this should work
+    N.models.forum.Post.find({ topic: env.data.topic._id, st: { $in: [ st.VISIBLE, st.HB ] } })
+      .select('_id')
+      .lean(true)
+      .exec(function (err, posts) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        N.models.users.Vote.collection.update(
+          { to: { $in: _.pluck(posts, '_id') } },
+          // Just move vote `backup` field back to `value` field
+          { $rename: { 'backup': 'value' } },
+          { multi: true },
+          function (err) {
+            if (err) {
+              callback(err);
+              return;
+            }
+
+            callback();
+          }
+        );
+      });
+  });
+
   // TODO: log moderator actions
 };

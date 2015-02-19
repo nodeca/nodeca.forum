@@ -134,5 +134,25 @@ module.exports = function (N, apiPath) {
     );
   });
 
+
+  // Restore votes
+  //
+  N.wire.after(apiPath, function restore_votes(env, callback) {
+    N.models.users.Vote.collection.update(
+      { to: env.data.post._id },
+      // Just move vote `backup` field back to `value` field
+      { $rename: { 'backup': 'value' } },
+      { multi: true },
+      function (err) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        callback();
+      }
+    );
+  });
+
   // TODO: log moderator actions
 };
