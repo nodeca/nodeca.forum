@@ -27,7 +27,7 @@
 
 var _ = require('lodash');
 
-var fields = require('./_post_list_fields.js');
+var fields = require('./_fields/post_list.js');
 
 module.exports = function (N, apiPath) {
 

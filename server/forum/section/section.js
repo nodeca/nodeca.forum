@@ -24,10 +24,10 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Just subcall forum.topic.list, that enchances `env`
+  // Just subcall forum.topic_list, that enchances `env`
   //
   N.wire.on(apiPath, function get_posts(env, callback) {
-    N.wire.emit('server:forum.section.list', env, callback);
+    N.wire.emit('internal:forum.topic_list', env, callback);
   });
 
 

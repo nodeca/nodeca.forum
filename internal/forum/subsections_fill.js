@@ -8,16 +8,7 @@ var async     = require('async');
 var memoizee  = require('memoizee');
 
 
-var subsections_fields = [
-  '_id',
-  'hid',
-  'title',
-  'parent',
-  'description',
-  'moderators',
-  'cache',
-  'cache_hb'
-];
+var subsections_fields = require('./_fields/subsections_fill.js').subsections_fields;
 
 
 ////////////////////////////////////////////////////////////////////////////////

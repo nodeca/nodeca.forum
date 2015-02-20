@@ -7,25 +7,11 @@
 var _     = require('lodash');
 
 // collections fields filters
-var fields = require('./_fields.js');
+var fields = require('./_fields/topic_list.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, apiPath) {
-  N.validate(apiPath, {
-    // section hid
-    hid: {
-      type: 'integer',
-      minimum: 1,
-      required: true
-    },
-    page: {
-      type: 'integer',
-      minimum: 1,
-      'default': 1
-    }
-  });
-
 
   // shortcuts
   var Section = N.models.forum.Section;
