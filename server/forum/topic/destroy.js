@@ -122,7 +122,7 @@ module.exports = function (N, apiPath) {
     }
 
     // Check owner of first post in topic
-    if (env.session.user_id !== String(env.data.post.user)) {
+    if (env.user_info.user_id !== String(env.data.post.user)) {
       callback(N.io.FORBIDDEN);
       return;
     }
@@ -157,7 +157,7 @@ module.exports = function (N, apiPath) {
       st: env.params.method === 'hard' ? statuses.DELETED_HARD : statuses.DELETED,
       $unset: { ste: 1 },
       prev_st: _.pick(topic, [ 'st', 'ste' ]),
-      del_by: env.session.user_id
+      del_by: env.user_info.user_id
     };
 
     if (env.params.reason) {

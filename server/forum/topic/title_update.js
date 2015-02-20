@@ -86,7 +86,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Check is user topic owner
-      if (env.session.user_id !== env.data.topic.cache.first_user.toString()) {
+      if (env.user_info.user_id !== String(env.data.topic.cache.first_user)) {
         callback(N.io.FORBIDDEN);
         return;
       }

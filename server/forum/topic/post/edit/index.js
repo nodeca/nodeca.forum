@@ -74,7 +74,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (!env.session.user_id || env.session.user_id.toString() !== env.data.post.user.toString()) {
+      if (!env.user_info.user_id || String(env.user_info.user_id) !== String(env.data.post.user)) {
         callback(N.io.FORBIDDEN);
         return;
       }

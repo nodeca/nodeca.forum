@@ -54,20 +54,24 @@ module.exports = function (N, apiPath) {
 
     // If `env.params.remove` - remove bookmark
     if (env.params.remove) {
-      N.models.forum.PostBookmark.remove({ user_id: env.session.user_id, post_id: env.params.post_id }, function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      N.models.forum.PostBookmark.remove(
+        { user_id: env.user_info.user_id, post_id: env.params.post_id },
+        function (err) {
 
-        callback();
-      });
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          callback();
+        }
+      );
 
       return;
     }
 
     // Add bookmark
-    var data = { user_id: env.session.user_id, post_id: env.params.post_id };
+    var data = { user_id: env.user_info.user_id, post_id: env.params.post_id };
 
     // Use `findOneAndUpdate` with `upsert` to avoid duplicates in case of multi click
     N.models.forum.PostBookmark.findOneAndUpdate(data, data, { upsert: true }, function (err) {

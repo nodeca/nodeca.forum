@@ -265,7 +265,7 @@ module.exports = function (N, apiPath) {
     });
 
     N.models.forum.PostBookmark.find()
-        .where('user_id').equals(env.session.user_id)
+        .where('user_id').equals(env.user_info.user_id)
         .where('post_id').in(postIds)
         .lean(true)
         .exec(function (err, bookmarks) {

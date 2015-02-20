@@ -145,7 +145,7 @@ module.exports = function (N, apiPath) {
     userStore.set({
       edit_no_mlinks: { value: env.params.option_no_mlinks },
       edit_no_smiles: { value: env.params.option_no_smiles }
-    }, { user_id: env.session.user_id }, callback);
+    }, { user_id: env.user_info.user_id }, callback);
   });
 
 
@@ -243,7 +243,7 @@ module.exports = function (N, apiPath) {
     }
 
     post.topic = env.data.topic._id;
-    post.user = env.session.user_id;
+    post.user = env.user_info.user_id;
 
     post.save(function (err) {
       if (err) {

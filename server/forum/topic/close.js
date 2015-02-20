@@ -76,7 +76,7 @@ module.exports = function (N, apiPath) {
       }
 
       // Check topic owner and `forum_can_close_topic` permission
-      if ((env.session.user_id !== String(env.data.topic.cache.first_user)) || !settings.forum_can_close_topic) {
+      if ((env.user_info.user_id !== String(env.data.topic.cache.first_user)) || !settings.forum_can_close_topic) {
         callback(N.io.FORBIDDEN);
         return;
       }

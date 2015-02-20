@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
     userStore.set({
       edit_no_mlinks: { value: env.params.option_no_mlinks },
       edit_no_smiles: { value: env.params.option_no_smiles }
-    }, { user_id: env.session.user_id }, callback);
+    }, { user_id: env.user_info.user_id }, callback);
   });
 
 

@@ -190,7 +190,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fetch_bookmarks(env, callback) {
     N.models.forum.PostBookmark.find()
-        .where('user_id').equals(env.session.user_id)
+        .where('user_id').equals(env.user_info.user_id)
         .where('post_id').in(env.data.posts_ids)
         .lean(true)
         .exec(function (err, bookmarks) {
@@ -210,7 +210,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fetch_votes(env, callback) {
     N.models.users.Vote.find()
-        .where('from').equals(env.session.user_id)
+        .where('from').equals(env.user_info.user_id)
         .where('for').in(env.data.posts_ids)
         .where('value').in([ 1, -1 ])
         .lean(true)

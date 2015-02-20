@@ -106,7 +106,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function remove_votes(env, callback) {
     N.models.users.Vote.remove(
-      { for: env.params.post_id, from: env.session.user_id },
+      { for: env.params.post_id, from: env.user_info.user_id },
       callback
     );
   });
@@ -122,14 +122,14 @@ module.exports = function (N, apiPath) {
 
     var data = {
       for: env.params.post_id,
-      from: env.session.user_id,
+      from: env.user_info.user_id,
       to: env.data.post.user,
       type: N.models.users.Vote.types.FORUM_POST,
       value: env.params.value === 1 ? 1 : -1
     };
 
     N.models.users.Vote.findOneAndUpdate(
-      { for: env.params.post_id, from: env.session.user_id },
+      { for: env.params.post_id, from: env.user_info.user_id },
       data,
       { upsert: true },
       callback
