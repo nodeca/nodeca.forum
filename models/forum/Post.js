@@ -37,6 +37,9 @@ module.exports = function (N, collectionName) {
   // Aggregated votes count
   , votes           : { type: Number, default: 0 }
 
+  // Bookmarks count
+  , bookmarks       : { type: Number, default: 0 }
+
   , del_reason      : String
   , del_by          : Schema.ObjectId
   // Previous state for deleted posts

@@ -79,4 +79,18 @@ module.exports = function (N, apiPath) {
       callback();
     });
   });
+
+
+  // Update post
+  //
+  N.wire.after(apiPath, function update_post(env, callback) {
+    N.models.forum.PostBookmark.count({ post_id: env.params.post_id }, function (err, count) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      N.models.forum.Post.update({ _id: env.params.post_id }, { bookmarks: count }, callback);
+    });
+  });
 };
