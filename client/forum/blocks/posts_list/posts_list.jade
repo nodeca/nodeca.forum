@@ -41,7 +41,7 @@ each post in self.posts
       .forum-post__aside
         if user
           a.forum-post__userpic(href='#')
-            img.av-l(alt='#{user.name}' src=self.link_to('core.gridfs', { bucket: user.avatar_id }))
+            img.av-l(alt=user.name src=self.link_to('core.gridfs', { bucket: user.avatar_id }))
         else
           .av-l
       .forum-post__content
@@ -73,7 +73,7 @@ each post in self.posts
                     if self.settings.can_see_ip
                       li.forum-post__control-item
                         a(href='#'
-                          data-post-id='#{post._id}'
+                          data-post-id=post._id
                           data-on-click='forum.topic.post_show_ip'
                         )= self.t('ip_info')
 
@@ -81,7 +81,7 @@ each post in self.posts
                       li
                         a(href='#'
                           data-on-click='forum.topic.post_edit'
-                          data-post-id='#{post._id}'
+                          data-post-id=post._id
                           data-as-moderator='true'
                         )= self.t('edit')
 
@@ -89,15 +89,15 @@ each post in self.posts
                       li.forum-post__delete
                         a(href='#'
                           data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
-                          data-post-id='#{post._id}'
-                          data-topic-id='#{self.topic._id}'
+                          data-post-id=post._id
+                          data-topic-id=self.topic._id
                           data-as-moderator='true'
                         )= self.t('delete')
                       li.forum-post__undelete
                         a(href='#'
                           data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
-                          data-post-id='#{post._id}'
-                          data-topic-id='#{self.topic._id}'
+                          data-post-id=post._id
+                          data-topic-id=self.topic._id
                         )= self.t('undelete')
 
             if self.runtime.is_member
@@ -107,7 +107,7 @@ each post in self.posts
                   button.btn.forum-post__action(
                     title=self.t('vote_up')
                     data-on-click='forum.topic.post_vote'
-                    data-post-id='#{post._id}'
+                    data-post-id=post._id
                     data-value=self.own_votes[post._id] === 1 ? '0' : '1'
                   )
                     span.icon.icon-vote-up
@@ -116,7 +116,7 @@ each post in self.posts
                   button.btn.forum-post__action(
                     title=self.t('vote_down')
                     data-on-click='forum.topic.post_vote'
-                    data-post-id='#{post._id}'
+                    data-post-id=post._id
                     data-value=self.own_votes[post._id] === -1 ? '0' : '-1'
                   )
                     span.icon.icon-vote-down
@@ -130,7 +130,7 @@ each post in self.posts
               li.forum-post__control-item.forum-post__bookmark-add
                 button.btn.forum-post__action(
                   data-on-click='forum.topic.post_bookmark'
-                  data-post-id='#{post._id}'
+                  data-post-id=post._id
                   title=self.t('bookmark_add')
                 )
                   span.icon.icon-bookmark-empty
@@ -138,7 +138,7 @@ each post in self.posts
               li.forum-post__control-item.forum-post__bookmark-remove
                 button.btn.forum-post__action(
                   data-on-click='forum.topic.post_bookmark'
-                  data-post-id='#{post._id}'
+                  data-post-id=post._id
                   data-remove='true'
                   title=self.t('bookmark_remove')
                 )
@@ -148,15 +148,15 @@ each post in self.posts
               li.forum-post__edit.forum-post__control-item
                 button.btn.forum-post__action(
                   data-on-click='forum.topic.post_edit'
-                  data-post-id='#{post._id}'
+                  data-post-id=post._id
                 )
                   span.icon.icon-edit
 
               li.forum-post__delete.forum-post__control-item
                 button.btn.forum-post__action(
                   data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
-                  data-post-id='#{post._id}'
-                  data-topic-id='#{self.topic._id}'
+                  data-post-id=post._id
+                  data-topic-id=self.topic._id
                   title=self.t('delete')
                 )
                   span.icon.icon-trash
@@ -230,6 +230,6 @@ each post in self.posts
             button.btn.forum-post__action(
             data-on-click='forum.topic.post_expand'
             title=self.t('expand')
-            data-post-id='#{post._id}'
+            data-post-id=post._id
           )
               span.icon.icon-expand
