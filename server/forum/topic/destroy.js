@@ -190,7 +190,7 @@ module.exports = function (N, apiPath) {
         }
 
         N.models.users.Vote.collection.update(
-          { to: { $in: _.pluck(posts, '_id') } },
+          { for: { $in: _.pluck(posts, '_id') } },
           // Just move vote `value` field to `backup` field
           { $rename: { 'value': 'backup' } },
           { multi: true },

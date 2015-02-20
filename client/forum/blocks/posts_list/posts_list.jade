@@ -15,9 +15,9 @@ each post in self.posts
       class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
       class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
       class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
-      class=(self.bookmarks.indexOf(post._id) !== -1) ? 'forum-post__m-bookmarked' : ''
-      class=(self.votes[post._id] === -1) ? 'forum-post__m-voted-down' : ''
-      class=(self.votes[post._id] === +1) ? 'forum-post__m-voted-up' : ''
+      class=(self.own_bookmarks.indexOf(post._id) !== -1) ? 'forum-post__m-bookmarked' : ''
+      class=(self.own_votes[post._id] === -1) ? 'forum-post__m-voted-down' : ''
+      class=(self.own_votes[post._id] === +1) ? 'forum-post__m-voted-up' : ''
       data-user-hid=user ? user.hid : ''
       itemscope
       itemtype='http://schema.org/WebPageElement'
@@ -108,7 +108,7 @@ each post in self.posts
                     title=self.t('vote_up')
                     data-on-click='forum.topic.post_vote'
                     data-post-id='#{post._id}'
-                    data-value='+1'
+                    data-value=self.own_votes[post._id] === 1 ? '0' : '1'
                   )
                     span.icon.icon-vote-up
 
@@ -117,7 +117,7 @@ each post in self.posts
                     title=self.t('vote_down')
                     data-on-click='forum.topic.post_vote'
                     data-post-id='#{post._id}'
-                    data-value='-1'
+                    data-value=self.own_votes[post._id] === -1 ? '0' : '-1'
                   )
                     span.icon.icon-vote-down
 

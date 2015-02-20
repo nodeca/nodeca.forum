@@ -188,7 +188,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function remove_votes(env, callback) {
     N.models.users.Vote.collection.update(
-      { to: env.data.post._id },
+      { for: env.data.post._id },
       // Just move vote `value` field to `backup` field
       { $rename: { 'value': 'backup' } },
       { multi: true },

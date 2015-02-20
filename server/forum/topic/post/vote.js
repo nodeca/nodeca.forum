@@ -24,7 +24,6 @@ module.exports = function (N, apiPath) {
     var statuses = N.models.forum.Post.statuses;
 
     N.models.forum.Post.findOne({ _id: env.params.post_id })
-        .select('user topic st ts')
         .lean(true)
         .exec(function (err, post) {
 
@@ -53,8 +52,8 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
     N.models.forum.Topic.findOne({ _id: env.data.post.topic })
-        .select('section')
-        .lean(true).exec(function (err, topic) {
+        .lean(true)
+        .exec(function (err, topic) {
 
       if (err) {
         callback(err);
@@ -91,7 +90,10 @@ module.exports = function (N, apiPath) {
       }
 
       if (settings.votes_add_max_time !== 0 && post.ts < Date.now() - settings.votes_add_max_time * 60 * 60 * 1000) {
-        callback(N.io.FORBIDDEN);
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_perm_expired')
+        });
         return;
       }
 
@@ -100,81 +102,60 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch vote
+  // Remove previous user's votes
   //
-  N.wire.before(apiPath, function fetch_vote(env, callback) {
-    N.models.users.Vote.findOne({ to: env.params.post_id, from: env.session.user_id })
-        .select('value')
-        .lean(true)
-        .exec(function (err, vote) {
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.vote = vote;
-      callback();
-    });
+  N.wire.before(apiPath, function remove_votes(env, callback) {
+    N.models.users.Vote.remove(
+      { for: env.params.post_id, from: env.session.user_id },
+      callback
+    );
   });
 
 
-  // Add vote or set vote value
+  // Add vote
   //
-  N.wire.on(apiPath, function set_vote(env, callback) {
-    var values = N.models.users.Vote.values;
-    var oldValue = env.data.vote ? env.data.vote.value : values.NONE;
-    var newValue = env.params.value === 1 ? values.UP : values.DOWN;
-
-    // If user click again to same button - reset vote
-    if (oldValue === newValue) {
-      newValue = values.NONE;
+  N.wire.on(apiPath, function add_vote(env, callback) {
+    if (env.params.value === 0) {
+      callback();
+      return;
     }
 
-    env.data.value = { old: oldValue, new: newValue };
-
-    var query = {
-      to: env.params.post_id,
-      from: env.session.user_id
-    };
-
     var data = {
-      to: env.params.post_id,
+      for: env.params.post_id,
       from: env.session.user_id,
-      for: env.data.post.user,
+      to: env.data.post.user,
       type: N.models.users.Vote.types.FORUM_POST,
-      value: newValue
+      value: env.params.value === 1 ? 1 : -1
     };
 
-    // Use `findOneAndUpdate` with `upsert` to avoid duplicates in case of multi click
-    N.models.users.Vote.findOneAndUpdate(query, data, { upsert: true }, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      callback();
-    });
+    N.models.users.Vote.findOneAndUpdate(
+      { for: env.params.post_id, from: env.session.user_id },
+      data,
+      { upsert: true },
+      callback
+    );
   });
 
 
   // Update post
   //
   N.wire.after(apiPath, function update_post(env, callback) {
-    var update = {
-      $inc: {
-        // Increment for new value and decrement for old value
-        votes: env.data.value.new - env.data.value.old
+    N.models.users.Vote.aggregate([
+      { $match: { for: env.data.post._id } },
+      {
+        $group: {
+          _id: null,
+          votes: { $sum: '$value' }
+        }
       }
-    };
+    ], function (err, result) {
 
-    N.models.forum.Post.update({ _id: env.params.post_id }, update, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      callback();
+      N.models.forum.Post.update({ _id: env.data.post._id }, { votes: result[0] ? result[0].votes : 0 }, callback);
     });
   });
 };

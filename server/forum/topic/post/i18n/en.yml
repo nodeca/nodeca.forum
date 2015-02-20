@@ -1,3 +1,5 @@
 en-US:
   destroy:
     err_perm_expired: You can not delete this post anymore
+  vote:
+    err_perm_expired: You can not vote for this post anymore

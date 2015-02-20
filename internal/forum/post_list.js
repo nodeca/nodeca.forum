@@ -200,7 +200,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.bookmarks = bookmarks;
+      env.data.own_bookmarks = bookmarks;
       callback();
     });
   });
@@ -211,9 +211,9 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function fetch_votes(env, callback) {
     N.models.users.Vote.find()
         .where('from').equals(env.session.user_id)
-        .where('to').in(env.data.posts_ids)
+        .where('for').in(env.data.posts_ids)
+        .where('value').in([ 1, -1 ])
         .lean(true)
-        .select('to value')
         .exec(function (err, votes) {
 
       if (err) {
@@ -221,7 +221,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.votes = votes;
+      env.data.own_votes = votes;
       callback();
     });
   });
@@ -274,10 +274,10 @@ module.exports = function (N, apiPath) {
     env.res.settings = env.data.settings;
 
     // Fill bookmarks
-    env.res.bookmarks = _.pluck(env.data.bookmarks, 'post_id');
+    env.res.own_bookmarks = _.pluck(env.data.own_bookmarks, 'post_id');
 
     // Fill votes
-    env.res.votes = _.mapValues(_.indexBy(env.data.votes || [], 'to'), function (vote) {
+    env.res.own_votes = _.mapValues(_.indexBy(env.data.own_votes || [], 'for'), function (vote) {
       return vote.value;
     });
   });

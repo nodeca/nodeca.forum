@@ -109,12 +109,12 @@ var addVotes = function (post, callback) {
 
   async.timesSeries(Charlatan.Helpers.rand(MAX_VOTES), function (__, next) {
     var user = users[Charlatan.Helpers.rand(USER_COUNT)];
-    var value = Math.random() > 0.5 ? Vote.values.UP : Vote.values.DOWN;
+    var value = Math.random() > 0.5 ? 1 : -1;
 
     var vote = new Vote({
-      to: post._id,
+      to: post.user,
       from: user._id,
-      for: post.user,
+      for: post._id,
       type: Vote.types.FORUM_POST,
       value: value
     });
