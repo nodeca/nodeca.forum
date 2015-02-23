@@ -36,6 +36,7 @@ module.exports = function (N, collectionName) {
 
   // Aggregated votes count
   , votes           : { type: Number, default: 0 }
+  , votes_hb        : { type: Number, default: 0 }
 
   // Bookmarks count
   , bookmarks       : { type: Number, default: 0 }
@@ -80,23 +81,6 @@ module.exports = function (N, collectionName) {
   //
   Post.statics.statuses = statuses;
 
-  // Hide hellbanned info for regular users for security reasons.
-  // This method works with raw object.
-  //
-  // options:
-  //
-  // - `keep_statuses` (boolean) - when true, don't merge `st` and `ste` into one. Default - false.
-  Post.statics.sanitize = function sanitize(post, options) {
-    options = options || {};
-
-    // sanitize statuses
-    if (post.st === statuses.HB) {
-      if (!options.keep_statuses) {
-        post.st = post.ste;
-        delete post.ste;
-      }
-    }
-  };
 
   N.wire.on('init:models', function emit_init_Post(__, callback) {
     N.wire.emit('init:models.' + collectionName, Post, callback);

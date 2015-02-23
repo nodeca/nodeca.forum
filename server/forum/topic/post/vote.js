@@ -78,9 +78,14 @@ module.exports = function (N, apiPath) {
 
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch([ 'can_vote', 'votes_add_max_time' ], function (err, settings) {
+    env.extras.settings.fetch([ 'forum_can_view', 'can_vote', 'votes_add_max_time' ], function (err, settings) {
       if (err) {
         callback(err);
+        return;
+      }
+
+      if (!settings.forum_can_view) {
+        callback(N.io.NOT_FOUND);
         return;
       }
 
@@ -102,7 +107,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Remove previous user's votes
+  // Remove previous vote if exists
   //
   N.wire.before(apiPath, function remove_votes(env, callback) {
     N.models.users.Vote.remove(
@@ -125,7 +130,8 @@ module.exports = function (N, apiPath) {
       from: env.user_info.user_id,
       to: env.data.post.user,
       type: N.models.users.Vote.types.FORUM_POST,
-      value: env.params.value === 1 ? 1 : -1
+      value: env.params.value === 1 ? 1 : -1,
+      hb: env.user_info.hb
     };
 
     N.models.users.Vote.findOneAndUpdate(
@@ -145,7 +151,15 @@ module.exports = function (N, apiPath) {
       {
         $group: {
           _id: null,
-          votes: { $sum: '$value' }
+          votes: { $sum: { $cond: { if: '$hb', then: 0, else: '$value' } } },
+          votes_hb: { $sum: '$value' }
+        }
+      },
+      {
+        $project: {
+          _id: false,
+          votes: true,
+          votes_hb: true
         }
       }
     ], function (err, result) {
@@ -155,7 +169,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      N.models.forum.Post.update({ _id: env.data.post._id }, { votes: result[0] ? result[0].votes : 0 }, callback);
+      N.models.forum.Post.update({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 }, callback);
     });
   });
 };

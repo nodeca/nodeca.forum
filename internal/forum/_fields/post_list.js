@@ -14,6 +14,7 @@ module.exports = {
     'del_reason',
     'del_by',
     'votes',
+    'votes_hb',
     'bookmarks'
   ],
 

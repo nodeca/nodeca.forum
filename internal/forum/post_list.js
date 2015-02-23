@@ -243,19 +243,46 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Sanitize post statuses
+  //
+  N.wire.after(apiPath, function post_statuses_sanitize(env) {
+    env.data.posts_out = [];
+
+    env.data.posts.forEach(function (post) {
+      var restrictedPost = _.pick(post, fields.post);
+
+      // Sanitize statuses
+      if (restrictedPost.st === Post.statuses.HB && !env.data.settings.can_see_hellbanned) {
+        restrictedPost.st = restrictedPost.ste;
+        delete restrictedPost.ste;
+      }
+
+      env.data.posts_out.push(restrictedPost);
+    });
+  });
+
+
+  // Sanitize post votes
+  //
+  N.wire.after(apiPath, function post_votes_sanitize(env) {
+    env.data.posts_out.forEach(function (post) {
+
+      // Show `votes_hb` counter only for hellbanned users
+      if (env.user_info.hb) {
+        post.votes = post.votes_hb;
+      }
+
+      delete post.votes_hb;
+    });
+  });
+
+
   // Fill response
   //
   N.wire.after(apiPath, function fill_response(env) {
 
     // Fill posts
-    env.res.posts = [];
-
-    env.data.posts.forEach(function (post) {
-      var restrictedPost = _.pick(post, fields.post);
-
-      Post.sanitize(restrictedPost, { keep_statuses: env.data.settings.can_see_hellbanned });
-      env.res.posts.push(restrictedPost);
-    });
+    env.res.posts = env.data.posts_out;
 
     // Fill topic
     var topic = _.pick(env.data.topic, fields.topic);
