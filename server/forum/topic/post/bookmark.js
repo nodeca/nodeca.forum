@@ -24,7 +24,6 @@ module.exports = function (N, apiPath) {
     var statuses = N.models.forum.Post.statuses;
 
     N.models.forum.Post.findOne({ _id: env.params.post_id })
-        .select('st')
         .lean(true)
         .exec(function (err, post) {
 
@@ -39,6 +38,51 @@ module.exports = function (N, apiPath) {
       }
 
       if (post.st !== statuses.VISIBLE && post.st !== statuses.HB) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.post = post;
+      callback();
+    });
+  });
+
+
+  // Fetch topic
+  //
+  N.wire.before(apiPath, function fetch_topic(env, callback) {
+    N.models.forum.Topic.findOne({ _id: env.data.post.topic })
+        .lean(true)
+        .exec(function (err, topic) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!topic) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.topic = topic;
+      callback();
+    });
+  });
+
+
+  // Check permissions
+  //
+  N.wire.before(apiPath, function check_permissions(env, callback) {
+    env.extras.settings.params.section_id = env.data.topic.section;
+
+    env.extras.settings.fetch([ 'forum_can_view' ], function (err, settings) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!settings.forum_can_view) {
         callback(N.io.NOT_FOUND);
         return;
       }
@@ -85,7 +129,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Update post
+  // Update post, fill count
   //
   N.wire.after(apiPath, function update_post(env, callback) {
     N.models.forum.PostBookmark.count({ post_id: env.params.post_id }, function (err, count) {
@@ -93,6 +137,8 @@ module.exports = function (N, apiPath) {
         callback(err);
         return;
       }
+
+      env.res.count = count;
 
       N.models.forum.Post.update({ _id: env.params.post_id }, { bookmarks: count }, callback);
     });

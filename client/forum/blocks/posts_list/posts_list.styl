@@ -161,3 +161,9 @@
   .forum-post__vote-down
     .icon
       color red
+
+.forum-post__bookmarks-count:after
+  content attr(data-bm-count)
+
+.forum-post__bookmarks-count[data-bm-count="0"]:after
+  display none

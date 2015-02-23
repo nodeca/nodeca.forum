@@ -134,8 +134,7 @@ each post in self.posts
                   title=self.t('bookmark_add')
                 )
                   span.icon.icon-bookmark-empty
-                  if post.bookmarks !== 0
-                    span.forum-post__bookmarks-count=post.bookmarks
+                  span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
               li.forum-post__control-item.forum-post__bookmark-remove
                 button.btn.forum-post__action(
@@ -145,8 +144,7 @@ each post in self.posts
                   title=self.t('bookmark_remove')
                 )
                   span.icon.icon-bookmark
-                  if post.bookmarks !== 0
-                    span.forum-post__bookmarks-count=post.bookmarks
+                  span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
 
             if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))

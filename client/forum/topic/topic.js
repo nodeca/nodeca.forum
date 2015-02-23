@@ -274,12 +274,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var remove = data.$this.data('remove') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove: remove }).done(function () {
+    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove: remove }).done(function (res) {
       if (remove) {
         $post.removeClass('forum-post__m-bookmarked');
       } else {
         $post.addClass('forum-post__m-bookmarked');
       }
+
+      $post.find('.forum-post__bookmarks-count').attr('data-bm-count', res.count);
     });
   });
 
