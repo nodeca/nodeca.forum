@@ -185,33 +185,6 @@ module.exports = function (N, collectionName) {
   };
 
 
-  // Hide hellbanned info for regular users for security reasons.
-  // This method works with raw object.
-  //
-  // options:
-  //
-  // - `keep_statuses` (boolean) - when true, don't merge `st` and `ste` into one. Default - false.
-  // - `keep_data` - when true, use cache_hb instead of cache. Default - false.
-  Topic.statics.sanitize = function sanitize(topic, options) {
-    options = options || {};
-
-    // sanitize statuses
-    if (topic.st === statuses.HB) {
-      if (!options.keep_statuses) {
-        topic.st = topic.ste;
-        delete topic.ste;
-      }
-    }
-
-    // use hellbanned last post info
-    if (topic.cache_hb) {
-      if (options.keep_data) {
-        topic.cache = topic.cache_hb;
-      }
-      delete topic.cache_hb;
-    }
-  };
-
   N.wire.on('init:models', function emit_init_Topic(__, callback) {
     N.wire.emit('init:models.' + collectionName, Topic, callback);
   });

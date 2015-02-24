@@ -9,18 +9,20 @@
 //
 //   env:
 //     res:
-//       settings: { hid: ... }
-//       topic: ...     # sanitized, with restricted fields
-//       posts: ...     # array, sanitized, with restricted fields
-//       section: ...   # with restricted fields
-//       bookmarks: ... # array of bookmarks (posts _id)
+//       settings: ...
+//       topic: ...         # sanitized, with restricted fields
+//       posts: ...         # array, sanitized, with restricted fields
+//       section: ...       # { hid: ... }
+//       own_bookmarks: ... # array of posts ids bookmarked by user
+//       own_votes: ...     # hash of votes owned by user ({ <post_id>: <value> })
 //     data:
 //       posts_visible_statuses: ...
 //       settings: ...
 //       topic: ...
 //       posts: ...
 //       section: ...
-//       bookmarks: ...
+//       own_bookmarks: ...
+//       own_votes: ...
 //
 
 'use strict';
@@ -229,7 +231,7 @@ module.exports = function (N, apiPath) {
 
   // Collect users
   //
-  N.wire.after(apiPath, function process_posts(env) {
+  N.wire.after(apiPath, function collect_users(env) {
     env.data.users = env.data.users || [];
 
     env.data.posts.forEach(function (post) {
@@ -277,22 +279,33 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill response
+  // Sanitize and fill topic
+  //
+  N.wire.after(apiPath, function topic_sanitize(env) {
+    var topic = _.pick(env.data.topic, fields.topic);
+
+    // Sanitize topic
+    if (topic.st === Topic.statuses.HB && !env.data.settings.can_see_hellbanned) {
+      topic.st = topic.ste;
+      delete topic.ste;
+    }
+
+    if (topic.cache_hb && (env.user_info.hb || env.data.settings.can_see_hellbanned)) {
+      topic.cache = topic.cache_hb;
+    }
+
+    delete topic.cache_hb;
+
+    env.res.topic = topic;
+  });
+
+
+  // Fill response except topic
   //
   N.wire.after(apiPath, function fill_response(env) {
 
     // Fill posts
     env.res.posts = env.data.posts_out;
-
-    // Fill topic
-    var topic = _.pick(env.data.topic, fields.topic);
-
-    Topic.sanitize(topic, {
-      keep_statuses: env.data.settings.can_see_hellbanned,
-      keep_data: env.user_info.hb || env.data.settings.can_see_hellbanned
-    });
-
-    env.res.topic = topic;
 
     // Fill section
     env.res.section = _.pick(env.data.section, fields.section);

@@ -19,7 +19,7 @@ each topic in self.topics
     class=(topic.st === topicStatuses.CLOSED || topic.ste === topicStatuses.CLOSED) ? 'forum-topicline__m-closed' : ''
     class=(topic.st === topicStatuses.DELETED) ? 'forum-topicline__m-deleted' : ''
     class=(topic.st === topicStatuses.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
-    class=(self.bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
+    class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
   )
     .row
       .col-sm-7

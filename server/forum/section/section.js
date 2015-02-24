@@ -2,13 +2,8 @@
 //
 'use strict';
 
-
-var _     = require('lodash');
-
-
-////////////////////////////////////////////////////////////////////////////////
-
 module.exports = function (N, apiPath) {
+
   N.validate(apiPath, {
     // section hid
     hid: {
@@ -23,11 +18,23 @@ module.exports = function (N, apiPath) {
     }
   });
 
+  var buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);
 
-  // Just subcall forum.topic_list, that enchances `env`
+
+  // Subcall forum.topic_list
   //
-  N.wire.on(apiPath, function get_posts(env, callback) {
+  N.wire.on(apiPath, function subcall_topic_list(env, callback) {
+    env.data.section_hid = env.params.hid;
+    env.data.build_topics_ids = buildTopicsIds;
+
     N.wire.emit('internal:forum.topic_list', env, callback);
+  });
+
+
+  // Fill page info
+  //
+  N.wire.after(apiPath, function fill_page(env) {
+    env.res.page = env.data.page;
   });
 
 
@@ -35,6 +42,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
     if (env.data.page.current > env.data.page.max) {
+
       // Requested page is BIGGER than maximum - redirect to the last one
       return {
         code: N.io.REDIRECT,
@@ -49,11 +57,11 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // fetch visible sub-sections (only for the first page)
+  // Fetch visible sub-sections (only for the first page)
   //
   N.wire.after(apiPath, function fetch_visible_subsections(env, callback) {
 
-    // subsections fetched only on first page
+    // Subsections fetched only on first page
     if (env.params.page > 1) {
       callback();
       return;
@@ -91,19 +99,11 @@ module.exports = function (N, apiPath) {
 
     env.res.head = env.res.head || {};
 
-    // prepare page title
-    env.res.head.title = (env.params.page > 1) ?
-      env.t('title_with_page', { title: section.title, page: env.params.page })
-    :
-      section.title;
-  });
-
-  // Add section info to response
-  //
-  N.wire.after(apiPath, function fill_topic_info(env) {
-    env.res.section = _.assign({}, env.res.section, _.pick(env.data.section, [
-      'description',
-      'is_category'
-    ]));
+    // Prepare page title
+    if (env.params.page === 1) {
+      env.res.head.title = section.title;
+    } else {
+      env.res.head.title = env.t('title_with_page', { title: section.title, page: env.params.page });
+    }
   });
 };

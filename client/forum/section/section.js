@@ -9,8 +9,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.section.append_next_page', function append_next_page(data) {
     var $button = data.$this;
     var new_url = $button.attr('href');
+    var params = { section_hid: $button.data('section'), page: $button.data('page') };
 
-    N.io.rpc('forum.section.list', { hid: $button.data('section'), page: $button.data('page') }).done(function (res) {
+    N.io.rpc('forum.section.list.by_page', params).done(function (res) {
 
       // if no topics - just disable 'More' button
       if (!res.topics || !res.topics.length) {

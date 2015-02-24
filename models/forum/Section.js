@@ -151,24 +151,6 @@ module.exports = function (N, collectionName) {
     ]);
   });
 
-  // Hide hellbanned info for regular users for security reasons.
-  // This method works with raw object.
-  //
-  // options:
-  //
-  // - `keep_data` - when true, use cache_hb instead of cache. Default - false.
-  //
-  Section.statics.sanitize = function sanitize(section, options) {
-    options = options || {};
-
-    // Use hellbanned last topic/post info for hellbanned current user or administrators
-    if (section.cache_hb) {
-      if (options.keep_data) {
-        section.cache = section.cache_hb;
-      }
-      delete section.cache_hb;
-    }
-  };
 
   N.wire.on('init:models', function emit_init_Section(__, callback) {
     N.wire.emit('init:models.' + collectionName, Section, callback);
