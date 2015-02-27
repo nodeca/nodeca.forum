@@ -1,6 +1,6 @@
 .forum-edit.clearfix
   .forum-edit__aside
-    img.av-l(alt=self.user.name src=self.link_to('core.gridfs', { bucket: self.user.avatar_id }))
+    img.av-l(alt=self.user.name)&attributes(self.avatar(self.user))
 
   .forum-edit__content
     .forum-edit__editor
