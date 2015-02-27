@@ -41,7 +41,7 @@ each post in self.posts
       .forum-post__aside
         if user
           a.forum-post__userpic(href='#')
-            img.av-l(alt=user.name src=self.link_to('core.gridfs', { bucket: user.avatar_id }))
+            img.av-l(alt=user.name)&attributes(self.avatar(user))
         else
           .av-l
       .forum-post__content
