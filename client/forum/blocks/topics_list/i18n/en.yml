@@ -3,7 +3,8 @@ en-US:
   replies: "#{count} ((reply|replies))"
   views: "#{count} ((view|views))"
   stat: "#{count} ((reply|replies)) · Last #{last}, by #{name}"
-  del_reason: "Deletion reason: #{text}"
+  del_reason: "(#{text})"
+  del_by: "Deleted by:"
   pinned: Pinned topic
   closed: Closed topic
   deleted: Deleted topic

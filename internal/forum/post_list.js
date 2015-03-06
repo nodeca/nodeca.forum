@@ -234,6 +234,10 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function collect_users(env) {
     env.data.users = env.data.users || [];
 
+    if (env.data.topic.del_by) {
+      env.data.users.push(env.data.topic.del_by);
+    }
+
     env.data.posts.forEach(function (post) {
       if (post.user) {
         env.data.users.push(post.user);

@@ -10,7 +10,8 @@ module.exports = {
     'cache_hb',
     'st',
     'ste',
-    'del_reason'
+    'del_reason',
+    'del_by'
   ],
 
   section: [

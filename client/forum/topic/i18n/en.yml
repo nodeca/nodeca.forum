@@ -13,6 +13,9 @@ en-US:
   more_posts: More posts
   title_with_page: "#{title} - page #{page}"
 
+  del_reason: "(#{text})"
+  del_by: "Deleted by:"
+
   tracking: Tracking
 
   error_no_more_posts: Ups! No more posts in this topic.

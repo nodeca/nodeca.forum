@@ -29,7 +29,9 @@ module.exports = {
     'cache_hb',
     'st',
     'ste',
-    'title'
+    'title',
+    'del_reason',
+    'del_by'
   ],
 
   settings: [

@@ -35,6 +35,16 @@ article#content.forum-topic-root(
       p.page-head__descr(itemprop='description')
         | #{self.topic._seo_desc}
 
+    if self.topic.del_by
+      - var delUser = self.users[self.topic.del_by] || {}
+      .forum-topic-title__meta-deleted
+        =self.t('del_by')
+        | 
+        a(href=self.link_to('users.member', { user_hid: delUser.hid }))=delUser.name
+        if self.topic.del_reason
+          | 
+          =self.t('del_reason', { text: self.topic.del_reason })
+
   nav.controlbar._affix
     .controlbar__floater
       //- needed set width & center content on horizontal navigation
