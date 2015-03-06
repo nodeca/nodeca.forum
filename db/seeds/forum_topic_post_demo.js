@@ -38,16 +38,16 @@ var MAX_VOTES = 10;
 
 var display_order = 0;
 
-var getNextDisplayOrder = function () {
+function getNextDisplayOrder() {
   display_order++;
   return display_order;
-};
+}
 
 var users = [];
 
 var postDay = 0;
 
-var createPost = function (topic, callback) {
+function createPost(topic, callback) {
 
   var md = Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join('\n\n');
   var user = users[Charlatan.Helpers.rand(USER_COUNT)];
@@ -102,9 +102,9 @@ var createPost = function (topic, callback) {
       );
     }
   );
-};
+}
 
-var addVotes = function (post, callback) {
+function addVotes(post, callback) {
   var votes = 0;
 
   async.timesSeries(Charlatan.Helpers.rand(MAX_VOTES), function (__, next) {
@@ -131,9 +131,9 @@ var addVotes = function (post, callback) {
 
     post.update({ votes: votes }, callback);
   });
-};
+}
 
-var createTopic = function (section, post_count, callback) {
+function createTopic(section, post_count, callback) {
 
   var first_post;
   var last_post;
@@ -190,9 +190,9 @@ var createTopic = function (section, post_count, callback) {
       }
     );
   });
-};
+}
 
-var createSection = function (category, sub_section_deep, callback) {
+function createSection(category, sub_section_deep, callback) {
 
   var section = new Section({
     title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
@@ -222,10 +222,10 @@ var createSection = function (category, sub_section_deep, callback) {
       createSection(section, sub_section_deep - 1, next);
     }, callback);
   });
-};
+}
 
 
-var createUsers = function (callback) {
+function createUsers(callback) {
 
   var userGroupsByName = {};
 
@@ -263,9 +263,9 @@ var createUsers = function (callback) {
   ], function (err) {
     callback(err);
   });
-};
+}
 
-var createSections = function (callback) {
+function createSections(callback) {
 
   async.timesSeries(CATEGORY_COUNT, function (current_category, next_category) {
     var category = new Category({
@@ -288,7 +288,7 @@ var createSections = function (callback) {
       }, next_category);
     });
   }, callback);
-};
+}
 
 function updateSectionStat(section, callback) {
 
@@ -369,7 +369,7 @@ function updateSectionStat(section, callback) {
   });
 }
 
-var createTopics = function (callback) {
+function createTopics(callback) {
 
   Section.find({ is_category: false }).select('_id cache')
     .sort({ 'hid': -1 })
@@ -393,9 +393,9 @@ var createTopics = function (callback) {
         });
       }, callback);
     });
-};
+}
 
-var fillBigSection = function (callback) {
+function fillBigSection(callback) {
 
   Section.findOne({ is_category: false }).select('_id cache')
     .sort({ 'hid': 1 })
@@ -417,9 +417,9 @@ var fillBigSection = function (callback) {
         }
       ], callback);
     });
-};
+}
 
-var addBigTopic = function (callback) {
+function addBigTopic(callback) {
 
   Section.findOne({ is_category: false }).select('_id cache')
     .sort({ 'hid': 1 })
@@ -439,9 +439,9 @@ var addBigTopic = function (callback) {
         updateSectionStat(section, callback);
       });
     });
-};
+}
 
-var addModerators = function (callback) {
+function addModerators(callback) {
 
   var SectionModeratorStore = settings.getStore('section_moderator');
 
@@ -470,7 +470,7 @@ var addModerators = function (callback) {
         }, cb);
       }, callback);
     });
-};
+}
 
 module.exports = function (N, callback) {
   Category  = N.models.forum.Section;

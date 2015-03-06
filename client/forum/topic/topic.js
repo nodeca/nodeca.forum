@@ -42,7 +42,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // - st
   // - ste
   //
-  var updateTopic = function (topic, callback) {
+  function updateTopic(topic, callback) {
     var params = {};
 
     N.wire.emit('navigate.get_page_raw', params, function () {
@@ -86,7 +86,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       callback();
     });
-  };
+  }
 
 
   // Expand deleted or hellbanned post
