@@ -6,7 +6,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   ////////////////////////////////////////////////////////////////////////////////
   // "More topics" button logic
 
-  N.wire.on('forum.section.append_next_page', function append_next_page(data) {
+  N.wire.on('forum.section.append_next_page', function append_next_page(data, callback) {
     var $button = data.$this;
     var new_url = $button.attr('href');
     var params = { section_hid: $button.data('section'), page: $button.data('page') };
@@ -20,6 +20,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           message: t('error_no_more_topics')
         });
         $button.addClass('hidden');
+
+        callback();
         return;
       }
 
@@ -59,6 +61,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           page: res.page.current
         })
       });
+
+      callback();
     });
 
     return;

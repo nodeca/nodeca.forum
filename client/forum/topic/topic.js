@@ -104,7 +104,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Pin/unpin topic
   //
-  N.wire.on('forum.topic.pin', function topic_pin(data) {
+  N.wire.on('forum.topic.pin', function topic_pin(data, callback) {
     var topicId = data.$this.data('topic-id');
     var unpin = data.$this.data('unpin') || false;
 
@@ -115,6 +115,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         } else {
           N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
         }
+
+        callback();
       });
     });
   });
@@ -122,7 +124,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Close/open topic handler
   //
-  N.wire.on('forum.topic.close', function topic_close(data) {
+  N.wire.on('forum.topic.close', function topic_close(data, callback) {
     var params = {
       topic_id: data.$this.data('topic-id'),
       reopen: data.$this.data('reopen') || false,
@@ -136,6 +138,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         } else {
           N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
         }
+        callback();
       });
     });
   });
@@ -143,7 +146,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Edit title handler
   //
-  N.wire.on('forum.topic.edit_title', function title_edit(data) {
+  N.wire.on('forum.topic.edit_title', function title_edit(data, callback) {
     var $title = $('.forum-topic-title__text');
 
     var params = {
@@ -173,18 +176,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       }
     };
 
-    N.wire.emit('common.blocks.microedit', params);
+    N.wire.emit('common.blocks.microedit', params, callback);
   });
 
 
   // Undelete topic handler
   //
-  N.wire.on('forum.topic.topic_undelete', function topic_undelete(data) {
+  N.wire.on('forum.topic.topic_undelete', function topic_undelete(data, callback) {
     var topicId = data.$this.data('topic-id');
 
     N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function (res) {
       updateTopic(res.topic, function () {
         N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
+        callback();
       });
     });
   });
@@ -192,7 +196,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Vote post
   //
-  N.wire.on('forum.topic.post_vote', function post_vote(data) {
+  N.wire.on('forum.topic.post_vote', function post_vote(data, callback) {
     var postId = data.$this.data('post-id');
     var value = +data.$this.data('value');
     var $post = $('#post' + postId);
@@ -203,6 +207,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // Update whole post to correctly update votes counters and modifiers
       N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).done(function (res) {
         $post.replaceWith(N.runtime.render('forum.blocks.posts_list', res));
+        callback();
       });
     });
   });
@@ -210,13 +215,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Undelete post handler
   //
-  N.wire.on('forum.topic.post_undelete', function post_undelete(data) {
+  N.wire.on('forum.topic.post_undelete', function post_undelete(data, callback) {
     var postId = data.$this.data('post-id');
 
     N.io.rpc('forum.topic.post.undelete', { post_id: postId }).done(function () {
       $('#post' + postId)
         .removeClass('forum-post__m-deleted')
         .removeClass('forum-post__m-deleted-hard');
+
+      callback();
     });
   });
 
@@ -238,7 +245,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Delete post handler
   //
-  N.wire.on('forum.topic.post_delete', function post_delete(data) {
+  N.wire.on('forum.topic.post_delete', function post_delete(data, callback) {
     var postId = data.$this.data('post-id');
     var $post = $('#post' + postId);
 
@@ -258,9 +265,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
             $post.remove();
           });
 
+          callback();
           return;
         }
 
+        callback();
         $post.replaceWith(N.runtime.render('forum.blocks.posts_list', res));
       });
     });
@@ -269,7 +278,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Add/remove bookmark
   //
-  N.wire.on('forum.topic.post_bookmark', function post_bookmark(data) {
+  N.wire.on('forum.topic.post_bookmark', function post_bookmark(data, callback) {
     var postId = data.$this.data('post-id');
     var remove = data.$this.data('remove') || false;
     var $post = $('#post' + postId);
@@ -281,6 +290,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $post.addClass('forum-post__m-bookmarked');
       }
 
+      callback();
       $post.find('.forum-post__bookmarks-count').attr('data-bm-count', res.count);
     });
   });
@@ -288,7 +298,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // "More posts" button logic
   //
-  N.wire.on('forum.topic.append_next_page', function append_next_page(data) {
+  N.wire.on('forum.topic.append_next_page', function append_next_page(data, callback) {
 
     // request for the next page
     N.io.rpc('forum.topic.list.by_page', { topic_hid: topicState.topic_hid, page: topicState.page + 1 })
@@ -301,6 +311,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           message: t('error_no_more_posts')
         });
         data.$this.addClass('hidden');
+        callback();
         return;
       }
 
@@ -346,6 +357,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // update topic state
       topicState.page = res.page.current;
+      callback();
     });
   });
 });
