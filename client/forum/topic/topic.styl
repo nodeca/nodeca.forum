@@ -1,5 +1,22 @@
 @import "nodeca.core/client/common/_variables"
 
+//
+// Responsive popover
+//
+
+.forum-topic-root .votes-popover
+  max-width 250px
+
+@media (min-width: screenXs)
+  .forum-topic-root .votes-popover
+    max-width 400px
+
+@media (min-width: screenSm)
+  .forum-topic-root .votes-popover
+    max-width 600px
+
+//
+
 .forum-postlist
   margin-top 10px
 
