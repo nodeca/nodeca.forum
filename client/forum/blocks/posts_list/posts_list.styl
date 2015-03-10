@@ -63,24 +63,37 @@
   margin 0 0 0 1em !important
   vertical-align text-top
 
+//
+// left / right columns
+//
 
-//
-// left column
-//
+asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
+asideSizeSm = 50px
 
 .forum-post__aside
   float left
-  margin 5px 12px 0 0
+  margin-top 5px
+  .av-l
+    width asideSize
+    height asideSize
+
+.forum-post__content
+  font-family sansWideFontFamily
+  margin-right 10px
+  margin-left asideSize + 15px
+
+@media (max-width: screenXs - 1)
+  .forum-post__aside
+    .av-l
+      width asideSizeSm
+      height asideSizeSm
+  .forum-post__content
+    margin-left asideSizeSm + 15px
+
 
 //
 // content column
 //
-
-.forum-post__content
-  font-family sansWideFontFamily
-  margin-right 0 7px 0 -3px
-  padding 0 3px
-  overflow-x hidden
 
 .forum-post__message
   min-height 60px
