@@ -41,7 +41,7 @@ each post in self.posts
       .forum-post__aside
         if user
           a.forum-post__userpic(href='#')
-            img.av-l(alt=user.name)&attributes(self.avatar(user))
+            img.av-l(alt=user.name)&attributes(self.avatar(user, 'md'))
         else
           .av-l
       .forum-post__content
