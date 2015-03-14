@@ -16,6 +16,7 @@ module.exports = {
 
   section: [
     'hid',
+    'title',
     'description',
     'is_category',
     'cache',
