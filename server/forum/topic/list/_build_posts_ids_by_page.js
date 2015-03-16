@@ -1,6 +1,6 @@
 // Reflection helper for `internal:forum.post_list`:
 //
-// 1. Bulds IDs of posts to fetch for current page
+// 1. Builds IDs of posts to fetch for current page
 // 2. Creates pagination info
 //
 // In:
@@ -8,6 +8,7 @@
 // - env.user_info.hb
 // - env.data.posts_visible_statuses - list of statuses, allowed to view
 // - env.data.topic
+// - env.params.page
 //
 // Out:
 //
@@ -57,7 +58,7 @@ module.exports = function (N) {
         max: page_max
       };
 
-      // Algorythm:
+      // Algorithm:
       //
       // - calculate range for countable posts
       // - select visible posts (ids) in this range
