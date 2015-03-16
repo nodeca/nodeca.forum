@@ -6,16 +6,16 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_id: { format: 'mongo', required: true }
-  , user_id:    { format: 'mongo', required: true }
-  , settings: {
-      type: 'object'
-    , required: true
-    , patternProperties: {
+    section_id: { format: 'mongo', required: true },
+    user_id:    { format: 'mongo', required: true },
+    settings: {
+      type: 'object',
+      required: true,
+      patternProperties: {
         '.*': {
-          type: [ 'null', 'object' ]
-        , additionalProperties: false
-        , properties: { value: { required: true } }
+          type: [ 'null', 'object' ],
+          additionalProperties: false,
+          properties: { value: { required: true } }
         }
       }
     }
@@ -26,8 +26,8 @@ module.exports = function (N, apiPath) {
 
     if (!SectionModeratorStore) {
       callback({
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_moderator` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_moderator` is not registered.'
       });
       return;
     }

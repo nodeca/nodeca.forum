@@ -9,8 +9,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   N.wire.on('admin.forum.group_permissions.destroy', function group_permissions_destroy(data) {
     var request = {
-      section_id:   data.$this.data('sectionId')
-    , usergroup_id: data.$this.data('usergroupId')
+      section_id:   data.$this.data('sectionId'),
+      usergroup_id: data.$this.data('usergroupId')
     };
 
     N.io.rpc('admin.forum.group_permissions.destroy', request).done(function () {

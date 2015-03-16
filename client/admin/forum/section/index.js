@@ -24,9 +24,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     stop: function(event, ui) {
 
       var request = {
-        _id:           ui.item.data('id')
-      , parent:        ui.item.parents('._sortable_tree_item').data('id')
-      , sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function(child) {
+        _id:           ui.item.data('id'),
+        parent:        ui.item.parents('._sortable_tree_item').data('id'),
+        sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function(child) {
           // calculate new data order for each sibling of the current sections
           return $(child).data('id');
         })

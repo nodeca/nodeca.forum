@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
       }
 
       // sort result in the same order as ids
-      _.forEach(env.data.allowed_parents, function(allowedParent) {
+      env.data.allowed_parents.forEach(function(allowedParent) {
         var foundSection = _.find(sections, function(section) {
           return section._id.equals(allowedParent._id);
         });

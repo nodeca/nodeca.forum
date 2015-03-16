@@ -12,9 +12,9 @@ var async = require('async');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    _id:            { format: 'mongo',          required: true }
-  , parent:         { type: [ 'null', 'string' ], required: true }
-  , sibling_order:  { type: 'array',            required: false }
+    _id:            { format: 'mongo',          required: true },
+    parent:         { type: [ 'null', 'string' ], required: true },
+    sibling_order:  { type: 'array',            required: false }
   });
 
   // set parent and display order to sections

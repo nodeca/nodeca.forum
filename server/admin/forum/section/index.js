@@ -4,7 +4,6 @@
 'use strict';
 
 
-var _     = require('lodash');
 var async = require('async');
 
 
@@ -30,8 +29,8 @@ module.exports = function (N, apiPath) {
 
     if (!SectionModeratorStore) {
       callback({
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_moderator` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_moderator` is not registered.'
       });
       return;
     }
@@ -48,7 +47,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        _.forEach(moderators, function (moderator) {
+        moderators.forEach(function (moderator) {
           // Select moderator entries with non-inherited settings.
           if (moderator.own > 0) {
             section.own_moderator_list.push(moderator._id);
@@ -63,12 +62,12 @@ module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, function section_index(env) {
     function buildSectionsTree(parent) {
-      var selectedSections = _.filter(env.data.sections, function (section) {
+      var selectedSections = env.data.sections.filter(function (section) {
         // Universal way for equal check on: Null, ObjectId, and String.
         return String(section.parent || null) === String(parent);
       });
 
-      _.forEach(selectedSections, function (section) {
+      selectedSections.forEach(function (section) {
         // Recursively collect descendants.
         section.children = buildSectionsTree(section._id);
       });

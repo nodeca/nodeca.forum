@@ -15,8 +15,8 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function section_usergroup_store_check() {
     if (!N.settings.getStore('section_usergroup')) {
       return {
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_usergroup` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_usergroup` is not registered.'
       };
     }
   });
@@ -52,7 +52,7 @@ module.exports = function (N, apiPath) {
     var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     // Set localized name for each usergroup.
-    _.forEach(env.data.usergroups, function (usergroup) {
+    env.data.usergroups.forEach(function (usergroup) {
       var i18n = '@admin.users.usergroup_names.' + usergroup.short_name;
       usergroup.localized_name = env.t.exists(i18n) ? env.t(i18n) : usergroup.short_name;
     });
@@ -64,34 +64,36 @@ module.exports = function (N, apiPath) {
 
       async.each(env.data.usergroups, function (usergroup, nextGroup) {
         SectionUsergroupStore.get(
-          SectionUsergroupStore.keys
-        , { section_id: section._id, usergroup_ids: [ usergroup._id ] }
-        , { skipCache: true, extended: true }
-        , function (err, settings) {
-          if (err) {
-            nextGroup(err);
-            return;
-          }
+          SectionUsergroupStore.keys,
+          { section_id: section._id, usergroup_ids: [ usergroup._id ] },
+          { skipCache: true, extended: true },
+          function (err, settings) {
+            if (err) {
+              nextGroup(err);
+              return;
+            }
 
-          section.own_settings_count[usergroup._id]       = _.filter(settings, { own: true  }).length;
-          section.inherited_settings_count[usergroup._id] = _.filter(settings, { own: false }).length;
-          nextGroup();
-        });
+            section.own_settings_count[usergroup._id]       = _.filter(settings, { own: true  }).length;
+            section.inherited_settings_count[usergroup._id] = _.filter(settings, { own: false }).length;
+            nextGroup();
+          }
+        );
       }, nextSection);
-    }, function (err) {
+    },
+    function (err) {
       if (err) {
         callback(err);
         return;
       }
 
       function buildSectionsTree(parent) {
-        var selectedSections = _.filter(env.data.sections, function (section) {
+        var selectedSections = env.data.sections.filter(function (section) {
           // Universal way for equal check on: Null, ObjectId, and String.
           return String(section.parent || null) === String(parent);
         });
 
         // Collect children subtree for each section.
-        _.forEach(selectedSections, function (section) {
+        selectedSections.forEach(function (section) {
           section.children = buildSectionsTree(section._id);
         });
 

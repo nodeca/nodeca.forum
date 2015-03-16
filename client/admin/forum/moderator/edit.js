@@ -6,8 +6,8 @@ var ko = require('knockout');
 
 
 function Setting(name, schema, value, overriden) {
-  var tName = '@admin.core.setting_names.' + name
-    , tHelp = '@admin.core.setting_names.' + name + '_help';
+  var tName = '@admin.core.setting_names.' + name,
+      tHelp = '@admin.core.setting_names.' + name + '_help';
 
   this.elementId = 'setting_' + name; // HTML id attribute.
   this.localizedName = t(tName);
@@ -41,12 +41,12 @@ function Setting(name, schema, value, overriden) {
 
       // Use defaults.
       return schema['default'];
-    }
-  , write: function (value) {
+    },
+    write: function (value) {
       this.overriden(true);
       this._value(value);
-    }
-  , owner: this
+    },
+    owner: this
   });
 
   this.isDirty = ko.computed(function () {
@@ -99,24 +99,24 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   });
 
   // Show "Remove permissions" button only is moderator has saved overriden settings.
-  view.showRemoveButton = ko.observable(_.some(view.settings, function (setting) {
+  view.showRemoveButton = ko.observable(view.settings.some(function (setting) {
     return setting.overriden();
   }));
 
   view.isDirty = ko.computed(function () {
-    return _.some(view.settings, function (setting) {
+    return view.settings.some(function (setting) {
       return setting.isDirty();
     });
   });
 
   view.save = function save() {
     var request = {
-      section_id: data.params.section_id
-    , user_id:    data.params.user_id
-    , settings:   {}
+      section_id: data.params.section_id,
+      user_id:    data.params.user_id,
+      settings:   {}
     };
 
-    _.forEach(view.settings, function (setting) {
+    view.settings.forEach(function (setting) {
       if (setting.overriden()) {
         request.settings[setting.name] = { value: setting.value() };
       } else {
@@ -125,12 +125,10 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     });
 
     N.io.rpc('admin.forum.moderator.update', request).done(function () {
-      _.forEach(view.settings, function (setting) {
-        setting.markClean();
-      });
+      view.settings.forEach(function (setting) { setting.markClean(); });
 
       // Show "Delete" button if there are some overriden settings after save.
-      view.showRemoveButton(_.some(view.settings, function (setting) {
+      view.showRemoveButton(view.settings.some(function (setting) {
         return setting.overriden();
       }));
 
@@ -142,8 +140,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     N.wire.emit('admin.core.blocks.confirm', t('confirm_remove'), function () {
 
       var request = {
-        section_id: data.params.section_id
-      , user_id:    data.params.user_id
+        section_id: data.params.section_id,
+        user_id:    data.params.user_id
       };
 
       N.io.rpc('admin.forum.moderator.destroy', request).done(function () {

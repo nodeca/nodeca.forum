@@ -9,8 +9,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   N.wire.on('admin.forum.moderator.destroy', function moderator_destroy(data) {
     var request = {
-      section_id: data.$this.data('sectionId')
-    , user_id:    data.$this.data('userId')
+      section_id: data.$this.data('sectionId'),
+      user_id:    data.$this.data('userId')
     };
 
     N.io.rpc('admin.forum.moderator.destroy', request, function (err) {

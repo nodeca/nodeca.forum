@@ -9,23 +9,23 @@ var async = require('async');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_id:   { format: 'mongo', required: true }
-  , usergroup_id: { format: 'mongo', required: true }
+    section_id:   { format: 'mongo', required: true },
+    usergroup_id: { format: 'mongo', required: true }
   });
 
 
   N.wire.before(apiPath, function setting_stores_check() {
     if (!N.settings.getStore('section_usergroup')) {
       return {
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_usergroup` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_usergroup` is not registered.'
       };
     }
 
     if (!N.settings.getStore('usergroup')) {
       return {
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `usergroup` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `usergroup` is not registered.'
       };
     }
   });
@@ -76,8 +76,8 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.on(apiPath, function group_permissions_edit(env, callback) {
-    var SectionUsergroupStore = N.settings.getStore('section_usergroup')
-      , UsergroupStore      = N.settings.getStore('usergroup');
+    var SectionUsergroupStore = N.settings.getStore('section_usergroup'),
+        UsergroupStore      = N.settings.getStore('usergroup');
 
     // Setting schemas to build client interface.
     env.res.setting_schemas = N.config.setting_schemas.section_usergroup;
@@ -92,18 +92,18 @@ module.exports = function (N, apiPath) {
       //
       function (next) {
         SectionUsergroupStore.get(
-          SectionUsergroupStore.keys
-        , { section_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] }
-        , { skipCache: true, extended: true }
-        , function (err, editSettings) {
+          SectionUsergroupStore.keys,
+          { section_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] },
+          { skipCache: true, extended: true },
+          function (err, editSettings) {
           env.res.settings = editSettings;
           next(err);
         });
-      }
+      },
       //
       // Fetch inherited settings from section's parent.
       //
-    , function (next) {
+      function (next) {
         if (!env.data.section.parent) {
           env.res.parent_settings = null;
           next();
@@ -111,23 +111,23 @@ module.exports = function (N, apiPath) {
         }
 
         SectionUsergroupStore.get(
-          SectionUsergroupStore.keys
-        , { section_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] }
-        , { skipCache: true, extended: true }
-        , function (err, parentSettings) {
+          SectionUsergroupStore.keys,
+          { section_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] },
+          { skipCache: true, extended: true },
+          function (err, parentSettings) {
           env.res.parent_settings = parentSettings;
           next(err);
         });
-      }
+      },
       //
       // Fetch inherited settings from usergroup.
       //
-    , function (next) {
+      function (next) {
         UsergroupStore.get(
-          UsergroupStore.keys
-        , { usergroup_ids: [ env.data.usergroup._id ] }
-        , { skipCache: true }
-        , function (err, usergroupSettings) {
+          UsergroupStore.keys,
+          { usergroup_ids: [ env.data.usergroup._id ] },
+          { skipCache: true },
+          function (err, usergroupSettings) {
           env.res.usergroup_settings = usergroupSettings;
           next(err);
         });

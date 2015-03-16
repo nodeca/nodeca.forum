@@ -10,16 +10,16 @@ var async = require('async');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    parent:         { type: [ 'null', 'string' ], required: true }
-  , title:          { type: 'string',           required: true, minLength: 1 }
-  , description:    { type: 'string',           required: true }
-  , is_category:    { type: 'boolean',          required: true }
-  , is_enabled:     { type: 'boolean',          required: true }
-  , is_writeble:    { type: 'boolean',          required: true }
-  , is_searcheable: { type: 'boolean',          required: true }
-  , is_voteable:    { type: 'boolean',          required: true }
-  , is_counted:     { type: 'boolean',          required: true }
-  , is_excludable:  { type: 'boolean',          required: true }
+    parent:         { type: [ 'null', 'string' ], required: true },
+    title:          { type: 'string',           required: true, minLength: 1 },
+    description:    { type: 'string',           required: true },
+    is_category:    { type: 'boolean',          required: true },
+    is_enabled:     { type: 'boolean',          required: true },
+    is_writeble:    { type: 'boolean',          required: true },
+    is_searcheable: { type: 'boolean',          required: true },
+    is_voteable:    { type: 'boolean',          required: true },
+    is_counted:     { type: 'boolean',          required: true },
+    is_excludable:  { type: 'boolean',          required: true }
   });
 
   N.wire.on(apiPath, function section_create(env, callback) {
@@ -60,11 +60,11 @@ module.exports = function (N, apiPath) {
 
           next();
         });
-      }
+      },
       //
       // Find and set free `hid` value for new section. (not `_id`!)
       //
-    , function (next) {
+      function (next) {
         // This is the most simple way to find max value of a field in Mongo.
         N.models.forum.Section
             .find()
@@ -82,11 +82,11 @@ module.exports = function (N, apiPath) {
           newSection.hid = _.isEmpty(result) ? 1 : result[0].hid + 1;
           next();
         });
-      }
+      },
       //
       // Find and set free `display_order` value in the end of siblings list.
       //
-    , function (next) {
+      function (next) {
         // This is the most simple way to find max value of a field in Mongo.
         N.models.forum.Section
             .find({ parent: newSection.parent })
@@ -104,11 +104,11 @@ module.exports = function (N, apiPath) {
           newSection.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
           next();
         });
-      }
+      },
       //
       // Save new section into the database.
       //
-    , function (next) {
+      function (next) {
         newSection.save(next);
       }
     ], callback);

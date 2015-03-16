@@ -6,16 +6,16 @@ var ko = require('knockout');
 
 
 var SECTION_FIELD_DEFAULTS = {
-  'title':          ''
-, 'description':    ''
-, 'parent':         null
-, 'is_category':    false
-, 'is_enabled':     true
-, 'is_writeble':    true
-, 'is_searcheable': true
-, 'is_voteable':    true
-, 'is_counted':     true
-, 'is_excludable':  true
+  'title':          '',
+  'description':    '',
+  'parent':         null,
+  'is_category':    false,
+  'is_enabled':     true,
+  'is_writeble':    true,
+  'is_searcheable': true,
+  'is_voteable':    true,
+  'is_counted':     true,
+  'is_excludable':  true
 };
 
 
@@ -24,8 +24,8 @@ var view = null;
 
 
 N.wire.on(module.apiPath + '.setup', function page_setup(data) {
-  var isNewSection   = !data.current_section
-    , currentSection = {};
+  var isNewSection   = !data.current_section,
+      currentSection = {};
 
   // Create observable fields on currentSection.
   _.forEach(SECTION_FIELD_DEFAULTS, function (defaultValue, key) {
@@ -45,14 +45,12 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   allowedParents.push({ _id: null, title: t('value_section_none') });
 
   function fetchOtherSections(parent) {
-    var sections = _.filter(data.allowed_parents, function (section) {
+    var sections = data.allowed_parents.filter(function (section) {
       return parent === (section.parent || null);
     });
 
-    _(sections).sortBy('display_order').forEach(function (section) {
-      var level = section.level, prefix = '';
-
-      do { prefix += '– '; level -= 1; } while (level >= 0);
+    _.sortBy(sections, 'display_order').forEach(function (section) {
+      var prefix = '| ' + _.repeat('– ', section.level);
 
       allowedParents.push({
         _id:   section._id

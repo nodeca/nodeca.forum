@@ -13,5 +13,5 @@ en-US:
     button_save: Save
     button_remove: Remove permissions
     confirm_remove: Are you sure?
-    message_saved: Settings are saved
-    message_deleted: Moderator is deleted
+    message_saved: Permissions updated
+    message_deleted: Moderator deleted

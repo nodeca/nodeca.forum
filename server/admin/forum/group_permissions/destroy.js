@@ -6,8 +6,8 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_id:   { format: 'mongo', required: true }
-  , usergroup_id: { format: 'mongo', required: true }
+    section_id:   { format: 'mongo', required: true },
+    usergroup_id: { format: 'mongo', required: true }
   });
 
   N.wire.on(apiPath, function group_permissions_destroy(env, callback) {
@@ -15,8 +15,8 @@ module.exports = function (N, apiPath) {
 
     if (!SectionUsergroupStore) {
       callback({
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_usergroup` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_usergroup` is not registered.'
       });
       return;
     }

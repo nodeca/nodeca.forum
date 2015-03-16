@@ -15,8 +15,8 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function section_moderator_store_check() {
     if (!N.settings.getStore('section_moderator')) {
       return {
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_moderator` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_moderator` is not registered.'
       };
     }
   });
@@ -34,11 +34,10 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.sections     = sections;
-      env.data.sectionsById = {};
-
-      _.forEach(sections, function (section) {
-        env.data.sectionsById[section._id] = section;
-      });
+      env.data.sectionsById = sections.reduce(function (acc, section) {
+                                        acc[section._id] = section;
+                                        return acc;
+                                      }, {});
       callback();
     });
   });
@@ -47,8 +46,8 @@ module.exports = function (N, apiPath) {
   // Fetch moderators map `user_id` => `array of section info`.
   //
   N.wire.on(apiPath, function moderator_index(env, callback) {
-    var SectionModeratorStore = N.settings.getStore('section_moderator')
-      , sectionsByModerator = {};
+    var SectionModeratorStore = N.settings.getStore('section_moderator'),
+        sectionsByModerator = {};
 
     async.each(env.data.sections, function (section, next) {
       SectionModeratorStore.getModeratorsInfo(section._id, function (err, moderators) {
@@ -57,15 +56,15 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        _.forEach(moderators, function (moderator) {
+        moderators.forEach(function (moderator) {
           if (!_.has(sectionsByModerator, moderator._id)) {
             sectionsByModerator[moderator._id] = [];
           }
 
           sectionsByModerator[moderator._id].push({
-            _id:       section._id
-          , own:       moderator.own
-          , inherited: moderator.inherited
+            _id:       section._id,
+            own:       moderator.own,
+            inherited: moderator.inherited
           });
         });
         next();
@@ -91,7 +90,7 @@ module.exports = function (N, apiPath) {
         .sortBy(function (moderator) {
           return String(moderator._id); // Sort moderators by user id.
         })
-        .valueOf();
+        .value();
 
       callback();
     });

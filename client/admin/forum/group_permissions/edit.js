@@ -6,8 +6,8 @@ var ko = require('knockout');
 
 
 function Setting(name, schema, value, overriden) {
-  var tName = '@admin.core.setting_names.' + name
-    , tHelp = '@admin.core.setting_names.' + name + '_help';
+  var tName = '@admin.core.setting_names.' + name,
+      tHelp = '@admin.core.setting_names.' + name + '_help';
 
   this.elementId = 'setting_' + name; // HTML id attribute.
   this.localizedName = t(tName);
@@ -41,12 +41,12 @@ function Setting(name, schema, value, overriden) {
 
       // Use defaults.
       return schema['default'];
-    }
-  , write: function (value) {
+    },
+    write: function (value) {
       this.overriden(true);
       this._value(value);
-    }
-  , owner: this
+    },
+    owner: this
   });
 
   this.isDirty = ko.computed(function () {
@@ -99,19 +99,19 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   });
 
   view.isDirty = ko.computed(function () {
-    return _.some(view.settings, function (setting) {
+    return view.settings.some(function (setting) {
       return setting.isDirty();
     });
   });
 
   view.save = function save() {
     var request = {
-      section_id:   data.params.section_id
-    , usergroup_id: data.params.usergroup_id
-    , settings:     {}
+      section_id:   data.params.section_id,
+      usergroup_id: data.params.usergroup_id,
+      settings:     {}
     };
 
-    _.forEach(view.settings, function (setting) {
+    view.settings.forEach(function (setting) {
       if (setting.overriden()) {
         request.settings[setting.name] = { value: setting.value() };
       } else {
@@ -120,9 +120,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     });
 
     N.io.rpc('admin.forum.group_permissions.update', request).done(function () {
-      _.forEach(view.settings, function (setting) {
-        setting.markClean();
-      });
+      view.settings.forEach(function (setting) { setting.markClean(); });
 
       N.wire.emit('notify', { type: 'info', message: t('message_saved') });
     });

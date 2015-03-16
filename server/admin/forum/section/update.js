@@ -13,18 +13,18 @@ var _ = require('lodash');
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    _id:            { format: 'mongo', required: true }
-  , parent:         { type: [ 'null', 'string' ], required: false }
-  , display_order:  { type: 'number',           required: false }
-  , title:          { type: 'string',           required: false }
-  , description:    { type: 'string',           required: false }
-  , is_category:    { type: 'boolean',          required: false }
-  , is_enabled:     { type: 'boolean',          required: false }
-  , is_writeble:    { type: 'boolean',          required: false }
-  , is_searcheable: { type: 'boolean',          required: false }
-  , is_voteable:    { type: 'boolean',          required: false }
-  , is_counted:     { type: 'boolean',          required: false }
-  , is_excludable:  { type: 'boolean',          required: false }
+    _id:            { format: 'mongo', required: true },
+    parent:         { type: [ 'null', 'string' ], required: false },
+    display_order:  { type: 'number',           required: false },
+    title:          { type: 'string',           required: false },
+    description:    { type: 'string',           required: false },
+    is_category:    { type: 'boolean',          required: false },
+    is_enabled:     { type: 'boolean',          required: false },
+    is_writeble:    { type: 'boolean',          required: false },
+    is_searcheable: { type: 'boolean',          required: false },
+    is_voteable:    { type: 'boolean',          required: false },
+    is_counted:     { type: 'boolean',          required: false },
+    is_excludable:  { type: 'boolean',          required: false }
   });
 
   N.wire.on(apiPath, function section_update(env, callback) {
@@ -44,8 +44,8 @@ module.exports = function (N, apiPath) {
       env.data.section = section;
 
       // Update specified fields.
-      _(env.params).keys().without('_id').forEach(function (key) {
-        section.set(key, env.params[key]);
+      Object.keys(env.params).forEach(function (key) {
+        if (key !== '_id') { section.set(key, env.params[key]); }
       });
 
       // If section's `parent` is changed, but new `display_order` is not

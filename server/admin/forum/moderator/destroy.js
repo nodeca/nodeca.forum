@@ -6,8 +6,8 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_id: { format: 'mongo', required: true }
-  , user_id:    { format: 'mongo', required: true }
+    section_id: { format: 'mongo', required: true },
+    user_id:    { format: 'mongo', required: true }
   });
 
   N.wire.on(apiPath, function moderator_destroy(env, callback) {
@@ -15,8 +15,8 @@ module.exports = function (N, apiPath) {
 
     if (!SectionModeratorStore) {
       callback({
-        code:    N.io.APP_ERROR
-      , message: 'Settings store `section_moderator` is not registered.'
+        code:    N.io.APP_ERROR,
+        message: 'Settings store `section_moderator` is not registered.'
       });
       return;
     }
