@@ -10,7 +10,7 @@ module.exports = function (N, collectionName) {
   var statuses = {
     VISIBLE:      1,
     HB:           2, // hellbanned
-    PENDING:      3,
+    PENDING:      3, // reserved, not used now
     DELETED:      4,
     DELETED_HARD: 5
   };

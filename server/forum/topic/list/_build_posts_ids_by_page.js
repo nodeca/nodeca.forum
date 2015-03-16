@@ -1,10 +1,28 @@
+// Reflection helper:
+//
+// 1. Bulds IDs of posts to fetch for current page
+// 2. Create pagination info
+//
+// In:
+//
+// - env.data.posts_visible_statuses - list of statuses, allowed to view
+// - env.data.topic
+//
+// Out:
+//
+// - env.data.posts_ids
+// - env.res.page
+//
 // Used in:
+//
 // - `forum/topic/topic.js`
 // - `forum/topic/list/by_page.js`
 //
 'use strict';
 
+
 var _ = require('lodash');
+
 
 module.exports = function (N) {
 
@@ -12,52 +30,63 @@ module.exports = function (N) {
   var Post = N.models.forum.Post;
 
   return function buildPostIds(env, callback) {
+
     env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
       if (err) {
         callback(err);
         return;
       }
 
-      var postPaginatedSt = [ Post.statuses.VISIBLE ];
+      // Posts with this statuses are counted on page
+      var countable_statuses = [ Post.statuses.VISIBLE ];
 
+      // For hellbanned users - count helpbanned posts too
       if (env.data.posts_visible_statuses.indexOf(Post.statuses.HB) !== -1) {
-        postPaginatedSt.push(Post.statuses.HB);
+        countable_statuses.push(Post.statuses.HB);
       }
 
-      var max = Math.ceil(env.data.topic.cache.post_count / posts_per_page) || 1;
-      var current  = parseInt(env.params.page, 10);
-      var start = (current - 1) * posts_per_page;
+      var page_max      = Math.ceil(env.data.topic.cache.post_count / posts_per_page) || 1;
+      var page_current  = parseInt(env.params.page, 10); // starts from 1
 
-      env.res.page = env.data.page = { current: current, max: max };
+      env.res.page = env.data.page = {
+        current: page_current,
+        max: page_max
+      };
 
-      Post.find({ topic: env.data.topic._id, st: { $in: postPaginatedSt } })
+      // Algorythm:
+      //
+      // - calculate range for countable posts
+      // - select visible posts (ids) in this range
+
+      Post.find()
+          .where('topic').equals(env.data.topic._id)
+          .where('st').in(countable_statuses)
           .select('_id')
           .sort('_id')
-          .skip(start)
-          .limit(posts_per_page + 1)
+          .skip((page_current - 1) * posts_per_page) // start offset
+          .limit(posts_per_page + 1) // fetch +1 post more, to detect next page
           .lean(true)
-          .exec(function (err, visible_posts) {
+          .exec(function (err, countable) {
 
         if (err) {
           callback(err);
           return;
         }
 
-        if (visible_posts.length === 0) {
+        if (countable.length === 0) {
           env.data.posts_ids = [];
           callback();
           return;
         }
 
-        var query = Post
-                      .find()
-                      .where('topic').equals(env.data.topic._id)
-                      .where('st').in(env.data.posts_visible_statuses)
-                      .where('_id').gte(_.first(visible_posts)._id);
+        var query = Post.find()
+                        .where('topic').equals(env.data.topic._id)
+                        .where('st').in(env.data.posts_visible_statuses)
+                        .where('_id').gte(countable[0]._id);
 
         // Don't cut tail on the last page
-        if (current < max) {
-          query.lt(_.last(visible_posts)._id);
+        if (page_current < page_max) {
+          query.lt(countable[countable.length - 1]._id);
         }
 
         query
