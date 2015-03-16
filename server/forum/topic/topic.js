@@ -61,6 +61,15 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill pagination
+  //
+  N.wire.after(apiPath, function fill_pagination(env) {
+
+    // Prepared by `buildPostIds`
+    env.res.page = env.data.page;
+  });
+
+
   // Fill additional topic fields
   //
   N.wire.after(apiPath, function fill_topic_fields(env) {

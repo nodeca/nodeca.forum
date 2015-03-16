@@ -27,4 +27,13 @@ module.exports = function (N, apiPath) {
 
     N.wire.emit('internal:forum.post_list', env, callback);
   });
+
+
+  // Fill pagination
+  //
+  N.wire.after(apiPath, function fill_pagination(env) {
+
+    // Prepared by `buildPostIds`
+    env.res.page = env.data.page;
+  });
 };

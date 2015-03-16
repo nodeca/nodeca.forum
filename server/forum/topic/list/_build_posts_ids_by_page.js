@@ -1,10 +1,11 @@
-// Reflection helper:
+// Reflection helper for `internal:forum.post_list`:
 //
 // 1. Bulds IDs of posts to fetch for current page
 // 2. Creates pagination info
 //
 // In:
 //
+// - env.user_info.hb
 // - env.data.posts_visible_statuses - list of statuses, allowed to view
 // - env.data.topic
 //
@@ -13,7 +14,7 @@
 // - env.data.posts_ids
 // - env.data.page
 //
-// Used in:
+// Needed in:
 //
 // - `forum/topic/topic.js`
 // - `forum/topic/list/by_page.js`
@@ -41,16 +42,17 @@ module.exports = function (N) {
       var countable_statuses = [ Post.statuses.VISIBLE ];
 
       // For hellbanned users - count hellbanned posts too
-      if (env.data.posts_visible_statuses.indexOf(Post.statuses.HB) !== -1) {
+      if (env.user_info.hb) {
         countable_statuses.push(Post.statuses.HB);
       }
 
       // Page numbers starts from 1, not from 0
-      var page_max      = Math.ceil(env.data.topic.cache.post_count / posts_per_page) || 1;
-      var page_current  = parseInt(env.params.page, 10);
+      var page_current = parseInt(env.params.page, 10);
+      var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
+      var page_max = Math.ceil(post_count / posts_per_page) || 1;
 
       // Create page info
-      env.res.page = env.data.page = {
+      env.data.page = {
         current: page_current,
         max: page_max
       };
