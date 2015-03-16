@@ -39,50 +39,38 @@ module.exports = function (N) {
         return;
       }
 
-      // Page numbers starts from 1, not from 0
-      var page_current = parseInt(env.params.page, 10);
-      var topic_count = env.user_info.hb ? env.data.section.cache_hb.topic_count : env.data.section.cache.topic_count;
-      var page_max = Math.ceil(topic_count / topics_per_page) || 1;
-
-      env.data.page = { max: page_max, current: page_current };
-
-      var topic_sort = env.user_info.hb ? { 'cache_hb.last_ts': -1 } : { 'cache.last_ts': -1 };
-
-      // Algorithm:
-      //
-      // - get all visible topics IDs except pinned
-      // - if at first page - add pinned topic ids
-      // - insert pinned topic IDs at start
-
-      Topic.find()
-          .where('section').equals(env.data.section._id)
+      // Fetch visible topic count to calculate pagination. Don't use cache here - need
+      // live pagination updates for users with different permissions.
+      Topic.where('section').equals(env.data.section._id)
           .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-          .select('_id')
-          .sort(topic_sort)
-          .skip((page_current - 1) * topics_per_page)
-          .limit(topics_per_page)
-          .lean(true)
-          .exec(function (err, topics) {
+          .count(function (err, topic_count) {
 
         if (err) {
           callback(err);
           return;
         }
 
-        env.data.topics_ids = _.pluck(topics, '_id');
+        // Page numbers starts from 1, not from 0
+        var page_current = parseInt(env.params.page, 10);
+        var page_max = Math.ceil(topic_count / topics_per_page) || 1;
 
-        // Exit here if pinned topics not needed
-        if (page_current > 1 || env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) === -1) {
-          callback();
-          return;
-        }
+        env.data.page = { max: page_max, current: page_current };
 
-        // Fetch pinned topics ids for first page
+        var topic_sort = env.user_info.hb ? { 'cache_hb.last_ts': -1 } : { 'cache.last_ts': -1 };
+
+        // Algorithm:
+        //
+        // - get all visible topics IDs except pinned
+        // - if at first page - add pinned topic ids
+        // - insert pinned topic IDs at start
+
         Topic.find()
             .where('section').equals(env.data.section._id)
-            .where('st').equals(Topic.statuses.PINNED)
+            .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
             .select('_id')
             .sort(topic_sort)
+            .skip((page_current - 1) * topics_per_page)
+            .limit(topics_per_page)
             .lean(true)
             .exec(function (err, topics) {
 
@@ -91,9 +79,32 @@ module.exports = function (N) {
             return;
           }
 
-          // Put pinned topics IDs to start of `env.data.topics_ids`
-          env.data.topics_ids = _.pluck(topics, '_id').concat(env.data.topics_ids);
-          callback();
+          env.data.topics_ids = _.pluck(topics, '_id');
+
+          // Exit here if pinned topics not needed
+          if (page_current > 1 || env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) === -1) {
+            callback();
+            return;
+          }
+
+          // Fetch pinned topics ids for first page
+          Topic.find()
+              .where('section').equals(env.data.section._id)
+              .where('st').equals(Topic.statuses.PINNED)
+              .select('_id')
+              .sort(topic_sort)
+              .lean(true)
+              .exec(function (err, topics) {
+
+            if (err) {
+              callback(err);
+              return;
+            }
+
+            // Put pinned topics IDs to start of `env.data.topics_ids`
+            env.data.topics_ids = _.pluck(topics, '_id').concat(env.data.topics_ids);
+            callback();
+          });
         });
       });
     });
