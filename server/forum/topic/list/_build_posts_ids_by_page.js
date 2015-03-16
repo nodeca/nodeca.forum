@@ -1,7 +1,7 @@
 // Reflection helper:
 //
 // 1. Bulds IDs of posts to fetch for current page
-// 2. Create pagination info
+// 2. Creates pagination info
 //
 // In:
 //
@@ -11,7 +11,7 @@
 // Out:
 //
 // - env.data.posts_ids
-// - env.res.page
+// - env.data.page
 //
 // Used in:
 //
@@ -37,17 +37,19 @@ module.exports = function (N) {
         return;
       }
 
-      // Posts with this statuses are counted on page
+      // Posts with this statuses are counted on page (others are shown, but not counted)
       var countable_statuses = [ Post.statuses.VISIBLE ];
 
-      // For hellbanned users - count helpbanned posts too
+      // For hellbanned users - count hellbanned posts too
       if (env.data.posts_visible_statuses.indexOf(Post.statuses.HB) !== -1) {
         countable_statuses.push(Post.statuses.HB);
       }
 
+      // Page numbers starts from 1, not from 0
       var page_max      = Math.ceil(env.data.topic.cache.post_count / posts_per_page) || 1;
-      var page_current  = parseInt(env.params.page, 10); // starts from 1
+      var page_current  = parseInt(env.params.page, 10);
 
+      // Create page info
       env.res.page = env.data.page = {
         current: page_current,
         max: page_max
@@ -82,9 +84,9 @@ module.exports = function (N) {
         var query = Post.find()
                         .where('topic').equals(env.data.topic._id)
                         .where('st').in(env.data.posts_visible_statuses)
-                        .where('_id').gte(countable[0]._id);
+                        .where('_id').gte(countable[0]._id); // Set start limit
 
-        // Don't cut tail on the last page
+        // Set last limit. Need to cut last post, but NOT at last page
         if (page_current < page_max) {
           query.lt(countable[countable.length - 1]._id);
         }
