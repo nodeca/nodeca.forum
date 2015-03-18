@@ -152,58 +152,6 @@ module.exports = function (N, collectionName) {
   });
 
 
-  // Ensure that we have settings object for `section_usergroup` store
-  // for each section.
-  //
-  Section.pre('save', function (callback) {
-    if (!this.isNew) {
-      callback();
-      return;
-    }
-
-    var store = new N.models.forum.SectionUsergroupStore({ section_id: this._id });
-    store.save(callback);
-  });
-
-
-  // Ensure that we have settings object for `section_moderator` store
-  // for each section.
-  //
-  Section.pre('save', function (callback) {
-    if (!this.isNew) {
-      callback();
-      return;
-    }
-
-    var store = new N.models.forum.SectionModeratorStore({ section_id: this._id });
-    store.save(callback);
-  });
-
-
-  // Remove section-related setting entries at `section_usergroup` store when
-  // a section itself is removed.
-  //
-  Section.post('remove', function (section) {
-    N.models.forum.SectionUsergroupStore.remove({ section_id: section._id }, function (err) {
-      if (err) {
-        N.logger.error('After %s section is removed, cannot remove related settings: %s', section._id, err);
-      }
-    });
-  });
-
-
-  // Remove section-related setting entries at `section_moderator` store when
-  // a section itself is removed.
-  //
-  Section.post('remove', function (section) {
-    N.models.forum.SectionModeratorStore.remove({ section_id: section._id }, function (err) {
-      if (err) {
-        N.logger.error('After %s section is removed, cannot remove related settings: %s', section._id, err);
-      }
-    });
-  });
-
-
   N.wire.on('init:models', function emit_init_Section(__, callback) {
     N.wire.emit('init:models.' + collectionName, Section, callback);
   });
