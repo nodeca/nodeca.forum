@@ -45,7 +45,7 @@ each post in self.posts
         else
           .av-l
       .forum-post__content
-        .forum-post__message !{post.html}
+        .forum-post__message.markup !{post.html}
 
         - var tail = self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user });
         if tail
