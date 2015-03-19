@@ -89,7 +89,6 @@ asideSizeSm = 50px
   .forum-post__content
     margin-left asideSizeSm + 15px
 
-
 //
 // content column
 //
@@ -128,6 +127,16 @@ asideSizeSm = 50px
   .forum-post__action
     color #428bca
 
+  .short
+    display none
+
+@media (max-width: screenSm - 1)
+  .forum-post__reply
+    .full
+      display none
+    .short
+      display inline-block
+
 //
 // Hovering magick
 //
@@ -147,6 +156,9 @@ asideSizeSm = 50px
 .forum-post__m-bookmarked
   .forum-post__bookmark-remove
     display inline-block
+    opacity 1
+    .icon
+      color red
   .forum-post__bookmark-add
     display none
 
@@ -166,16 +178,21 @@ asideSizeSm = 50px
 
 .forum-post__m-voted-up
   .forum-post__vote-up
+    .forum-post__action
+      opacity 1
     .icon
       color green
 
 .forum-post__m-voted-down
   .forum-post__vote-down
+    .forum-post__action
+      opacity 1
     .icon
       color red
 
 .forum-post__bookmarks-count:after
   content attr(data-bm-count)
+  margin-left .2em
 
 .forum-post__bookmarks-count[data-bm-count="0"]:after
   display none

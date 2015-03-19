@@ -127,8 +127,8 @@ each post in self.posts
 
             if self.runtime.is_member
 
-              li.forum-post__control-item.forum-post__bookmark-add
-                button.btn.forum-post__action(
+              li.forum-post__control-item.forum-post__bookmark
+                button.btn.forum-post__action.forum-post__bookmark-add(
                   data-on-click='forum.topic.post_bookmark'
                   data-post-id=post._id
                   title=self.t('bookmark_add')
@@ -136,8 +136,7 @@ each post in self.posts
                   span.icon.icon-bookmark-empty
                   span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
-              li.forum-post__control-item.forum-post__bookmark-remove
-                button.btn.forum-post__action(
+                button.btn.forum-post__action.forum-post__bookmark-remove(
                   data-on-click='forum.topic.post_bookmark'
                   data-post-id=post._id
                   data-remove='true'
@@ -166,7 +165,14 @@ each post in self.posts
 
             if self.settings.forum_can_reply
               li.forum-post__reply.forum-post__control-item
-                button.btn.forum-post__action(
+                //- for wide screen
+                button.full.btn.forum-post__action(
+                  data-on-click='forum.topic.post_reply'
+                  data-post-id=post._id
+                )
+                  span.icon.icon-reply.icon-space-after= self.t('reply')
+                //- for narrow screen
+                button.short.btn.forum-post__action(
                   data-on-click='forum.topic.post_reply'
                   data-post-id=post._id
                   title=self.t('reply')
