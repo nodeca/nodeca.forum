@@ -139,11 +139,10 @@ asideSizeSm = 50px
 
 // Flip moderator menu to left if < 3 buttons at rignt side
 // http://alistapart.com/article/quantity-queries-for-css
-li.forum-post__mod-menu:nth-last-child(-n + 3)
+li.forum-post__mod-menu:nth-last-child(-n + 4)
   .dropdown-menu
     left auto
     right 0
-
 
 //
 // Hovering magick
@@ -206,3 +205,9 @@ li.forum-post__mod-menu:nth-last-child(-n + 3)
 
 .forum-post__bookmarks-count[data-bm-count="0"]:after
   display none
+
+.forum-post__votes
+  .forum-post__action:after
+    content attr(data-votes-count)
+  .forum-post__action[data-votes-count="0"]
+    display none

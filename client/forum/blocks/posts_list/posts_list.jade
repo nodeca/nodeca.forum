@@ -121,7 +121,7 @@ each post in self.posts
                   )
                     span.icon.icon-vote-down
 
-            li.forum-post__control-item
+            li.forum-post__control-item.forum-post__report
               button.btn.forum-post__action(title=self.t('report'))
                 span.icon.icon-report
 
@@ -179,14 +179,14 @@ each post in self.posts
                 )
                   span.icon.icon-reply
 
-            li.forum-post__control-item
+            li.forum-post__control-item.forum-post__votes
               button.btn.forum-post__action(
                 data-on-click='common.votes_popover'
                 data-votes-popover-placement='left'
                 data-votes-popover-for=post._id
                 title=self.t('vote_details')
+                data-votes-count=(post.votes > 0 ? '+' : '') + post.votes
               )
-                =(post.votes > 0 ? '+' : '') + post.votes
   else
 
     article.forum-post.forum-post__m-collapsed.clearfix(
