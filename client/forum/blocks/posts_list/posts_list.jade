@@ -100,7 +100,7 @@ each post in self.posts
                           data-topic-id=self.topic._id
                         )= self.t('undelete')
 
-            if self.runtime.is_member
+            if self.runtime.is_member && self.runtime.user_id !== post.user
 
               if self.settings.can_vote && (self.settings.votes_add_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
                 li.forum-post__control-item.forum-post__vote-up

@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check post exists and visible
+  // Check that post exists, visible and not bolongs to current user
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
     var statuses = N.models.forum.Post.statuses;
@@ -34,6 +34,15 @@ module.exports = function (N, apiPath) {
 
       if (!post) {
         callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      if (post.user.equals(env.user_info.user_id)) {
+        // hardcode msg, because that should never happen
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: "Can't vote own post"
+        });
         return;
       }
 
