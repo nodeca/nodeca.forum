@@ -36,7 +36,7 @@ ul.forum-sections
               if !section.cache.topic_count
                 = self.t('empty')
               else
-                = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'date')})
+                = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
 
             .forum-section__enter.icon.icon-right-open.visible-xs-block
 
@@ -66,7 +66,7 @@ ul.forum-sections
                   ) #{last_user.name}
               if last_ts
                 li.forum-section__lpost-time
-                  time(datetime=self.date(last_ts, 'iso'))= self.date(last_ts, 'date')
+                  time(datetime=self.date(last_ts, 'iso'))= self.date(last_ts, 'relative')
 
       //- cover all space with link for small screens
       a.forum-section__overlay.visible-xs-block(href=self.link_to('forum.section', section))

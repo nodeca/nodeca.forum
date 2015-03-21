@@ -47,10 +47,10 @@ each topic in self.topics
               a.forum-topicline__author(
                 href=self.link_to('users.member', { user_hid: fp_user.hid })
               )= fp_user.name
-            time.forum-topicline__time(datetime=self.date(fp_ts, 'iso'))= self.date(fp_ts, 'date')
+            time.forum-topicline__time(datetime=self.date(fp_ts, 'iso'))= self.date(fp_ts, 'relative')
 
           .forum-topicline__microstat.visible-xs-block
-            = self.t('stat', { count: replies, last: self.date(lp_ts, 'date'), name: lp_user.name })
+            = self.t('stat', { count: replies, last: self.date(lp_ts, 'relative'), name: lp_user.name })
 
           .forum-topicline__enter.icon.icon-right-open.visible-xs-block
 
@@ -66,7 +66,7 @@ each topic in self.topics
       ul.forum-topicline__lpost.col-sm-3.hidden-xs
         li.forum-topicline__lpost-time
           a.forum-topicline__lpost-time-link(href='#')
-            time(datetime=self.date(lp_ts, 'iso'))= self.date(lp_ts, 'date')
+            time(datetime=self.date(lp_ts, 'iso'))= self.date(lp_ts, 'relative')
         if lp_user
           li.forum-topicline__lpost-user
             a.forum-topicline__lpost-user-link._ucard-popover(

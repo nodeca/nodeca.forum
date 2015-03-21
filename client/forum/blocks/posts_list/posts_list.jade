@@ -28,7 +28,7 @@ each post in self.posts
           time.forum-post__time(
             itemprop='datePublished'
             datetime=self.date(post.ts, 'iso')
-          ) #{self.date(post.ts, 'date')}
+          ) #{self.date(post.ts, 'relative')}
           - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
           a.forum-post__link.icon.icon-link(href=_post_anchor)
           input.forum-post__check(type='checkbox')
@@ -102,7 +102,7 @@ each post in self.posts
 
             if self.runtime.is_member && self.runtime.user_id !== post.user
 
-              if self.settings.can_vote && (self.settings.votes_add_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
+              if self.settings.can_vote && (self.settings.votes_add_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
                 li.forum-post__control-item.forum-post__vote-up
                   button.btn.forum-post__action(
                     title=self.t('vote_up')
@@ -146,7 +146,7 @@ each post in self.posts
                   span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
 
-            if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || self.date(post.ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
+            if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
               li.forum-post__control-item.forum-post__edit
                 button.btn.forum-post__action(
                   data-on-click='forum.topic.post_edit'
@@ -204,7 +204,7 @@ each post in self.posts
           time.forum-post__time(
           itemprop='datePublished'
           datetime=self.date(post.ts, 'iso')
-          ) #{self.date(post.ts, 'date')}
+          ) #{self.date(post.ts, 'relative')}
         .forum-post__meta-blk
           if user
             a.forum-post__author._ucard-popover(

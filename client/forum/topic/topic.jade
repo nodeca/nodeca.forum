@@ -15,7 +15,7 @@ article#content.forum-topic-root(
   != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
-    - var canEdit = (topicOwner && topicOwner._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || self.date(self.topic.cache.first_ts, 'timestamp') > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
+    - var canEdit = (topicOwner && topicOwner._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || new Date(self.topic.cache.first_ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
 
     h1.forum-topic-title.page-head__title(itemprop='name')
       span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
