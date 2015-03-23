@@ -41,7 +41,7 @@ module.exports = function (N, collectionName) {
   });
 
 
-  N.wire.before('init:models.forum.Section', function moderator_store_update_after_section_update(schema) {
+  N.wire.before('init:models.forum.Section', function setup_section_tracking_for_moderator_store(schema) {
     // When a section is created, add a store document for it
     //
     schema.pre('save', function (callback) {

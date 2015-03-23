@@ -40,8 +40,26 @@ module.exports = function (N, collectionName) {
     N.models[collectionName] = Mongoose.model(collectionName, schema);
   });
 
+  // Remove usergroup-related setting entries at `section_usergroup` store when
+  // some usergroup itself is removed.
+  N.wire.before('init:models.users.UserGroup', function setup_usergroup_tracking_for_usergroup_store(schema) {
+    schema.post('remove', function (usergroup) {
+      var store = N.settings.getStore('section_usergroup');
 
-  N.wire.before('init:models.forum.Section', function usergroup_store_update_after_section_update(schema) {
+      if (!store) {
+        N.logger.error('Settings store `section_usergroup` is not registered.');
+        return;
+      }
+
+      store.removeUsergroup(usergroup._id, function (err) {
+        if (err) {
+          N.logger.error('After %s usergroup is removed, cannot remove related settings: %s', usergroup._id, err);
+        }
+      });
+    });
+  });
+
+  N.wire.before('init:models.forum.Section', function setup_section_tracking_for_usergroup_store(schema) {
     // When a section is created, add a store document for it
     //
     schema.pre('save', function (callback) {
