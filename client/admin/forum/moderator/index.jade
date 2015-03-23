@@ -6,9 +6,11 @@
 
     h1 #{self.head.title}
 
-    if self.moderators.length > 0
+    - var moderators = self.moderators.filter(function(m) { return self.users[m._id]; });
+
+    if moderators.length > 0
       ul.section-list
-        each moderator in self.moderators
+        each moderator in moderators
           .section-control
             .section-title
               a(href="#", data-toggle="collapse", data-target="#moderator_#{moderator._id}")= self.users[moderator._id].name

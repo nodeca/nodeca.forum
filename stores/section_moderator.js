@@ -489,30 +489,5 @@ module.exports = function (N) {
   };
 
 
-  // Remove all setting entries for specific moderator at all sections.
-  //
-  SectionModeratorStore.removeUser = function removeUser(userId, callback) {
-    N.models.forum.SectionModeratorStore.find({}, function (err, sections) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      async.each(sections, function (section_settings, next) {
-        var user_settings = section_settings.data[userId];
-
-        if (!user_settings) {
-          next();
-          return;
-        }
-
-        delete section_settings.data[userId];
-        section_settings.markModified('data');
-        section_settings.save(next);
-      }, callback);
-    });
-  };
-
-
   return SectionModeratorStore;
 };
