@@ -115,7 +115,6 @@ module.exports = function (N, apiPath) {
   // Fetch and sort topics
   //
   N.wire.on(apiPath, function fetch_and_sort_topics(env, callback) {
-    var topic;
 
     Topic.find()
         .where('_id').in(env.data.topics_ids)
@@ -131,10 +130,11 @@ module.exports = function (N, apiPath) {
 
       env.data.topics = [];
 
-      // Sort in same order with `env.data.topics_ids`. May be slow on large topics volumes
+      // Sort in `env.data.topics_ids` order.
+      // May be slow on large topics volumes
       env.data.topics_ids.forEach(function (id) {
-        topic = _.find(topics, function (topic) {
-          return topic._id.equals(id);
+        var topic = _.find(topics, function (t) {
+          return t._id.equals(id);
         });
 
         if (topic) {

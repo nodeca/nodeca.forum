@@ -182,7 +182,20 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.posts = posts;
+      env.data.posts = [];
+
+      // Sort in `env.data.posts_ids` order.
+      // May be slow on large posts volumes
+      env.data.posts_ids.forEach(function (id) {
+        var post = _.find(posts, function (p) {
+          return p._id.equals(id);
+        });
+
+        if (post) {
+          env.data.posts.push(post);
+        }
+      });
+
       callback();
     });
   });
