@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check that post exists, visible and not bolongs to current user
+  // Check that post exists, visible and not belongs to current user
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
     var statuses = N.models.forum.Post.statuses;
