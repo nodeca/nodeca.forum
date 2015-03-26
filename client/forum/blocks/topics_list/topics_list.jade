@@ -47,7 +47,7 @@ each topic in self.topics
               a.forum-topicline__author(
                 href=self.link_to('users.member', { user_hid: fp_user.hid })
               )= fp_user.name
-            .forum-topicline__time
+            span.forum-topicline__time
               != self.timetag(fp_ts, 'relative')
 
           .forum-topicline__microstat.visible-xs-block
