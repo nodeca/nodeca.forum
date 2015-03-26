@@ -2,6 +2,10 @@
 //
 'use strict';
 
+
+var whois = require('node-whois');
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -46,7 +50,30 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.ip = post.ip;
+      if (!post.ip) {
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_no_ip')
+        });
+        return;
+      }
+
+      env.res.ip = env.data.ip = post.ip;
+      callback();
+    });
+  });
+
+
+  // Fetch whois info
+  //
+  N.wire.after(apiPath, function fetch_whois(env, callback) {
+    whois.lookup(env.data.ip, function(err, data) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.whois = data;
       callback();
     });
   });
