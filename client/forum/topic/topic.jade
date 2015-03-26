@@ -23,7 +23,7 @@ article#content.forum-topic-root(
       span.forum-topic-title__text= self.topic.title
 
       if canEdit || self.settings.forum_mod_can_edit_titles
-        a.forum-topic-title__edit.icon.icon-edit.icon-dimmed.icon-space-before(
+        a.forum-topic-title__edit.icon.icon-edit.icon-space-before(
           href='#'
           title=self.t('edit_title')
           data-on-click='forum.topic.edit_title'
