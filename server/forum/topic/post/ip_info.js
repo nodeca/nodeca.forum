@@ -3,6 +3,7 @@
 'use strict';
 
 
+var dns   = require('dns');
 var whois = require('node-whois');
 
 
@@ -73,8 +74,33 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.whois = data;
+      env.res.whois = data.replace(/\r?\n/g, '\n')
+                          .replace(/^#.*/mg, '')       // comments
+                          .replace(/^[\n\s]+/g, '')    // empty head
+                          .replace(/[\n\s]+$/g, '')    // empty head
+                          .replace(/\s+$/mg, '')       // line tailing spaces
+                          .replace(/\n{2,}/g, '\n\n'); // doble empty lines
       callback();
     });
   });
+
+
+  // Reverse resolve hostname
+  //
+  N.wire.after(apiPath, function reverse_resolve(env, callback) {
+
+    dns.reverse(env.data.ip, function(err, hosts) {
+      if (err) {
+        callback(); // this error is not fatal
+        return;
+      }
+
+      if (hosts.length) {
+        env.res.hostname = hosts[0];
+      }
+
+      callback();
+    });
+  });
+
 };

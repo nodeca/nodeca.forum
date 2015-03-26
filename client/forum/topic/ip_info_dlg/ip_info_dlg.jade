@@ -3,8 +3,14 @@
     .modal-content
       .modal-header
         button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
-        h4.modal-title=self.t('title_with_ip', { ip: self.ip })
+        h4.modal-title=self.t('title')
       .modal-body
-        pre: code=self.whois
+        p
+          if self.hostname
+            strong #{self.ip}, #{self.hostname}
+          else
+            strong #{self.ip}
+
+        pre: code= self.whois
       .modal-footer
-        button.btn.btn-default(type='button' tabindex='4' data-dismiss='modal')=self.t('cancel')
+        button.btn.btn-default(type='button' tabindex='4' data-dismiss='modal')=self.t('close')
