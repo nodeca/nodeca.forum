@@ -75,11 +75,11 @@ module.exports = function (N, apiPath) {
       }
 
       env.res.whois = data.replace(/\r?\n/g, '\n')
-                          .replace(/^#.*/mg, '')       // comments
-                          .replace(/^[\n\s]+/g, '')    // empty head
-                          .replace(/[\n\s]+$/g, '')    // empty head
-                          .replace(/\s+$/mg, '')       // line tailing spaces
-                          .replace(/\n{2,}/g, '\n\n'); // doble empty lines
+                          .replace(/^[#%].*/mg, '')     // comments
+                          .replace(/^\s+/g, '')         // empty head
+                          .replace(/\s+$/g, '')         // empty tail
+                          .replace(/[ ]+$/mg, '')       // line tailing spaces
+                          .replace(/\n{2,}/g, '\n\n');  // doble empty lines
       callback();
     });
   });
