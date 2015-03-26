@@ -57,46 +57,6 @@ each post in self.posts
             - showDropdown = showDropdown || self.settings.forum_mod_can_delete_topics
             - showDropdown = showDropdown || self.settings.can_see_ip
 
-            if showDropdown
-
-                li.forum-post__control-item.forum-post__mod-menu.dropdown.dropup
-                  button.btn.forum-post__action.dropdown-toggle(
-                    data-toggle='dropdown'
-                    role='button'
-                  )
-                    span.caret
-                  ul.dropdown-menu(role='menu')
-
-                    if self.settings.can_see_ip
-                      li
-                        a(href='#'
-                          data-post-id=post._id
-                          data-on-click='forum.topic.post_show_ip'
-                        )= self.t('ip_info')
-
-                    if self.settings.forum_mod_can_edit_posts
-                      li
-                        a(href='#'
-                          data-on-click='forum.topic.post_edit'
-                          data-post-id=post._id
-                          data-as-moderator='true'
-                        )= self.t('edit')
-
-                    if self.settings.forum_mod_can_delete_topics
-                      li.forum-post__delete
-                        a(href='#'
-                          data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
-                          data-post-id=post._id
-                          data-topic-id=self.topic._id
-                          data-as-moderator='true'
-                        )= self.t('delete')
-                      li.forum-post__undelete
-                        a(href='#'
-                          data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
-                          data-post-id=post._id
-                          data-topic-id=self.topic._id
-                        )= self.t('undelete')
-
             if self.runtime.is_member && self.runtime.user_id !== post.user
 
               if self.settings.can_vote && (self.settings.votes_add_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
@@ -184,6 +144,48 @@ each post in self.posts
                 title=self.t('vote_details')
                 data-votes-count=(post.votes > 0 ? '+' : '') + post.votes
               )
+
+            if showDropdown
+
+                li.forum-post__control-item.forum-post__mod-menu.dropdown.dropup
+                  button.btn.forum-post__action.dropdown-toggle(
+                    data-toggle='dropdown'
+                    role='button'
+                  )
+                    span.caret
+                  ul.dropdown-menu.dropdown-menu-right(role='menu')
+
+                    if self.settings.can_see_ip
+                      li
+                        a(href='#'
+                          data-post-id=post._id
+                          data-on-click='forum.topic.post_show_ip'
+                        )= self.t('ip_info')
+
+                    if self.settings.forum_mod_can_edit_posts
+                      li
+                        a(href='#'
+                          data-on-click='forum.topic.post_edit'
+                          data-post-id=post._id
+                          data-as-moderator='true'
+                        )= self.t('edit')
+
+                    if self.settings.forum_mod_can_delete_topics
+                      li.forum-post__delete
+                        a(href='#'
+                          data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                          data-post-id=post._id
+                          data-topic-id=self.topic._id
+                          data-as-moderator='true'
+                        )= self.t('delete')
+                      li.forum-post__undelete
+                        a(href='#'
+                          data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
+                          data-post-id=post._id
+                          data-topic-id=self.topic._id
+                        )= self.t('undelete')
+
+
   else
 
     article.forum-post.forum-post__m-collapsed.clearfix(
