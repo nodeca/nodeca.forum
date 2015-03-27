@@ -255,6 +255,9 @@ module.exports = function (N, apiPath) {
       if (post.user) {
         env.data.users.push(post.user);
       }
+      if (post.to_user) {
+        env.data.users.push(post.to_user);
+      }
       if (post.del_by) {
         env.data.users.push(post.del_by);
       }

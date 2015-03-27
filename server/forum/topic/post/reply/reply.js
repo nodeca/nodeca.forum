@@ -239,7 +239,8 @@ module.exports = function (N, apiPath) {
     // TODO: hellbanned
 
     if (env.data.parent_post) {
-      post.to = env.data.parent_post;
+      post.to = env.data.parent_post._id;
+      post.to_user = env.data.parent_post.user;
     }
 
     post.topic = env.data.topic._id;

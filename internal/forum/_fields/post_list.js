@@ -5,6 +5,7 @@ module.exports = {
   post: [
     '_id',
     'to',
+    'to_user',
     'tail',
     'html',
     'user',

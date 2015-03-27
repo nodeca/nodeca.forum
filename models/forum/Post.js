@@ -21,6 +21,7 @@ module.exports = function (N, collectionName) {
 
     // Related post for replies
   , to              : Schema.ObjectId
+  , to_user         : Schema.ObjectId
   , user            : Schema.ObjectId
   , ts              : { type: Date, 'default': Date.now }    // timestamp
   , ip              : String  // ip address
