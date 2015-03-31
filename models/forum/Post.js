@@ -18,6 +18,7 @@ module.exports = function (N, collectionName) {
 
   var Post = new Schema({
     topic          : Schema.ObjectId
+  , hid            : Number
 
     // Related post for replies
   , to              : Schema.ObjectId
@@ -75,6 +76,34 @@ module.exports = function (N, collectionName) {
     topic: 1
   , st: 1
   , _id: 1
+  });
+
+
+  // Set 'hid' for the new post.
+  //
+  Post.pre('save', function (callback) {
+    if (!this.isNew) {
+      callback();
+      return;
+    }
+
+    var self = this;
+
+    N.models.forum.Topic.findByIdAndUpdate(
+        self.topic,
+        { $inc: { last_post_hid: 1 } },
+        { new: true },
+        function (err, topic) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      self.hid = topic.last_post_hid;
+
+      callback();
+    });
   });
 
 

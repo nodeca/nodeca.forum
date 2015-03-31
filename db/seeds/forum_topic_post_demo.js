@@ -47,7 +47,7 @@ var users = [];
 
 var postDay = 0;
 
-function createPost(topic, callback) {
+function createPost(topic, reply_to, callback) {
 
   var md = Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join('\n\n');
   var user = users[Charlatan.Helpers.rand(USER_COUNT)];
@@ -75,17 +75,24 @@ function createPost(topic, callback) {
           }
 
           var post = new Post({
-            html: result.html,
-            md: md,
+            html:    result.html,
+            md:      md,
 
-            st: Post.statuses.VISIBLE,
-            topic: topic._id,
+            st:      Post.statuses.VISIBLE,
+            topic:   topic._id,
 
-            user: user,
+            user:    user,
 
-            ts: new Date(2010, 0, postDay++),
+            /* eslint-disable new-cap */
+            ip:      Charlatan.Internet.IPv4(),
+            /* eslint-enable new-cap */
 
-            params: settings
+            to:      reply_to ? reply_to._id  : undefined,
+            to_user: reply_to ? reply_to.user : undefined,
+
+            ts:      new Date(2010, 0, postDay++),
+
+            params:  settings
           });
 
           post.save(function (err, post) {
@@ -153,8 +160,17 @@ function createTopic(section, post_count, callback) {
       return;
     }
 
+    var posts = [];
+
     async.timesSeries(post_count, function (idx, next) {
-        createPost(topic, function (err, post) {
+        // 50% posts won't have any reply information, 25% posts will be
+        // answers to the previous post, 12.5% posts will be answers to the
+        // 2nd last post and so on.
+        //
+        var reply_id = posts.length - Math.floor(1 / Math.random()) + 1,
+            reply_to = posts[reply_id];
+
+        createPost(topic, reply_to, function (err, post) {
           if (err) {
             next(err);
             return;
@@ -165,6 +181,8 @@ function createTopic(section, post_count, callback) {
           }
 
           last_post = post;
+
+          posts.push(post);
 
           addVotes(post, next);
         });

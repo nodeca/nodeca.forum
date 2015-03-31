@@ -59,6 +59,10 @@ module.exports = function (N, collectionName) {
       ste: Number
     }
 
+    // Last assigned hid to the posts in this topic,
+    // used to determine hid of a new post
+  , last_post_hid   : { type: Number, 'default': 0 }
+
     // Cache
   , cache           : cache
   , cache_hb        : cache
