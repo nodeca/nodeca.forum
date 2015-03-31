@@ -63,6 +63,34 @@ N.wire.on('forum.topic.post_edit', function click_edit() {
 N.wire.once('navigate.done:forum.topic', function page_once() {
 
   ///////////////////////////////////////////////////////////////////////////////
+  // Click on post reply link or toolbar reply button
+
+  // Create new editor form and add it to the page
+  //
+  N.wire.before('forum.topic.post_reply', function create_editor_form(data) {
+    // remove old editor form if opened
+    removeEditor();
+
+    $form = $(N.runtime.render('forum.topic.post_reply'));
+
+    parentPostId = data.$this.data('post-id');
+
+    // Find parent, to attach editor after. For new reply - last child
+    if (parentPostId) {
+      $('#post' + parentPostId).after($form);
+    } else {
+      $('#postlist > :last').after($form);
+    }
+
+    $form.hide(0);
+    $form.fadeIn('fast');
+
+    if (!parentPostId) {
+      // Scroll page to opened form
+      $('html, body').animate({ scrollTop: $form.offset().top - $('#content').offset().top }, 'fast');
+    }
+  });
+
   // Fetch parse rules
   //
   N.wire.before('forum.topic.post_reply', function fetch_parse_rules(data, callback) {
@@ -78,13 +106,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   //
   N.wire.before('forum.topic.post_reply', function load_editor(data, callback) {
     N.loader.loadAssets('mdedit', callback);
-  });
-
-
-  // Remove old form if editor already open
-  //
-  N.wire.before('forum.topic.post_reply', function load_editor() {
-    removeEditor();
   });
 
 
@@ -157,25 +178,13 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
-  // Click on post reply link or toolbar reply button
+  // Replace placeholder div with the real editor
   //
-  N.wire.on('forum.topic.post_reply', function click_reply(data) {
-    parentPostId = data.$this.data('post-id');
-
-    $form = $(N.runtime.render('forum.topic.post_reply'));
-    $form.hide(0);
-
+  N.wire.on('forum.topic.post_reply', function initialize_editor() {
     $preview = $form.find('.forum-reply__preview');
 
     $form.find('.forum-reply__medialinks').prop('checked', !postOptions.no_mlinks);
     $form.find('.forum-reply__smiles').prop('checked', !postOptions.no_smiles);
-
-    // Find parent, to attach editor after. For new reply - last child
-    if (parentPostId) {
-      $('#post' + parentPostId).after($form);
-    } else {
-      $('#postlist > :last').after($form);
-    }
 
     editor = new N.MDEdit({
       editArea: '.forum-reply__editor',
@@ -195,13 +204,6 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
     });
 
     draft = null;
-
-    $form.fadeIn('fast');
-
-    if (!parentPostId) {
-      // Scroll page to opened form
-      $('html, body').animate({ scrollTop: $form.offset().top - $('#content').offset().top }, 'fast');
-    }
   });
 
 
@@ -209,6 +211,11 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   // Event handler on Save button click
   //
   N.wire.on('forum.topic.post_reply:save', function save() {
+    if (!editor) {
+      // user clicks "save" when editor isn't loaded yet
+      return;
+    }
+
     // Save reply on server
 
     var data = {

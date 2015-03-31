@@ -11,6 +11,7 @@ var asModerator;
 var parseOptions;
 var editor;
 var postOptions;
+var rpcResult;
 
 
 function removeEditor() {
@@ -82,62 +83,72 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   });
 
 
-  // Load parser
-  //
-  N.wire.before('forum.topic.post_edit', function load_parser(data, callback) {
-    N.loader.loadAssets('mdedit', callback);
-  });
-
-
   ///////////////////////////////////////////////////////////////////////////////
   // Click on post edit link
   //
-  N.wire.on('forum.topic.post_edit', function click_edit(data) {
+
+  // Hide target post and display editor instead of it
+  //
+  N.wire.on('forum.topic.post_edit', function create_editor_form(data, callback) {
     removeEditor();
 
     asModerator = data.$this.data('as-moderator') || false;
     postId = data.$this.data('post-id');
 
-    var $targetPost = $('#post' + postId);
-
     N.io.rpc('forum.topic.post.edit.index', { post_id: postId, as_moderator: asModerator })
-      .done(function (res) {
-        parseOptions = res.params;
+        .done(function (res) {
 
-        $form = $(N.runtime.render('forum.topic.post_edit', { user: res.users[res.user_id] }));
-        $form.hide(0);
+      var $targetPost = $('#post' + postId);
 
-        $targetPost.after($form);
+      parseOptions = res.params;
 
-        postOptions = {
-          no_mlinks: !parseOptions.medialinks,
-          no_smiles: false // TODO
-        };
+      $form = $(N.runtime.render('forum.topic.post_edit', { user: res.users[res.user_id] }));
+      $targetPost.after($form);
+      $form.hide(0);
 
-        $('.forum-edit__medialinks').prop('checked', !postOptions.no_mlinks);
-        $('.forum-edit__smiles').prop('checked', !postOptions.no_smiles);
+      postOptions = {
+        no_mlinks: !parseOptions.medialinks,
+        no_smiles: false // TODO
+      };
 
-        editor = new N.MDEdit({
-          editArea: '.forum-edit__editor',
-          previewArea: '.forum-edit__preview',
-          parseOptions: {},
-          attachments: res.attachments,
-          text: res.md
-        });
+      rpcResult = res;
 
-        updatePostOptions();
+      $targetPost.fadeOut('fast', function () {
+        $form.fadeIn('fast');
 
-        $targetPost.fadeOut('fast', function () {
-          $form.fadeIn('fast');
+        // Scroll page to opened form
+        var editorPosition = $form.offset().top - $('#content').offset().top;
 
-          // Scroll page to opened form
-          var editorPosition = $form.offset().top - $('#content').offset().top;
-
-          if ($(window).scrollTop() > editorPosition) {
-            $('html, body').animate({ scrollTop: editorPosition }, 'fast');
-          }
-        });
+        if ($(window).scrollTop() > editorPosition) {
+          $('html, body').animate({ scrollTop: editorPosition }, 'fast');
+        }
       });
+
+      callback();
+    });
+  });
+
+  // Load editor and parser
+  //
+  N.wire.on('forum.topic.post_edit', function load_editor(data, callback) {
+    N.loader.loadAssets('mdedit', callback);
+  });
+
+  // Replace placeholder div with the real editor
+  //
+  N.wire.on('forum.topic.post_edit', function initialize_editor() {
+    $('.forum-edit__medialinks').prop('checked', !postOptions.no_mlinks);
+    $('.forum-edit__smiles').prop('checked', !postOptions.no_smiles);
+
+    editor = new N.MDEdit({
+      editArea: '.forum-edit__editor',
+      previewArea: '.forum-edit__preview',
+      parseOptions: {},
+      attachments: rpcResult.attachments,
+      text: rpcResult.md
+    });
+
+    updatePostOptions();
   });
 
 
@@ -145,6 +156,10 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
   // Event handler on Save button click
   //
   N.wire.on('forum.topic.post_edit:save', function save() {
+    if (!editor) {
+      // user clicks "save" when editor isn't loaded yet
+      return;
+    }
 
     var $post = $('#post' + postId);
 
