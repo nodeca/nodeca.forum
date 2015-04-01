@@ -5,16 +5,19 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    // Topic hid
-    hid: {
-      type: 'integer',
-      minimum: 1,
-      required: true
-    },
     section_hid: {
       type: 'integer',
       minimum: 1,
       required: true
+    },
+    topic_hid: {
+      type: 'integer',
+      minimum: 1,
+      required: true
+    },
+    post_hid: {
+      type: 'integer',
+      minimum: 1
     },
     page: {
       type: 'integer',
@@ -24,7 +27,8 @@ module.exports = function (N, apiPath) {
   });
 
 
-  var buildPostIds = require('./list/_build_posts_ids_by_page.js')(N);
+  var buildPostIdsByPage    = require('./list/_build_posts_ids_by_page.js')(N),
+      buildPostIdsByPostHid = require('./list/_build_posts_ids_by_post_hid.js')(N);
 
 
   // `params.section_hid` can be wrong (old link to moved topic).
@@ -38,23 +42,28 @@ module.exports = function (N, apiPath) {
         code: N.io.REDIRECT,
         head: {
           'Location': N.router.linkTo('forum.topic', {
-            hid:         env.data.topic.hid,
             section_hid: env.data.section.hid,
-            page:        env.params.page || 1
+            topic_hid:   env.data.topic.hid,
+            post_hid:    env.params.post_hid,
+            page:        env.params.page
           })
         }
       });
       return;
     }
 
-    buildPostIds(env, callback);
+    if (env.params.post_hid) {
+      buildPostIdsByPostHid(env, callback);
+    } else {
+      buildPostIdsByPage(env, callback);
+    }
   }
 
 
   // Fetch posts subcall
   //
   N.wire.on(apiPath, function fetch_posts_list(env, callback) {
-    env.data.topic_hid = env.params.hid;
+    env.data.topic_hid = env.params.topic_hid;
     env.data.build_posts_ids = buildPostIdsAndCheckRedirect;
 
     N.wire.emit('internal:forum.post_list', env, callback);
@@ -87,7 +96,7 @@ module.exports = function (N, apiPath) {
         head: {
           'Location': N.router.linkTo('forum.topic', {
             section_hid: env.data.section.hid,
-            hid:         env.params.hid,
+            topic_hid:   env.params.topic_hid,
             page:        env.data.page.max
           })
         }
@@ -121,7 +130,7 @@ module.exports = function (N, apiPath) {
     env.res.head = env.res.head || {};
 
     env.res.head.title = (env.params.page > 1) ?
-      env.t('title_with_page', { title: topic.title, page: env.params.page })
+      env.t('title_with_page', { title: topic.title, page: env.data.page.current })
     :
       topic.title;
   });

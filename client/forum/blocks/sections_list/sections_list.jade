@@ -56,7 +56,7 @@ ul.forum-sections
             ul.forum-section__lpost
               //-li.forum-section__lpost-title
                 a.forum-section__lpost-title-link(
-                  href=self.link_to('forum.topic', { hid: last_topic, section_hid: section.hid }) +'#'+ section.cache.last_post
+                  href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: last_topic }) +'#'+ section.cache.last_post
                 ) #{section.cache.last_topic_title}
               //-if last_user
                 li.forum-section__lpost-user

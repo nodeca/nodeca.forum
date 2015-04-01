@@ -19,7 +19,7 @@ var topicState = {};
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.topic_hid = +data.params.hid;
+  topicState.topic_hid = +data.params.topic_hid;
   topicState.section_hid = +data.params.section_hid;
   topicState.page = +data.params.page;
 });
@@ -326,8 +326,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // update button href with next page URL
       data.$this.attr('href', N.router.linkTo('forum.topic', {
-        hid:          res.topic.hid,
         section_hid:  res.section.hid,
+        topic_hid:    res.topic.hid,
         page:         res.page.current + 1
       }));
 
@@ -340,7 +340,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
           route:    'forum.topic'
-        , params:   { hid: res.topic.hid, section_hid: res.section.hid }
+        , params:   { section_hid: res.section.hid, topic_hid: res.topic.hid }
         , current:  res.page.current
         , max: res.page.max
         })

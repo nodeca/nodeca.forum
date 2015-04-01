@@ -70,14 +70,24 @@ module.exports = function (N, collectionName) {
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Get posts ids range for page XX and get posts for page XX
-  // !!! Use _id for sort order
+  //  - get post id range for the page XX
+  //  - get posts on the page XX
+  //
+  // Use _id for sort order
+  //
   Post.index({
-    topic: 1
-  , st: 1
-  , _id: 1
+    topic: 1,
+    st:    1,
+    _id:   1
   });
 
+  //  - get page by one of its posts hid
+  //
+  Post.index({
+    topic: 1,
+    st:    1,
+    hid:   1
+  });
 
   // Set 'hid' for the new post.
   //

@@ -53,7 +53,7 @@ article#content.forum-topic-root(
 
           if self.page.max > 1
             .btn-group.pull-left._pagination
-              - var link_params = { hid: self.topic.hid, section_hid: self.section.hid }
+              - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
               - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
               != self.partial('@common.blocks.pagination', pgn_params)
 
@@ -70,7 +70,7 @@ article#content.forum-topic-root(
     != self.partial('@forum.blocks.posts_list')
 
   //- Button "More Topics"
-  - var link_params = { hid: self.topic.hid, section_hid: self.section.hid, page: self.page.current + 1 };
+  - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid, page: self.page.current + 1 };
   - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
   a.forum-topic__more-link.btn.btn-default.btn-block.icon.icon-dimmed.icon-space-after.icon-more(
     class=btn_more_state

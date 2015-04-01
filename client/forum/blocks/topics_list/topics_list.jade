@@ -29,7 +29,7 @@ each topic in self.topics
             span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-sm.icon-dimmed.icon-space-after(title=self.t('bookmarked'))
             span.forum-topicline__deleted-marker.icon.icon-deleted.icon-sm.icon-dimmed.icon-space-after(title=self.t('deleted'))
             span.forum-topicline__closed-marker.icon.icon-closed.icon-sm.icon-dimmed.icon-space-after(title=self.t('closed'))
-            a.forum-topicline__title-link(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))= topic.title
+            a.forum-topicline__title-link(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))= topic.title
           //-a.mark-i-attach._tip(href="#")=topic.attach_count
 
           if topic.del_by
@@ -76,4 +76,4 @@ each topic in self.topics
             )= lp_user.name
 
     //- cover all space with link for small screens
-    a.forum-topicline__overlay.visible-xs-block(href=self.link_to('forum.topic', { hid: topic.hid, section_hid: self.section.hid }))
+    a.forum-topicline__overlay.visible-xs-block(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))

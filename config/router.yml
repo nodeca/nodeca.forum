@@ -14,11 +14,22 @@ router:
           default: 1
 
     forum.topic:
-      "/f{section_hid}/topic{hid}(/page{page})":
+      "/f{section_hid}/topic{topic_hid}/{post_hid}":
         section_hid:
           match: /\d+/
           type: integer
-        hid:
+        topic_hid:
+          match: /\d+/
+          type: integer
+        post_hid:
+          match: /\d+/
+          type: integer
+
+      "/f{section_hid}/topic{topic_hid}(/page{page})":
+        section_hid:
+          match: /\d+/
+          type: integer
+        topic_hid:
           match: /\d+/
           type: integer
         page:

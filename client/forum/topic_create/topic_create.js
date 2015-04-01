@@ -187,7 +187,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           apiPath: 'forum.topic',
           params: {
             section_hid: sectionHid,
-            hid: res.topic_hid
+            topic_hid:   res.topic_hid
           }
         });
       });

@@ -32,7 +32,7 @@ function draftID() {
   return [
     'post_reply',
     // topic hid
-    pageParams.hid,
+    pageParams.topic_hid,
     N.runtime.user_hid
   ].join('_');
 }
@@ -220,7 +220,7 @@ N.wire.once('navigate.done:forum.topic', function page_once() {
 
     var data = {
       section_hid:      pageParams.section_hid,
-      topic_hid:        pageParams.hid,
+      topic_hid:        pageParams.topic_hid,
       txt:              editor.text(),
       attach:           editor.attachments(),
       option_no_mlinks: postOptions.no_mlinks,

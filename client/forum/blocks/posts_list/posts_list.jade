@@ -28,14 +28,14 @@ each post, post_idx in self.posts
 
           if post.to && post.to_user && self.users[post.to_user]
             if !post_idx || self.posts[post_idx - 1]._id !== post.to
-              - var _reply_to_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post.to;
+              - var _reply_to_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid }) + '#post' + post.to;
               - var _reply_to_user = self.users[post.to_user]
               a.forum-post__reply-link(href=_reply_to_anchor)
                 span.icon.icon-reply.icon-space-after
                 = _reply_to_user.nick
 
           != self.timetag(post.ts, 'relative')
-          - var _post_anchor = self.link_to('forum.topic', { hid: self.topic.hid, section_hid: self.section.hid }) + '#post' + post._id;
+          - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid }) + '#post' + post._id;
           a.forum-post__link.icon.icon-link(href=_post_anchor)
           input.forum-post__check(type='checkbox')
         .forum-post__meta-blk
