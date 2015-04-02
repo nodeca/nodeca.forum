@@ -10,21 +10,89 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
 // Topic state
 //
-// - topic_hid:       topic's human id
 // - section_hid:     id of the current section
-// - page:            topic's next page
+// - topic_hid:       topic's human id
+// - post_hid:        one of the topic posts' hid (optional)
+// - page:            current page (optional)
+//
+// We receive either post_hid or page in the params.
 //
 var topicState = {};
+var scrollHandler = null;
 
+
+/////////////////////////////////////////////////////////////////////
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.topic_hid = +data.params.topic_hid;
+  topicState.topic_hid   = +data.params.topic_hid;
   topicState.section_hid = +data.params.section_hid;
-  topicState.page = +data.params.page;
+  topicState.post_hid    = +data.params.post_hid;
+  topicState.page        = +data.params.page;
+
+  // Scroll to a post linked in params (if any)
+  //
+  if (topicState.post_hid) {
+    $('.forum-post').each(function (n, element) {
+      var $element = $(element);
+
+      if ($element.data('post-hid') === topicState.post_hid) {
+        $(window).scrollTop($element.offset().top - $('.controlbar').height());
+      }
+    });
+  }
+
+  // disable automatic scroll to an anchor in the navigator
+  data.no_scroll = true;
 });
 
 
+/////////////////////////////////////////////////////////////////////
+// Update location when user scrolls the page
+//
+N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
+
+  scrollHandler = _.debounce(function update_location_on_scroll() {
+    var scrollTop = $(window).scrollTop() + $('.controlbar').height(),
+        currentPost = $('.forum-post:first'),
+        currentPostOffset = -Infinity;
+
+    $('.forum-post').each(function (n, element) {
+      var $element = $(element),
+          top = $element.offset().top;
+
+      // looking for a last post above scrollTop
+      //
+      if (currentPostOffset < top && top <= scrollTop) {
+        currentPostOffset = top;
+        currentPost = $element;
+      }
+    });
+
+    if (currentPost) {
+      N.wire.emit('navigate.replace', {
+        href: N.router.linkTo('forum.topic', {
+          section_hid:  topicState.section_hid,
+          topic_hid:    topicState.topic_hid,
+          post_hid:     currentPost.data('post-hid')
+        })
+      });
+    }
+  }, 100, { maxWait: 100 });
+
+  $(window).on('scroll', scrollHandler);
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
+  scrollHandler.cancel();
+  $(window).off('scroll', scrollHandler);
+  scrollHandler = null;
+});
+
+
+/////////////////////////////////////////////////////////////////////
+// setup 'forum.topic.*' handlers
+//
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Show post IP
