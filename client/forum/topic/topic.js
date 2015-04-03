@@ -10,14 +10,15 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
 // Topic state
 //
-// - section_hid:     id of the current section
-// - topic_hid:       topic's human id
-// - post_hid:        one of the topic posts' hid (optional)
-// - page:            current page (optional)
-//
-// We receive either post_hid or page in the params.
+// - section_hid:     current section hid
+// - topic_hid:       current topic hid
+// - post_hid:        current post hid
+// - first_page:      first displayed page
+// - last_page:       last displayed page
+// - max_page:        maximum possible page in this topic
 //
 var topicState = {};
+var pageFirstPostHids = {};
 var scrollHandler = null;
 
 
@@ -25,10 +26,14 @@ var scrollHandler = null;
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.topic_hid   = +data.params.topic_hid;
   topicState.section_hid = +data.params.section_hid;
+  topicState.topic_hid   = +data.params.topic_hid;
   topicState.post_hid    = +data.params.post_hid;
-  topicState.page        = +data.params.page;
+  topicState.first_page  = +$('.forum-topic-root').data('page-current');
+  topicState.last_page   = +$('.forum-topic-root').data('page-current');
+  topicState.max_page    = +$('.forum-topic-root').data('page-max');
+
+  pageFirstPostHids[topicState.first_page] = $('.forum-post:first').data('post-hid');
 
   // Scroll to a post linked in params (if any)
   //
@@ -51,32 +56,124 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 // Update location when user scrolls the page
 //
 N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
+  var $window = $(window),
+      prev_page_loading = false,
+      next_page_loading = false,
+      current_page = topicState.first_page;
+
+  function update_pager() {
+    current_page = _.reduce(pageFirstPostHids, function (acc, first_post, page) {
+      if (!(topicState.post_hid >= first_post)) { return acc; }
+      return acc === null ? +page : Math.max(acc, page);
+    }, null);
+
+    $('._pagination').html(
+      N.runtime.render('common.blocks.pagination', {
+        route:    'forum.topic',
+        params:   { section_hid: topicState.section_hid, topic_hid: topicState.topic_hid },
+        current:  current_page,
+        max:      topicState.max_page
+      })
+    );
+  }
+
+  function load_prev_page() {
+    if (prev_page_loading) { return; }
+    prev_page_loading = true;
+
+    N.io.rpc('forum.topic.list.by_page', {
+      topic_hid: topicState.topic_hid,
+      page: topicState.first_page - 1
+    }).done(function (res) {
+      if (!res.posts || !res.posts.length) { return; }
+
+      var old_height = $('#postlist').height();
+
+      res.show_page_number  = res.page.current;
+
+      // render & inject posts list
+      var $result = $(N.runtime.render('forum.blocks.posts_list', res));
+      $('#postlist > :first').before($result);
+
+      // update topic state
+      topicState.first_page = res.page.current;
+      topicState.max_page   = res.page.max;
+      pageFirstPostHids[res.page.current] = res.posts[0].hid;
+      update_pager();
+
+      // update scroll so it would point at the same spot as before
+      $window.scrollTop($window.scrollTop() + $('#postlist').height() - old_height);
+
+      prev_page_loading = false;
+    });
+  }
+
+  function load_next_page() {
+    if (next_page_loading) { return; }
+    next_page_loading = true;
+
+    N.io.rpc('forum.topic.list.by_page', {
+      topic_hid: topicState.topic_hid,
+      page: topicState.last_page + 1
+    }).done(function (res) {
+      if (!res.posts || !res.posts.length) { return; }
+
+      res.show_page_number  = res.page.current;
+
+      // render & inject posts list
+      var $result = $(N.runtime.render('forum.blocks.posts_list', res));
+      $('#postlist > :last').after($result);
+
+      // update topic state
+      topicState.last_page  = res.page.current;
+      topicState.max_page   = res.page.max;
+      pageFirstPostHids[res.page.current] = res.posts[0].hid;
+      update_pager();
+
+      next_page_loading = false;
+    });
+  }
 
   scrollHandler = _.debounce(function update_location_on_scroll() {
-    var scrollTop = $(window).scrollTop() + $('.controlbar').height(),
-        currentPost = $('.forum-post:first'),
-        currentPostOffset = -Infinity;
+    var posts         = $('.forum-post'),
+        viewportStart = $window.scrollTop() + $('.controlbar').height(),
+        viewportEnd   = $window.scrollTop() + $window.height(),
+        currentIdx;
 
-    $('.forum-post').each(function (n, element) {
-      var $element = $(element),
-          top = $element.offset().top;
-
-      // looking for a last post above scrollTop
-      //
-      if (currentPostOffset < top && top <= scrollTop) {
-        currentPostOffset = top;
-        currentPost = $element;
-      }
+    // Update window.location to point at the first post in the viewport
+    //
+    currentIdx = _.sortedIndex(posts, null, function (post) {
+      if (!post) { return viewportStart; }
+      return $(post).offset().top + $(post).height();
     });
 
-    if (currentPost) {
-      N.wire.emit('navigate.replace', {
-        href: N.router.linkTo('forum.topic', {
-          section_hid:  topicState.section_hid,
-          topic_hid:    topicState.topic_hid,
-          post_hid:     currentPost.data('post-hid')
-        })
-      });
+    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
+
+    topicState.post_hid = $(posts[currentIdx]).data('post-hid');
+
+    N.wire.emit('navigate.replace', {
+      href: N.router.linkTo('forum.topic', {
+        section_hid:  topicState.section_hid,
+        topic_hid:    topicState.topic_hid,
+        post_hid:     topicState.post_hid
+      })
+    });
+
+    update_pager();
+
+    // Whenever we are close to beginning/end of post list, check if we can
+    // load more pages from the server
+    //
+    if (posts.length <= 3 || $(posts[posts.length - 3]).offset().top < viewportEnd) {
+      if (topicState.last_page < topicState.max_page) {
+        load_next_page();
+      }
+    }
+
+    if (posts.length <= 3 || $(posts[3]).offset().top > viewportStart) {
+      if (topicState.first_page > 1) {
+        load_prev_page();
+      }
     }
   }, 100, { maxWait: 100 });
 
@@ -369,7 +466,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic.append_next_page', function append_next_page(data, callback) {
 
     // request for the next page
-    N.io.rpc('forum.topic.list.by_page', { topic_hid: topicState.topic_hid, page: topicState.page + 1 })
+    N.io.rpc('forum.topic.list.by_page', { topic_hid: topicState.topic_hid, page: topicState.last_page + 1 })
         .done(function (res) {
 
       // if no posts - just disable 'More' button
@@ -424,7 +521,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       });
 
       // update topic state
-      topicState.page = res.page.current;
+      topicState.last_page = res.page.current;
       callback();
     });
   });

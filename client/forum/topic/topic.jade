@@ -11,6 +11,8 @@ article#content.forum-topic-root(
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
   class=(self.topic.st === topicStatuses.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''
+  data-page-current= self.page.current
+  data-page-max= self.page.max
 )
   != self.partial('@common.blocks.breadcrumbs')
 
