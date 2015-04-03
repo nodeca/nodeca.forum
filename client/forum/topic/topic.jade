@@ -71,15 +71,6 @@ article#content.forum-topic-root(
   #postlist.forum-postlist
     != self.partial('@forum.blocks.posts_list')
 
-  //- Button "More Topics"
-  - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid, page: self.page.current + 1 };
-  - var btn_more_state = (self.page.max === 1 || self.page.max === self.page.current) ? "hidden" : ""
-  a.forum-topic__more-link.btn.btn-default.btn-block.icon.icon-dimmed.icon-space-after.icon-more(
-    class=btn_more_state
-    href=self.link_to(self.apiPath, link_params)
-    data-on-click="forum.topic.append_next_page"
-  )= self.t('more_posts')
-
   //- Tracking options
   if self.runtime.is_member
     footer.forum-topic__tracking
@@ -89,4 +80,3 @@ article#content.forum-topic-root(
 
       span.forum-topic__tracking-text
         | You will receive notifications because you replied this topic
-
