@@ -47,8 +47,8 @@ module.exports = function (N, apiPath) {
       }
 
       // sort result in the same order as ids
-      env.data.allowed_parents.forEach(function(allowedParent) {
-        var foundSection = _.find(sections, function(section) {
+      env.data.allowed_parents.forEach(function (allowedParent) {
+        var foundSection = _.find(sections, function (section) {
           return section._id.equals(allowedParent._id);
         });
         foundSection.level = allowedParent.level;

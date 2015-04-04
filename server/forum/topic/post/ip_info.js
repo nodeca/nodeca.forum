@@ -68,7 +68,7 @@ module.exports = function (N, apiPath) {
   // Fetch whois info
   //
   N.wire.after(apiPath, function fetch_whois(env, callback) {
-    whois.lookup(env.data.ip, function(err, data) {
+    whois.lookup(env.data.ip, function (err, data) {
       if (err) {
         callback(err);
         return;
@@ -89,7 +89,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function reverse_resolve(env, callback) {
 
-    dns.reverse(env.data.ip, function(err, hosts) {
+    dns.reverse(env.data.ip, function (err, hosts) {
       if (err) {
         callback(); // this error is not fatal
         return;

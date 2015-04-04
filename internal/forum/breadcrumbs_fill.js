@@ -23,8 +23,8 @@ module.exports = function (N, apiPath) {
         .exec(function (err, parents) {
 
           // sort result in the same order as ids
-          _.forEach(ids, function(id) {
-            var foundParent = _.find(parents, function(parent) {
+          _.forEach(ids, function (id) {
+            var foundParent = _.find(parents, function (parent) {
               return parent._id.equals(id);
             });
             result.push(foundParent);
@@ -68,7 +68,7 @@ module.exports = function (N, apiPath) {
 
       // transform fetched data & glue to output
       env.res.breadcrumbs = env.res.breadcrumbs.concat(
-        _.map(bc_list, function(section_info) {
+        _.map(bc_list, function (section_info) {
           return {
             text: section_info.title,
             route: 'forum.section',

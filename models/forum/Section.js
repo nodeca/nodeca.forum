@@ -10,50 +10,50 @@ var memoizee = require('memoizee');
 module.exports = function (N, collectionName) {
 
   var cache = {
-    topic_count      : { type: Number, 'default': 0 },
-    post_count       : { type: Number, 'default': 0 },
+    topic_count:      { type: Number, 'default': 0 },
+    post_count:       { type: Number, 'default': 0 },
 
-    last_post        : Schema.ObjectId,
-    last_topic       : Schema.ObjectId,
-    last_topic_hid   : Number,
-    last_topic_title : String,
-    last_user        : Schema.ObjectId,
-    last_ts          : Date
+    last_post:        Schema.ObjectId,
+    last_topic:       Schema.ObjectId,
+    last_topic_hid:   Number,
+    last_topic_title: String,
+    last_user:        Schema.ObjectId,
+    last_ts:          Date
   };
 
   var Section = new Schema({
-    title           : String,
-    description     : String,
-    display_order   : Number,
+    title:            String,
+    description:      String,
+    display_order:    Number,
 
     // user-friendly id (autoincremented)
-    hid              : { type: Number, index: true },
+    hid:              { type: Number, index: true },
 
     // Sections tree paths/cache
-    parent          : Schema.ObjectId,
+    parent:           Schema.ObjectId,
 
     // Visible moderator list.
-    moderators    : [ Schema.ObjectId ],
+    moderators:       [ Schema.ObjectId ],
 
     // Options
-    is_category     : { type: Boolean, 'default': false }, // subsection or category
-    is_enabled      : { type: Boolean, 'default': true },  // hiden inactive
-    is_writeble     : { type: Boolean, 'default': true },  // read-only archive
-    is_searcheable  : { type: Boolean, 'default': true },
-    is_voteable     : { type: Boolean, 'default': true },
-    is_counted      : { type: Boolean, 'default': true },  // inc user's counter, when posted here
-    is_excludable   : { type: Boolean, 'default': true },
+    is_category:      { type: Boolean, 'default': false }, // subsection or category
+    is_enabled:       { type: Boolean, 'default': true },  // hiden inactive
+    is_writeble:      { type: Boolean, 'default': true },  // read-only archive
+    is_searcheable:   { type: Boolean, 'default': true },
+    is_voteable:      { type: Boolean, 'default': true },
+    is_counted:       { type: Boolean, 'default': true },  // inc user's counter, when posted here
+    is_excludable:    { type: Boolean, 'default': true },
 
     // Topic prefixes
-    is_prefix_required  : { type: Boolean, 'default': false },
-    prefix_groups   : [ Schema.ObjectId ], // allowed groups of prefixes
+    is_prefix_required: { type: Boolean, 'default': false },
+    prefix_groups:    [ Schema.ObjectId ], // allowed groups of prefixes
 
     // Cache
-    cache           : cache,
-    cache_hb        : cache,
+    cache:            cache,
+    cache_hb:         cache,
 
     // Setting storage. Only `section_usergroup` settings store should access this.
-    settings        : { type: Schema.Types.Mixed, 'default': {} }
+    settings:         { type: Schema.Types.Mixed, 'default': {} }
   },
   {
     versionKey : false
@@ -94,7 +94,7 @@ module.exports = function (N, collectionName) {
     }
 
     var self = this;
-    N.models.core.Increment.next('section', function(err, value) {
+    N.models.core.Increment.next('section', function (err, value) {
       if (err) {
         callback(err);
         return;
@@ -131,8 +131,8 @@ module.exports = function (N, collectionName) {
           }
           next();
         });
-      }
-    , function (next) {
+      },
+      function (next) {
         var SectionModeratorStore = N.settings.getStore('section_moderator');
 
         if (!SectionModeratorStore) {
@@ -170,7 +170,7 @@ module.exports = function (N, collectionName) {
   //
   var getSectionsTree = memoizee(
 
-    function(callback) {
+    function (callback) {
 
       var result = {};
 
@@ -186,7 +186,7 @@ module.exports = function (N, collectionName) {
         }
 
         // create hash of trees for each section
-        sections.forEach(function(section) {
+        sections.forEach(function (section) {
 
           // check if section was already added by child. If not found, create it
           result[section._id] = result[section._id] || { _id: section._id, children: [] };
@@ -209,7 +209,7 @@ module.exports = function (N, collectionName) {
         // root is a special fake `section` that contains array of the root-level sections
         result.root = { children: [] };
         // fill root chirden
-        sections.forEach(function(section) {
+        sections.forEach(function (section) {
           if (!section.parent) {
             result.root.children.push(result[section._id]);
           }
@@ -227,9 +227,9 @@ module.exports = function (N, collectionName) {
 
   // Returns list of parent _id-s for given section `_id`
   //
-  Section.statics.getParentList = function(sectionID, callback) {
+  Section.statics.getParentList = function (sectionID, callback) {
 
-    getSectionsTree(function(err, sections) {
+    getSectionsTree(function (err, sections) {
 
       if (err) {
         callback(err);
@@ -260,7 +260,7 @@ module.exports = function (N, collectionName) {
   //
   // - [ {_id, level} ]
   //
-  Section.statics.getChildren = function(sectionID, deepness, callback) {
+  Section.statics.getChildren = function (sectionID, deepness, callback) {
 
     // shift parameters
     if (typeof deepness === 'undefined') {
@@ -289,7 +289,7 @@ module.exports = function (N, collectionName) {
       });
     }
 
-    getSectionsTree(function(err, sections) {
+    getSectionsTree(function (err, sections) {
       if (err) {
         callback(err);
         return;

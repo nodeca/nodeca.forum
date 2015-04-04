@@ -6,16 +6,16 @@ var ko = require('knockout');
 
 
 var SECTION_FIELD_DEFAULTS = {
-  'title':          '',
-  'description':    '',
-  'parent':         null,
-  'is_category':    false,
-  'is_enabled':     true,
-  'is_writeble':    true,
-  'is_searcheable': true,
-  'is_voteable':    true,
-  'is_counted':     true,
-  'is_excludable':  true
+  title:          '',
+  description:    '',
+  parent:         null,
+  is_category:    false,
+  is_enabled:     true,
+  is_writeble:    true,
+  is_searcheable: true,
+  is_voteable:    true,
+  is_counted:     true,
+  is_excludable:  true
 };
 
 
@@ -53,8 +53,8 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       var prefix = '| ' + _.repeat('– ', section.level);
 
       allowedParents.push({
-        _id:   section._id
-      , title: prefix + section.title
+        _id:   section._id,
+        title: prefix + section.title
       });
 
       fetchOtherSections(section._id); // Fetch children sections.

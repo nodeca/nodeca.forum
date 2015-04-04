@@ -44,7 +44,7 @@ module.exports = function (N, apiPath) {
 
     // create hash table for _ids, where array index means display order
     var siblingOrder = {};
-    _.forEach(_ids, function(value, index) {
+    _.forEach(_ids, function (value, index) {
       siblingOrder[value] = index;
     });
 
@@ -59,7 +59,7 @@ module.exports = function (N, apiPath) {
       }
 
       // for each sibling find proper section and set `display_order` to it
-      async.each(sections, function(section, cb) {
+      async.each(sections, function (section, cb) {
         section.display_order = siblingOrder[section._id];
         section.save(cb);
 

@@ -86,7 +86,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
 
-    N.models.forum.Section.getParentList(env.data.section._id, function(err, parents) {
+    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
       if (err) {
         callback(err);
         return;

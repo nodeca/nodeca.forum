@@ -15,7 +15,7 @@ var store = {};
 
 store.exists = _.memoize(function () {
   try {
-    localStorage.setItem('__ls_test__','__ls_test__');
+    localStorage.setItem('__ls_test__', '__ls_test__');
     localStorage.removeItem('__ls_test__');
     return true;
 
@@ -37,13 +37,13 @@ store.set = function (key, value) {
 
 store.get = function (key) {
   if (!store.exists()) {
-    return void(0);
+    return void 0;
   }
 
   try {
     return JSON.parse(localStorage.getItem(key));
   } catch (e) {
-    return void(0);
+    return void 0;
   }
 };
 

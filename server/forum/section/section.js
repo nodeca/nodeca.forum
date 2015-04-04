@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          'Location': N.router.linkTo('forum.section', {
+          Location: N.router.linkTo('forum.section', {
             hid:  env.params.hid,
             page: env.data.page.max
           })
@@ -80,7 +80,7 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    N.models.forum.Section.getParentList(env.data.section._id, function(err, parents) {
+    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
 
       if (err) {
         callback(err);

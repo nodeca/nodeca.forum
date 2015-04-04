@@ -46,10 +46,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // update pager
       $('._pagination').html(
         N.runtime.render('common.blocks.pagination', {
-          route:    'forum.section'
-        , params:   { hid: res.section.hid }
-        , current:  res.page.current
-        , max: res.page.max
+          route:    'forum.section',
+          params:   { hid: res.section.hid },
+          current:  res.page.current,
+          max: res.page.max
         })
       );
 

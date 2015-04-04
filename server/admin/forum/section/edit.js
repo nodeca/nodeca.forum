@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.allowed_parents = _.filter(allSections, function(section) {
+      env.data.allowed_parents = _.filter(allSections, function (section) {
         // exclude current section
         return !section._id.equals(env.params._id);
       });
@@ -75,8 +75,8 @@ module.exports = function (N, apiPath) {
       env.res.allowed_parents = [];
 
       // sort result in the same order as ids
-      env.data.allowed_parents.forEach(function(allowedParent) {
-        var foundSection = _.find(sections, function(section) {
+      env.data.allowed_parents.forEach(function (allowedParent) {
+        var foundSection = _.find(sections, function (section) {
           return section._id.equals(allowedParent._id);
         });
         foundSection.level = allowedParent.level;

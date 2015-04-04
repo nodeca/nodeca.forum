@@ -26,48 +26,48 @@ module.exports = function (N, collectionName) {
 
 
   var cache = {
-    post_count      : { type: Number, 'default': 0 }
-  , attach_count    : { type: Number, 'default': 0 }
+    post_count:   { type: Number, 'default': 0 },
+    attach_count: { type: Number, 'default': 0 },
 
     // First post
-  , first_post      : Schema.ObjectId
-  , first_user      : Schema.ObjectId
-  , first_ts        : Date
+    first_post:   Schema.ObjectId,
+    first_user:   Schema.ObjectId,
+    first_ts:     Date,
     // Last post
-  , last_post       : Schema.ObjectId
-  , last_user       : Schema.ObjectId
-  , last_ts         : Date
+    last_post:    Schema.ObjectId,
+    last_user:    Schema.ObjectId,
+    last_ts:      Date
   };
 
   var Topic = new Schema({
-    title           : String
+    title:          String,
     // user-friendly id (autoincremented)
-  , hid             : Number
+    hid:            Number,
 
-  , section           : Schema.ObjectId
+    section:        Schema.ObjectId,
 
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
-  , st              : Number
-  , ste             : Number  // real state, if topic is sticky or hellbanned
+    st:             Number,
+    ste:            Number,   // real state, if topic is sticky or hellbanned
                               // (general `state` is used for fast selects
-  , del_reason      : String
-  , del_by          : Schema.ObjectId
+    del_reason:     String,
+    del_by:         Schema.ObjectId,
     // Previous state for deleted topics
-  , prev_st         : {
-      st: Number,
-      ste: Number
-    }
+    prev_st: {
+      st:   Number,
+      ste:  Number
+    },
 
     // Last assigned hid to the posts in this topic,
     // used to determine hid of a new post
-  , last_post_hid   : { type: Number, 'default': 0 }
+    last_post_hid:  { type: Number, 'default': 0 },
 
     // Cache
-  , cache           : cache
-  , cache_hb        : cache
+    cache:          cache,
+    cache_hb:       cache,
 
-  , views_count     : { type: Number, 'default': 0 }
+    views_count:    { type: Number, 'default': 0 }
   },
   {
     versionKey : false
@@ -80,17 +80,17 @@ module.exports = function (N, collectionName) {
   // topics list, ordered by last post (normal/hellbanned)
   //
   Topic.index({
-    section:  1
-  , st:       1
-  , 'cache.last_ts' : -1
-  , _id:      1
+    section:  1,
+    st:       1,
+    'cache.last_ts' : -1,
+    _id:      1
   });
 
   Topic.index({
-    section:  1
-  , st:       1
-  , 'cache_hb.last_ts' : -1
-  , _id:      1
+    section:  1,
+    st:       1,
+    'cache_hb.last_ts' : -1,
+    _id:      1
   });
 
   // lookup _id by hid (for routing)
@@ -100,8 +100,8 @@ module.exports = function (N, collectionName) {
 
   // Pinned topics fetch (good cardinality, don't add timestamp to index)
   Topic.index({
-    section:  1
-  , st:       1
+    section:  1,
+    st:       1
   });
 
 
@@ -121,7 +121,7 @@ module.exports = function (N, collectionName) {
     }
 
     var self = this;
-    N.models.core.Increment.next('topic', function(err, value) {
+    N.models.core.Increment.next('topic', function (err, value) {
       if (err) {
         callback(err);
         return;

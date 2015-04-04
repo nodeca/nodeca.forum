@@ -21,12 +21,12 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     doNotClear: true,
     isTree: true,
     expandOnHover: 700,
-    stop: function(event, ui) {
+    stop: function (event, ui) {
 
       var request = {
         _id:           ui.item.data('id'),
         parent:        ui.item.parents('._sortable_tree_item').data('id'),
-        sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function(child) {
+        sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function (child) {
           // calculate new data order for each sibling of the current sections
           return $(child).data('id');
         })
@@ -79,7 +79,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
           N.io.rpc('admin.core.user_lookup', { nick: url, strict: false }).done(onSuccess).fail(onError);
         }
       },
-      datumTokenizer: function(d) {
+      datumTokenizer: function (d) {
         return Bloodhound.tokenizers.whitespace(d.nick);
       },
       queryTokenizer: Bloodhound.tokenizers.whitespace

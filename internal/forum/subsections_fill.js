@@ -128,8 +128,8 @@ module.exports = function (N, apiPath) {
       .exec(function (err, sections) {
 
         // sort result in the same order as ids
-        _.forEach(env.data.subsections_info, function(subsectionInfo) {
-          var foundSection = _.find(sections, function(section) {
+        _.forEach(env.data.subsections_info, function (subsectionInfo) {
+          var foundSection = _.find(sections, function (section) {
             return section._id.equals(subsectionInfo._id);
           });
           foundSection.level = subsectionInfo.level;

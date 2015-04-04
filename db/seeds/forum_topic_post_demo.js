@@ -86,8 +86,8 @@ function createPost(topic, reply_to, callback) {
             /*eslint-disable new-cap*/
             ip:      charlatan.Internet.IPv4(),
 
-            to:      reply_to ? reply_to._id  : void(0),
-            to_user: reply_to ? reply_to.user : void(0),
+            to:      reply_to ? reply_to._id  : void 0,
+            to_user: reply_to ? reply_to.user : void 0,
 
             ts:      new Date(2010, 0, postDay++),
 
@@ -315,7 +315,7 @@ function updateSectionStat(section, callback) {
 
   async.series([ function getLastTopic(cb) {
       Topic.findOne({ section: section._id }).select('_id hid title cache')
-        .sort({ 'hid': 1 })
+        .sort({ hid: 1 })
         .exec(function (err, topic) {
 
           if (err) {
@@ -389,7 +389,7 @@ function updateSectionStat(section, callback) {
 function createTopics(callback) {
 
   Section.find({ is_category: false }).select('_id cache')
-    .sort({ 'hid': -1 })
+    .sort({ hid: -1 })
     .skip(1)
     .exec(function (err, sections) {
 
@@ -399,7 +399,7 @@ function createTopics(callback) {
       }
 
       async.eachSeries(sections, function (section, cb) {
-        //create topic with single post
+        // create topic with single post
         createTopic(section, 1, function (err) {
           if (err) {
             callback(err);
@@ -415,7 +415,7 @@ function createTopics(callback) {
 function fillBigSection(callback) {
 
   Section.findOne({ is_category: false }).select('_id cache')
-    .sort({ 'hid': 1 })
+    .sort({ hid: 1 })
     .exec(function (err, section) {
 
       if (err) {
@@ -439,7 +439,7 @@ function fillBigSection(callback) {
 function addBigTopic(callback) {
 
   Section.findOne({ is_category: false }).select('_id cache')
-    .sort({ 'hid': 1 })
+    .sort({ hid: 1 })
     .exec(function (err, section) {
 
       if (err) {

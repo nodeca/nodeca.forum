@@ -41,7 +41,7 @@ module.exports = function (N, apiPath) {
       callback({
         code: N.io.REDIRECT,
         head: {
-          'Location': N.router.linkTo('forum.topic', {
+          Location: N.router.linkTo('forum.topic', {
             section_hid: env.data.section.hid,
             topic_hid:   env.data.topic.hid,
             post_hid:    env.params.post_hid,
@@ -94,7 +94,7 @@ module.exports = function (N, apiPath) {
       return {
         code: N.io.REDIRECT,
         head: {
-          'Location': N.router.linkTo('forum.topic', {
+          Location: N.router.linkTo('forum.topic', {
             section_hid: env.data.section.hid,
             topic_hid:   env.params.topic_hid,
             page:        env.data.page.max
@@ -109,7 +109,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
 
-    N.models.forum.Section.getParentList(env.data.section._id, function(err, parents) {
+    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
       if (err) {
         callback(err);
         return;
