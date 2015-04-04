@@ -83,6 +83,7 @@ function createPost(topic, reply_to, callback) {
 
             user:    user,
 
+            /*eslint-disable new-cap*/
             ip:      charlatan.Internet.IPv4(),
 
             to:      reply_to ? reply_to._id  : void(0),
