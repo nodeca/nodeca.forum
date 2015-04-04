@@ -31,16 +31,19 @@ store.remove = function (key) {
 
 store.set = function (key, value) {
   if (!store.exists()) { return null; }
-  if (value === undefined) { return store.remove(key); }
+  if (typeof value === 'undefined') { return store.remove(key); }
   localStorage.setItem(key, JSON.stringify(value));
 };
 
 store.get = function (key) {
-  if (!store.exists()) { return undefined; }
+  if (!store.exists()) {
+    return void(0);
+  }
+
   try {
     return JSON.parse(localStorage.getItem(key));
   } catch (e) {
-    return undefined;
+    return void(0);
   }
 };
 

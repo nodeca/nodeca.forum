@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
     page: {
       type: 'integer',
       minimum: 1,
-      default: 1
+      'default': 1
     }
   });
 

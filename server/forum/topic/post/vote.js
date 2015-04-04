@@ -158,7 +158,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function remove_votes(env, callback) {
     N.models.users.Vote.remove(
-      { for: env.params.post_id, from: env.user_info.user_id },
+      { 'for': env.params.post_id, from: env.user_info.user_id },
       callback
     );
   });
@@ -173,7 +173,7 @@ module.exports = function (N, apiPath) {
     }
 
     var data = {
-      for: env.params.post_id,
+      'for': env.params.post_id,
       from: env.user_info.user_id,
       to: env.data.post.user,
       type: N.models.users.Vote.types.FORUM_POST,
@@ -182,7 +182,7 @@ module.exports = function (N, apiPath) {
     };
 
     N.models.users.Vote.findOneAndUpdate(
-      { for: env.params.post_id, from: env.user_info.user_id },
+      { 'for': env.params.post_id, from: env.user_info.user_id },
       data,
       { upsert: true },
       callback
@@ -194,11 +194,11 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function update_post(env, callback) {
     N.models.users.Vote.aggregate([
-      { $match: { for: env.data.post._id } },
+      { $match: { 'for': env.data.post._id } },
       {
         $group: {
           _id: null,
-          votes: { $sum: { $cond: { if: '$hb', then: 0, else: '$value' } } },
+          votes: { $sum: { $cond: { 'if': '$hb', then: 0, 'else': '$value' } } },
           votes_hb: { $sum: '$value' }
         }
       },

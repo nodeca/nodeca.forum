@@ -12,7 +12,7 @@
 
 var _         = require('lodash');
 var async     = require('async');
-var Charlatan = require('charlatan');
+var charlatan = require('charlatan');
 
 
 var Category;
@@ -49,8 +49,8 @@ var postDay = 0;
 
 function createPost(topic, reply_to, callback) {
 
-  var md = Charlatan.Lorem.paragraphs(Charlatan.Helpers.rand(5, 1)).join('\n\n');
-  var user = users[Charlatan.Helpers.rand(USER_COUNT)];
+  var md = charlatan.Lorem.paragraphs(charlatan.Helpers.rand(5, 1)).join('\n\n');
+  var user = users[charlatan.Helpers.rand(USER_COUNT)];
 
   settings.getByCategory(
     'forum_markup',
@@ -83,12 +83,10 @@ function createPost(topic, reply_to, callback) {
 
             user:    user,
 
-            /* eslint-disable new-cap */
-            ip:      Charlatan.Internet.IPv4(),
-            /* eslint-enable new-cap */
+            ip:      charlatan.Internet.IPv4(),
 
-            to:      reply_to ? reply_to._id  : undefined,
-            to_user: reply_to ? reply_to.user : undefined,
+            to:      reply_to ? reply_to._id  : void(0),
+            to_user: reply_to ? reply_to.user : void(0),
 
             ts:      new Date(2010, 0, postDay++),
 
@@ -114,16 +112,16 @@ function createPost(topic, reply_to, callback) {
 function addVotes(post, callback) {
   var votes = 0;
 
-  async.timesSeries(Charlatan.Helpers.rand(MAX_VOTES), function (__, next) {
-    var user = users[Charlatan.Helpers.rand(USER_COUNT)];
+  async.timesSeries(charlatan.Helpers.rand(MAX_VOTES), function (__, next) {
+    var user = users[charlatan.Helpers.rand(USER_COUNT)];
     var value = Math.random() > 0.5 ? 1 : -1;
 
     var vote = new Vote({
-      to: post.user,
-      from: user._id,
-      for: post._id,
-      type: Vote.types.FORUM_POST,
-      value: value
+      to:     post.user,
+      from:   user._id,
+      'for':  post._id,
+      type:   Vote.types.FORUM_POST,
+      value:  value
     });
 
     votes += value;
@@ -146,12 +144,12 @@ function createTopic(section, post_count, callback) {
   var last_post;
 
   var topic = new Topic({
-    title: Charlatan.Lorem.sentence().slice(0, -1),
+    title: charlatan.Lorem.sentence().slice(0, -1),
 
     st: Topic.statuses.OPEN,
     section: section._id,
 
-    views_count: Charlatan.Helpers.rand(1000)
+    views_count: charlatan.Helpers.rand(1000)
   });
 
   topic.save(function (err) {
@@ -213,8 +211,8 @@ function createTopic(section, post_count, callback) {
 function createSection(category, sub_section_deep, callback) {
 
   var section = new Section({
-    title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
-    description: Charlatan.Lorem.sentence(),
+    title: charlatan.Lorem.sentence(charlatan.Helpers.rand(5, 3)).slice(0, -1),
+    description: charlatan.Lorem.sentence(),
 
     parent: category._id,
     display_order: getNextDisplayOrder(),
@@ -231,12 +229,12 @@ function createSection(category, sub_section_deep, callback) {
     }
 
     // add sub-sections
-    if (!sub_section_deep || Charlatan.Helpers.rand(3) === 2) {
+    if (!sub_section_deep || charlatan.Helpers.rand(3) === 2) {
       callback();
       return;
     }
 
-    async.timesSeries(Charlatan.Helpers.rand(MAX_SUB_SECTION_COUNT), function (idx, next) {
+    async.timesSeries(charlatan.Helpers.rand(MAX_SUB_SECTION_COUNT), function (idx, next) {
       createSection(section, sub_section_deep - 1, next);
     }, callback);
   });
@@ -265,10 +263,10 @@ function createUsers(callback) {
 
       async.timesSeries(USER_COUNT, function (current_user, next_user) {
         var user = new User({
-          first_name: Charlatan.Name.firstName(),
-          last_name:  Charlatan.Name.lastName(),
-          nick:       Charlatan.Internet.userName(),
-          email:      Charlatan.Internet.email(),
+          first_name: charlatan.Name.firstName(),
+          last_name:  charlatan.Name.lastName(),
+          nick:       charlatan.Internet.userName(),
+          email:      charlatan.Internet.email(),
           joined_ts:  new Date(),
           usergroups: userGroupsByName.members
         });
@@ -287,8 +285,8 @@ function createSections(callback) {
 
   async.timesSeries(CATEGORY_COUNT, function (current_category, next_category) {
     var category = new Category({
-      title: Charlatan.Lorem.sentence(Charlatan.Helpers.rand(5, 3)).slice(0, -1),
-      description: Charlatan.Lorem.sentence(),
+      title: charlatan.Lorem.sentence(charlatan.Helpers.rand(5, 3)).slice(0, -1),
+      description: charlatan.Lorem.sentence(),
 
       display_order: getNextDisplayOrder('display_order'),
       is_category: true
@@ -477,8 +475,8 @@ function addModerators(callback) {
 
       async.each(sections, function (section, cb) {
 
-        async.timesSeries(Charlatan.Helpers.rand(MAX_MODERATOR_COUNT), function (index, next) {
-          var user = users[Charlatan.Helpers.rand(USER_COUNT)];
+        async.timesSeries(charlatan.Helpers.rand(MAX_MODERATOR_COUNT), function (index, next) {
+          var user = users[charlatan.Helpers.rand(USER_COUNT)];
 
           SectionModeratorStore.set(
             { forum_mod_visible: { value: true } },

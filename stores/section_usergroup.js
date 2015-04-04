@@ -162,7 +162,7 @@ module.exports = function (N) {
         Object.keys(settings).forEach(function (key) {
           var setting = settings[key];
 
-          if (null !== setting) {
+          if (setting !== null) {
             // NOTE: It's no need to put `force` flag into the database, since
             // this store always implies `force` at `Store#get`.
             usergroup_settings[key] = {

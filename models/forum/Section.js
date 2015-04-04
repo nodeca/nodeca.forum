@@ -10,50 +10,50 @@ var memoizee = require('memoizee');
 module.exports = function (N, collectionName) {
 
   var cache = {
-    topic_count      : { type: Number, 'default': 0 }
-  , post_count       : { type: Number, 'default': 0 }
+    topic_count      : { type: Number, 'default': 0 },
+    post_count       : { type: Number, 'default': 0 },
 
-  , last_post        : Schema.ObjectId
-  , last_topic       : Schema.ObjectId
-  , last_topic_hid   : Number
-  , last_topic_title : String
-  , last_user        : Schema.ObjectId
-  , last_ts          : Date
+    last_post        : Schema.ObjectId,
+    last_topic       : Schema.ObjectId,
+    last_topic_hid   : Number,
+    last_topic_title : String,
+    last_user        : Schema.ObjectId,
+    last_ts          : Date
   };
 
   var Section = new Schema({
-    title           : String
-  , description     : String
-  , display_order   : Number
+    title           : String,
+    description     : String,
+    display_order   : Number,
 
     // user-friendly id (autoincremented)
-  , hid              : { type: Number, index: true }
+    hid              : { type: Number, index: true },
 
     // Sections tree paths/cache
-  , parent          : Schema.ObjectId
+    parent          : Schema.ObjectId,
 
     // Visible moderator list.
-  , moderators    : [ Schema.ObjectId ]
+    moderators    : [ Schema.ObjectId ],
 
     // Options
-  , is_category     : { type: Boolean, 'default': false } // subsection or category
-  , is_enabled      : { type: Boolean, 'default': true }  // hiden inactive
-  , is_writeble     : { type: Boolean, 'default': true }  // read-only archive
-  , is_searcheable  : { type: Boolean, 'default': true }
-  , is_voteable     : { type: Boolean, 'default': true }
-  , is_counted      : { type: Boolean, 'default': true }  // inc user's counter, when posted here
-  , is_excludable   : { type: Boolean, 'default': true }
+    is_category     : { type: Boolean, 'default': false }, // subsection or category
+    is_enabled      : { type: Boolean, 'default': true },  // hiden inactive
+    is_writeble     : { type: Boolean, 'default': true },  // read-only archive
+    is_searcheable  : { type: Boolean, 'default': true },
+    is_voteable     : { type: Boolean, 'default': true },
+    is_counted      : { type: Boolean, 'default': true },  // inc user's counter, when posted here
+    is_excludable   : { type: Boolean, 'default': true },
 
     // Topic prefixes
-  , is_prefix_required  : { type: Boolean, 'default': false }
-  , prefix_groups   : [ Schema.ObjectId ] // allowed groups of prefixes
+    is_prefix_required  : { type: Boolean, 'default': false },
+    prefix_groups   : [ Schema.ObjectId ], // allowed groups of prefixes
 
     // Cache
-  , cache           : cache
-  , cache_hb        : cache
+    cache           : cache,
+    cache_hb        : cache,
 
     // Setting storage. Only `section_usergroup` settings store should access this.
-  , settings        : { type: Schema.Types.Mixed, 'default': {} }
+    settings        : { type: Schema.Types.Mixed, 'default': {} }
   },
   {
     versionKey : false
@@ -65,8 +65,8 @@ module.exports = function (N, collectionName) {
 
   // build section tree structure in `getSectionsTree` (see below)
   Section.index({
-    display_order: 1
-  , _id: -1
+    display_order: 1,
+    _id: -1
   });
 
 
@@ -263,7 +263,7 @@ module.exports = function (N, collectionName) {
   Section.statics.getChildren = function(sectionID, deepness, callback) {
 
     // shift parameters
-    if (deepness === undefined) {
+    if (typeof deepness === 'undefined') {
       // single parameter is callback
       callback = sectionID;
       deepness = -1;

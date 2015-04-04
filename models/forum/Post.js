@@ -17,47 +17,47 @@ module.exports = function (N, collectionName) {
 
 
   var Post = new Schema({
-    topic          : Schema.ObjectId
-  , hid            : Number
+    topic          : Schema.ObjectId,
+    hid            : Number,
 
     // Related post for replies
-  , to              : Schema.ObjectId
-  , to_user         : Schema.ObjectId
-  , user            : Schema.ObjectId
-  , ts              : { type: Date, 'default': Date.now }    // timestamp
-  , ip              : String  // ip address
+    to              : Schema.ObjectId,
+    to_user         : Schema.ObjectId,
+    user            : Schema.ObjectId,
+    ts              : { type: Date, 'default': Date.now },  // timestamp
+    ip              : String,  // ip address
 
-  , html            : String  // displayed HTML
-  , md              : String  // markdown source
+    html            : String,  // displayed HTML
+    md              : String,  // markdown source
 
   // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
   // constants should be defined globally
-  , st              : Number
-  , ste             : Number  // real state, if topic is sticky or hellbanned
-                              // (general `state` is used for fast selects)
+    st              : Number,
+    ste             : Number,  // real state, if topic is sticky or hellbanned
+                               // (general `state` is used for fast selects)
 
   // Aggregated votes count
-  , votes           : { type: Number, default: 0 }
-  , votes_hb        : { type: Number, default: 0 }
+    votes           : { type: Number, 'default': 0 },
+    votes_hb        : { type: Number, 'default': 0 },
 
   // Bookmarks count
-  , bookmarks       : { type: Number, default: 0 }
+    bookmarks       : { type: Number, 'default': 0 },
 
-  , del_reason      : String
-  , del_by          : Schema.ObjectId
+    del_reason      : String,
+    del_by          : Schema.ObjectId,
   // Previous state for deleted posts
-  , prev_st         : {
+    prev_st         : {
       st: Number,
       ste: Number
-    }
+    },
 
-  , attach     : [ Schema.ObjectId ]  // all attachments
+    attach     : [ Schema.ObjectId ],  // all attachments
 
   // Post params
-  , params          : [ Schema.Types.Mixed ]
+    params          : [ Schema.Types.Mixed ],
 
   // Info to build post tail
-  , tail     : [ new Schema({ // explicit definition to remove `_id` field
+    tail     : [ new Schema({ // explicit definition to remove `_id` field
       media_id: Schema.ObjectId,
       file_name: String,
       type: { type: Number }
@@ -102,7 +102,7 @@ module.exports = function (N, collectionName) {
     N.models.forum.Topic.findByIdAndUpdate(
         self.topic,
         { $inc: { last_post_hid: 1 } },
-        { new: true },
+        { 'new': true },
         function (err, topic) {
 
       if (err) {

@@ -30,7 +30,7 @@ module.exports = function (N, apiPath) {
         }
 
         // Fail if there are any child sections.
-        if (0 !== childrenCount) {
+        if (childrenCount !== 0) {
           callback({ code: N.io.CLIENT_ERROR, message: env.t('error_section_has_children') });
           return;
         }
@@ -43,7 +43,7 @@ module.exports = function (N, apiPath) {
           }
 
           // Fail if some sections contain user posts.
-          if (0 !== postsCount) {
+          if (postsCount !== 0) {
             callback({ code: N.io.CLIENT_ERROR, message: env.t('error_section_contains_posts') });
             return;
           }

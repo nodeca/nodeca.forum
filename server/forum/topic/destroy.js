@@ -8,7 +8,7 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     topic_id:     { format: 'mongo', required: true },
     reason:       { type: 'string' },
-    method:       { type: 'string', enum: [ 'hard', 'soft' ], required: true },
+    method:       { type: 'string', 'enum': [ 'hard', 'soft' ], required: true },
     as_moderator: { type: 'boolean', required: true }
   });
 
@@ -190,7 +190,7 @@ module.exports = function (N, apiPath) {
         }
 
         N.models.users.Vote.collection.update(
-          { for: { $in: _.pluck(posts, '_id') } },
+          { 'for': { $in: _.pluck(posts, '_id') } },
           // Just move vote `value` field to `backup` field
           { $rename: { 'value': 'backup' } },
           { multi: true },
