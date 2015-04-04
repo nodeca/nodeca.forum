@@ -47,27 +47,6 @@ article#content.forum-topic-root(
           | 
           =self.t('del_reason', { text: self.topic.del_reason })
 
-  nav.controlbar._affix
-    .controlbar__floater
-      //- needed set width & center content on horizontal navigation
-      .controlbar__floater-inner
-        .controlbar__body.btn-toolbar.clearfix
-
-          if self.page.max > 1
-            .btn-group.pull-left._pagination
-              - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
-              - var pgn_params  = { route: self.apiPath, params: link_params, current: self.page.current, max: self.page.max }
-              != self.partial('@common.blocks.pagination', pgn_params)
-
-          != self.partial('topic_dropdown_menu')
-
-          if self.settings.forum_can_reply
-            button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(
-              data-on-click='forum.topic.post_reply'
-              type='button'
-              title=self.t('post_add')
-            )
-
   #postlist.forum-postlist
     != self.partial('@forum.blocks.posts_list')
 

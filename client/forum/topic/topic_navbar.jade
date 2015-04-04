@@ -1,0 +1,9 @@
+
+.btn-group.pull-left._pagination
+
+if self.settings.forum_can_reply
+  button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(
+    data-on-click='forum.topic.post_reply'
+    type='button'
+    title=self.t('post_add')
+  )
