@@ -5,25 +5,31 @@
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
-    section_hid: {
-      type: 'integer',
-      minimum: 1,
-      required: true
+    properties: {
+      section_hid: {
+        type: 'integer',
+        required: true
+      },
+      topic_hid: {
+        type: 'integer',
+        required: true
+      },
+      post_hid: {
+        type: 'integer',
+        minimum: 1
+      },
+      page: {
+        type: 'integer',
+        minimum: 1
+      }
     },
-    topic_hid: {
-      type: 'integer',
-      minimum: 1,
-      required: true
-    },
-    post_hid: {
-      type: 'integer',
-      minimum: 1
-    },
-    page: {
-      type: 'integer',
-      minimum: 1,
-      'default': 1
-    }
+
+    additionalProperties: false,
+
+    oneOf: [
+      { title: 'post_hid required', required: [ 'post_hid' ] },
+      { title: 'page required',     required: [ 'page' ] }
+    ]
   });
 
 
@@ -129,7 +135,7 @@ module.exports = function (N, apiPath) {
 
     env.res.head = env.res.head || {};
 
-    env.res.head.title = (env.params.page > 1) ?
+    env.res.head.title = (env.data.page.current > 1) ?
       env.t('title_with_page', { title: topic.title, page: env.data.page.current })
     :
       topic.title;

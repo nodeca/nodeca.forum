@@ -27,18 +27,18 @@ var navbarHeight = $('.nav-horiz').height();
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.section_hid = +data.params.section_hid;
-  topicState.topic_hid   = +data.params.topic_hid;
-  topicState.post_hid    = +data.params.post_hid;
-  topicState.first_page  = +$('.forum-topic-root').data('page-current');
-  topicState.last_page   = +$('.forum-topic-root').data('page-current');
-  topicState.max_page    = +$('.forum-topic-root').data('page-max');
+  topicState.section_hid = data.params.section_hid;
+  topicState.topic_hid   = data.params.topic_hid;
+  topicState.post_hid    = data.params.post_hid || 1;
+  topicState.first_page  = $('.forum-topic-root').data('page-current');
+  topicState.last_page   = $('.forum-topic-root').data('page-current');
+  topicState.max_page    = $('.forum-topic-root').data('page-max');
 
   pageFirstPostHids[topicState.first_page] = $('.forum-post:first').data('post-hid');
 
   // Scroll to a post linked in params (if any)
   //
-  if (topicState.post_hid) {
+  if (topicState.post_hid > 1) {
     $('.forum-post').each(function (n, element) {
       var $element = $(element);
 

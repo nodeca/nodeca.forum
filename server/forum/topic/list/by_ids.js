@@ -10,7 +10,6 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     topic_hid: {
       type: 'integer',
-      minimum: 1,
       required: true
     },
     posts_ids: {

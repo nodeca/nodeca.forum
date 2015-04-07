@@ -8,13 +8,12 @@ module.exports = function (N, apiPath) {
     // section hid
     hid: {
       type: 'integer',
-      minimum: 1,
       required: true
     },
     page: {
       type: 'integer',
       minimum: 1,
-      'default': 1
+      required: true
     }
   });
 
