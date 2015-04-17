@@ -1,8 +1,10 @@
 - var postStatuses = '$$ JSON.stringify(N.models.forum.Post.statuses) $$'
 - self.users = self.users || [];
 
-- if (self.show_page_number)
-  .forum-postlist__separator= self.t('page_separator', self.show_page_number)
+.forum-postlist__paginator
+  - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
+  - var pgn_params  = { route: 'forum.topic', params: link_params, current: self.page.current, max: self.page.max }
+  != self.partial('@common.blocks.pagination', pgn_params)
 
 each post, post_idx in self.posts
   - var user = self.users[post.user];

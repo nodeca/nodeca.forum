@@ -30,3 +30,6 @@ en-US:
     history: History
     delete: Delete
     undelete: Undelete
+
+  page_progress:
+    label: '#{current} out of #{total}'

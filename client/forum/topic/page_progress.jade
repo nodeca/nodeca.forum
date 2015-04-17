@@ -1,0 +1,7 @@
+.page-progress
+  .page-progress__body
+    a.icon.icon-collapse.icon-space-after(href=self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 }))
+    span= self.t('label', { current: self.current, total: self.max })
+    a.icon.icon-expand.icon-space-before(href=self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: self.max }))
+  .page-progress__indicator
+    .page-progress__indicator-body(style="width: " + (self.current / self.max * 100).toFixed(2) + "%")

@@ -13,6 +13,7 @@ article#content.forum-topic-root(
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''
   data-page-current= self.page.current
   data-page-max= self.page.max
+  data-post-max= self.topic.last_post_hid
 )
   != self.partial('@common.blocks.breadcrumbs')
 

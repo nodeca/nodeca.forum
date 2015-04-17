@@ -16,6 +16,7 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - first_page:      first displayed page
 // - last_page:       last displayed page
 // - max_page:        maximum possible page in this topic
+// - max_post:        hid of the last post in this topic
 //
 var topicState = {};
 var pageFirstPostHids = {};
@@ -33,6 +34,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.first_page  = $('.forum-topic-root').data('page-current');
   topicState.last_page   = $('.forum-topic-root').data('page-current');
   topicState.max_page    = $('.forum-topic-root').data('page-max');
+  topicState.max_post    = $('.forum-topic-root').data('post-max');
 
   pageFirstPostHids[topicState.first_page] = $('.forum-post:first').data('post-hid');
 
@@ -46,6 +48,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
         $(window).scrollTop($element.offset().top - navbarHeight);
       }
     });
+  } else {
+    // If user clicks on a link to the first post of the topic,
+    // we should scroll to the top.
+    //
+    $(window).scrollTop(0);
   }
 
   // disable automatic scroll to an anchor in the navigator
@@ -463,20 +470,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Update pager
+  // Update progress bar
   //
-  N.wire.on('forum.topic:location_update', function update_pager() {
-    var current_page = _.reduce(pageFirstPostHids, function (acc, first_post, page) {
-      if (!(topicState.post_hid >= first_post)) { return acc; }
-      return acc === null ? +page : Math.max(acc, page);
-    }, null);
-
-    $('._pagination').html(
-      N.runtime.render('common.blocks.pagination', {
-        route:    'forum.topic',
-        params:   { section_hid: topicState.section_hid, topic_hid: topicState.topic_hid },
-        current:  current_page,
-        max:      topicState.max_page
+  N.wire.on('forum.topic:location_update', function update_page_progress() {
+    $('._page-progress').html(
+      N.runtime.render('forum.topic.page_progress', {
+        section_hid: topicState.section_hid,
+        topic_hid:   topicState.topic_hid,
+        current:     topicState.post_hid,
+        max:         topicState.max_post
       })
     );
   });
@@ -487,6 +489,17 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   $('.navbar__secondary')
     .empty()
     .append(N.runtime.render('forum.topic.topic_navbar', N.runtime.page_data));
+
+  var viewportStart = $(window).scrollTop() + navbarHeight;
+
+  // If we scroll below top border of the first post,
+  // show the secondary navbar
+  //
+  if ($('.forum-post:first').offset().top < viewportStart) {
+    $('.navbar').addClass('navbar__m-secondary');
+  } else {
+    $('.navbar').removeClass('navbar__m-secondary');
+  }
 
   N.wire.emit('forum.topic:location_update');
 });

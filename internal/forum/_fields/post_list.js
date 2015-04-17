@@ -27,6 +27,7 @@ module.exports = {
   topic: [
     '_id',
     'hid',
+    'last_post_hid',
     'cache',
     'cache_hb',
     'st',
