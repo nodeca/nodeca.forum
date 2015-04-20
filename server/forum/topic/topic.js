@@ -78,10 +78,22 @@ module.exports = function (N, apiPath) {
 
   // Fill pagination
   //
-  N.wire.after(apiPath, function fill_pagination(env) {
+  N.wire.after(apiPath, function fill_pagination(env, callback) {
 
     // Prepared by `buildPostIds`
     env.res.page = env.data.page;
+
+    env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.posts_per_page    = posts_per_page;
+      env.res.first_post_offset = posts_per_page * (env.res.page.current - 1);
+
+      callback();
+    });
   });
 
 

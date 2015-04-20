@@ -8,18 +8,21 @@ var punycode = require('punycode');
 
 var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
+// an amount of posts we try to load when user scrolls to the end of the page
+var LOAD_POSTS_COUNT = 20;
+
 // Topic state
 //
-// - section_hid:     current section hid
-// - topic_hid:       current topic hid
-// - post_hid:        current post hid
-// - first_page:      first displayed page
-// - last_page:       last displayed page
-// - max_page:        maximum possible page in this topic
-// - max_post:        hid of the last post in this topic
+// - section_hid:        current section hid
+// - topic_hid:          current topic hid
+// - post_hid:           current post hid
+// - max_post:           hid of the last post in this topic
+// - posts_per_page:     an amount of visible posts per page
+// - first_post_offset:  total amount of visible posts in the topic before the first displayed post
+// - last_post_offset:   total amount of visible posts in the topic before the last displayed post
+// - reached_last_page:  true if there are no next page to load
 //
 var topicState = {};
-var pageFirstPostHids = {};
 var scrollHandler = null;
 var navbarHeight = $('.nav-horiz').height();
 
@@ -28,15 +31,17 @@ var navbarHeight = $('.nav-horiz').height();
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.section_hid = data.params.section_hid;
-  topicState.topic_hid   = data.params.topic_hid;
-  topicState.post_hid    = data.params.post_hid || 1;
-  topicState.first_page  = $('.forum-topic-root').data('page-current');
-  topicState.last_page   = $('.forum-topic-root').data('page-current');
-  topicState.max_page    = $('.forum-topic-root').data('page-max');
-  topicState.max_post    = $('.forum-topic-root').data('post-max');
+  var root = $('.forum-topic-root');
 
-  pageFirstPostHids[topicState.first_page] = $('.forum-post:first').data('post-hid');
+  topicState.section_hid        = data.params.section_hid;
+  topicState.topic_hid          = data.params.topic_hid;
+  topicState.post_hid           = data.params.post_hid || 1;
+  topicState.posts_per_page     = root.data('posts-per-page');
+  topicState.max_post           = root.data('post-max');
+  topicState.first_post_offset  = root.data('first-post-offset');
+  topicState.last_post_offset   = root.data('first-post-offset') + $('.forum-post').length - 1;
+  topicState.reached_last_page  = root.data('page-max') === root.data('page-current');
+
 
   // Scroll to a post linked in params (if any)
   //
@@ -393,32 +398,49 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Whenever we are close to beginning/end of post list, check if we can
   // load more pages from the server
   //
-  var prev_page_loading = false,
-      next_page_loading = false;
+  var prev_page_loading  = false,
+      next_page_loading  = false;
 
   N.wire.on('forum.topic:location_update', function check_load_more_pages() {
     function load_prev_page() {
       if (prev_page_loading) { return; }
       prev_page_loading = true;
 
-      N.io.rpc('forum.topic.list.by_page', {
+      var hid = $('.forum-post:first').data('post-hid');
+      if (hid <= 1) {
+        // If the first post on the page is hid=1, it's a first page,
+        // so we don't need to load anything
+        //
+        // This is sufficient because post with hid=1 always exists.
+        //
+        topicState.reached_first_page = true;
+        return;
+      }
+
+      N.io.rpc('forum.topic.list.by_range', {
         topic_hid: topicState.topic_hid,
-        page: topicState.first_page - 1
+        post_hid:  hid - 1,
+        before:    LOAD_POSTS_COUNT,
+        after:     0
       }).done(function (res) {
-        if (!res.posts || !res.posts.length) { return; }
+        if (!res.posts || !res.posts.length) {
+          return;
+        }
 
         var old_height = $('#postlist').height();
 
-        res.show_page_number  = res.page.current;
+        res.page = {
+          // used in paginator
+          max: $('.forum-topic-root').data('page-max')
+        };
+
+        topicState.first_post_offset -= res.posts.length;
+        res.posts_per_page    = topicState.posts_per_page;
+        res.first_post_offset = topicState.first_post_offset;
 
         // render & inject posts list
         var $result = $(N.runtime.render('forum.blocks.posts_list', res));
         $('#postlist > :first').before($result);
-
-        // update topic state
-        topicState.first_page = res.page.current;
-        topicState.max_page   = res.page.max;
-        pageFirstPostHids[res.page.current] = res.posts[0].hid;
 
         // update scroll so it would point at the same spot as before
         $(window).scrollTop($(window).scrollTop() + $('#postlist').height() - old_height);
@@ -428,25 +450,38 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     }
 
     function load_next_page() {
-      if (next_page_loading) { return; }
+      if (next_page_loading || topicState.reached_last_page) { return; }
       next_page_loading = true;
 
-      N.io.rpc('forum.topic.list.by_page', {
+      N.io.rpc('forum.topic.list.by_range', {
         topic_hid: topicState.topic_hid,
-        page: topicState.last_page + 1
+        post_hid:  $('.forum-post:last').data('post-hid') + 1,
+        before:    0,
+        after:     LOAD_POSTS_COUNT
       }).done(function (res) {
-        if (!res.posts || !res.posts.length) { return; }
+        if (!res.posts) {
+          return;
+        }
 
-        res.show_page_number  = res.page.current;
+        if (res.posts.length < LOAD_POSTS_COUNT) {
+          // If we received less posts than we asked for,
+          // assume that we reached the end of the topic.
+          //
+          topicState.reached_last_page = true;
+        }
+
+        res.page = {
+          // used in paginator
+          max: $('.forum-topic-root').data('page-max')
+        };
+
+        res.posts_per_page    = topicState.posts_per_page;
+        res.first_post_offset = topicState.last_post_offset + 1;
+        topicState.last_post_offset += res.posts.length;
 
         // render & inject posts list
         var $result = $(N.runtime.render('forum.blocks.posts_list', res));
         $('#postlist > :last').after($result);
-
-        // update topic state
-        topicState.last_page  = res.page.current;
-        topicState.max_page   = res.page.max;
-        pageFirstPostHids[res.page.current] = res.posts[0].hid;
 
         next_page_loading = false;
       });
@@ -457,15 +492,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         viewportEnd   = $(window).scrollTop() + $(window).height();
 
     if (posts.length <= 3 || $(posts[posts.length - 3]).offset().top < viewportEnd) {
-      if (topicState.last_page < topicState.max_page) {
-        load_next_page();
-      }
+      load_next_page();
     }
 
     if (posts.length <= 3 || $(posts[3]).offset().top > viewportStart) {
-      if (topicState.first_page > 1) {
-        load_prev_page();
-      }
+      load_prev_page();
     }
   });
 

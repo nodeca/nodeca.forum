@@ -77,16 +77,21 @@ module.exports = function (N, collectionName) {
   //
   Post.index({
     topic: 1,
-    st:    1,
-    _id:   1
+    _id:   1,
+    st:    1
   });
 
   //  - get page by one of its posts hid
+  //  - get posts by hid range
+  //
+  // _id is added because fetch_posts_list works with ids,
+  // so we should get them from the database
   //
   Post.index({
     topic: 1,
+    hid:   1,
     st:    1,
-    hid:   1
+    _id:   1
   });
 
   // Set 'hid' for the new post.
