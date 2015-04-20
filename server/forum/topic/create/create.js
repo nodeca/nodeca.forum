@@ -251,6 +251,7 @@ module.exports = function (N, apiPath) {
         }
 
         env.res.topic_hid = topic.hid;
+        env.res.post_hid = post.hid;
         callback();
       });
     });
