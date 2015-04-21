@@ -14,8 +14,8 @@ article#content.forum-topic-root(
   data-page-current= self.page.current
   data-page-max= self.page.max
   data-post-max= self.topic.last_post_hid
-  data-posts-per-page= self.posts_per_page
-  data-first-post-offset= self.first_post_offset
+  data-posts-per-page= self.page.posts
+  data-first-post-offset= self.page.offset
 )
   != self.partial('@common.blocks.breadcrumbs')
 

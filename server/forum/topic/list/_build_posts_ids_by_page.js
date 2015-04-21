@@ -55,7 +55,9 @@ module.exports = function (N) {
       // Create page info
       env.data.page = {
         current: page_current,
-        max: page_max
+        max:     page_max,
+        posts:   posts_per_page,
+        offset:  posts_per_page * (page_current - 1)
       };
 
       // Algorithm:

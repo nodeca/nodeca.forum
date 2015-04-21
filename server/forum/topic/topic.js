@@ -3,6 +3,15 @@
 'use strict';
 
 
+// When requested to display a post, we add a fixed amount of posts before
+// and after it.
+//
+// This is needed to avoid triggering autoload code just after page load
+//
+var LOAD_POSTS_BEFORE_COUNT = 5;
+var LOAD_POSTS_AFTER_COUNT  = 15;
+
+
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     properties: {
@@ -33,8 +42,8 @@ module.exports = function (N, apiPath) {
   });
 
 
-  var buildPostIdsByPage    = require('./list/_build_posts_ids_by_page.js')(N),
-      buildPostIdsByPostHid = require('./list/_build_posts_ids_by_post_hid.js')(N);
+  var buildPostIdsByPage  = require('./list/_build_posts_ids_by_page.js')(N),
+      buildPostIdsByRange = require('./list/_build_posts_ids_by_range.js')(N);
 
 
   // `params.section_hid` can be wrong (old link to moved topic).
@@ -59,7 +68,9 @@ module.exports = function (N, apiPath) {
     }
 
     if (env.params.post_hid) {
-      buildPostIdsByPostHid(env, callback);
+      env.params.before = LOAD_POSTS_BEFORE_COUNT;
+      env.params.after  = LOAD_POSTS_AFTER_COUNT;
+      buildPostIdsByRange(env, callback);
     } else {
       buildPostIdsByPage(env, callback);
     }
@@ -76,24 +87,66 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill pagination
+  // If pagination info isn't available, fetch it from the database
   //
-  N.wire.after(apiPath, function fill_pagination(env, callback) {
+  N.wire.after(apiPath, function fetch_pagination(env, callback) {
+    if (env.data.page) {
+      callback();
+      return;
+    }
 
-    // Prepared by `buildPostIds`
-    env.res.page = env.data.page;
+    var Post = N.models.forum.Post;
 
-    env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
+    // Posts with this statuses are counted on page (others are shown, but not counted)
+    var countable_statuses = [ Post.statuses.VISIBLE ];
+
+    // For hellbanned users - count hellbanned posts too
+    if (env.user_info.hb) {
+      countable_statuses.push(Post.statuses.HB);
+    }
+
+    Post.find()
+        .where('topic').equals(env.data.topic._id)
+        .where('st').in(countable_statuses)
+        .where('_id').lt(env.data.posts_ids[0])
+        .count(function (err, current_post_number) {
+
       if (err) {
         callback(err);
         return;
       }
 
-      env.res.posts_per_page    = posts_per_page;
-      env.res.first_post_offset = posts_per_page * (env.res.page.current - 1);
+      env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      callback();
+        // Page numbers starts from 1, not from 0
+        var page_current = Math.ceil(current_post_number / posts_per_page);
+        var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
+        var page_max = Math.ceil(post_count / posts_per_page) || 1;
+
+        // Create page info
+        env.data.page = {
+          current: page_current,
+          max:     page_max,
+          posts:   posts_per_page,
+          offset:  current_post_number
+        };
+
+        callback();
+      });
     });
+  });
+
+
+  // Fill pagination
+  //
+  N.wire.after(apiPath, function fill_pagination(env) {
+
+    // Prepared by `buildPostIds` or by a `fetch_pagination` function above
+    env.res.page = env.data.page;
   });
 
 

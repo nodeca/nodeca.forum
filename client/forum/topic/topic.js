@@ -472,11 +472,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
         res.page = {
           // used in paginator
-          max: $('.forum-topic-root').data('page-max')
+          max:    $('.forum-topic-root').data('page-max'),
+          posts:  topicState.posts_per_page,
+          offset: topicState.last_post_offset + 1
         };
 
-        res.posts_per_page    = topicState.posts_per_page;
-        res.first_post_offset = topicState.last_post_offset + 1;
         topicState.last_post_offset += res.posts.length;
 
         // render & inject posts list
