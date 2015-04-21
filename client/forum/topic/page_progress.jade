@@ -1,7 +1,40 @@
+
+//- create dropdown menu
+mixin _page_progress_dropdown_menu()
+  form.dropdown-menu.pgn__menu(
+    data-on-submit='forum.topic:nav_to_post'
+  )
+    - var pgmpid = 'pgmid' + ~~(Math.random()*100000000);
+
+    label.pgn__label.input(for=pgmpid)= self.t('dropdown_label')
+
+    .input-group
+      input.form-control(
+        id=pgmpid
+        name='post'
+        type='number'
+        min='1',
+        max=self.max
+        value=self.current
+        placeholder=self.t('dropdown_placeholder')
+      )
+      span.input-group-btn
+        button.btn.btn-default(type='submit')= self.t('dropdown_button')
+
+
 .page-progress
-  .page-progress__body
+  .page-progress__body.dropdown
+
     a.icon.icon-collapse.icon-space-after(href=self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 }))
-    span= self.t('label', { current: self.current, total: self.max })
+
+    a.dropdown-toggle(
+      href='#'
+      data-target='#'
+      data-toggle='dropdown'
+    )= self.t('label', { current: self.current, total: self.max })
+    +_page_progress_dropdown_menu()
+
     a.icon.icon-expand.icon-space-before(href=self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: self.max }))
+
   .page-progress__indicator
     .page-progress__indicator-body(style="width: " + (self.current / self.max * 100).toFixed(2) + "%")

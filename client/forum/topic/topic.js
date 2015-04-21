@@ -513,6 +513,23 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       })
     );
   });
+
+
+  // Called when user submits dropdown menu form
+  //
+  N.wire.on('forum.topic:nav_to_post', function navigate_to_post(data) {
+    var post = +data.fields.post;
+    if (!post) { return; }
+
+    N.wire.emit('navigate.to', {
+      apiPath: 'forum.topic',
+      params: {
+        section_hid:  topicState.section_hid,
+        topic_hid:    topicState.topic_hid,
+        post_hid:     post
+      }
+    });
+  });
 });
 
 
@@ -537,5 +554,5 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
 
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
   $('.navbar__secondary').empty();
-  $('.navbar').removeClass('.navbar__m-secondary');
+  $('.navbar').removeClass('navbar__m-secondary');
 });

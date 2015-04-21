@@ -33,3 +33,6 @@ en-US:
 
   page_progress:
     label: '#{current} out of #{total}'
+    dropdown_label: 'Jump to:'
+    dropdown_placeholder: Post
+    dropdown_button: Go!
