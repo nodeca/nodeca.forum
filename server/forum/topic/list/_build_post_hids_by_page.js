@@ -52,11 +52,10 @@ module.exports = function (N) {
       var page_max = Math.ceil(post_count / posts_per_page) || 1;
 
       // Create page info
-      env.data.page = {
-        current: page_current,
-        max:     page_max,
-        posts:   posts_per_page,
-        offset:  posts_per_page * (page_current - 1)
+      env.data.pagination = {
+        page_max:     page_max,
+        per_page:     posts_per_page,
+        chunk_offset: posts_per_page * (page_current - 1)
       };
 
       // Algorithm:

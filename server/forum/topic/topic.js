@@ -128,16 +128,14 @@ module.exports = function (N, apiPath) {
         }
 
         // Page numbers starts from 1, not from 0
-        var page_current = Math.ceil(current_post_number / posts_per_page);
         var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
         var page_max = Math.ceil(post_count / posts_per_page) || 1;
 
         // Create page info
-        env.data.page = {
-          current: page_current,
-          max:     page_max,
-          posts:   posts_per_page,
-          offset:  current_post_number
+        env.data.pagination = {
+          page_max:     page_max,
+          per_page:     posts_per_page,
+          chunk_offset: current_post_number
         };
 
         callback();
@@ -151,7 +149,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function fill_pagination(env) {
 
     // Prepared by `buildPostHids` or by a `fetch_pagination` function above
-    env.res.page = env.data.page;
+    env.res.pagination = env.data.pagination;
   });
 
 
@@ -165,7 +163,7 @@ module.exports = function (N, apiPath) {
   // Redirect to last page, if requested > available
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
-    if (env.data.page.current > env.data.page.max) {
+    if (env.params.page > env.data.pagination.page_max) {
       // Requested page is BIGGER than maximum - redirect to the last one
       return {
         code: N.io.REDIRECT,
@@ -205,8 +203,8 @@ module.exports = function (N, apiPath) {
 
     env.res.head = env.res.head || {};
 
-    env.res.head.title = (env.data.page.current > 1) ?
-      env.t('title_with_page', { title: topic.title, page: env.data.page.current })
+    env.res.head.title = (env.params.page > 1) ?
+      env.t('title_with_page', { title: topic.title, page: env.params.page })
     :
       topic.title;
   });

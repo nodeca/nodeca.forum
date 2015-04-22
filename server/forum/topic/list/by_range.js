@@ -42,4 +42,12 @@ module.exports = function (N, apiPath) {
 
     N.wire.emit('internal:forum.post_list', env, callback);
   });
+
+
+  // Add last post number, so client can update its progress bar
+  // if somebody created a new post.
+  //
+  N.wire.on(apiPath, function attach_last_post_hid(env) {
+    env.res.last_post_hid = env.data.topic.last_post_hid;
+  });
 };

@@ -20,7 +20,6 @@ var LOAD_POSTS_COUNT = 20;
 // - posts_per_page:     an amount of visible posts per page
 // - first_post_offset:  total amount of visible posts in the topic before the first displayed post
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
-// - reached_last_page:  true if there are no next page to load
 //
 var topicState = {};
 var scrollHandler = null;
@@ -40,7 +39,6 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.max_post           = root.data('post-max');
   topicState.first_post_offset  = root.data('first-post-offset');
   topicState.last_post_offset   = root.data('first-post-offset') + $('.forum-post').length - 1;
-  topicState.reached_last_page  = root.data('page-max') === root.data('page-current');
 
 
   // Scroll to a post linked in params (if any)
@@ -413,7 +411,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         //
         // This is sufficient because post with hid=1 always exists.
         //
-        topicState.reached_first_page = true;
         return;
       }
 
@@ -429,14 +426,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
         var old_height = $('#postlist').height();
 
-        res.page = {
-          // used in paginator
-          max: $('.forum-topic-root').data('page-max')
-        };
-
         topicState.first_post_offset -= res.posts.length;
-        res.posts_per_page    = topicState.posts_per_page;
-        res.first_post_offset = topicState.first_post_offset;
+
+        res.pagination = {
+          // used in paginator
+          page_max:     $('.forum-topic-root').data('page-max'),
+          per_page:     topicState.posts_per_page,
+          chunk_offset: topicState.first_post_offset
+        };
 
         // render & inject posts list
         var $result = $(N.runtime.render('forum.blocks.posts_list', res));
@@ -445,36 +442,37 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         // update scroll so it would point at the same spot as before
         $(window).scrollTop($(window).scrollTop() + $('#postlist').height() - old_height);
 
+        topicState.max_post = res.last_post_hid;
         prev_page_loading = false;
       });
     }
 
     function load_next_page() {
-      if (next_page_loading || topicState.reached_last_page) { return; }
+      if (next_page_loading) { return; }
       next_page_loading = true;
+
+      var hid = $('.forum-post:last').data('post-hid');
+      if (hid >= topicState.max_post) {
+        // If the last post on the page is visible, no need to scroll further.
+        //
+        return;
+      }
 
       N.io.rpc('forum.topic.list.by_range', {
         topic_hid: topicState.topic_hid,
-        post_hid:  $('.forum-post:last').data('post-hid') + 1,
+        post_hid:  hid + 1,
         before:    0,
         after:     LOAD_POSTS_COUNT
       }).done(function (res) {
-        if (!res.posts) {
+        if (!res.posts || !res.posts.length) {
           return;
         }
 
-        if (res.posts.length < LOAD_POSTS_COUNT) {
-          // If we received less posts than we asked for,
-          // assume that we reached the end of the topic.
-          //
-          topicState.reached_last_page = true;
-        }
-
-        res.page = {
+        res.pagination = {
           // used in paginator
-          max:    $('.forum-topic-root').data('page-max'),
-          posts:  topicState.posts_per_page,
-          offset: topicState.last_post_offset + 1
+          page_max:     $('.forum-topic-root').data('page-max'),
+          per_page:     topicState.posts_per_page,
+          chunk_offset: topicState.last_post_offset + 1
         };
 
         topicState.last_post_offset += res.posts.length;
@@ -483,6 +481,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         var $result = $(N.runtime.render('forum.blocks.posts_list', res));
         $('#postlist > :last').after($result);
 
+        topicState.max_post = res.last_post_hid;
         next_page_loading = false;
       });
     }
