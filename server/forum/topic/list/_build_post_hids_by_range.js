@@ -1,6 +1,6 @@
 // Reflection helper for `internal:forum.post_list`:
 //
-// 1. Builds IDs of posts to fetch for current page
+// 1. Builds hids of posts to fetch for current page
 // 2. Creates pagination info
 //
 // In:
@@ -14,10 +14,11 @@
 //
 // Out:
 //
-// - env.data.posts_ids
+// - env.data.posts_hids
 //
 // Needed in:
 //
+// - `forum/topic/topic.js`
 // - `forum/topic/list/by_range.js`
 //
 'use strict';
@@ -32,7 +33,7 @@ module.exports = function (N) {
   // Shortcut
   var Post = N.models.forum.Post;
 
-  return function buildPostIds(env, callback) {
+  return function buildPostHids(env, callback) {
     var range = [ env.params.post_hid - 1, env.params.post_hid + 1 ];
 
     // Posts with this statuses are counted on page (others are shown, but not counted)
@@ -51,7 +52,7 @@ module.exports = function (N) {
           .where('topic').equals(env.data.topic._id)
           .where('st').in(countable_statuses)
           .where('hid').lt(env.params.post_hid)
-          .select('hid')
+          .select('hid -_id')
           .sort({ hid: -1 })
           .limit(posts_count + 1)
           .lean(true)
@@ -79,7 +80,7 @@ module.exports = function (N) {
           .where('topic').equals(env.data.topic._id)
           .where('st').in(countable_statuses)
           .where('hid').gt(env.params.post_hid)
-          .select('hid')
+          .select('hid -_id')
           .sort({ hid: 1 })
           .limit(posts_count + 1)
           .lean(true)
@@ -110,8 +111,8 @@ module.exports = function (N) {
           .where('st').in(env.data.posts_visible_statuses)
           .where('hid').gt(range[0])
           .where('hid').lt(range[1])
-          .select('_id')
-          .sort('_id')
+          .select('hid -_id')
+          .sort('hid')
           .lean(true)
           .exec(function (err, posts) {
 
@@ -120,7 +121,7 @@ module.exports = function (N) {
           return;
         }
 
-        env.data.posts_ids = _.pluck(posts, '_id');
+        env.data.posts_hids = _.pluck(posts, 'hid');
         callback();
       });
     });

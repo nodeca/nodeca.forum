@@ -3,7 +3,8 @@
 // in:
 //
 // - env.data.topic_hid
-// - env.data.build_posts_ids (env, callback) - should fill `env.data.posts_ids`
+// - env.data.build_posts_ids (env, callback) -
+//       should fill either `env.data.posts_ids` or `env.data.posts_hids`
 //
 // out:
 //
@@ -170,8 +171,10 @@ module.exports = function (N, apiPath) {
   // Fetch posts
   //
   N.wire.on(apiPath, function fetch_posts(env, callback) {
+    var by_hid = !!env.data.posts_hids;
+
     Post.find()
-        .where('_id').in(env.data.posts_ids)
+        .where(by_hid ? 'hid' : '_id').in(env.data[by_hid ? 'posts_hids' : 'posts_ids'])
         .where('st').in(env.data.posts_visible_statuses)
         .where('topic').equals(env.data.topic._id)
         .lean(true)
@@ -182,17 +185,29 @@ module.exports = function (N, apiPath) {
         return;
       }
 
+      // 1. Fill `env.data.posts_ids` if doesn't yet exist (if selecting by hids)
+      // 2. Push results to `env.data.posts` in `env.data.posts_ids` order
+      //
+      var postsById = posts.reduce(function (acc, p) {
+        acc[by_hid ? p.hid : p._id] = p;
+        return acc;
+      }, {});
+
       env.data.posts = [];
 
-      // Sort in `env.data.posts_ids` order.
-      // May be slow on large posts volumes
-      env.data.posts_ids.forEach(function (id) {
-        var post = _.find(posts, function (p) {
-          return p._id.equals(id);
-        });
+      if (by_hid) {
+        env.data.posts_ids = [];
+      }
+
+      env.data[by_hid ? 'posts_hids' : 'posts_ids'].forEach(function (id) {
+        var post = postsById[id];
 
         if (post) {
           env.data.posts.push(post);
+        }
+
+        if (by_hid) {
+          env.data.posts_ids.push(post._id);
         }
       });
 

@@ -42,8 +42,8 @@ module.exports = function (N, apiPath) {
   });
 
 
-  var buildPostIdsByPage  = require('./list/_build_posts_ids_by_page.js')(N),
-      buildPostIdsByRange = require('./list/_build_posts_ids_by_range.js')(N);
+  var buildPostHidsByPage  = require('./list/_build_post_hids_by_page.js')(N),
+      buildPostHidsByRange = require('./list/_build_post_hids_by_range.js')(N);
 
 
   // `params.section_hid` can be wrong (old link to moved topic).
@@ -51,7 +51,7 @@ module.exports = function (N, apiPath) {
   //
   // Redirect here to avoid fetching posts twice.
   //
-  function buildPostIdsAndCheckRedirect(env, callback) {
+  function buildPostHidsAndCheckRedirect(env, callback) {
     if (env.data.section.hid !== +env.params.section_hid) {
       callback({
         code: N.io.REDIRECT,
@@ -70,9 +70,9 @@ module.exports = function (N, apiPath) {
     if (env.params.post_hid) {
       env.params.before = LOAD_POSTS_BEFORE_COUNT;
       env.params.after  = LOAD_POSTS_AFTER_COUNT;
-      buildPostIdsByRange(env, callback);
+      buildPostHidsByRange(env, callback);
     } else {
-      buildPostIdsByPage(env, callback);
+      buildPostHidsByPage(env, callback);
     }
   }
 
@@ -81,7 +81,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function fetch_posts_list(env, callback) {
     env.data.topic_hid = env.params.topic_hid;
-    env.data.build_posts_ids = buildPostIdsAndCheckRedirect;
+    env.data.build_posts_ids = buildPostHidsAndCheckRedirect;
 
     N.wire.emit('internal:forum.post_list', env, callback);
   });
@@ -105,10 +105,15 @@ module.exports = function (N, apiPath) {
       countable_statuses.push(Post.statuses.HB);
     }
 
+    // Calculate pagination info
+    //
+    // Both id builders used in this controller return hids,
+    // so we use hids to utilize index.
+    //
     Post.find()
         .where('topic').equals(env.data.topic._id)
         .where('st').in(countable_statuses)
-        .where('_id').lt(env.data.posts_ids[0])
+        .where('hid').lt(env.data.posts_hids[0])
         .count(function (err, current_post_number) {
 
       if (err) {
@@ -145,7 +150,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fill_pagination(env) {
 
-    // Prepared by `buildPostIds` or by a `fetch_pagination` function above
+    // Prepared by `buildPostHids` or by a `fetch_pagination` function above
     env.res.page = env.data.page;
   });
 

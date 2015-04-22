@@ -32,13 +32,13 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  var buildPostIds = require('./_build_posts_ids_by_range.js')(N);
+  var buildPostHids = require('./_build_post_hids_by_range.js')(N);
 
   // Fetch posts subcall
   //
   N.wire.on(apiPath, function fetch_posts_list(env, callback) {
     env.data.topic_hid = env.params.topic_hid;
-    env.data.build_posts_ids = buildPostIds;
+    env.data.build_posts_ids = buildPostHids;
 
     N.wire.emit('internal:forum.post_list', env, callback);
   });
