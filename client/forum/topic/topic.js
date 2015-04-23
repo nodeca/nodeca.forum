@@ -148,7 +148,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       var pageData = _.merge({}, params.data, { topic: { st: null, ste: null } }, { topic: topic });
 
       $('.forum-topic__dropdown').replaceWith(
-        N.runtime.render('forum.topic.topic_dropdown_menu', pageData)
+        N.runtime.render('forum.topic.blocks.dropdown_menu', pageData)
       );
 
       if (pageData.topic.st === topicStatuses.OPEN || pageData.topic.ste === topicStatuses.OPEN) {
@@ -230,7 +230,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     N.io.rpc('forum.topic.close', params).done(function (res) {
       updateTopic(res.topic, function () {
-        if (data.reopen) {
+        if (params.reopen) {
           N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
         } else {
           N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
@@ -529,10 +529,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
 
 N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
-  $('.navbar__secondary')
-    .empty()
-    .append(N.runtime.render('forum.topic.topic_navbar', {
+  $('.navbar-alt')
+    .replaceWith(N.runtime.render('forum.topic.navbar_alt', {
       settings: N.runtime.page_data.settings,
+      topic:    N.runtime.page_data.topic,
+
       page_progress: {
         section_hid: topicState.section_hid,
         topic_hid:   topicState.topic_hid,
@@ -556,6 +557,6 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
-  $('.navbar__secondary').empty();
+  $('.navbar-alt').empty();
   $('.navbar').removeClass('navbar__m-secondary');
 });

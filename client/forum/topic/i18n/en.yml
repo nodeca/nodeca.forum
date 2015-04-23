@@ -20,13 +20,3 @@ en-US:
 
   error_no_more_posts: Ups! No more posts in this topic.
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
-
-  topic_dropdown_menu:
-    mod_actions: Moderation
-    close: Close
-    open: Open
-    pin: Pin
-    unpin: Unpin
-    history: History
-    delete: Delete
-    undelete: Undelete

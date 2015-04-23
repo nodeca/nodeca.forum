@@ -1,0 +1,9 @@
+en-US:
+  mod_actions: Moderation
+  close: Close
+  open: Open
+  pin: Pin
+  unpin: Unpin
+  history: History
+  delete: Delete
+  undelete: Undelete

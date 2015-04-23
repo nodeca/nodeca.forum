@@ -1,10 +1,10 @@
 - var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
-- var topicOwner = self.users[self.topic.cache.first_user]
+- var topicOwnerId = self.topic.cache.first_user
 
 - var items = []
 
 
-if topicOwner && topicOwner._id === self.runtime.user_id
+if topicOwnerId === self.runtime.user_id
 
   if self.settings.forum_edit_max_time === 0 || new Date(self.topic.cache.first_ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000
     if self.topic.st !== topicStatuses.DELETED && self.topic.st !== topicStatuses.DELETED_HARD

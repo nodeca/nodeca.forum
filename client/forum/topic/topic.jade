@@ -2,6 +2,7 @@
 - var topicOwner = self.users[self.topic.cache.first_user]
 
 - self.add_raw_data('settings', self.settings)
+- self.add_raw_data('topic', self.topic)
 - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 - var isClosed = (self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED);
 
