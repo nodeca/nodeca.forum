@@ -1,5 +1,6 @@
 
-.btn-group.pull-left._page-progress
+.btn-group.pull-left
+  != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
 
 if self.settings.forum_can_reply
   button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(

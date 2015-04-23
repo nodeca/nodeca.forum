@@ -503,14 +503,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Update progress bar
   //
   N.wire.on('forum.topic:location_update', function update_page_progress() {
-    $('._page-progress').html(
-      N.runtime.render('forum.topic.page_progress', {
-        section_hid: topicState.section_hid,
-        topic_hid:   topicState.topic_hid,
-        current:     topicState.post_hid,
-        max:         topicState.max_post
-      })
-    );
+    N.wire.emit('forum.topic.blocks.page_progress:update', {
+      current:     topicState.post_hid,
+      max:         topicState.max_post
+    });
   });
 
 
@@ -535,7 +531,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   $('.navbar__secondary')
     .empty()
-    .append(N.runtime.render('forum.topic.topic_navbar', N.runtime.page_data));
+    .append(N.runtime.render('forum.topic.topic_navbar', {
+      settings: N.runtime.page_data.settings,
+      page_progress: {
+        section_hid: topicState.section_hid,
+        topic_hid:   topicState.topic_hid,
+        current:     topicState.post_hid,
+        max:         topicState.max_post
+      }
+    }));
 
   var viewportStart = $(window).scrollTop() + navbarHeight;
 

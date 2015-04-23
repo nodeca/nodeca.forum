@@ -30,9 +30,3 @@ en-US:
     history: History
     delete: Delete
     undelete: Undelete
-
-  page_progress:
-    label: '#{current} out of #{total}'
-    dropdown_label: 'Jump to:'
-    dropdown_placeholder: Post
-    dropdown_button: Go!
