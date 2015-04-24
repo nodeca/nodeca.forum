@@ -23,6 +23,12 @@ mixin _page_progress_dropdown_menu()
 
 
 ul.page-progress
+  - var current = self.current;
+  - var total   = self.max;
+
+  //- ensure that current is in [1..total] range
+  - current = Math.max(1, Math.min(current, total));
+
   li
     a.page-progress__button.icon.icon-collapse.icon-space-after(
       href= self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 })
@@ -33,11 +39,11 @@ ul.page-progress
       href='#'
       data-target='#'
       data-toggle='dropdown'
-    )= self.t('label', { current: self.current, total: self.max })
+    )= self.t('label', { current: current, total: total })
     +_page_progress_dropdown_menu()
 
     .page-progress__graph
-      .page-progress__graph-percentage(style="width: " + (self.current / self.max * 100).toFixed(2) + "%")
+      .page-progress__graph-percentage(style="width: " + (current / total * 100).toFixed(2) + "%")
 
   li
     a.page-progress__button.icon.icon-expand.icon-space-before(
