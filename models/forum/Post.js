@@ -54,7 +54,7 @@ module.exports = function (N, collectionName) {
     attach     : [ Schema.ObjectId ],  // all attachments
 
   // Post params
-    params          : [ Schema.Types.Mixed ],
+    params          : Schema.Types.Mixed,
 
   // Info to build post tail
     tail     : [ new Schema({ // explicit definition to remove `_id` field

@@ -144,6 +144,20 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Click on post edit
+  //
+  N.wire.on('forum.topic:post_edit', function reply(data, callback) {
+    N.wire.emit('forum.topic.post.edit:begin', {
+      topic_hid: topicState.topic_hid,
+      topic_title: N.runtime.page_data.topic.title,
+      section_hid: topicState.section_hid,
+      post_id: data.$this.data('post-id'),
+      post_hid: data.$this.data('post-hid'),
+      as_moderator: data.$this.data('as-moderator') || false
+    }, callback);
+  });
+
+
   // Show post IP
   //
   N.wire.on('forum.topic.post_show_ip', function post_show_ip(data) {

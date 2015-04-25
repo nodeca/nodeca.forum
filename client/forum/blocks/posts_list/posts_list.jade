@@ -124,8 +124,9 @@ each post, post_idx in self.posts
             if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
               li.forum-post__control-item.forum-post__edit
                 button.btn.forum-post__action(
-                  data-on-click='forum.topic.post_edit'
+                  data-on-click='forum.topic:post_edit'
                   data-post-id=post._id
+                  data-post-hid=post.hid
                 )
                   span.icon.icon-edit
 
@@ -185,8 +186,9 @@ each post, post_idx in self.posts
                     if self.settings.forum_mod_can_edit_posts
                       li
                         a(href='#'
-                          data-on-click='forum.topic.post_edit'
+                          data-on-click='forum.topic:post_edit'
                           data-post-id=post._id
+                          data-post-hid=post.hid
                           data-as-moderator='true'
                         )= self.t('edit')
 

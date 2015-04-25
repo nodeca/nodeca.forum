@@ -1,0 +1,5 @@
+en-US:
+  edit_post: "Edit <a href='#{post_url}'>##{post_hid}</a> in #{topic_title}"
+
+  options_btn:
+    options: Options
