@@ -1,0 +1,6 @@
+en-US:
+  reply_topic: "Reply in <a href='#{topic_url}'>#{topic_title}</a>"
+  reply_post: "Reply to <a href='#{post_url}'>##{post_hid}</a> in #{topic_title}"
+
+  options_btn:
+    options: Options

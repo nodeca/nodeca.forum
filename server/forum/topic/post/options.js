@@ -16,9 +16,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill post options
+  // Fill user settings
   //
-  N.wire.before(apiPath, function fill_post_options(env, callback) {
+  N.wire.before(apiPath, function fill_user_settings(env, callback) {
 
     var userStore = N.settings.getStore('user');
 
@@ -27,7 +27,7 @@ module.exports = function (N, apiPath) {
         callback(err);
       }
 
-      env.res.post_options = { no_mlinks: data.edit_no_mlinks.value, no_smiles: data.edit_no_smiles.value };
+      env.res.user_settings = { no_mlinks: data.edit_no_mlinks.value, no_smiles: data.edit_no_smiles.value };
       callback();
     });
 

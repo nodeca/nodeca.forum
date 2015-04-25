@@ -142,14 +142,16 @@ each post, post_idx in self.posts
               li.forum-post__control-item.forum-post__reply
                 //- for wide screen
                 button.full.btn.forum-post__action(
-                  data-on-click='forum.topic.post_reply'
+                  data-on-click='forum.topic:reply'
                   data-post-id=post._id
+                  data-post-hid=post.hid
                 )
                   span.icon.icon-reply.icon-space-after= self.t('reply')
                 //- for narrow screen
                 button.short.btn.forum-post__action(
-                  data-on-click='forum.topic.post_reply'
+                  data-on-click='forum.topic:reply'
                   data-post-id=post._id
+                  data-post-hid=post.hid
                   title=self.t('reply')
                 )
                   span.icon.icon-reply

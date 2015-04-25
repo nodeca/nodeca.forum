@@ -131,6 +131,19 @@ N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() 
 //
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Click on post reply link or toolbar reply button
+  //
+  N.wire.on('forum.topic:reply', function reply(data, callback) {
+    N.wire.emit('forum.topic.reply:begin', {
+      topic_hid: topicState.topic_hid,
+      topic_title: N.runtime.page_data.topic.title,
+      section_hid: topicState.section_hid,
+      post_id: data.$this.data('post-id'),
+      post_hid: data.$this.data('post-hid')
+    }, callback);
+  });
+
+
   // Show post IP
   //
   N.wire.on('forum.topic.post_show_ip', function post_show_ip(data) {

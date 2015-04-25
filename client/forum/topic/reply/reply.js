@@ -1,0 +1,153 @@
+// Reply to post
+//
+// data:
+//
+// - topic_hid
+// - topic_title
+// - section_hid
+// - post_id - optional, parrent post id
+// - post_hid - optional, parrent post hid
+//
+'use strict';
+
+
+var jade = require('jade/lib/runtime');
+var _    = require('lodash');
+var Bag  = require('bag.js');
+var bag  = new Bag({ prefix: 'nodeca_drafts' });
+
+
+var draftKey;
+var options;
+var draft;
+
+
+
+function updateOptions() {
+  N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
+    medialinks: options.user_settings.no_mlinks ? false : options.parse_options.medialinks,
+    smiles: options.user_settings.no_smiles ? false : options.parse_options.smiles
+  }));
+}
+
+
+// Load mdedit
+//
+N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
+  N.loader.loadAssets('mdedit', callback);
+});
+
+
+// Fetch options
+//
+N.wire.before(module.apiPath + ':begin', function fetch_options(__, callback) {
+  N.io.rpc('forum.topic.post.options').done(function (opt) {
+    options = opt;
+    callback();
+  });
+});
+
+
+// Fetch draft data
+//
+N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
+  draftKey = [ 'post_reply', N.runtime.user_hid, data.topic_hid, data.post_hid || '' ].join('_');
+
+  bag.get(draftKey, function (__, data) {
+    draft = data || {};
+
+    if (!draft.attachments || draft.attachments.length === 0) {
+      callback();
+      return;
+    }
+
+    var params = {
+      media_ids: _.pluck(draft.attachments, 'media_id')
+    };
+
+    N.io.rpc('forum.topic.attachments_check', params).done(function (res) {
+      draft.attachments = draft.attachments.filter(function (attach) {
+        return res.media_ids.indexOf(attach.media_id) !== -1;
+      });
+
+      callback();
+    });
+  });
+});
+
+
+// Show editor and add handlers for editor events
+//
+N.wire.on(module.apiPath + ':begin', function show_editor(data) {
+  var response;
+  var $editor = N.MDEdit.show({
+    text: draft.text,
+    attachments: draft.attachments
+  });
+
+  updateOptions();
+
+  $editor
+    .on('show.nd.mdedit', function () {
+      var title = t(data.post_hid ? 'reply_post' : 'reply_topic', {
+        topic_url: N.router.linkTo('forum.topic', {
+          section_hid: data.section_hid,
+          topic_hid: data.topic_hid
+        }),
+        topic_title: jade.escape(data.topic_title),
+        post_url: N.router.linkTo('forum.topic', {
+          section_hid: data.section_hid,
+          topic_hid: data.topic_hid,
+          post_hid: data.post_hid
+        }),
+        post_hid: data.post_hid
+      });
+
+      $editor.find('.mdedit-header').append(title);
+      $editor.find('.mdedit-controlls').append(N.runtime.render(module.apiPath + '.options_btn'));
+    })
+    .on('change.nd.mdedit', function () {
+      bag.set(draftKey, {
+        text: N.MDEdit.text(),
+        attachments: N.MDEdit.attachments()
+      });
+    })
+    .on('submit.nd.mdedit', function () {
+      var params = {
+        section_hid:      data.section_hid,
+        topic_hid:        data.topic_hid,
+        txt:              N.MDEdit.text(),
+        attach:           N.MDEdit.attachments(),
+        option_no_mlinks: options.user_settings.no_mlinks,
+        option_no_smiles: options.user_settings.no_smiles
+      };
+
+      if (data.post_id) {
+        params.parent_post_id = data.post_id;
+      }
+
+      N.io.rpc('forum.topic.post.reply', params).done(function (res) {
+        response = res;
+        N.MDEdit.hide();
+      });
+
+      return false;
+    })
+    .on('hidden.nd.mdedit', function () {
+      if (response) {
+        bag.remove(draftKey, function () {
+          // TODO: append new posts
+          window.location = response.redirect_url;
+        });
+      }
+    });
+});
+
+
+// Open options dialog
+//
+N.wire.on(module.apiPath + ':options', function show_options_dlg() {
+  N.wire.emit('common.blocks.editor_options_dlg', options.user_settings, function () {
+    updateOptions();
+  });
+});
