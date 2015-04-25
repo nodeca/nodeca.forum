@@ -1,5 +1,5 @@
 en-US:
-  create_topic: "Create new topic in <a href='#{section_url}'>#{section_title}</a>"
+  create_topic: "Create new topic in &quot;<a href='#{section_url}'>#{section_title}</a>&quot;"
 
   options_btn:
     options: Options

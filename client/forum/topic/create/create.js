@@ -8,7 +8,6 @@
 'use strict';
 
 
-var jade = require('jade/lib/runtime');
 var _    = require('lodash');
 var Bag  = require('bag.js');
 var bag  = new Bag({ prefix: 'nodeca_drafts' });
@@ -87,7 +86,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
     .on('show.nd.mdedit', function () {
       var title = t('create_topic', {
         section_url: N.router.linkTo('forum.section', { hid: data.section_hid }),
-        section_title: jade.escape(data.section_title)
+        section_title: _.escape(data.section_title)
       });
 
       $editor.find('.mdedit-header')

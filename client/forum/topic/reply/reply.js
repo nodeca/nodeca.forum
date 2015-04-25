@@ -11,7 +11,6 @@
 'use strict';
 
 
-var jade = require('jade/lib/runtime');
 var _    = require('lodash');
 var Bag  = require('bag.js');
 var bag  = new Bag({ prefix: 'nodeca_drafts' });
@@ -93,7 +92,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
           section_hid: data.section_hid,
           topic_hid: data.topic_hid
         }),
-        topic_title: jade.escape(data.topic_title),
+        topic_title: _.escape(data.topic_title),
         post_url: N.router.linkTo('forum.topic', {
           section_hid: data.section_hid,
           topic_hid: data.topic_hid,
