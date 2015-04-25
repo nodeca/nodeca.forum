@@ -38,12 +38,6 @@ router:
           type: integer
           default: 1
 
-    forum.topic_create:
-      "/f{section_hid}/create":
-        section_hid:
-          match: /\d+/
-          type: integer
-
     admin.forum.section.index:
       "/forum/section": ~
 

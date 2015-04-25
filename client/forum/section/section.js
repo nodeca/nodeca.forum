@@ -3,6 +3,16 @@
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Click topic create
+  //
+  N.wire.on('forum.section:create', function reply(data, callback) {
+    N.wire.emit('forum.topic.create:begin', {
+      section_hid: data.$this.data('section-hid'),
+      section_title: data.$this.data('section-title')
+    }, callback);
+  });
+
+
   ////////////////////////////////////////////////////////////////////////////////
   // "More topics" button logic
 

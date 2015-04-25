@@ -1,0 +1,8 @@
+en-US:
+  create_topic: "Create new topic in <a href='#{section_url}'>#{section_title}</a>"
+
+  options_btn:
+    options: Options
+
+  title_input:
+    topic_title: Topic title

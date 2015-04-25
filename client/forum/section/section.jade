@@ -40,8 +40,10 @@ article#content.forum-section-root
               )
 
             if self.settings.forum_can_start_topics
-              a.btn.btn-primary.icon.icon-plus.pull-right(
-                href=self.link_to('forum.topic_create', { section_hid: self.section.hid })
+              a.btn.btn-primary.icon.icon-plus.pull-right(href='#'
+                data-on-click='forum.section:create'
+                data-section-hid=self.section.hid
+                data-section-title=self.section.title
                 type='button'
                 title=self.t('topic_create')
               )

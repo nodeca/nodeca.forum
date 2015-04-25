@@ -48,8 +48,10 @@ module.exports = function (N, apiPath) {
       }
 
       if (punycode.ucs2.decode(env.params.title.trim()).length < topic_title_min_length) {
-        // Real check is done on the client, no need to care about details here
-        callback(N.io.BAD_REQUEST);
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_title_too_short', topic_title_min_length)
+        });
         return;
       }
 
