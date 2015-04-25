@@ -3,7 +3,7 @@ en-US:
   title_moderator: Moderation delete post
   confirmation_text: Are you sure you want to delete post?
   reason_input_help: Deletion reason
-  apply: OK
+  ok: OK
   cancel: Cancel
   delete_soft: Soft delete
   delete_hard: Hard delete
