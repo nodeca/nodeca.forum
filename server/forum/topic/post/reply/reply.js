@@ -294,10 +294,10 @@ module.exports = function (N, apiPath) {
   // Fill url of new post
   //
   N.wire.after(apiPath, function process_response(env) {
-
-    // TODO: create internal method to get real post url
-    env.res.redirect_url = N.router.linkTo('forum.topic',
-      { section_hid: env.params.section_hid, topic_hid: env.params.topic_hid, post_hid: env.data.new_post.hid }
-    ) + '#post' + env.data.new_post._id;
+    env.res.redirect_url = N.router.linkTo('forum.topic', {
+      section_hid: env.params.section_hid,
+      topic_hid: env.params.topic_hid,
+      post_hid: env.data.new_post.hid
+    });
   });
 };

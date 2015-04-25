@@ -79,7 +79,6 @@ N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
 // Show editor and add handlers for editor events
 //
 N.wire.on(module.apiPath + ':begin', function show_editor(data) {
-  var response;
   var $editor = N.MDEdit.show({
     text: draft.text,
     attachments: draft.attachments
@@ -126,20 +125,14 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         params.parent_post_id = data.post_id;
       }
 
-      N.io.rpc('forum.topic.post.reply', params).done(function (res) {
-        response = res;
-        N.MDEdit.hide();
+      N.io.rpc('forum.topic.post.reply', params).done(function (response) {
+        bag.remove(draftKey, function () {
+          N.MDEdit.hide();
+          N.wire.emit('navigate.to', response.redirect_url);
+        });
       });
 
       return false;
-    })
-    .on('hidden.nd.mdedit', function () {
-      if (response) {
-        bag.remove(draftKey, function () {
-          // TODO: append new posts
-          window.location = response.redirect_url;
-        });
-      }
     });
 });
 
