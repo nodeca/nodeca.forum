@@ -89,11 +89,11 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         section_title: _.escape(data.section_title)
       });
 
+      $editor.find('.mdedit-header__caption').html(title);
       $editor.find('.mdedit-header')
-        .append(title)
         .append(N.runtime.render(module.apiPath + '.title_input', draft));
 
-      $editor.find('.mdedit-controlls').append(N.runtime.render(module.apiPath + '.options_btn'));
+      $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
     .on('change.nd.mdedit', function () {
       bag.set(draftKey, {

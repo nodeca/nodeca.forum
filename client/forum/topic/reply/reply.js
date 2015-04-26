@@ -101,8 +101,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         post_hid: data.post_hid
       });
 
-      $editor.find('.mdedit-header').append(title);
-      $editor.find('.mdedit-controlls').append(N.runtime.render(module.apiPath + '.options_btn'));
+      $editor.find('.mdedit-header__caption').html(title);
+      $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
     .on('change.nd.mdedit', function () {
       bag.set(draftKey, {
