@@ -6,20 +6,20 @@ mixin _page_progress_dropdown_menu()
   )
     - var pgmpid = 'pgmid' + ~~(Math.random()*100000000);
 
-    label.pgn__label.input(for=pgmpid)= self.t('dropdown_label')
+    label.pgn__label.input(for=pgmpid)= self.t('jump_to')
 
     .input-group
-      input.form-control(
+      input.page-progress__jump-input.form-control(
         id=pgmpid
         name='post'
         type='number'
-        min='1',
+        min='1'
         max=self.max
         value=self.current
-        placeholder=self.t('dropdown_placeholder')
+        placeholder=self.t('placeholder')
       )
       span.input-group-btn
-        button.btn.btn-default(type='submit')= self.t('dropdown_button')
+        button.btn.btn-default(type='submit')= self.t('go')
 
 
 - var current = self.current;
@@ -28,13 +28,13 @@ mixin _page_progress_dropdown_menu()
 //- ensure that current is in [1..total] range
 - current = Math.max(1, Math.min(current, total));
 
-ul.page-progress(data-current=current, data-total=total)
+ul.page-progress(data-current=current, data-total=total, data-section=self.section_hid, data-topic=self.topic_hid)
   li
-    a.page-progress__button.icon.icon-collapse.icon-space-after(
+    a.page-progress__button.page-progress__button-first.icon.icon-collapse.icon-space-after(
       href= self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 })
     )
 
-  li.dropdown
+  li.page-progress__dropdown.dropdown
     a.page-progress__label.dropdown-toggle( 
       href='#'
       data-target='#'
@@ -46,6 +46,6 @@ ul.page-progress(data-current=current, data-total=total)
       .page-progress__graph-percentage(style="width: " + (current / total * 100).toFixed(2) + "%")
 
   li
-    a.page-progress__button.icon.icon-expand.icon-space-before(
+    a.page-progress__button.page-progress__button-last.icon.icon-expand.icon-space-before(
       href= self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: self.max })
     )
