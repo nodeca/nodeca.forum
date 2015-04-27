@@ -455,8 +455,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:    LOAD_POSTS_COUNT,
       after:     0
     }).done(function (res) {
-      if (res.last_post_hid) {
+      if (res.last_post_hid && res.last_post_hid !== topicState.max_post) {
         topicState.max_post = res.last_post_hid;
+
+        N.wire.emit('forum.topic.blocks.page_progress:update', {
+          max: topicState.max_post
+        });
       }
 
       if (!res.posts || !res.posts.length) {
@@ -485,7 +489,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // Topic moved or deleted, refreshing the page so user could
       // see the error
       //
-      // TODO: this should refresh the page
+      N.wire.emit('navigate.reload');
 
     }).finish(function () {
       topicState.prev_page_loading = false;
@@ -509,8 +513,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:    0,
       after:     LOAD_POSTS_COUNT
     }).done(function (res) {
-      if (res.last_post_hid) {
+      if (res.last_post_hid && res.last_post_hid !== topicState.max_post) {
         topicState.max_post = res.last_post_hid;
+
+        N.wire.emit('forum.topic.blocks.page_progress:update', {
+          max: topicState.max_post
+        });
       }
 
       if (!res.posts || !res.posts.length) {
@@ -534,7 +542,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // Topic moved or deleted, refreshing the page so user could
       // see the error
       //
-      // TODO: this should refresh the page
+      N.wire.emit('navigate.reload');
 
     }).finish(function () {
       topicState.next_page_loading = false;
@@ -544,6 +552,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   var load_prev_page = _.debounce(_load_prev_page, 500, { leading: true, maxWait: 500 });
   var load_next_page = _.debounce(_load_next_page, 500, { leading: true, maxWait: 500 });
 
+  // If we're browsing one of the first/last 3 posts, load more pages from
+  // the server in that direction.
+  //
+  // This method is synchronous, so rpc requests won't delay progress bar
+  // updates.
+  //
   N.wire.on('forum.topic:location_update', function check_load_more_pages() {
     var posts         = $('.forum-post'),
         viewportStart = $(window).scrollTop() + navbarHeight,

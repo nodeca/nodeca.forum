@@ -22,13 +22,13 @@ mixin _page_progress_dropdown_menu()
         button.btn.btn-default(type='submit')= self.t('dropdown_button')
 
 
-ul.page-progress
-  - var current = self.current;
-  - var total   = self.max;
+- var current = self.current;
+- var total   = self.max;
 
-  //- ensure that current is in [1..total] range
-  - current = Math.max(1, Math.min(current, total));
+//- ensure that current is in [1..total] range
+- current = Math.max(1, Math.min(current, total));
 
+ul.page-progress(data-current=current, data-total=total)
   li
     a.page-progress__button.icon.icon-collapse.icon-space-after(
       href= self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 })
