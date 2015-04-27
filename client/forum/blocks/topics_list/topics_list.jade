@@ -3,17 +3,16 @@
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
-- var replies, views;
 if self.show_page_number
   .forum-topicline__separator= self.t('page_separator', self.show_page_number)
 
 each topic in self.topics
-  - fp_user = self.users[topic.cache.first_user] || {}
-  - lp_user = self.users[topic.cache.last_user] || {}
-  - fp_ts   = topic.cache.first_ts
-  - lp_ts   = topic.cache.last_ts
-  - replies = topic.cache.post_count - 1;
-  - views   = topic.views_count;
+  - var fp_user = self.users[topic.cache.first_user] || {}
+  - var lp_user = self.users[topic.cache.last_user] || {}
+  - var fp_ts   = topic.cache.first_ts
+  - var lp_ts   = topic.cache.last_ts
+  - var replies = topic.cache.post_count - 1;
+  - var views   = topic.views_count;
   .forum-topicline(
     class=(topic.st === topicStatuses.PINNED) ? 'forum-topicline__m-pinned' : ''
     class=(topic.st === topicStatuses.CLOSED || topic.ste === topicStatuses.CLOSED) ? 'forum-topicline__m-closed' : ''
