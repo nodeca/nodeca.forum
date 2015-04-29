@@ -56,7 +56,7 @@ module.exports = function (N) {
 
         env.data.page = { max: page_max, current: page_current };
 
-        var topic_sort = env.user_info.hb ? { 'cache_hb.last_ts': -1 } : { 'cache.last_ts': -1 };
+        var topic_sort = env.user_info.hb ? { 'cache_hb.last_post': -1 } : { 'cache.last_post': -1 };
 
         // Algorithm:
         //
