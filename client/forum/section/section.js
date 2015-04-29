@@ -1,6 +1,31 @@
 'use strict';
 
 
+var _        = require('lodash');
+
+
+// Section state
+//
+// - hid:       current section hid
+// - page:      current page
+// - max_page:  max page
+//
+var sectionState = {};
+
+var scrollHandler = null;
+var navbarHeight = $('.nav-horiz').height();
+
+
+/////////////////////////////////////////////////////////////////////
+// init on page load
+//
+N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+  sectionState.hid       = data.params.hid;
+  sectionState.page      = N.runtime.page_data.page.current;
+  sectionState.max_page  = N.runtime.page_data.page.max;
+});
+
+
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Click topic create
@@ -10,6 +35,21 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       section_hid: data.$this.data('section-hid'),
       section_title: data.$this.data('section-title')
     }, callback);
+  });
+
+  // Called when user submits dropdown menu form
+  //
+  N.wire.on('forum.section:nav_to_page', function navigate_to_page(data) {
+    var page = +data.fields.page;
+    if (!page) { return; }
+
+    N.wire.emit('navigate.to', {
+      apiPath: 'forum.section',
+      params: {
+        hid:   sectionState.hid,
+        page:  page
+      }
+    });
   });
 
 
@@ -39,7 +79,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // render & inject topics list
       var $result = $(N.runtime.render('forum.blocks.topics_list', res));
-      $('#topiclist > :last').after($result);
+      $('.forum-topiclist > :last').after($result);
 
       // update button data & state
       $button.data('page', res.page.current + 1);
@@ -77,4 +117,67 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     return;
   });
+});
+
+
+/////////////////////////////////////////////////////////////////////
+// Update navbar when user scrolls the page
+//
+N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
+  var $window = $(window);
+
+  scrollHandler = _.debounce(function update_navbar_on_scroll() {
+    var viewportStart = $window.scrollTop() + navbarHeight;
+
+    // If we scroll below top border of the first topic,
+    // show the secondary navbar
+    //
+    if ($('.forum-topiclist').offset().top < viewportStart) {
+      $('.navbar').addClass('navbar__m-secondary');
+    } else {
+      $('.navbar').removeClass('navbar__m-secondary');
+    }
+  }, 100, { maxWait: 100 });
+
+  $(window).on('scroll', scrollHandler);
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
+  scrollHandler.cancel();
+  $(window).off('scroll', scrollHandler);
+  scrollHandler = null;
+});
+
+
+//////////////////////////////////////////////////////////////////////////
+// Replace primary navbar with alt navbar specific to this page
+//
+N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
+  $('.navbar-alt')
+    .empty()
+    .append(N.runtime.render(module.apiPath + '.navbar_alt', {
+      settings:   N.runtime.page_data.settings,
+      section:    N.runtime.page_data.section,
+
+      page_progress: {
+        current:  sectionState.page,
+        max:      sectionState.max_page
+      }
+    }));
+
+  var viewportStart = $(window).scrollTop() + navbarHeight;
+
+  // If we scroll below top border of the first post,
+  // show the secondary navbar
+  //
+  if ($('.forum-topiclist').offset().top < viewportStart) {
+    $('.navbar').addClass('navbar__m-secondary');
+  } else {
+    $('.navbar').removeClass('navbar__m-secondary');
+  }
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
+  $('.navbar-alt').empty();
+  $('.navbar').removeClass('navbar__m-secondary');
 });

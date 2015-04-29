@@ -1,0 +1,30 @@
+.navbar-alt__inner.btn-toolbar
+  //- Toolbar with pagination & controls
+  .btn-group.pull-left
+    != self.partial('@forum.section.blocks.page_progress', self.page_progress)
+
+  .navbar-alt__title.pull-left= self.section.title
+
+  .btn-group.pull-right
+    button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+      span.caret
+    ul.dropdown-menu
+      li.disabled: a(href='#')= self.t('announce')
+      li.disabled: a(href='#')= self.t('add_moderator')
+      li.disabled: a(href='#')= self.t('mass_move')
+      li.disabled: a(href='#')= self.t('mass_prune')
+
+  if self.runtime.is_member
+    button.btn.btn-default.icon.icon-check.pull-right(
+      type='button'
+      title=self.t('mark_read')
+    )
+
+  if self.settings.forum_can_start_topics
+    a.btn.btn-primary.icon.icon-plus.pull-right(href='#'
+      data-on-click='forum.section:create'
+      data-section-hid=self.section.hid
+      data-section-title=self.section.title
+      type='button'
+      title=self.t('topic_create')
+    )

@@ -30,15 +30,13 @@ var navbarHeight = $('.nav-horiz').height();
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  var root = $('.forum-topic-root');
-
   topicState.section_hid        = data.params.section_hid;
   topicState.topic_hid          = data.params.topic_hid;
   topicState.post_hid           = data.params.post_hid || 1;
-  topicState.posts_per_page     = root.data('posts-per-page');
-  topicState.max_post           = root.data('post-max');
-  topicState.first_post_offset  = root.data('first-post-offset');
-  topicState.last_post_offset   = root.data('first-post-offset') + $('.forum-post').length - 1;
+  topicState.posts_per_page     = N.runtime.page_data.pagination.per_page;
+  topicState.max_post           = N.runtime.page_data.topic.last_post_hid;
+  topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
+  topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
   topicState.prev_page_loading  = false;
   topicState.next_page_loading  = false;
 
@@ -85,7 +83,7 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
     // If we scroll below top border of the first post,
     // show the secondary navbar
     //
-    if ($(posts[0]).offset().top < viewportStart) {
+    if ($('.forum-postlist').offset().top < viewportStart) {
       $('.navbar').addClass('navbar__m-secondary');
     } else {
       $('.navbar').removeClass('navbar__m-secondary');
@@ -467,7 +465,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         return;
       }
 
-      var old_height = $('#postlist').height();
+      var old_height = $('.forum-postlist').height();
 
       topicState.first_post_offset -= res.posts.length;
 
@@ -480,10 +478,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // render & inject posts list
       var $result = $(N.runtime.render('forum.blocks.posts_list', res));
-      $('#postlist > :first').before($result);
+      $('.forum-postlist > :first').before($result);
 
       // update scroll so it would point at the same spot as before
-      $(window).scrollTop($(window).scrollTop() + $('#postlist').height() - old_height);
+      $(window).scrollTop($(window).scrollTop() + $('.forum-postlist').height() - old_height);
 
     }).fail(N.io.NOT_FOUND, function () {
       // Topic moved or deleted, refreshing the page so user could
@@ -536,7 +534,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // render & inject posts list
       var $result = $(N.runtime.render('forum.blocks.posts_list', res));
-      $('#postlist > :last').after($result);
+      $('.forum-postlist > :last').after($result);
 
     }).fail(N.io.NOT_FOUND, function () {
       // Topic moved or deleted, refreshing the page so user could
@@ -601,9 +599,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 });
 
 
+//////////////////////////////////////////////////////////////////////////
+// Replace primary navbar with alt navbar specific to this page
+//
 N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   $('.navbar-alt')
-    .replaceWith(N.runtime.render('forum.topic.navbar_alt', {
+    .empty()
+    .append(N.runtime.render(module.apiPath + '.navbar_alt', {
       settings: N.runtime.page_data.settings,
       topic:    N.runtime.page_data.topic,
 
@@ -620,7 +622,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   // If we scroll below top border of the first post,
   // show the secondary navbar
   //
-  if ($('.forum-post:first').offset().top < viewportStart) {
+  if ($('.forum-postlist').offset().top < viewportStart) {
     $('.navbar').addClass('navbar__m-secondary');
   } else {
     $('.navbar').removeClass('navbar__m-secondary');

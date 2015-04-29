@@ -3,6 +3,8 @@
 
 - self.add_raw_data('settings', self.settings)
 - self.add_raw_data('topic', self.topic)
+- self.add_raw_data('pagination', self.pagination)
+
 - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 - var isClosed = (self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED);
 
@@ -12,10 +14,6 @@ article#content.forum-topic-root(
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
   class=(self.topic.st === topicStatuses.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''
-  data-page-max= self.pagination.page_max
-  data-post-max= self.topic.last_post_hid
-  data-posts-per-page= self.pagination.per_page
-  data-first-post-offset= self.pagination.chunk_offset
 )
   != self.partial('@common.blocks.breadcrumbs')
 
@@ -50,7 +48,7 @@ article#content.forum-topic-root(
           | 
           =self.t('del_reason', { text: self.topic.del_reason })
 
-  #postlist.forum-postlist
+  .forum-postlist
     != self.partial('@forum.blocks.posts_list')
 
   //- Tracking options
