@@ -13,12 +13,11 @@
 // Out:
 //
 // - env.data.topics_ids
-// - env.data.page
+// - env.data.pagination
 //
 // Needed in:
 //
 // - `forum/section/section.js`
-// - `forum/section/list/by_page.js`
 //
 'use strict';
 
@@ -54,7 +53,11 @@ module.exports = function (N) {
         var page_current = parseInt(env.params.page, 10);
         var page_max = Math.ceil(topic_count / topics_per_page) || 1;
 
-        env.data.page = { max: page_max, current: page_current };
+        env.data.pagination = {
+          page_max:     page_max,
+          per_page:     topics_per_page,
+          chunk_offset: topics_per_page * (page_current - 1)
+        };
 
         var topic_sort = env.user_info.hb ? { 'cache_hb.last_post': -1 } : { 'cache.last_post': -1 };
 

@@ -101,7 +101,7 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
     newHid = $(posts[currentIdx]).data('post-hid');
     if (newHid === topicState.post_hid) { return; }
 
-    topicState.post_hid = $(posts[currentIdx]).data('post-hid');
+    topicState.post_hid = newHid;
 
     N.wire.emit('navigate.replace', {
       href: N.router.linkTo('forum.topic', {
@@ -431,7 +431,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
 
   // an amount of posts we try to load when user scrolls to the end of the page
-  var LOAD_POSTS_COUNT = 20;
+  var LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
+
+  // an amount of posts from top/bottom that triggers prefetch in that direction
+  var LOAD_BORDER_SIZE = 3;
 
   function _load_prev_page() {
     if (topicState.prev_page_loading) { return; }
@@ -561,11 +564,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         viewportStart = $(window).scrollTop() + navbarHeight,
         viewportEnd   = $(window).scrollTop() + $(window).height();
 
-    if (posts.length <= 3 || $(posts[posts.length - 3]).offset().top < viewportEnd) {
+    if (posts.length <= LOAD_BORDER_SIZE || $(posts[posts.length - LOAD_BORDER_SIZE]).offset().top < viewportEnd) {
       load_next_page();
     }
 
-    if (posts.length <= 3 || $(posts[3]).offset().top > viewportStart) {
+    if (posts.length <= LOAD_BORDER_SIZE || $(posts[LOAD_BORDER_SIZE]).offset().top > viewportStart) {
       load_prev_page();
     }
   });

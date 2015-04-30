@@ -33,14 +33,14 @@ module.exports = function (N, apiPath) {
   // Fill page info
   //
   N.wire.after(apiPath, function fill_page(env) {
-    env.res.page = env.data.page;
+    env.res.pagination = env.data.pagination;
   });
 
 
   // Redirect to last page, if requested > available
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
-    if (env.data.page.current > env.data.page.max) {
+    if (env.params.page > env.data.pagination.page_max) {
 
       // Requested page is BIGGER than maximum - redirect to the last one
       return {
@@ -48,7 +48,7 @@ module.exports = function (N, apiPath) {
         head: {
           Location: N.router.linkTo('forum.section', {
             hid:  env.params.hid,
-            page: env.data.page.max
+            page: env.data.pagination.page_max
           })
         }
       };
@@ -56,16 +56,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch visible sub-sections (only for the first page)
+  // Fetch visible sub-sections
   //
   N.wire.after(apiPath, function fetch_visible_subsections(env, callback) {
-
-    // Subsections fetched only on first page
-    if (env.params.page > 1) {
-      callback();
-      return;
-    }
-
     N.wire.emit('internal:forum.subsections_fill', env, callback);
   });
 

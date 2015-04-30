@@ -3,10 +3,8 @@
 //- This template is used for:
 //- - the whole page generation
 //- - appending next page posts via autoload or "more" button
-if self.show_page_number
-  .forum-topicline__separator= self.t('page_separator', self.show_page_number)
 
-each topic in self.topics
+each topic, idx in self.topics
   - var fp_user = self.users[topic.cache.first_user] || {}
   - var lp_user = self.users[topic.cache.last_user] || {}
   - var fp_ts   = topic.cache.first_ts
@@ -19,6 +17,7 @@ each topic in self.topics
     class=(topic.st === topicStatuses.DELETED) ? 'forum-topicline__m-deleted' : ''
     class=(topic.st === topicStatuses.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
     class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
+    data-offset=(self.pagination.chunk_offset + idx)
   )
     .row
       .col-sm-7
