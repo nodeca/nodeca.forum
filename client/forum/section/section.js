@@ -101,12 +101,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:        LOAD_TOPICS_COUNT,
       after:         0
     }).done(function (res) {
-      if (!res.topics || !res.topics.length) {
-        sectionState.reached_start = true;
+      if (!res.topics) {
         return;
       }
 
-      sectionState.reached_start = (res.topics.length !== LOAD_TOPICS_COUNT);
+      if (res.topics.length !== LOAD_TOPICS_COUNT) {
+        sectionState.reached_start = true;
+        $('.forum-section-root').addClass('forum-section-root__m-first-page');
+      }
+
+      if (res.topics.length === 0) {
+        return;
+      }
+
       sectionState.first_post_id = res.topics[0].cache.last_post;
 
       res.pagination = {
@@ -139,12 +146,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:        0,
       after:         LOAD_TOPICS_COUNT
     }).done(function (res) {
-      if (!res.topics || !res.topics.length) {
-        sectionState.reached_end = true;
+      if (!res.topics) {
         return;
       }
 
-      sectionState.reached_end  = (res.topics.length !== LOAD_TOPICS_COUNT);
+      if (res.topics.length !== LOAD_TOPICS_COUNT) {
+        sectionState.reached_end = true;
+      }
+
+      if (res.topics.length === 0) {
+        return;
+      }
+
       sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
 
       res.pagination = {

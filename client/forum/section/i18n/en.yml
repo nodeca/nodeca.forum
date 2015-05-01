@@ -10,9 +10,9 @@ en-US:
   mod_actions: Moderation
 
   topic_create: New topic
-  more_topics: More topics
   title_with_page: "#{title} - page #{page}"
 
   tracking: Tracking
 
-  error_no_more_topics: Ups! No more topics in this section.
+  next_page: Next
+  prev_page: Previous

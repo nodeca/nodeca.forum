@@ -474,7 +474,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       res.pagination = {
         // used in paginator
-        page_max:     $('.forum-topic-root').data('page-max'),
+        page_max:     N.runtime.page_data.pagination.page_max,
         per_page:     topicState.posts_per_page,
         chunk_offset: topicState.first_post_offset
       };
@@ -528,7 +528,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       res.pagination = {
         // used in paginator
-        page_max:     $('.forum-topic-root').data('page-max'),
+        page_max:     N.runtime.page_data.pagination.page_max,
         per_page:     topicState.posts_per_page,
         chunk_offset: topicState.last_post_offset + 1
       };
