@@ -20,7 +20,7 @@ var _        = require('lodash');
 var sectionState = {};
 
 var scrollHandler = null;
-var navbarHeight = $('.nav-horiz').height();
+var navbarHeight = $('.navbar').height();
 
 
 /////////////////////////////////////////////////////////////////////

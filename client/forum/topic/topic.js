@@ -23,7 +23,7 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 //
 var topicState = {};
 var scrollHandler = null;
-var navbarHeight = $('.nav-horiz').height();
+var navbarHeight = $('.navbar').height();
 
 
 /////////////////////////////////////////////////////////////////////
