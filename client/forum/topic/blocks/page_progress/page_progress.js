@@ -25,13 +25,13 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
     N.runtime.t(module.apiPath + '.label', { current: current, total: total })
   );
 
-  $('.page-progress__bar').css({
+  $('.page-progress__bar-fill').css({
     width: (current / total * 100).toFixed(2) + '%'
   });
 
   $('.page-progress__jump-input').attr('max', total);
 
-  if (!$('.page-progress__dropdown').hasClass('open')) {
+  if (!$('.page-progress .dropdown').hasClass('open')) {
     $('.page-progress__jump-input').attr('value', current);
   }
 

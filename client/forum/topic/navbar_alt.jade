@@ -1,15 +1,16 @@
-.navbar-alt__inner.btn-toolbar
-  .btn-group.pull-left
-    != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
+.pull-left
+  != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
 
-  .navbar-alt__title.pull-left= self.topic.title
-
+.pull-right
   if self.settings.forum_can_reply
-    button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus.pull-right(
-      data-on-click='forum.topic:reply'
-      type='button'
-      title=self.t('post_add')
-    )
+    .nav-alt__btn
+      button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus(
+        data-on-click='forum.topic:reply'
+        type='button'
+        title=self.t('post_add')
+      )
 
-  .pull-right
+  .nav-alt__btn
     != self.partial('@forum.topic.blocks.dropdown_menu')
+
+.navbar-alt__title= self.topic.title

@@ -2,12 +2,6 @@ en-US:
   no_topics: No topics yet.
 
   mark_read: Mark all read
-  announce: Announce
-  add_moderator: Add moderator
-  mass_move: Mass move
-  mass_prune: Mass prune
-
-  mod_actions: Moderation
 
   topic_create: New topic
   title_with_page: "#{title} - page #{page}"
@@ -16,3 +10,9 @@ en-US:
 
   next_page: Next
   prev_page: Previous
+
+  navbar_alt:
+    announce: Announce
+    add_moderator: Add moderator
+    mass_move: Mass move
+    mass_prune: Mass prune

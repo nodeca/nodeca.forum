@@ -1,14 +1,67 @@
+@import "nodeca.core/client/common/_variables"
+
+
 .page-progress
   padding 0
+  margin 0
 
-.page-progress > li
+.page-progress__item
   display inline-block
+  vertical-align middle
 
-.page-progress__graph
-  width 100%
-  border 1px solid grey
-  padding 1px
+.page-progress__button-first
+.page-progress__button-last
+  display block
+  position relative
+  padding 0 10px
+  height 50px
+  line-height 50px
+  color grayDark
+  &:hover
+    text-decoration none
+
+.page-progress__info
+  display block
+  position relative
+  font-size 12px
+  padding 15px 0
+  height 50px
+  color grayDark
+  &:hover
+    text-decoration none
+
 
 .page-progress__bar
-  background-color black
-  height 5px
+  width 100%
+  background-color grayLighter
+
+.page-progress__bar-fill
+  background-color grayDark
+  height 2px
+  transition width .3s
+
+
+//
+// Highlight on hover
+//
+.page-progress__button-first
+.page-progress__button-last
+.page-progress__info
+  &:after
+    position absolute
+    left 0
+    right 0
+    bottom 0
+    height 2px
+    content ''
+    background-color grayLighter
+    opacity 0
+    transition opacity
+
+.page-progress__item:hover
+  .page-progress__button-first
+  .page-progress__button-last
+  .page-progress__info
+    &:after
+      opacity 1
+

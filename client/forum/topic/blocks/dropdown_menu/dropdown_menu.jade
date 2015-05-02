@@ -50,13 +50,13 @@ if items.length > 0 && items[items.length - 1] === 'divider'
 if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
   - items.push('mod_history')
 
-.forum-topic__dropdown.btn-group.pull-right(class=items.length === 0 ? 'hidden' : '')
+.forum-topic__dropdown(class=items.length === 0 ? 'hidden' : '')
   if items.length > 0
 
     button.btn.btn-default.dropdown-toggle(type='button' data-toggle='dropdown')
       span.caret
 
-    ul.dropdown-menu
+    ul.dropdown-menu.dropdown-menu-right
 
       each item in items
         case item

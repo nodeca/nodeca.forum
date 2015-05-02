@@ -29,23 +29,23 @@ mixin _page_progress_dropdown_menu()
 - current = Math.max(1, Math.min(current, total));
 
 ul.page-progress(data-current=current, data-total=total, data-section=self.section.hid)
-  li
-    a.page-progress__button.page-progress__button-first.icon.icon-collapse.icon-space-after(
+  li.page-progress__item
+    a.page-progress__button-first.icon.icon-collapse(
       href= self.link_to('forum.section', { hid: self.section.hid, page: 1 })
     )
 
-  li.page-progress__dropdown.dropdown
-    a.page-progress__label.dropdown-toggle( 
+  li.page-progress__item.dropdown
+    a.page-progress__info.dropdown-toggle(
       href='#'
-      data-target='#'
       data-toggle='dropdown'
-    )= self.t('label', { current: current, total: total })
+    )
+      .page-progress__label= self.t('label', { current: current, total: total })
+      .page-progress__bar
+        .page-progress__bar-fill(style="width: " + (current / total * 100).toFixed(2) + "%")
+
     +_page_progress_dropdown_menu()
 
-    .page-progress__graph
-      .page-progress__bar(style="width: " + (current / total * 100).toFixed(2) + "%")
-
-  li
-    a.page-progress__button.page-progress__button-last.icon.icon-expand.icon-space-before(
+  li.page-progress__item
+    a.page-progress__button-last.icon.icon-expand(
       href= self.link_to('forum.section', { hid: self.section.hid, page: self.max })
     )
