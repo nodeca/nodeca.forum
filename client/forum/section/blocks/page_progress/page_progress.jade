@@ -1,12 +1,12 @@
 
 //- create dropdown menu
 mixin _page_progress_dropdown_menu()
-  form.dropdown-menu.pgn__menu(
+  form.dropdown-menu.page-progress__menu(
     data-on-submit='forum.section:nav_to_page'
   )
     - var pgmpid = 'pgmid' + ~~(Math.random()*100000000);
 
-    label.pgn__label.input(for=pgmpid)= self.t('jump_to')
+    label.input(for=pgmpid)= self.t('jump_to')
 
     .input-group
       input.page-progress__jump-input.form-control(

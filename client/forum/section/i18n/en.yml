@@ -1,11 +1,6 @@
 en-US:
   no_topics: No topics yet.
-
-  mark_read: Mark all read
-
-  topic_create: New topic
   title_with_page: "#{title} - page #{page}"
-
   tracking: Tracking
 
   next_page: Older
@@ -16,3 +11,6 @@ en-US:
     add_moderator: Add moderator
     mass_move: Mass move
     mass_prune: Mass prune
+
+    mark_read: Mark all read
+    topic_create: New topic
