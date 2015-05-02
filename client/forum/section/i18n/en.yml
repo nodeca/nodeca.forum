@@ -8,8 +8,8 @@ en-US:
 
   tracking: Tracking
 
-  next_page: Next
-  prev_page: Previous
+  next_page: Older
+  prev_page: Newer
 
   navbar_alt:
     announce: Announce
