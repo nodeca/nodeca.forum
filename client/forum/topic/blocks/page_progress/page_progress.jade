@@ -30,7 +30,7 @@ mixin _page_progress_dropdown_menu()
 
 ul.page-progress(data-current=current, data-total=total, data-section=self.section_hid, data-topic=self.topic_hid)
   li.page-progress__item
-    a.page-progress__button-first.icon.icon-collapse(
+    a.page-progress__button-first.icon.icon-to-top(
       href= self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 })
     )
 
@@ -46,6 +46,6 @@ ul.page-progress(data-current=current, data-total=total, data-section=self.secti
     +_page_progress_dropdown_menu()
 
   li.page-progress__item
-    a.page-progress__button-last.icon.icon-expand(
+    a.page-progress__button-last.icon.icon-to-bottom(
       href= self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: self.max })
     )
