@@ -107,6 +107,10 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
             user: { hid: $post.data('user-hid') }
           })
         );
+        $post.removeClass('forum-post__m-flash');
+        setTimeout(function () {
+          $post.addClass('forum-post__m-flash');
+        }, 0);
       });
 
       return false;

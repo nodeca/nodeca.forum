@@ -208,3 +208,12 @@ asideSizeSm = 50px
     content attr(data-votes-count)
   .forum-post__action[data-votes-count="0"]
     display none
+
+
+@keyframes forum-post-flash-animation {
+  from  { background: #bbeeff;  }
+  to    { background: none; }
+}
+
+.forum-post__m-flash .forum-post__content
+  animation forum-post-flash-animation 3s
