@@ -51,10 +51,9 @@ module.exports = function (N) {
 
         // Page numbers starts from 1, not from 0
         var page_current = parseInt(env.params.page, 10);
-        var page_max = Math.ceil(topic_count / topics_per_page) || 1;
 
         env.data.pagination = {
-          page_max:     page_max,
+          total:        topic_count,
           per_page:     topics_per_page,
           chunk_offset: topics_per_page * (page_current - 1)
         };

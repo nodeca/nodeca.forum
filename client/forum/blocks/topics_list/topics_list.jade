@@ -18,6 +18,7 @@ each topic, idx in self.topics
     class=(topic.st === topicStatuses.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
     class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
     data-offset=(self.pagination.chunk_offset + idx)
+    data-topic-id=topic._id
   )
     .row
       .col-sm-7

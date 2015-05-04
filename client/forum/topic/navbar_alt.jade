@@ -1,5 +1,9 @@
 .pull-left
-  a.navbar__level-up.icon.icon-level-up(href='../')
+  a.navbar__level-up.icon.icon-level-up(
+    href=self.link_to('forum.section', { hid: self.section_hid })
+    data-on-click='forum.topic:level_up'
+    data-topic-id=self.topic._id
+  )
 
   != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
 

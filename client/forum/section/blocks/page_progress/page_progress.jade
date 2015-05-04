@@ -2,7 +2,7 @@
 //- create dropdown menu
 mixin _page_progress_dropdown_menu()
   form.dropdown-menu.page-progress__menu(
-    data-on-submit='forum.section:nav_to_page'
+    data-on-submit='forum.section:nav_to_offset'
   )
     - var pgmpid = 'pgmid' + ~~(Math.random()*100000000);
 
@@ -11,7 +11,7 @@ mixin _page_progress_dropdown_menu()
     .input-group
       input.page-progress__jump-input.form-control(
         id=pgmpid
-        name='page'
+        name='topic'
         type='number'
         min=1
         max=self.max
@@ -22,8 +22,9 @@ mixin _page_progress_dropdown_menu()
         button.btn.btn-default(type='submit')= self.t('go')
 
 
-- var current = self.current;
-- var total   = self.max;
+- var current  = self.current;
+- var total    = self.max;
+- var page_max = Math.ceil(total / self.per_page) || 1;
 
 //- ensure that current is in [1..total] range
 - current = Math.max(1, Math.min(current, total));
@@ -47,5 +48,5 @@ ul.page-progress(data-current=current, data-total=total, data-section=self.secti
 
   li.page-progress__item
     a.page-progress__button-last.icon.icon-to-bottom(
-      href= self.link_to('forum.section', { hid: self.section.hid, page: self.max })
+      href= self.link_to('forum.section', { hid: self.section.hid, page: page_max })
     )

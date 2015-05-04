@@ -40,7 +40,9 @@ module.exports = function (N, apiPath) {
   // Redirect to last page, if requested > available
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
-    if (env.params.page > env.data.pagination.page_max) {
+    var page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+
+    if (env.params.page > page_max) {
 
       // Requested page is BIGGER than maximum - redirect to the last one
       return {
@@ -48,7 +50,7 @@ module.exports = function (N, apiPath) {
         head: {
           Location: N.router.linkTo('forum.section', {
             hid:  env.params.hid,
-            page: env.data.pagination.page_max
+            page: page_max
           })
         }
       };

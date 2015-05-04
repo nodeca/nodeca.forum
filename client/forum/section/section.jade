@@ -3,7 +3,6 @@
 - self.add_raw_data('pagination', self.pagination)
 
 - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
-- var page_max = self.pagination.page_max;
 
 article#content.forum-section-root(
   class=(page_current === 1 ? 'forum-section-root__m-first-page' : '')

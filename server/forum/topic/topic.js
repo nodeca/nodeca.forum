@@ -129,11 +129,10 @@ module.exports = function (N, apiPath) {
 
         // Page numbers starts from 1, not from 0
         var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
-        var page_max = Math.ceil(post_count / posts_per_page) || 1;
 
         // Create page info
         env.data.pagination = {
-          page_max:     page_max,
+          total:        post_count,
           per_page:     posts_per_page,
           chunk_offset: current_post_number
         };
@@ -163,7 +162,9 @@ module.exports = function (N, apiPath) {
   // Redirect to last page, if requested > available
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
-    if (env.params.page > env.data.pagination.page_max) {
+    var page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+
+    if (env.params.page > page_max) {
       // Requested page is BIGGER than maximum - redirect to the last one
       return {
         code: N.io.REDIRECT,
@@ -171,7 +172,7 @@ module.exports = function (N, apiPath) {
           Location: N.router.linkTo('forum.topic', {
             section_hid: env.data.section.hid,
             topic_hid:   env.params.topic_hid,
-            page:        env.data.page.max
+            page:        page_max
           })
         }
       };

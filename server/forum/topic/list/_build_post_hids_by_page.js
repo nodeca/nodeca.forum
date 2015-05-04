@@ -53,7 +53,7 @@ module.exports = function (N) {
 
       // Create page info
       env.data.pagination = {
-        page_max:     page_max,
+        total:        post_count,
         per_page:     posts_per_page,
         chunk_offset: posts_per_page * (page_current - 1)
       };

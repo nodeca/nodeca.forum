@@ -1,5 +1,5 @@
 en-US:
-  label: 'page #{current} of #{total}'
+  label: '#{current} out of #{total}'
   jump_to: 'Jump to:'
-  placeholder: Page
+  placeholder: Topic
   go: Go!

@@ -1,4 +1,4 @@
-// Get a number of topics before or after a topic with a selected last post id
+// Get a specified amount of topics before or after a topic with given last post id
 //
 'use strict';
 

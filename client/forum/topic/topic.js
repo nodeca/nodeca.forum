@@ -474,8 +474,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       res.pagination = {
         // used in paginator
-        page_max:     N.runtime.page_data.pagination.page_max,
-        per_page:     topicState.posts_per_page,
+        total:        N.runtime.page_data.pagination.total,
+        per_page:     N.runtime.page_data.pagination.per_page,
         chunk_offset: topicState.first_post_offset
       };
 
@@ -528,8 +528,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       res.pagination = {
         // used in paginator
-        page_max:     N.runtime.page_data.pagination.page_max,
-        per_page:     topicState.posts_per_page,
+        total:        N.runtime.page_data.pagination.total,
+        per_page:     N.runtime.page_data.pagination.per_page,
         chunk_offset: topicState.last_post_offset + 1
       };
 
@@ -584,7 +584,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Called when user submits dropdown menu form
+  // User clicks submits dropdown menu form and is moved to
+  // a corresponding post
   //
   N.wire.on('forum.topic:nav_to_post', function navigate_to_post(data) {
     var post = +data.fields.post;
@@ -599,6 +600,28 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       }
     });
   });
+
+
+  // User clicks to "move back to section" button, and she is moved
+  // to a section page where this topic is centered and highlighted
+  //
+  N.wire.on('forum.topic:level_up', function level_up(data) {
+    N.io.rpc('forum.section.list.by_topic_id', {
+      section_hid: topicState.section_hid,
+      topic_id: data.$this.data('topic-id')
+    }).done(function (res) {
+      var page = Math.floor(res.topic_offset / res.topics_per_page) + 1;
+
+      N.wire.emit('navigate.to', {
+        apiPath: 'forum.section',
+        params: {
+          hid:   topicState.section_hid,
+          page:  page
+        },
+        anchor: data.$this.data('topic-id')
+      });
+    });
+  });
 });
 
 
@@ -609,8 +632,9 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   $('.navbar-alt')
     .empty()
     .append(N.runtime.render(module.apiPath + '.navbar_alt', {
-      settings: N.runtime.page_data.settings,
-      topic:    N.runtime.page_data.topic,
+      settings:    N.runtime.page_data.settings,
+      topic:       N.runtime.page_data.topic,
+      section_hid: topicState.section_hid,
 
       page_progress: {
         section_hid: topicState.section_hid,

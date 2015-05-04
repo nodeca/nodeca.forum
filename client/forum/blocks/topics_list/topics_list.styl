@@ -194,3 +194,11 @@ a.forum-topicline__lpost-user-link
 .forum-topicline__m-bookmarked
   .forum-topicline__bookmarked-marker
     display inline-block
+
+@keyframes forum-topicline-flash-animation {
+  from  { background: #bbeeff;  }
+  to    { background: none; }
+}
+
+.forum-topicline__m-highlight
+  animation forum-post-flash-animation 3s
