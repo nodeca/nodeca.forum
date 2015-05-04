@@ -1,6 +1,8 @@
 - var postStatuses = '$$ JSON.stringify(N.models.forum.Post.statuses) $$'
 - self.users = self.users || [];
-- var post_counter = self.pagination.chunk_offset;
+
+//- `self.pagination` may absent if post loaded via `topic.list.by_range`
+- var post_counter = self.pagination ? self.pagination.chunk_offset : 0;
 
 //- same as `d % n`, but works with negative numbers correctly
 - function mod(d, n) { return (d % n + n) % n; }
@@ -10,7 +12,7 @@ each post, post_idx in self.posts
   - var visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
   - var collapsed = !self.expand && !visible;
 
-  if mod(post_counter, self.pagination.per_page) === 0 && post_counter !== 0
+  if self.pagination && mod(post_counter, self.pagination.per_page) === 0 && post_counter !== 0
     nav.forum-postlist__paginator
       - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
       - var page_max    = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
