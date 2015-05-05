@@ -18,6 +18,7 @@
 var _        = require('lodash');
 var async    = require('async');
 var memoizee = require('memoizee');
+var format   = require('util').format;
 
 
 module.exports = function (N) {
@@ -79,7 +80,7 @@ module.exports = function (N) {
         }
 
         if (!section_settings) {
-          callback('`section_moderator` store for forum section ' + params.section_id + ' does not exist.');
+          callback(format('`section_moderator` store for forum section %s does not exist.', params.section_id));
           return;
         }
 
@@ -145,7 +146,7 @@ module.exports = function (N) {
         }
 
         if (!section_settings) {
-          callback('`section_moderator` store for forum section ' + params.section_id + ' does not exist.');
+          callback(format('`section_moderator` store for forum section %s does not exist.', params.section_id));
           return;
         }
 
@@ -209,7 +210,7 @@ module.exports = function (N) {
       }
 
       if (!section_settings) {
-        callback('`section_moderator` store for forum section ' + sectionId + ' does not exist.');
+        callback(format('`section_moderator` store for forum section %s does not exist.', sectionId));
         return;
       }
 
@@ -374,7 +375,7 @@ module.exports = function (N) {
         if (sectionId) {
           var section = getSectionById(sectionId);
           if (!section) {
-            callback('Forum sections collection contains a reference to non-existent section %s');
+            callback(format('Forum sections collection contains a reference to non-existent section %s', sectionId));
             return;
           }
 
@@ -463,7 +464,7 @@ module.exports = function (N) {
       }
 
       if (!section_settings) {
-        callback('Forum section ' + sectionId + ' does not exist.');
+        callback(format('Forum section %s does not exist.', sectionId));
         return;
       }
 

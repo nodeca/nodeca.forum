@@ -18,6 +18,7 @@
 var _        = require('lodash');
 var async    = require('async');
 var memoizee = require('memoizee');
+var format   = require('util').format;
 
 
 module.exports = function (N) {
@@ -80,7 +81,7 @@ module.exports = function (N) {
         }
 
         if (!section_settings) {
-          callback('`section_usergroup` store for forum section ' + params.section_id + ' does not exist.');
+          callback(format('`section_usergroup` store for forum section %s does not exist.', params.section_id));
           return;
         }
 
@@ -153,7 +154,7 @@ module.exports = function (N) {
         }
 
         if (!section_settings) {
-          callback('`section_usergroup` store for forum section ' + params.section_id + ' does not exist.');
+          callback(format('`section_usergroup` store for forum section %s does not exist.', params.section_id));
           return;
         }
 
@@ -304,7 +305,7 @@ module.exports = function (N) {
         if (sectionId) {
           var section = getSectionById(sectionId);
           if (!section) {
-            callback('Forum sections collection contains a reference to non-existent section %s');
+            callback(format('Forum sections collection contains a reference to non-existent section %s', sectionId));
             return;
           }
 
