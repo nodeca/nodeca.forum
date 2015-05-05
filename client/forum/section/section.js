@@ -310,6 +310,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
     .append(N.runtime.render(module.apiPath + '.navbar_alt', {
       settings:   N.runtime.page_data.settings,
       section:    N.runtime.page_data.section,
+      parent_hid: $('.forum-section-root').data('parent-hid'),
 
       page_progress: {
         current:  sectionState.current_offset,

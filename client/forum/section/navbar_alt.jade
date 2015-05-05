@@ -1,5 +1,9 @@
 .pull-left
-  a.navbar__level-up.icon.icon-level-up(href='../')
+  - var parent_link = self.parent_hid ?
+  -                   self.link_to('forum.section', { hid: self.parent_hid }) :
+  -                   (self.link_to('forum.index') + '#cat' + self.section.hid)
+
+  a.navbar__level-up.icon.icon-level-up(href=parent_link)
 
   != self.partial('@forum.section.blocks.page_progress', self.page_progress)
 

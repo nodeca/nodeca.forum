@@ -2,6 +2,10 @@
 //
 'use strict';
 
+
+var memoizee  = require('memoizee');
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -18,6 +22,20 @@ module.exports = function (N, apiPath) {
   });
 
   var buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);
+
+
+  var fetchSection = memoizee(
+    function (id, callback) {
+      N.models.forum.Section.findById(id)
+        .lean(true)
+        .exec(callback);
+    },
+    {
+      async:      true,
+      maxAge:     60000, // cache TTL = 60 seconds
+      primitive:  true   // params keys are calculated as toString
+    }
+  );
 
 
   // Subcall forum.topic_list
@@ -99,5 +117,39 @@ module.exports = function (N, apiPath) {
     } else {
       env.res.head.title = env.t('title_with_page', { title: section.title, page: env.params.page });
     }
+  });
+
+
+  // Get parent section
+  //
+  N.wire.after(apiPath, function fill_parent_hid(env, callback) {
+    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!parents.length) {
+        callback();
+        return;
+      }
+
+      fetchSection(parents[parents.length - 1], function (err, section) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        if (!section) {
+          callback();
+          return;
+        }
+
+        env.res.parent_hid = section.hid;
+
+        callback();
+      });
+    });
   });
 };
