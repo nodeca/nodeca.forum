@@ -606,7 +606,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // to a section page where this topic is centered and highlighted
   //
   N.wire.on('forum.topic:level_up', function level_up(data) {
-    N.io.rpc('forum.section.list.by_topic_id', {
+    N.io.rpc('forum.topic.offset', {
       section_hid: topicState.section_hid,
       topic_id: data.$this.data('topic-id')
     }).done(function (res) {
