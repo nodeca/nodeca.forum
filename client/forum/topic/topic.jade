@@ -60,3 +60,11 @@ article#content.forum-topic-root(
 
       span.forum-topic__tracking-text
         | You will receive notifications because you replied this topic
+
+
+nav.forum-topic__footer-pager
+  - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
+  - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
+  - var page_max     = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
+  - var pgn_params   = { route: 'forum.topic', params: link_params, current: page_current, max: page_max }
+  != self.partial('@common.blocks.pagination', pgn_params)
