@@ -146,6 +146,7 @@ module.exports = function (N, apiPath) {
           return;
         }
 
+        env.res.section_level = parents.length;
         env.res.parent_hid = section.hid;
 
         callback();

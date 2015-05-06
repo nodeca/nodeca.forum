@@ -1,7 +1,10 @@
 .pull-left
-  - var parent_link = self.parent_hid ?
-  -                   self.link_to('forum.section', { hid: self.parent_hid }) :
-  -                   (self.link_to('forum.index') + '#cat' + self.section.hid)
+  - var parent_link;
+  - if (self.parent_hid && self.section_level >= 2) {
+  -   parent_link = self.link_to('forum.section', { hid: self.parent_hid });
+  - } else {
+  -   parent_link = self.link_to('forum.index') + '#cat' + self.section.hid
+  - }
 
   a.navbar__level-up.icon.icon-level-up(href=parent_link)
 

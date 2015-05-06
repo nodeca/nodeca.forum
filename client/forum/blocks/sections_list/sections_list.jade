@@ -5,7 +5,7 @@ ul.forum-sections
     - var last_topic = section.cache.last_topic_hid
     - var last_user = self.users[section.cache.last_user]
     - var last_ts = section.cache.last_ts
-    li.forum-section
+    li.forum-section(id='cat' + section.hid)
 
       //- Add 'unread' class & #id below, for new data
       .row
