@@ -41,6 +41,14 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.next_page_loading  = false;
 
 
+  // If user moves to a page (e.g. from a search engine),
+  // we should scroll him to the top post on that page
+  //
+  if (data.params.page && data.params.page > 1) {
+    topicState.post_hid = $('.forum-post:first').data('post-hid');
+  }
+
+
   // Scroll to a post linked in params (if any)
   //
   if (topicState.post_hid > 1) {
