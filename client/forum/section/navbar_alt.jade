@@ -1,7 +1,7 @@
 .pull-left
   - var parent_link;
   - if (self.parent_hid && self.section_level >= 2) {
-  -   parent_link = self.link_to('forum.section', { hid: self.parent_hid });
+  -   parent_link = self.link_to('forum.section', { hid: self.parent_hid }) + '#cat' + self.section.hid;
   - } else {
   -   parent_link = self.link_to('forum.index') + '#cat' + self.section.hid
   - }

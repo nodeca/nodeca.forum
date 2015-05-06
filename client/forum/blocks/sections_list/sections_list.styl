@@ -180,6 +180,14 @@ a.forum-section__lpost-user-link
   text-align right
   padding-right 0.5em
 
+@keyframes forum-section-flash-animation {
+  from  { background: #bbeeff;  }
+  to    { background: none; }
+}
+
+.forum-section.forum-section__m-highlight
+  animation forum-section-flash-animation 3s
+
 //
 // Markers
 //

@@ -23,6 +23,28 @@ var scrollHandler = null;
 var navbarHeight = $('.navbar').height();
 
 
+// Scroll to the element, so it would be positioned in the viewport
+//
+//  - el    - Element to scroll
+//  - ratio - 0...1 offset (1..100%) of element center from viewport top
+//            e.g. 0.5 means it should position element to the middle of the screen
+//
+function scrollIntoView(el, coef) {
+  // 1. The top line of the element should always be lower than navbar
+  // 2. The middle line of the element should be located at coef*viewport_height (if possible)
+  //
+  var el_top = el.offset().top;
+  var el_h   = el.height();
+  var win_h  = $(window).height();
+  var nav_h  = $('.navbar').height();
+
+  $(window).scrollTop(Math.min(
+    el_top - nav_h,
+    (el_top + el_h / 2) - nav_h - (win_h - nav_h) * coef
+  ));
+}
+
+
 /////////////////////////////////////////////////////////////////////
 // init on page load
 //
@@ -48,10 +70,21 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   //
   // TODO: check if we can parse anchor more gently
   //
-  var topic_id = (data.anchor || '').replace(/^#/, '');
+  var anchor = data.anchor || '';
   var el;
 
-  if (topic_id) {
+  if (anchor.match(/^#cat\d+$/)) {
+    el = $(anchor);
+
+    if (el.length && el.hasClass('forum-section')) {
+      scrollIntoView(el, 0.3);
+      el.addClass('forum-section__m-highlight');
+      return;
+    }
+
+  } else if (anchor.match(/^#topic/)) {
+    var topic_id = anchor.replace(/^#topic/, '');
+
     if (topic_id.match(/^[0-9a-f]{24}/)) {
       el = $('.forum-topicline[data-topic-id="' + topic_id + '"]');
     } else {
@@ -59,7 +92,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     }
 
     if (el.length) {
-      $(window).scrollTop(el.offset().top - $(window).height() * 0.3 + el.height() / 2);
+      scrollIntoView(el, 0.3);
       el.addClass('forum-topicline__m-highlight');
       return;
     }
@@ -101,7 +134,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         hid:   sectionState.hid,
         page:  Math.floor(topic / sectionState.topics_per_page) + 1
       },
-      anchor: String(topic),
+      anchor: 'topic' + String(topic),
       force: true // post might be on the same page
     });
   });
@@ -308,9 +341,10 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   $('.navbar-alt')
     .empty()
     .append(N.runtime.render(module.apiPath + '.navbar_alt', {
-      settings:   N.runtime.page_data.settings,
-      section:    N.runtime.page_data.section,
-      parent_hid: $('.forum-section-root').data('parent-hid'),
+      settings:      N.runtime.page_data.settings,
+      section:       N.runtime.page_data.section,
+      parent_hid:    $('.forum-section-root').data('parent-hid'),
+      section_level: $('.forum-section-root').data('section-level'),
 
       page_progress: {
         current:  sectionState.current_offset,
