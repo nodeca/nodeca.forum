@@ -277,7 +277,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     if (currentIdx >= topics.length) { currentIdx = topics.length - 1; }
 
-    offset = $(topics[currentIdx]).data('offset');
+    if (topics.length) {
+      offset = $(topics[currentIdx]).data('offset');
+    } else {
+      offset = 0;
+    }
+
     if (offset === sectionState.current_offset) { return; }
 
     sectionState.current_offset = offset;
