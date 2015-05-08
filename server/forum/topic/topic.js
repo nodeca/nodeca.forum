@@ -200,7 +200,9 @@ module.exports = function (N, apiPath) {
   // Fill head meta
   //
   N.wire.after(apiPath, function fill_meta(env) {
-    var topic = env.data.topic;
+    var topic  = env.data.topic;
+    var current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
+    var max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
 
     env.res.head = env.res.head || {};
 
@@ -208,5 +210,27 @@ module.exports = function (N, apiPath) {
       env.t('title_with_page', { title: topic.title, page: env.params.page })
     :
       topic.title;
+
+    env.res.head.canonical = N.router.linkTo('forum.topic', {
+      section_hid: env.params.section_hid,
+      topic_hid: env.params.topic_hid,
+      page: current
+    });
+
+    if (current > 1) {
+      env.res.head.prev = N.router.linkTo('forum.topic', {
+        section_hid: env.params.section_hid,
+        topic_hid: env.params.topic_hid,
+        page: current - 1
+      });
+    }
+
+    if (current < max) {
+      env.res.head.next = N.router.linkTo('forum.topic', {
+        section_hid: env.params.section_hid,
+        topic_hid: env.params.topic_hid,
+        page: current + 1
+      });
+    }
   });
 };

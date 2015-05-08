@@ -153,4 +153,33 @@ module.exports = function (N, apiPath) {
       });
     });
   });
+
+
+  // Fill head meta
+  //
+  N.wire.after(apiPath, function fill_meta(env) {
+    var current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
+    var max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+
+    env.res.head = env.res.head || {};
+
+    env.res.head.canonical = N.router.linkTo('forum.section', {
+      hid: env.params.hid,
+      page: current
+    });
+
+    if (current > 1) {
+      env.res.head.prev = N.router.linkTo('forum.section', {
+        hid: env.params.hid,
+        page: current - 1
+      });
+    }
+
+    if (current < max) {
+      env.res.head.next = N.router.linkTo('forum.section', {
+        hid: env.params.hid,
+        page: current + 1
+      });
+    }
+  });
 };

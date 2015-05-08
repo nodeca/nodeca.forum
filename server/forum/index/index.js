@@ -26,5 +26,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
     env.res.head.title = env.t('title');
+    env.res.head.canonical = N.router.linkTo('forum.index', env.params);
   });
 };
