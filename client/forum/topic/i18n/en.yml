@@ -9,7 +9,6 @@ en-US:
   open_topic_done: Topic opened
   close_topic_done: Topic closed
 
-  post_add: Add reply
   more_posts: More posts
   title_with_page: "#{title} - page #{page}"
 
@@ -20,3 +19,6 @@ en-US:
 
   error_no_more_posts: Ups! No more posts in this topic.
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
+
+  navbar_alt:
+    post_add: Add reply
