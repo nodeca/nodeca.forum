@@ -17,4 +17,5 @@ i18n:
           topics_per_page: Topics per page
           topic_title_min_length: Min title length
           post_text_min_length: Min post text length
+          post_text_max_emojis: Max number of emoticons in a post
           posts_per_page: Posts per page

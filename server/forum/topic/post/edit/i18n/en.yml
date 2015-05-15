@@ -1,3 +1,6 @@
 en-US:
   err_perm_expired: You can not modify this post anymore
-  err_text_too_short: "Post text should have at least #{count} ((character|characters))"
+
+  update:
+    err_text_too_short: "Post text should have at least #{count} ((character|characters))"
+    err_too_many_emojis: "Post should have no more than #{count} ((emoticon|emoticons))"
