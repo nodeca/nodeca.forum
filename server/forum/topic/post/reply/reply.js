@@ -203,19 +203,20 @@ module.exports = function (N, apiPath) {
   // Check post length
   //
   N.wire.after(apiPath, function check_post_length(env, callback) {
-    env.extras.settings.fetch('post_text_min_length', function (err, post_text_min_length) {
+    env.extras.settings.fetch('forum_post_text_min_length', function (err, min_length) {
       if (err) {
         callback(err);
         return;
       }
 
       var ast = cheequery(env.data.parse_result.html);
+
       ast.find('.emoji').remove();
 
-      if (punycode.ucs2.decode(ast.text().replace(/\s+/g, ' ').trim()).length < post_text_min_length) {
+      if (punycode.ucs2.decode(ast.text().replace(/\s+/g, ' ').trim()).length < min_length) {
         callback({
           code: N.io.CLIENT_ERROR,
-          message: env.t('err_text_too_short', post_text_min_length)
+          message: env.t('err_text_too_short', min_length)
         });
         return;
       }
@@ -228,21 +229,21 @@ module.exports = function (N, apiPath) {
   // Limit an amount of emoticons in the post
   //
   N.wire.after(apiPath, function check_emoji_count(env, callback) {
-    env.extras.settings.fetch('post_text_max_emojis', function (err, post_text_max_emojis) {
+    env.extras.settings.fetch('forum_post_text_max_emojis', function (err, max_emojis) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (post_text_max_emojis < 0) {
+      if (max_emojis < 0) {
         callback();
         return;
       }
 
-      if (cheequery(env.data.parse_result.html).find('.emoji').length > post_text_max_emojis) {
+      if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
         callback({
           code: N.io.CLIENT_ERROR,
-          message: env.t('err_too_many_emojis', post_text_max_emojis)
+          message: env.t('err_too_many_emojis', max_emojis)
         });
         return;
       }

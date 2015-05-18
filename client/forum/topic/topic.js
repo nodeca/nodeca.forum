@@ -291,8 +291,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       value: $title.text(),
       update: function (value, callback) {
 
-        if (punycode.ucs2.decode(value.trim()).length < N.runtime.page_data.settings.topic_title_min_length) {
-          callback(t('err_title_too_short', N.runtime.page_data.settings.topic_title_min_length));
+        if (punycode.ucs2.decode(value.trim()).length < N.runtime.page_data.settings.forum_topic_title_min_length) {
+          callback(t('err_title_too_short', N.runtime.page_data.settings.forum_topic_title_min_length));
           return;
         }
 

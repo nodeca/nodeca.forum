@@ -17,13 +17,13 @@ module.exports = function (N, apiPath) {
   // Check title length
   //
   N.wire.before(apiPath, function check_title_length(env, callback) {
-    env.extras.settings.fetch('topic_title_min_length', function (err, topic_title_min_length) {
+    env.extras.settings.fetch('forum_topic_title_min_length', function (err, min_length) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (punycode.ucs2.decode(env.params.title.trim()).length < topic_title_min_length) {
+      if (punycode.ucs2.decode(env.params.title.trim()).length < min_length) {
         // Real check is done on the client, no need to care about details here
         callback(N.io.BAD_REQUEST);
         return;

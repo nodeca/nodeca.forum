@@ -41,7 +41,7 @@ module.exports = {
     'can_see_ip',
     'can_see_hellbanned',
     'forum_can_view',
-    'topic_title_min_length',
+    'forum_topic_title_min_length',
     'forum_can_reply',
     'forum_edit_max_time',
     'forum_can_close_topic',
