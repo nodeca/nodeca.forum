@@ -1,21 +1,12 @@
 setting_groups:
   forum: ~
 
-  forum_general:
-    parent: forum
-
   forum_editor:
     parent: forum
 
 
 setting_schemas:
   global:
-    topics_per_page:
-      type: number
-      group_key: forum_general
-      category_key: forum
-      default: 30
-
     forum_topic_title_min_length:
       type: number
       group_key: forum_editor
@@ -33,12 +24,6 @@ setting_schemas:
       group_key: forum_editor
       category_key: post
       default: 20
-
-    posts_per_page:
-      type: number
-      group_key: forum_general
-      category_key: topic
-      default: 25
 
     forum_edit_max_time:
       priority: 40

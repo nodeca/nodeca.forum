@@ -1,0 +1,10 @@
+i18n:
+  en-US:
+    admin:
+      core:
+        group_names:
+          core_display: Display
+
+        setting_names:
+          topics_per_page: Topics per page
+          posts_per_page: Posts per page

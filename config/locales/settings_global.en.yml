@@ -4,7 +4,6 @@ i18n:
       core:
         group_names:
           forum: Forum
-          forum_general: General
           forum_editor: Editor
 
         category_names:
@@ -14,8 +13,6 @@ i18n:
           forum_markup: Forum markup
 
         setting_names:
-          topics_per_page: Topics per page
           forum_topic_title_min_length: Min title length
           forum_post_text_min_length: Min post text length
           forum_post_text_max_emojis: Max number of emoticons in a post
-          posts_per_page: Posts per page
