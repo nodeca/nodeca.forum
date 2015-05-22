@@ -199,6 +199,38 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Limit an amount of images in the post
+  //
+  N.wire.after(apiPath, function check_images_count(env, callback) {
+    env.extras.settings.fetch('forum_post_text_max_images', function (err, max_images) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (max_images <= 0) {
+        callback();
+        return;
+      }
+
+      var ast         = cheequery(env.data.parse_result.html);
+      var images      = ast.find('.image').length;
+      var attachments = ast.find('.attach').length;
+      var tail        = env.data.parse_result.tail.length;
+
+      if (images + attachments + tail > max_images) {
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_too_many_images', max_images)
+        });
+        return;
+      }
+
+      callback();
+    });
+  });
+
+
   // Limit an amount of emoticons in the post
   //
   N.wire.after(apiPath, function check_emoji_count(env, callback) {

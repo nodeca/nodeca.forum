@@ -1,4 +1,5 @@
 en-US:
   err_text_too_short: "Post text should have at least #{count} ((character|characters))"
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
+  err_too_many_images: "Post should have no more than #{count} ((image|images))"
   err_too_many_emojis: "Post should have no more than #{count} ((emoticon|emoticons))"

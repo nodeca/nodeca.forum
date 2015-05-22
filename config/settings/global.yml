@@ -19,6 +19,12 @@ setting_schemas:
       category_key: post
       default: 10
 
+    forum_post_text_max_images:
+      type: number
+      group_key: forum_editor
+      category_key: post
+      default: 100
+
     forum_post_text_max_emojis:
       type: number
       group_key: forum_editor
