@@ -22,12 +22,12 @@ module.exports = function (N, apiPath) {
 
     var userStore = N.settings.getStore('user');
 
-    userStore.get([ 'edit_no_mlinks', 'edit_no_smiles' ], { user_id: env.user_info.user_id }, {}, function (err, data) {
+    userStore.get([ 'edit_no_mlinks', 'edit_no_emojis' ], { user_id: env.user_info.user_id }, {}, function (err, data) {
       if (err) {
         callback(err);
       }
 
-      env.res.user_settings = { no_mlinks: data.edit_no_mlinks.value, no_smiles: data.edit_no_smiles.value };
+      env.res.user_settings = { no_mlinks: data.edit_no_mlinks.value, no_emojis: data.edit_no_emojis.value };
       callback();
     });
 

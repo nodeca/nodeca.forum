@@ -23,7 +23,7 @@ module.exports = function (N, apiPath) {
       }
     },
     option_no_mlinks: { type: 'boolean', required: true },
-    option_no_smiles: { type: 'boolean', required: true },
+    option_no_emojis: { type: 'boolean', required: true },
     as_moderator:     { type: 'boolean', required: true }
   });
 
@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
 
     userStore.set({
       edit_no_mlinks: { value: env.params.option_no_mlinks },
-      edit_no_smiles: { value: env.params.option_no_smiles }
+      edit_no_emojis: { value: env.params.option_no_emojis }
     }, { user_id: env.user_info.user_id }, callback);
   });
 
@@ -71,8 +71,8 @@ module.exports = function (N, apiPath) {
           settings.medialinks = false;
         }
 
-        if (env.params.option_no_smiles) {
-          settings.smiles = false;
+        if (env.params.option_no_emojis) {
+          settings.emojis = false;
         }
 
         env.data.parse_options = settings;

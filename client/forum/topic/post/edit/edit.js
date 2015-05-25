@@ -22,7 +22,7 @@ var post;
 function updateOptions() {
   N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
     medialinks: options.user_settings.no_mlinks ? false : options.parse_options.medialinks,
-    smiles: options.user_settings.no_smiles ? false : options.parse_options.smiles
+    emojis: options.user_settings.no_emojis ? false : options.parse_options.emojis
   }));
 }
 
@@ -45,7 +45,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data, callback) 
         parse_options: opt.parse_options,
         user_settings: {
           no_mlinks: !response.params.medialinks,
-          no_smiles: !response.params.smiles
+          no_emojis: !response.params.emojis
         }
       };
 
@@ -92,7 +92,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         txt:              N.MDEdit.text(),
         attach:           N.MDEdit.attachments(),
         option_no_mlinks: options.user_settings.no_mlinks,
-        option_no_smiles: options.user_settings.no_smiles
+        option_no_emojis: options.user_settings.no_emojis
       };
 
       N.io.rpc('forum.topic.post.edit.update', params).done(function (response) {
