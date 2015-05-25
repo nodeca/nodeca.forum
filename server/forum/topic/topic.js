@@ -90,7 +90,7 @@ module.exports = function (N, apiPath) {
   // If pagination info isn't available, fetch it from the database
   //
   N.wire.after(apiPath, function fetch_pagination(env, callback) {
-    if (env.data.page) {
+    if (env.data.pagination) {
       callback();
       return;
     }
@@ -110,12 +110,18 @@ module.exports = function (N, apiPath) {
     // Both id builders used in this controller return hids,
     // so we use hids to utilize index.
     //
-    Post.find()
-        .where('topic').equals(env.data.topic._id)
-        .where('st').in(countable_statuses)
-        .where('hid').lt(env.data.posts_hids[0])
-        .count(function (err, current_post_number) {
+    var query = Post.find()
+                    .where('topic').equals(env.data.topic._id)
+                    .where('st').in(countable_statuses);
 
+    // If no posts_hids are specified, calculate pagination for the post
+    // after the last one.
+    //
+    if (env.data.posts_hids.length) {
+      query = query.where('hid').lt(env.data.posts_hids[0]);
+    }
+
+    query.count(function (err, current_post_number) {
       if (err) {
         callback(err);
         return;

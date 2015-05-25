@@ -13,7 +13,7 @@
 // Out:
 //
 // - env.data.posts_hids
-// - env.data.page
+// - env.data.pagination
 //
 // Needed in:
 //
