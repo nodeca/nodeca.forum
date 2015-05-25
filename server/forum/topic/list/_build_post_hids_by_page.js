@@ -1,7 +1,6 @@
 // Reflection helper for `internal:forum.post_list`:
 //
-// 1. Builds Hids of posts to fetch for current page
-// 2. Creates pagination info
+// Builds hids of posts to fetch for current page
 //
 // In:
 //
@@ -13,7 +12,6 @@
 // Out:
 //
 // - env.data.posts_hids
-// - env.data.pagination
 //
 // Needed in:
 //
@@ -50,13 +48,6 @@ module.exports = function (N) {
       var page_current = parseInt(env.params.page, 10);
       var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
       var page_max = Math.ceil(post_count / posts_per_page) || 1;
-
-      // Create page info
-      env.data.pagination = {
-        total:        post_count,
-        per_page:     posts_per_page,
-        chunk_offset: posts_per_page * (page_current - 1)
-      };
 
       // Algorithm:
       //

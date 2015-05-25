@@ -87,54 +87,68 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // If pagination info isn't available, fetch it from the database
+  // Fill `env.data.pagination` structure
   //
   N.wire.after(apiPath, function fetch_pagination(env, callback) {
-    if (env.data.pagination) {
-      callback();
-      return;
-    }
-
-    var Post = N.models.forum.Post;
-
-    // Posts with this statuses are counted on page (others are shown, but not counted)
-    var countable_statuses = [ Post.statuses.VISIBLE ];
-
-    // For hellbanned users - count hellbanned posts too
-    if (env.user_info.hb) {
-      countable_statuses.push(Post.statuses.HB);
-    }
-
-    // Calculate pagination info
-    //
-    // Both id builders used in this controller return hids,
-    // so we use hids to utilize index.
-    //
-    var query = Post.find()
-                    .where('topic').equals(env.data.topic._id)
-                    .where('st').in(countable_statuses);
-
-    // If no posts_hids are specified, calculate pagination for the post
-    // after the last one.
-    //
-    if (env.data.posts_hids.length) {
-      query = query.where('hid').lt(env.data.posts_hids[0]);
-    }
-
-    query.count(function (err, current_post_number) {
+    env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
       if (err) {
         callback(err);
         return;
       }
 
-      env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
+      var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
+      var page_max = Math.ceil(post_count / posts_per_page) || 1;
+
+      // If user requests a specific page, we know how many posts are displayed
+      // before it.
+      //
+      if (env.params.page) {
+        var page_current = parseInt(env.params.page, 10);
+
+        env.data.pagination = {
+          total:        post_count,
+          per_page:     posts_per_page,
+          chunk_offset: posts_per_page * (page_current - 1)
+        };
+
+        callback();
+        return;
+      }
+
+      // If user requests a post by its hid, we need to retrieve a number
+      // of posts before it to calculate pagination info
+      //
+      var Post = N.models.forum.Post;
+
+      // Posts with this statuses are counted on page (others are shown, but not counted)
+      var countable_statuses = [ Post.statuses.VISIBLE ];
+
+      // For hellbanned users - count hellbanned posts too
+      if (env.user_info.hb) {
+        countable_statuses.push(Post.statuses.HB);
+      }
+
+      // Calculate pagination info
+      //
+      // Both id builders used in this controller return hids,
+      // so we use hids to utilize index.
+      //
+      var query = Post.find()
+                      .where('topic').equals(env.data.topic._id)
+                      .where('st').in(countable_statuses);
+
+      // If no posts_hids are specified, calculate pagination for the post
+      // after the last one.
+      //
+      if (env.data.posts_hids.length) {
+        query = query.where('hid').lt(env.data.posts_hids[0]);
+      }
+
+      query.count(function (err, current_post_number) {
         if (err) {
           callback(err);
           return;
         }
-
-        // Page numbers starts from 1, not from 0
-        var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
 
         // Create page info
         env.data.pagination = {

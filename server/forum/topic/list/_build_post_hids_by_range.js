@@ -1,7 +1,6 @@
 // Reflection helper for `internal:forum.post_list`:
 //
-// 1. Builds hids of posts to fetch for current page
-// 2. Creates pagination info
+// Builds hids of posts to fetch for current page
 //
 // In:
 //
