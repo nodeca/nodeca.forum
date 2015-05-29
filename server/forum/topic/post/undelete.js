@@ -154,5 +154,34 @@ module.exports = function (N, apiPath) {
     );
   });
 
+
+  // Update section counters
+  //
+  N.wire.after(apiPath, function update_section(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+    var incData = {};
+
+    if (env.data.post.prev_st.st === statuses.VISIBLE) {
+      incData['cache.post_count'] = 1;
+    }
+
+    incData['cache_hb.post_count'] = 1;
+
+
+    N.models.forum.Section.update(
+      { _id: env.data.topic.section },
+      { $inc: incData },
+      function (err) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        N.models.forum.Section.updateCache(env.data.topic.section, true, callback);
+      }
+    );
+  });
+
   // TODO: log moderator actions
 };

@@ -355,6 +355,36 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Update section counters
+  //
+  N.wire.after(apiPath, function update_section(env, callback) {
+    var statuses = N.models.forum.Post.statuses;
+    var post = env.data.new_post;
+    var incData = {};
+
+    if (post.st === statuses.VISIBLE) {
+      incData['cache.post_count'] = 1;
+    }
+
+    incData['cache_hb.post_count'] = 1;
+
+
+    N.models.forum.Section.update(
+      { _id: env.data.section._id },
+      { $inc: incData },
+      function (err) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        N.models.forum.Section.updateCache(env.data.section._id, false, callback);
+      }
+    );
+  });
+
+
   // Fill url of new post
   //
   N.wire.after(apiPath, function process_response(env) {
