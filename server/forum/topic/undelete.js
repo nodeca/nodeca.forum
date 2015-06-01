@@ -116,5 +116,45 @@ module.exports = function (N, apiPath) {
       });
   });
 
+
+  // Update section counters
+  //
+  N.wire.after(apiPath, function update_section(env, callback) {
+    var statuses = N.models.forum.Topic.statuses;
+    var topic = env.data.topic;
+    var incData = {};
+
+    if (topic.st !== statuses.HB) {
+      incData['cache.post_count'] = 1;
+      incData['cache.topic_count'] = 1;
+    }
+
+    incData['cache_hb.post_count'] = 1;
+    incData['cache_hb.topic_count'] = 1;
+
+
+    N.models.forum.Section.getParentList(topic.section, function (err, parents) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      N.models.forum.Section.update(
+        { _id: { $in: parents.concat([ topic.section ]) } },
+        { $inc: incData },
+        { multi: true },
+        function (err) {
+
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          N.models.forum.Section.updateCache(env.data.topic.section, true, callback);
+        }
+      );
+    });
+  });
+
   // TODO: log moderator actions
 };

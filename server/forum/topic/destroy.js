@@ -223,19 +223,27 @@ module.exports = function (N, apiPath) {
     incData['cache_hb.topic_count'] = -1;
 
 
-    N.models.forum.Section.update(
-      { _id: env.data.topic.section },
-      { $inc: incData },
-      function (err) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        N.models.forum.Section.updateCache(env.data.topic.section, true, callback);
+    N.models.forum.Section.getParentList(topic.section, function (err, parents) {
+      if (err) {
+        callback(err);
+        return;
       }
-    );
+
+      N.models.forum.Section.update(
+        { _id: { $in: parents.concat([ topic.section ]) } },
+        { $inc: incData },
+        { multi: true },
+        function (err) {
+
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          N.models.forum.Section.updateCache(env.data.topic.section, true, callback);
+        }
+      );
+    });
   });
 
   // TODO: log moderator actions

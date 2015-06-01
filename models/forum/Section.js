@@ -302,102 +302,33 @@ module.exports = function (N, collectionName) {
   };
 
 
-  // Update cache: last_post, last_topic, last_user, last_ts
+  // Update `last_post`, `last_topic`, `last_user`, `last_ts` fields
+  // in the section cache.
   //
-  // - sectionID  - id of the section to update
-  // - full       - update 'cache' even if last post is hellbanned
+  // This function has two modes of operation:
   //
+  //  1. If `full` is *true*, then it gets
+  //
+  //     This mode is guaranteed to write the right result to both `cache` and
+  //     `cache_hb` fields, but it is slow, doing up to 4 database queries
+  //     per section level.
+  //
+  //     It is used when user removes or restores an old post, or if you
+  //     need to re-create the cache (e.g. in seeds).
+  //
+  //  2. If `full` is *false*, then the last topic in the section is retrieved,
+  //     and stored to the section cache and all the parent sections.
+  //
+  //     This is done with 2 database queries total (1 read + 1 update), so
+  //     it is very fast compared to the first one.
+  //
+  //     If last post is HB, only `cache_hb` is updated, `cache` stays as is.
+  //
+  //  `full=false` mode should **only** be used when you're creating a new post
+  //
+  var updateCache = require('./lib/_update_section_cache')(N);
+
   Section.statics.updateCache = function (sectionID, full, callback) {
-    var Topic = N.models.forum.Topic;
-    var updateData = {};
-
-    var visible_st_hb = [
-      Topic.statuses.OPEN,
-      Topic.statuses.CLOSED,
-      Topic.statuses.PINNED,
-      Topic.statuses.HB
-    ];
-
-    N.models.forum.Topic
-        .findOne({ section: sectionID, st: { $in: visible_st_hb } })
-        .sort('-cache_hb.last_post')
-        .exec(function (err, topic) {
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!topic) {
-        // all topics in this section are deleted
-        callback();
-        return;
-      }
-
-      // Last post in this section is considered hellbanned if
-      //  (whole topic has HB status) OR (last post has HB status)
-      //
-      // Last post in the topic is hellbanned iff topic.cache differs from topic.cache_hb
-      //
-      var last_post_hb = (topic.st === Topic.statuses.HB) ||
-                         (String(topic.cache.last_post) !== String(topic.cache_hb.last_post));
-
-      if (!last_post_hb) {
-        // If the last post in this section is not hellbanned, it is seen as
-        // such for both hb and non-hb users. Thus, cache is the same for both.
-        //
-        updateData['cache.last_topic']       = topic._id;
-        updateData['cache.last_topic_hid']   = topic.hid;
-        updateData['cache.last_topic_title'] = topic.title;
-        updateData['cache.last_post']        = topic.cache_hb.last_post;
-        updateData['cache.last_user']        = topic.cache_hb.last_user;
-        updateData['cache.last_ts']          = topic.cache_hb.last_ts;
-      }
-
-      updateData['cache_hb.last_topic']       = topic._id;
-      updateData['cache_hb.last_topic_hid']   = topic.hid;
-      updateData['cache_hb.last_topic_title'] = topic.title;
-      updateData['cache_hb.last_post']        = topic.cache_hb.last_post;
-      updateData['cache_hb.last_user']        = topic.cache_hb.last_user;
-      updateData['cache_hb.last_ts']          = topic.cache_hb.last_ts;
-
-      if (!full || last_post_hb) {
-        N.models.forum.Section.update({ _id: sectionID }, updateData, callback);
-        return;
-      }
-
-      var visible_st = [
-        Topic.statuses.OPEN,
-        Topic.statuses.CLOSED,
-        Topic.statuses.PINNED
-      ];
-
-
-      N.models.forum.Topic
-          .findOne({ section: sectionID, st: { $in: visible_st } })
-          .sort('-cache.last_post')
-          .exec(function (err, topic) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        if (!topic) {
-          // all visible topics in this section are deleted
-          callback();
-          return;
-        }
-
-        updateData['cache.last_topic']       = topic._id;
-        updateData['cache.last_topic_hid']   = topic.hid;
-        updateData['cache.last_topic_title'] = topic.title;
-        updateData['cache.last_post']        = topic.cache.last_post;
-        updateData['cache.last_user']        = topic.cache.last_user;
-        updateData['cache.last_ts']          = topic.cache.last_ts;
-
-        N.models.forum.Section.update({ _id: sectionID }, updateData, callback);
-      });
-    });
+    updateCache[full ? 'full' : 'simple'](sectionID, callback);
   };
 };

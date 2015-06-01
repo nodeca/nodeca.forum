@@ -264,6 +264,9 @@ module.exports = function (N, apiPath) {
     var topic = new N.models.forum.Topic();
     var post = new N.models.forum.Post();
 
+    env.data.new_topic = topic;
+    env.data.new_post  = post;
+
     // Fill post data
     post.user = env.user_info.user_id;
     post.ts = Date.now();
@@ -327,7 +330,6 @@ module.exports = function (N, apiPath) {
   // Update section counters
   //
   N.wire.after(apiPath, function update_section(env, callback) {
-    var statuses = N.models.forum.Topic.statuses;
     var topic = env.data.new_topic;
     var incData = {};
 
@@ -340,18 +342,25 @@ module.exports = function (N, apiPath) {
     incData['cache_hb.topic_count'] = 1;
 
 
-    N.models.forum.Section.update(
-      { _id: env.data.section._id },
-      { $inc: incData },
-      function (err) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        N.models.forum.Section.updateCache(env.data.section._id, false, callback);
+    N.models.forum.Section.getParentList(topic.section, function (err, parents) {
+      if (err) {
+        callback(err);
+        return;
       }
-    );
+
+      N.models.forum.Section.update(
+        { _id: { $in: parents.concat([ topic.section ]) } },
+        { $inc: incData },
+        { multi: true },
+        function (err) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          N.models.forum.Section.updateCache(topic.section, false, callback);
+        }
+      );
+    });
   });
 };
