@@ -24,6 +24,10 @@ module.exports = function (N, collectionName) {
     HB:           7 // hellbanned
   };
 
+  // List of `st` values with which the topic is considered publicly visible
+  //
+  statuses.LIST_VISIBLE = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ];
+
 
   var cache = {
     post_count:   { type: Number, 'default': 0 },

@@ -75,12 +75,7 @@ module.exports = function (N) {
     function fill_cache_from_own_topics(callback) {
       var result = { cache: {}, cache_hb: {} };
 
-      var visible_st_hb = [
-        Topic.statuses.OPEN,
-        Topic.statuses.CLOSED,
-        Topic.statuses.PINNED,
-        Topic.statuses.HB
-      ];
+      var visible_st_hb = [ Topic.statuses.HB ].concat(Topic.statuses.LIST_VISIBLE);
 
       Topic
           .findOne({ section: sectionID, st: { $in: visible_st_hb } })
@@ -124,15 +119,9 @@ module.exports = function (N) {
           return;
         }
 
-        var visible_st = [
-          Topic.statuses.OPEN,
-          Topic.statuses.CLOSED,
-          Topic.statuses.PINNED
-        ];
-
 
         Topic
-            .findOne({ section: sectionID, st: { $in: visible_st } })
+            .findOne({ section: sectionID, st: { $in: Topic.statuses.LIST_VISIBLE } })
             .sort('-cache.last_post')
             .exec(function (err, topic) {
 

@@ -89,7 +89,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function define_visible_statuses(env) {
     var statuses = Topic.statuses;
 
-    env.data.topics_visible_statuses = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ];
+    env.data.topics_visible_statuses = statuses.LIST_VISIBLE.slice(0);
 
     if (env.data.settings.forum_mod_can_delete_topics) {
       env.data.topics_visible_statuses.push(statuses.DELETED);

@@ -24,7 +24,7 @@ module.exports = function (N, apiPath) {
       env.data.can_see_hellbanned = can_see_hellbanned;
 
       var statuses = N.models.forum.Topic.statuses;
-      var st = { $in: [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ] };
+      var st = { $in: statuses.LIST_VISIBLE.slice(0) };
 
       // Add `HB` only for hellbanned users and for users who can see hellbanned
       if (env.user_info.hb || can_see_hellbanned) {

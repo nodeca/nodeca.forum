@@ -277,15 +277,25 @@ module.exports = function (N, apiPath) {
     post.html = env.data.parse_result.html;
     post.md = env.params.txt;
     post.ip = env.req.ip;
-    post.st = N.models.forum.Post.statuses.VISIBLE;
     post.params = env.data.parse_options;
+
+    if (env.user_info.hb) {
+      post.st  = N.models.forum.Post.statuses.HB;
+      post.ste = N.models.forum.Post.statuses.VISIBLE;
+    } else {
+      post.st  = N.models.forum.Post.statuses.VISIBLE;
+    }
 
     // Fill topic data
     topic.title = env.params.title.trim();
     topic.section = env.data.section._id;
 
-    // TODO: hellbanned
-    topic.st = N.models.forum.Topic.statuses.OPEN;
+    if (env.user_info.hb) {
+      topic.st  = N.models.forum.Topic.statuses.HB;
+      topic.ste = N.models.forum.Topic.statuses.OPEN;
+    } else {
+      topic.st  = N.models.forum.Topic.statuses.OPEN;
+    }
 
     topic.cache = {};
 

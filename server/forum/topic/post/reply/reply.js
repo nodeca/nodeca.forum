@@ -298,9 +298,14 @@ module.exports = function (N, apiPath) {
     post.html = env.data.parse_result.html;
     post.md = env.params.txt;
     post.ip = env.req.ip;
-    post.st = statuses.VISIBLE;
     post.params = env.data.parse_options;
-    // TODO: hellbanned
+
+    if (env.user_info.hb) {
+      post.st  = statuses.HB;
+      post.ste = statuses.VISIBLE;
+    } else {
+      post.st  = statuses.VISIBLE;
+    }
 
     if (env.data.parent_post) {
       post.to = env.data.parent_post._id;
@@ -358,17 +363,24 @@ module.exports = function (N, apiPath) {
   // Update section counters
   //
   N.wire.after(apiPath, function update_section(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
+    var post_statuses = N.models.forum.Post.statuses;
+    var topic_statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
     var post = env.data.new_post;
     var setData = {};
     var incData = {};
 
-    if (post.st === statuses.VISIBLE) {
+    // Increment normal cache if both topic and post are visible
+    //
+    if (post.st === post_statuses.VISIBLE && topic_statuses.LIST_VISIBLE.indexOf(topic.st) !== -1) {
       incData['cache.post_count'] = 1;
     }
 
-    incData['cache_hb.post_count'] = 1;
+    // Increment hb cache for any post if topic is visible or hb (but not deleted)
+    //
+    if (topic_statuses.LIST_VISIBLE.concat([ topic_statuses.HB ]).indexOf(topic.st) !== -1) {
+      incData['cache_hb.post_count'] = 1;
+    }
 
 
     N.models.forum.Section.getParentList(topic.section, function (err, parents) {

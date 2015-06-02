@@ -124,12 +124,12 @@ module.exports = function (N, apiPath) {
     var topic = env.data.topic;
     var incData = {};
 
-    if (topic.st !== statuses.HB) {
-      incData['cache.post_count'] = 1;
+    if (topic.prev_st.st !== statuses.HB) {
+      incData['cache.post_count']  = topic.cache.post_count;
       incData['cache.topic_count'] = 1;
     }
 
-    incData['cache_hb.post_count'] = 1;
+    incData['cache_hb.post_count']  = topic.cache.post_count;
     incData['cache_hb.topic_count'] = 1;
 
 

@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
     if (env.params.unpin) {
       query.st = statuses.PINNED;
     } else {
-      query.st = { $in: [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ] };
+      query.st = { $in: statuses.LIST_VISIBLE };
     }
 
     N.models.forum.Topic
