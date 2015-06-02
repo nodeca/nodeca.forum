@@ -301,6 +301,12 @@ module.exports = function (N, collectionName) {
     });
   };
 
+  // Provide a possibility to clear section tree cache (used in seeds)
+  //
+  Section.statics.getChildren.clear = function () {
+    getSectionsTree.clear();
+  };
+
 
   // Update `last_post`, `last_topic`, `last_user`, `last_ts` fields
   // in the section cache.

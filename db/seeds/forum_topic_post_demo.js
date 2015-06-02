@@ -309,52 +309,53 @@ function createSections(callback) {
 
 function updateSectionStat(section, callback) {
 
-  var lastTopic;
   var topicCount;
   var postCount;
 
-  async.series([ function getLastTopic(cb) {
-      Topic.findOne({ section: section._id }).select('_id hid title cache')
-        .sort({ hid: 1 })
-        .exec(function (err, topic) {
+  // Clear getSectionTree cache (used in both `updateCache` and `getChildren`
+  // functions below).
+  //
+  Section.getChildren.clear();
 
-          if (err) {
-            cb(err);
-            return;
+  async.series([ function updateCache(cb) {
+      Section.updateCache(section._id, true, cb);
+    }, function getCounters(cb) {
+
+      Section.getChildren(section._id, -1, function (err, sections) {
+        if (err) {
+          cb(err);
+          return;
+        }
+
+        Topic.aggregate(
+          { $match: {
+            section: { $in: _.pluck(sections.concat([ section ]), '_id') }
+          } },
+          { $group: {
+            _id: null,
+            topic_count: { $sum: 1 },
+            post_count: { $sum: '$cache.post_count' }
+          } },
+          function (err, sum) {
+
+            if (err) {
+              cb(err);
+              return;
+            }
+
+            if (sum && sum[0]) {
+              postCount  = sum[0].post_count;
+              topicCount = sum[0].topic_count;
+            } else {
+              // no topics found in section or any of its subsections
+              postCount  = 0;
+              topicCount = 0;
+            }
+
+            cb();
           }
-
-          lastTopic = topic;
-
-          cb();
-        });
-    }, function getTopicCount(cb) {
-      Topic.count({ section: section._id })
-        .exec(function (err, count) {
-
-          if (err) {
-            cb(err);
-            return;
-          }
-
-          topicCount = count;
-          cb();
-        });
-
-    }, function getPostCount(cb) {
-
-      Topic.aggregate(
-        { $match: { section: section._id } },
-        { $group: { _id: null, count: { $sum: '$cache.post_count' } } },
-        { $project: { _id: 0, count: 1 } }, function (err, sum) {
-
-          if (err) {
-            cb(err);
-            return;
-          }
-
-          postCount = (_.isArray(sum) && sum[0] && sum[0].count) ? sum[0].count : 0; // get first element of result
-          cb();
-        });
+        );
+      });
     }
   ], function (err) {
 
@@ -363,24 +364,11 @@ function updateSectionStat(section, callback) {
       return;
     }
 
-    // No topic, just exit
-    if (!lastTopic) {
-      callback(err);
-      return;
-    }
-
-    section.cache.last_topic = lastTopic._id;
-    section.cache.last_topic_hid = lastTopic.hid;
-    section.cache.last_topic_title = lastTopic.title;
-
-    var topicReal = lastTopic.cache;
-    section.cache.last_post = topicReal.last_post;
-    section.cache.last_ts = topicReal.last_ts;
-    section.cache.last_user = topicReal.last_user;
-
     section.cache.post_count = postCount;
     section.cache.topic_count = topicCount;
-    _.assign(section.cache_hb, section.cache);
+
+    section.cache_hb.post_count = postCount;
+    section.cache_hb.topic_count = topicCount;
 
     section.save(callback);
   });
