@@ -8,7 +8,9 @@
   != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
 
 .pull-right
-  if self.settings.forum_can_reply
+  - var is_open = (self.topic.st === self.topic_statuses.OPEN || self.topic.ste === self.topic_statuses.OPEN);
+
+  if self.settings.forum_can_reply && is_open
     .nav-alt__btn
       button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus(
         data-on-click='forum.topic:reply'

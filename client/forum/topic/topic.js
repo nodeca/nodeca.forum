@@ -187,9 +187,22 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // - set new `st` and `ste`
       var pageData = _.merge({}, params.data, { topic: { st: null, ste: null } }, { topic: topic });
 
-      $('.forum-topic__dropdown').replaceWith(
-        N.runtime.render('forum.topic.blocks.dropdown_menu', pageData)
-      );
+      // Need to re-render reply button and dropdown here
+      $('.navbar-alt')
+        .empty()
+        .append(N.runtime.render(module.apiPath + '.navbar_alt', {
+          settings:       pageData.settings,
+          topic:          pageData.topic,
+          section_hid:    topicState.section_hid,
+          topic_statuses: topicStatuses,
+
+          page_progress: {
+            section_hid: topicState.section_hid,
+            topic_hid:   topicState.topic_hid,
+            current:     topicState.post_hid,
+            max:         topicState.max_post
+          }
+        }));
 
       if (pageData.topic.st === topicStatuses.OPEN || pageData.topic.ste === topicStatuses.OPEN) {
         $('.forum-topic-root').addClass('forum-topic-root__m-open');
@@ -640,9 +653,10 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   $('.navbar-alt')
     .empty()
     .append(N.runtime.render(module.apiPath + '.navbar_alt', {
-      settings:    N.runtime.page_data.settings,
-      topic:       N.runtime.page_data.topic,
-      section_hid: topicState.section_hid,
+      settings:       N.runtime.page_data.settings,
+      topic:          N.runtime.page_data.topic,
+      section_hid:    topicState.section_hid,
+      topic_statuses: topicStatuses,
 
       page_progress: {
         section_hid: topicState.section_hid,

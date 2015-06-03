@@ -43,6 +43,8 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
+    var Topic = N.models.forum.Topic;
+
     N.models.forum.Topic.findOne({ _id: env.data.post.topic })
       .lean(true).exec(function (err, topic) {
         if (err) {
@@ -50,8 +52,43 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        env.data.topic = topic;
-        callback();
+        var setting_names = [
+          'can_see_hellbanned',
+          'forum_mod_can_delete_topics',
+          'forum_mod_can_see_hard_deleted_topics'
+        ];
+
+        env.extras.settings.params.section_id = topic.section;
+
+        env.extras.settings.fetch(setting_names, function (err, settings) {
+          if (err) {
+            callback(err);
+            return;
+          }
+
+          // Topic permissions
+          var topicVisibleSt = Topic.statuses.LIST_VISIBLE.slice(0);
+
+          if (env.user_info.hb || settings.can_see_hellbanned) {
+            topicVisibleSt.push(Topic.statuses.HB);
+          }
+
+          if (settings.forum_mod_can_delete_topics) {
+            topicVisibleSt.push(Topic.statuses.DELETED);
+          }
+
+          if (settings.forum_mod_can_see_hard_deleted_topics) {
+            topicVisibleSt.push(Topic.statuses.DELETED_HARD);
+          }
+
+          if (topicVisibleSt.indexOf(topic.st) === -1) {
+            callback(N.io.NOT_FOUND);
+            return;
+          }
+
+          env.data.topic = topic;
+          callback();
+        });
       });
   });
 

@@ -113,11 +113,7 @@ module.exports = function (N, apiPath) {
     }
 
     // Topic permissions
-    var topicVisibleSt = [
-      Topic.statuses.OPEN,
-      Topic.statuses.CLOSED,
-      Topic.statuses.PINNED
-    ];
+    var topicVisibleSt = Topic.statuses.LIST_VISIBLE.slice(0);
 
     if (env.user_info.hb || env.data.settings.can_see_hellbanned) {
       topicVisibleSt.push(Topic.statuses.HB);
