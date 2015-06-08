@@ -13,11 +13,14 @@ each post, post_idx in self.posts
   - var collapsed = !self.expand && !visible;
 
   if self.pagination && mod(post_counter, self.pagination.per_page) === 0 && post_counter !== 0
-    nav.forum-postlist__paginator
-      - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
-      - var page_max    = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
-      - var pgn_params  = { route: 'forum.topic', params: link_params, current: Math.floor(post_counter / self.pagination.per_page) + 1, max: page_max }
-      != self.partial('@common.blocks.pagination', pgn_params)
+    //- make sure previous post isn't hidden as well, otherwise we might
+    //- insert paginator before every single hidden post on the page boundary
+    if post_idx === 0 || [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(self.posts[post_idx - 1].st) === -1
+      nav.forum-postlist__paginator
+        - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
+        - var page_max    = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
+        - var pgn_params  = { route: 'forum.topic', params: link_params, current: Math.floor(post_counter / self.pagination.per_page) + 1, max: page_max }
+        != self.partial('@common.blocks.pagination', pgn_params)
 
   if !collapsed
 
