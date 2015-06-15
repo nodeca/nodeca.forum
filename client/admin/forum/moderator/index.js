@@ -13,11 +13,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       user_id:    data.$this.data('userId')
     };
 
-    N.io.rpc('admin.forum.moderator.destroy', request, function (err) {
-      if (err) {
-        return false; // Invoke standard error handling.
-      }
-
+    N.io.rpc('admin.forum.moderator.destroy', request).done(function () {
       // Refresh page to show result of the reset.
       window.location.reload();
     });
