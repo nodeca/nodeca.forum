@@ -39,7 +39,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function fill_parse_options(env, callback) {
     N.settings.getByCategory(
       'forum_markup',
-      { usergroup_ids: env.extras.settings.params.usergroup_ids },
+      { usergroup_ids: env.user_info.usergroups },
       { alias: true },
       function (err, settings) {
         if (err) {
