@@ -1,0 +1,7 @@
+.quote
+  .quote__title
+    a.quote__link.icon.icon-reply.icon-space-after(href=self.href)
+    if self.user
+      span.quote__author= self.user.nick
+  .quote__content
+    != self.post.html

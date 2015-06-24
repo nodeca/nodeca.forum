@@ -27,6 +27,29 @@ packages:
       include: server/admin/**i18n/*.yml
 
 
+  common:
+    client:
+      include: client/common/**.js
+      exclude: /(^|\/|\\)_.*/
+
+    views:
+      include: client/common/**.jade
+      exclude: /(^|\/|\\)_.*/
+
+    i18n_client:
+      include: client/common/**i18n/*.yml
+
+    styles:
+      include: client/common/**.styl
+
+    server:
+      include: server/common/**.js
+      exclude: /(^|\/|\\)_.*/
+
+    i18n_server:
+      include: server/common/**i18n/*.yml
+
+
   forum:
     depends:
       - common
