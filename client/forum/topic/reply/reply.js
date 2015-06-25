@@ -24,8 +24,8 @@ var draft;
 
 function updateOptions() {
   N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
-    medialinks: options.user_settings.no_mlinks ? false : options.parse_options.medialinks,
-    emojis: options.user_settings.no_emojis ? false : options.parse_options.emojis
+    medialink: options.user_settings.no_mlinks ? false : options.parse_options.medialink,
+    emoji: options.user_settings.no_emojis ? false : options.parse_options.emoji
   }));
 }
 

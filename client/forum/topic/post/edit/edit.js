@@ -21,8 +21,8 @@ var post;
 
 function updateOptions() {
   N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
-    medialinks: options.user_settings.no_mlinks ? false : options.parse_options.medialinks,
-    emojis: options.user_settings.no_emojis ? false : options.parse_options.emojis
+    medialink: options.user_settings.no_mlinks ? false : options.parse_options.medialink,
+    emoji: options.user_settings.no_emojis ? false : options.parse_options.emoji
   }));
 }
 
@@ -44,8 +44,8 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data, callback) 
       options = {
         parse_options: opt.parse_options,
         user_settings: {
-          no_mlinks: !response.params.medialinks,
-          no_emojis: !response.params.emojis
+          no_mlinks: !response.params.medialink,
+          no_emojis: !response.params.emoji
         }
       };
 

@@ -203,11 +203,11 @@ module.exports = function (N, apiPath) {
         }
 
         if (env.params.option_no_mlinks) {
-          settings.medialinks = false;
+          settings.medialink = false;
         }
 
         if (env.params.option_no_emojis) {
-          settings.emojis = false;
+          settings.emoji = false;
         }
 
         env.data.parse_options = settings;
