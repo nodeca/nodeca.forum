@@ -194,11 +194,12 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function post_update(env, callback) {
     var updateData = {
-      tail:   env.data.parse_result.tail,
-      attach: env.params.attach.map(function (attach) { return attach.media_id; }),
-      html:   env.data.parse_result.html,
-      md:     env.params.txt,
-      params: env.data.parse_options
+      tail:    env.data.parse_result.tail,
+      imports: env.data.parse_result.imports,
+      attach:  env.params.attach.map(function (attach) { return attach.media_id; }),
+      html:    env.data.parse_result.html,
+      md:      env.params.txt,
+      params:  env.data.parse_options
     };
 
     N.models.forum.Post.update({ _id: env.params.post_id }, updateData, function (err) {

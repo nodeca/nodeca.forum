@@ -332,6 +332,7 @@ module.exports = function (N, apiPath) {
     var post = new N.models.forum.Post();
 
     post.tail = env.data.parse_result.tail;
+    post.imports = env.data.parse_result.imports;
     post.attach = env.params.attach.map(function (attach) {
       return attach.media_id;
     });

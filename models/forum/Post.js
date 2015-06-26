@@ -56,6 +56,9 @@ module.exports = function (N, collectionName) {
   // Post params
     params          : Schema.Types.Mixed,
 
+  // List of urls to resources being used to build this post (snippets, etc.)
+    imports  : { type: [ String ], 'default': [] },
+
   // Info to build post tail
     tail     : [ new Schema({ // explicit definition to remove `_id` field
       media_id: Schema.ObjectId,
