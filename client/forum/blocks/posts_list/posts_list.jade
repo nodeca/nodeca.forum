@@ -46,7 +46,7 @@ each post, post_idx in self.posts
               - var _reply_to_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid });
               - var _reply_to_user = self.users[post.to_user]
               a.forum-post__reply-link(href=_reply_to_anchor)
-                span.icon.icon-reply.icon-space-after
+                span.icon.icon-reply-for.icon-space-after
                 = _reply_to_user.nick
 
           != self.timetag(post.ts, 'relative')
