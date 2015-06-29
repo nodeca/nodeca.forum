@@ -57,7 +57,7 @@ module.exports = function (N, collectionName) {
     params          : Schema.Types.Mixed,
 
   // List of urls to resources being used to build this post (snippets, etc.)
-    imports  : { type: [ String ], 'default': [] },
+    imports  : [ String ],
 
   // Info to build post tail
     tail     : [ new Schema({ // explicit definition to remove `_id` field
@@ -119,6 +119,18 @@ module.exports = function (N, collectionName) {
 
       callback();
     });
+  });
+
+
+  // Remove "imports" field if it's empty
+  //
+  Post.pre('save', function (callback) {
+    if (this.imports && this.imports.length === 0) {
+      /*eslint-disable no-undefined*/
+      this.imports = undefined;
+    }
+
+    callback();
   });
 
 

@@ -193,9 +193,12 @@ module.exports = function (N, apiPath) {
   // Update post
   //
   N.wire.after(apiPath, function post_update(env, callback) {
+    var imports = env.data.parse_result.imports;
+
     var updateData = {
       tail:    env.data.parse_result.tail,
-      imports: env.data.parse_result.imports,
+      /*eslint-disable no-undefined*/
+      imports: imports && imports.length ? imports : undefined,
       attach:  env.params.attach.map(function (attach) { return attach.media_id; }),
       html:    env.data.parse_result.html,
       md:      env.params.txt,
