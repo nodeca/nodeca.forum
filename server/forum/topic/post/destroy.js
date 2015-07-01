@@ -30,11 +30,6 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.VISIBLE && post.st !== statuses.HB) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
         env.data.post = post;
         callback();
       });
@@ -53,44 +48,36 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        var setting_names = [
-          'can_see_hellbanned',
-          'forum_mod_can_delete_topics',
-          'forum_mod_can_see_hard_deleted_topics'
-        ];
+        if (!topic) {
+          callback(N.io.NOT_FOUND);
+          return;
+        }
 
-        env.extras.settings.params.section_id = topic.section;
-
-        env.extras.settings.fetch(setting_names, function (err, settings) {
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          // Topic permissions
-          var topicVisibleSt = Topic.statuses.LIST_VISIBLE.slice(0);
-
-          if (env.user_info.hb || settings.can_see_hellbanned) {
-            topicVisibleSt.push(Topic.statuses.HB);
-          }
-
-          if (settings.forum_mod_can_delete_topics) {
-            topicVisibleSt.push(Topic.statuses.DELETED);
-          }
-
-          if (settings.forum_mod_can_see_hard_deleted_topics) {
-            topicVisibleSt.push(Topic.statuses.DELETED_HARD);
-          }
-
-          if (topicVisibleSt.indexOf(topic.st) === -1) {
-            callback(N.io.NOT_FOUND);
-            return;
-          }
-
-          env.data.topic = topic;
-          callback();
-        });
+        env.data.topic = topic;
+        callback();
       });
+  });
+
+
+  // Check if user can see this post
+  //
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.post', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid, post_hid: env.data.post.hid }
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!env.data.access_read) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      callback();
+    });
   });
 
 

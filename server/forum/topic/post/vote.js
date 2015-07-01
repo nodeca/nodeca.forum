@@ -64,39 +64,42 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check topic permissions
+  // Check if user can see this post
   //
-  N.wire.before(apiPath, function check_topic_permissions(env, callback) {
-    var topic = env.data.topic;
-    var topic_st = N.models.forum.Topic.statuses;
-    var topic_visible_st = [ topic_st.OPEN, topic_st.CLOSED ];
-
-    env.extras.settings.params.section_id = topic.section;
-
-    env.extras.settings.fetch([ 'forum_can_view', 'can_vote', 'can_see_hellbanned' ], function (err, settings) {
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.post', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid, post_hid: env.data.post.hid }
+    }, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      // Check topic status
-      if (topic_visible_st.indexOf(topic.st) === -1 && topic_visible_st.indexOf(topic.ste) === -1) {
+      if (!env.data.access_read) {
         callback(N.io.NOT_FOUND);
         return;
       }
 
-      // Check hellbanned
-      if (!env.user_info.hb && !settings.can_see_hellbanned && topic.st === topic_st.HB) {
-        callback(N.io.NOT_FOUND);
+      callback();
+    });
+  });
+
+
+  // Check topic permissions
+  //
+  N.wire.before(apiPath, function check_topic_permissions(env, callback) {
+    var topic = env.data.topic;
+
+    env.extras.settings.params.section_id = topic.section;
+
+    env.extras.settings.fetch('can_vote', function (err, can_vote) {
+      if (err) {
+        callback(err);
         return;
       }
 
-      if (!settings.forum_can_view) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      if (!settings.can_vote) {
+      if (!can_vote) {
         callback(N.io.FORBIDDEN);
         return;
       }
@@ -110,24 +113,10 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function check_post_permissions(env, callback) {
     var post = env.data.post;
-    var post_st = N.models.forum.Post.statuses;
-    var post_visible_st = [ post_st.VISIBLE ];
 
-    env.extras.settings.fetch([ 'votes_add_max_time', 'can_see_hellbanned' ], function (err, settings) {
+    env.extras.settings.fetch('votes_add_max_time', function (err, votes_add_max_time) {
       if (err) {
         callback(err);
-        return;
-      }
-
-      // Check post status
-      if (post_visible_st.indexOf(post.st) === -1 && post_visible_st.indexOf(post.ste) === -1) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      // Check hellbanned
-      if (!env.user_info.hb && !settings.can_see_hellbanned && post.st === post_st.HB) {
-        callback(N.io.NOT_FOUND);
         return;
       }
 
@@ -141,7 +130,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      if (settings.votes_add_max_time !== 0 && post.ts < Date.now() - settings.votes_add_max_time * 60 * 60 * 1000) {
+      if (votes_add_max_time !== 0 && post.ts < Date.now() - votes_add_max_time * 60 * 60 * 1000) {
         callback({
           code: N.io.CLIENT_ERROR,
           message: env.t('err_perm_expired')

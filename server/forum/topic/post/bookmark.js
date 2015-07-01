@@ -64,65 +64,19 @@ module.exports = function (N, apiPath) {
   });
 
 
-
-  // Check topic permissions
+  // Check if user can see this post
   //
-  N.wire.before(apiPath, function check_topic_permissions(env, callback) {
-    var topic = env.data.topic;
-    var topic_st = N.models.forum.Topic.statuses;
-    var topic_visible_st = [ topic_st.OPEN, topic_st.CLOSED ];
-
-    env.extras.settings.params.section_id = topic.section;
-
-    env.extras.settings.fetch([ 'forum_can_view', 'can_see_hellbanned' ], function (err, settings) {
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.post', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid, post_hid: env.data.post.hid }
+    }, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      // Check topic status
-      if (topic_visible_st.indexOf(topic.st) === -1 && topic_visible_st.indexOf(topic.ste) === -1) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      // Check hellbanned
-      if (!env.user_info.hb && !settings.can_see_hellbanned && topic.st === topic_st.HB) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      if (!settings.forum_can_view) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
-  });
-
-
-  // Check post permissions
-  //
-  N.wire.before(apiPath, function check_post_permissions(env, callback) {
-    var post = env.data.post;
-    var post_st = N.models.forum.Post.statuses;
-    var post_visible_st = [ post_st.VISIBLE ];
-
-    env.extras.settings.fetch([ 'can_see_hellbanned' ], function (err, settings) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      // Check post status
-      if (post_visible_st.indexOf(post.st) === -1 && post_visible_st.indexOf(post.ste) === -1) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      // Check hellbanned
-      if (!env.user_info.hb && !settings.can_see_hellbanned && post.st === post_st.HB) {
+      if (!env.data.access_read) {
         callback(N.io.NOT_FOUND);
         return;
       }
