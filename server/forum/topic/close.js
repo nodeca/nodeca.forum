@@ -15,43 +15,43 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+    N.models.forum.Topic.findOne({ _id: env.params.topic_id })
+        .lean(true).exec(function (err, topic) {
+
       if (err) {
         callback(err);
         return;
       }
 
-      env.data.can_see_hellbanned = can_see_hellbanned;
-
-      var statuses = N.models.forum.Topic.statuses;
-      var st = { $in: statuses.LIST_VISIBLE.slice(0) };
-
-      // Add `HB` only for hellbanned users and for users who can see hellbanned
-      if (env.user_info.hb || can_see_hellbanned) {
-        st.$in.push(statuses.HB);
+      if (!topic) {
+        callback(N.io.NOT_FOUND);
+        return;
       }
 
-      N.models.forum.Topic
-          .findOne({
-            _id: env.params.topic_id,
-            st: st
-          })
-          .lean(true)
-          .exec(function (err, topic) {
+      env.data.topic = topic;
+      callback();
+    });
+  });
 
-        if (err) {
-          callback(err);
-          return;
-        }
 
-        if (!topic) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
+  // Check if user has an access to this topic
+  //
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.topic', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid }
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-        env.data.topic = topic;
-        callback();
-      });
+      if (!env.data.access_read) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      callback();
     });
   });
 

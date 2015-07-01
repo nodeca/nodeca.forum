@@ -104,28 +104,30 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      env.data.topic = topic;
+      callback();
+    });
+  });
 
-        var allow_access = true;
 
-        if (topic.st === Topic.statuses.HB) {
-          allow_access = allow_access && (env.user_info.hb || can_see_hellbanned);
-        }
+  // Check if user can see this topic
+  //
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.topic', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid }
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-        allow_access = allow_access && (topic.st === Topic.statuses.OPEN || topic.ste === Topic.statuses.OPEN);
+      if (!env.data.access_read) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
 
-        if (!allow_access) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
-        env.data.topic = topic;
-        callback();
-      });
+      callback();
     });
   });
 
@@ -146,23 +148,26 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+      if (!post) {
+        callback({
+          code: N.io.CLIENT_ERROR,
+          message: env.t('error_invalid_parent_post')
+        });
+        return;
+      }
+
+      env.data.post = post;
+
+      N.wire.emit('internal:forum.access.post', {
+        env:    env,
+        params: { topic_hid: env.data.topic.hid, post_hid: env.data.post.hid }
+      }, function (err) {
         if (err) {
           callback(err);
           return;
         }
 
-        var allow_access = true;
-
-        if (post) {
-          if (post.st === Post.statuses.HB) {
-            allow_access = allow_access && (env.user_info.hb || can_see_hellbanned);
-          }
-
-          allow_access = allow_access && (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
-        }
-
-        if (!post || !allow_access) {
+        if (!env.data.access_read) {
           callback({
             code: N.io.CLIENT_ERROR,
             message: env.t('error_invalid_parent_post')
@@ -170,7 +175,6 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        env.data.parent_post = post;
         callback();
       });
     });
@@ -348,9 +352,9 @@ module.exports = function (N, apiPath) {
       post.st  = statuses.VISIBLE;
     }
 
-    if (env.data.parent_post) {
-      post.to = env.data.parent_post._id;
-      post.to_user = env.data.parent_post.user;
+    if (env.data.post) {
+      post.to = env.data.post._id;
+      post.to_user = env.data.post.user;
     }
 
     post.topic = env.data.topic._id;

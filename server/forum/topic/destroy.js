@@ -58,14 +58,31 @@ module.exports = function (N, apiPath) {
           return;
         }
 
-        if (post.st !== statuses.VISIBLE && post.st !== statuses.HB) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
         env.data.post = post;
         callback();
       });
+  });
+
+
+  // Check if user has an access to this topic
+  //
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.topic', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid }
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!env.data.access_read) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      callback();
+    });
   });
 
 
