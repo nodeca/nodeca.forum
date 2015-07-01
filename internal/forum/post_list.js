@@ -105,34 +105,23 @@ module.exports = function (N, apiPath) {
 
   // Check access permissions
   //
-  N.wire.before(apiPath, function check_access_permissions(env, callback) {
-    // Section permission
-    if (!env.data.settings.forum_can_view) {
-      callback(N.io.FORBIDDEN);
-      return;
-    }
+  N.wire.before(apiPath, function check_access(env, callback) {
+    N.wire.emit('internal:forum.access.topic', {
+      env:    env,
+      params: { topic_hid: env.data.topic.hid }
+    }, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    // Topic permissions
-    var topicVisibleSt = Topic.statuses.LIST_VISIBLE.slice(0);
+      if (!env.data.access_read) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
 
-    if (env.user_info.hb || env.data.settings.can_see_hellbanned) {
-      topicVisibleSt.push(Topic.statuses.HB);
-    }
-
-    if (env.data.settings.forum_mod_can_delete_topics) {
-      topicVisibleSt.push(Topic.statuses.DELETED);
-    }
-
-    if (env.data.settings.forum_mod_can_see_hard_deleted_topics) {
-      topicVisibleSt.push(Topic.statuses.DELETED_HARD);
-    }
-
-    if (topicVisibleSt.indexOf(env.data.topic.st) === -1) {
-      callback(N.io.NOT_FOUND);
-      return;
-    }
-
-    callback();
+      callback();
+    });
   });
 
 
