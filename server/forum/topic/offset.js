@@ -71,95 +71,106 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch permissions
+  // Check section access permission
   //
-  N.wire.before(apiPath, function fetch_permissions(env, callback) {
+  N.wire.before(apiPath, function check_access_permissions(env, callback) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    var fields = [
-      'forum_can_view',
-      'forum_mod_can_delete_topics',
-      'forum_mod_can_see_hard_deleted_topics',
-      'can_see_hellbanned',
-      'topics_per_page'
-    ];
-
-    env.extras.settings.fetch(fields, function (err, result) {
+    env.extras.settings.fetch('forum_can_view', function (err, forum_can_view) {
       if (err) {
         callback(err);
         return;
       }
 
-      env.data.settings = result;
+      if (!forum_can_view) {
+        callback(N.io.FORBIDDEN);
+        return;
+      }
+
       callback();
     });
   });
 
 
-  // Check section access permission
-  //
-  N.wire.before(apiPath, function check_access_permissions(env) {
-    if (!env.data.settings.forum_can_view) {
-      return N.io.FORBIDDEN;
-    }
-  });
-
-
   // Define visible topic statuses
   //
-  N.wire.before(apiPath, function define_visible_statuses(env) {
+  N.wire.before(apiPath, function define_visible_statuses(env, callback) {
     var statuses = Topic.statuses;
 
-    env.data.topics_visible_statuses = statuses.LIST_VISIBLE.slice(0);
+    env.extras.settings.params.section_id = env.data.section._id;
 
-    if (env.data.settings.forum_mod_can_delete_topics) {
-      env.data.topics_visible_statuses.push(statuses.DELETED);
-    }
+    env.extras.settings.fetch(
+        [ 'forum_mod_can_delete_topics', 'forum_mod_can_see_hard_deleted_topics', 'can_see_hellbanned' ],
+        function (err, settings) {
 
-    if (env.data.settings.forum_mod_can_see_hard_deleted_topics) {
-      env.data.topics_visible_statuses.push(statuses.DELETED_HARD);
-    }
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    if (env.data.settings.can_see_hellbanned || env.user_info.hb) {
-      env.data.topics_visible_statuses.push(statuses.HB);
-    }
+      env.data.topics_visible_statuses = statuses.LIST_VISIBLE.slice(0);
+
+      if (settings.forum_mod_can_delete_topics) {
+        env.data.topics_visible_statuses.push(statuses.DELETED);
+      }
+
+      if (settings.forum_mod_can_see_hard_deleted_topics) {
+        env.data.topics_visible_statuses.push(statuses.DELETED_HARD);
+      }
+
+      if (settings.can_see_hellbanned || env.user_info.hb) {
+        env.data.topics_visible_statuses.push(statuses.HB);
+      }
+
+      callback();
+    });
   });
 
 
   // Fetch topic offset
   //
   N.wire.on(apiPath, function fetch_offset(env, callback) {
-    var cache_key = env.user_info.hb ? 'cache_hb' : 'cache';
 
-    env.res.topic_offset = 0;
-    env.res.topics_per_page = env.data.settings.topics_per_page;
-    env.data.topics_ids = [];
+    env.extras.settings.params.section_id = env.data.section._id;
 
-    // Move to the first page (i.e. return zero offset) if:
-    //  - topic was moved to a different section
-    //  - topic is pinned, so it's always in the first page
-    //
-    if (env.params.section_hid !== env.data.section.hid || env.data.topic.st === Topic.statuses.PINNED) {
-      callback();
-      return;
-    }
-
-    var sort = {};
-    sort[cache_key + '.last_post'] = -1;
-
-    Topic.find()
-        .where('section').equals(env.data.section._id)
-        .where(cache_key + '.last_post').gt(env.data.topic[cache_key].last_post)
-        .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-        .count(function (err, topics) {
-
+    env.extras.settings.fetch('topics_per_page', function (err, topics_per_page) {
       if (err) {
         callback(err);
         return;
       }
 
-      env.res.topic_offset = topics;
-      callback();
+      var cache_key = env.user_info.hb ? 'cache_hb' : 'cache';
+
+      env.res.topic_offset = 0;
+      env.res.topics_per_page = topics_per_page;
+      env.data.topics_ids = [];
+
+      // Move to the first page (i.e. return zero offset) if:
+      //  - topic was moved to a different section
+      //  - topic is pinned, so it's always in the first page
+      //
+      if (env.params.section_hid !== env.data.section.hid || env.data.topic.st === Topic.statuses.PINNED) {
+        callback();
+        return;
+      }
+
+      var sort = {};
+      sort[cache_key + '.last_post'] = -1;
+
+      Topic.find()
+          .where('section').equals(env.data.section._id)
+          .where(cache_key + '.last_post').gt(env.data.topic[cache_key].last_post)
+          .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+          .count(function (err, topics) {
+
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        env.res.topic_offset = topics;
+        callback();
+      });
     });
   });
 };
