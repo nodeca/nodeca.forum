@@ -623,6 +623,53 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // User presses "home" button
+  //
+  N.wire.on('forum.topic:nav_to_start', function navigate_to_start(data) {
+    var hid = $('.forum-post:first').data('post-hid');
+
+    // if the first post is already loaded, scroll to the top
+    if (hid <= 1) {
+      $(window).scrollTop(0);
+      return;
+    }
+
+    N.wire.emit('navigate.to', {
+      apiPath: 'forum.topic',
+      params: {
+        section_hid:  topicState.section_hid,
+        topic_hid:    topicState.topic_hid,
+        post_hid:     1
+      }
+    });
+  });
+
+
+  // User presses "end" button
+  //
+  N.wire.on('forum.topic:nav_to_end', function navigate_to_end(data) {
+    var hid = $('.forum-post:last').data('post-hid');
+
+    // if the last post is already loaded, scroll to the bottom
+    if (hid >= topicState.max_post) {
+      $(window).scrollTop($('.forum-post:last').offset().top - navbarHeight);
+      return;
+    }
+
+    // Note: this will scroll to the last post, not to the real bottom like
+    // browsers do. There is a difference if footer is large enough.
+    //
+    N.wire.emit('navigate.to', {
+      apiPath: 'forum.topic',
+      params: {
+        section_hid:  topicState.section_hid,
+        topic_hid:    topicState.topic_hid,
+        post_hid:     topicState.max_post
+      }
+    });
+  });
+
+
   // User clicks to "move back to section" button, and she is moved
   // to a section page where this topic is centered and highlighted
   //

@@ -9,6 +9,10 @@
 - var isClosed = (self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED);
 
 article#content.forum-topic-root(
+  data-keymap= {
+    'home':   'forum.topic:nav_to_start',
+    'end':    'forum.topic:nav_to_end'
+  }
   class=isOpen ? 'forum-topic-root__m-open' : ''
   class=isClosed ? 'forum-topic-root__m-closed' : ''
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
