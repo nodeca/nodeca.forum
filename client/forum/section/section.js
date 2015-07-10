@@ -343,15 +343,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
 
 /////////////////////////////////////////////////////////////////////
-// Update navbar when user scrolls the page
+// Show/hide navbar when user scrolls the page,
+// and generate debounced "scroll" event
 //
 N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
-  var $window = $(window);
-
   if ($('.forum-topiclist').length === 0) { return; }
 
   scrollHandler = _.debounce(function update_navbar_on_scroll() {
-    var viewportStart = $window.scrollTop() + navbarHeight;
+    var viewportStart = $(window).scrollTop() + navbarHeight;
 
     // If we scroll below top border of the first topic,
     // show the secondary navbar

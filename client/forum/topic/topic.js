@@ -77,16 +77,12 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 
 /////////////////////////////////////////////////////////////////////
-// Update location when user scrolls the page
+// Show/hide navbar when user scrolls the page,
+// and generate debounced "scroll" event
 //
 N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
-  var $window = $(window);
-
   scrollHandler = _.debounce(function update_location_on_scroll() {
-    var posts         = $('.forum-post'),
-        viewportStart = $window.scrollTop() + navbarHeight,
-        newHid,
-        currentIdx;
+    var viewportStart = $(window).scrollTop() + navbarHeight;
 
     // If we scroll below top border of the first post,
     // show the secondary navbar
@@ -97,29 +93,7 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
       $('.navbar').removeClass('navbar__m-secondary');
     }
 
-    // Update window.location to point at the first post in the viewport
-    //
-    currentIdx = _.sortedIndex(posts, null, function (post) {
-      if (!post) { return viewportStart; }
-      return $(post).offset().top + $(post).height();
-    });
-
-    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
-
-    newHid = $(posts[currentIdx]).data('post-hid');
-    if (newHid === topicState.post_hid) { return; }
-
-    topicState.post_hid = newHid;
-
-    N.wire.emit('navigate.replace', {
-      href: N.router.linkTo('forum.topic', {
-        section_hid:  topicState.section_hid,
-        topic_hid:    topicState.topic_hid,
-        post_hid:     topicState.post_hid
-      })
-    });
-
-    N.wire.emit('forum.topic:location_update');
+    N.wire.emit('forum.topic:scroll');
   }, 100, { maxWait: 100 });
 
   $(window).on('scroll', scrollHandler);
@@ -580,7 +554,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // This method is synchronous, so rpc requests won't delay progress bar
   // updates.
   //
-  N.wire.on('forum.topic:location_update', function check_load_more_pages() {
+  N.wire.on('forum.topic:scroll', function check_load_more_pages() {
     var posts         = $('.forum-post'),
         viewportStart = $(window).scrollTop() + navbarHeight,
         viewportEnd   = $(window).scrollTop() + $(window).height();
@@ -595,9 +569,36 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Update progress bar
+  // Update location and progress bar
   //
-  N.wire.on('forum.topic:location_update', function update_page_progress() {
+  N.wire.on('forum.topic:scroll', function update_progress() {
+    var posts         = $('.forum-post'),
+        viewportStart = $(window).scrollTop() + navbarHeight,
+        newHid,
+        currentIdx;
+
+    // Get offset of the first post in the viewport
+    //
+    currentIdx = _.sortedIndex(posts, null, function (post) {
+      if (!post) { return viewportStart; }
+      return $(post).offset().top + $(post).height();
+    });
+
+    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
+
+    newHid = $(posts[currentIdx]).data('post-hid');
+    if (newHid === topicState.post_hid) { return; }
+
+    topicState.post_hid = newHid;
+
+    N.wire.emit('navigate.replace', {
+      href: N.router.linkTo('forum.topic', {
+        section_hid:  topicState.section_hid,
+        topic_hid:    topicState.topic_hid,
+        post_hid:     topicState.post_hid
+      })
+    });
+
     N.wire.emit('forum.topic.blocks.page_progress:update', {
       current:     topicState.post_hid,
       max:         topicState.max_post
@@ -724,7 +725,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
     $('.navbar').removeClass('navbar__m-secondary');
   }
 
-  N.wire.emit('forum.topic:location_update');
+  N.wire.emit('forum.topic:scroll');
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
