@@ -1,0 +1,2 @@
+cron:
+  topic_views_update:    0 */10 * * * * # every 10 minutes

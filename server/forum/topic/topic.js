@@ -253,4 +253,40 @@ module.exports = function (N, apiPath) {
       });
     }
   });
+
+
+  // Update view counter
+  //
+  // The handler is deliberately synchronous with all updates happening in the
+  // background, so it won't affect response time
+  //
+  N.wire.after(apiPath, function update_view_counter(env) {
+    if (!env.session_id) {
+      // First-time visitor or a bot, don't count those
+      return;
+    }
+
+    N.redis.time(function (err, time) {
+      if (err) { return; }
+
+      var score = Math.floor(time[0] * 1000 + time[1] / 1000);
+      var key   = env.data.topic._id + '-' + env.session_id;
+
+      N.redis.zscore('views:forum_topic:track_last', key, function (err, old_score) {
+        if (err) { return; }
+
+        // Check if user has loaded the same page in the last 10 minutes,
+        // it prevents refreshes and inside-the-topic navigation from being
+        // counted.
+        //
+        if (Math.abs(score - old_score) < 10 * 60 * 1000) { return; }
+
+        N.redis.zadd('views:forum_topic:track_last', score, key, function (err) {
+          if (err) { return; }
+
+          N.redis.hincrby('views:forum_topic:count', env.data.topic._id, 1, function () {});
+        });
+      });
+    });
+  });
 };
