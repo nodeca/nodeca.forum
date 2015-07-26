@@ -33,7 +33,6 @@ module.exports = function (N) {
   var Topic = N.models.forum.Topic;
 
   return function buildTopicIds(env, callback) {
-    var range = [ env.params.last_post_id, env.params.last_post_id ];
     var lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
 
     function select_visible_before(callback) {

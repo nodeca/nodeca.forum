@@ -412,7 +412,6 @@ module.exports = function (N, apiPath) {
     var topic_statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
     var post = env.data.new_post;
-    var setData = {};
     var incData = {};
 
     // Increment normal cache if both topic and post are visible

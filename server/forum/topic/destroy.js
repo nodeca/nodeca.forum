@@ -44,8 +44,6 @@ module.exports = function (N, apiPath) {
   // Fetch first post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-
     N.models.forum.Post.findOne({ _id: env.data.topic.cache.first_post })
       .lean(true).exec(function (err, post) {
         if (err) {

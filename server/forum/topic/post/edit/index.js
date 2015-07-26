@@ -15,8 +15,6 @@ module.exports = function (N, apiPath) {
   // Fetch post
   //
   N.wire.before(apiPath, function fetch_post(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-
     N.models.forum.Post.findOne({ _id: env.params.post_id })
       .lean(true).exec(function (err, post) {
         if (err) {
@@ -38,8 +36,6 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    var Topic = N.models.forum.Topic;
-
     N.models.forum.Topic.findOne({ _id: env.data.post.topic })
       .lean(true).exec(function (err, topic) {
         if (err) {

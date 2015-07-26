@@ -142,7 +142,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // User presses "home" button
   //
-  N.wire.on('forum.section:nav_to_start', function navigate_to_start(data) {
+  N.wire.on('forum.section:nav_to_start', function navigate_to_start() {
     // if the first topic is already loaded, scroll to the top
     if (sectionState.reached_start) {
       $(window).scrollTop(0);
@@ -161,7 +161,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // User presses "end" button
   //
-  N.wire.on('forum.section:nav_to_end', function navigate_to_end(data) {
+  N.wire.on('forum.section:nav_to_end', function navigate_to_end() {
     if (sectionState.reached_end) {
       $(window).scrollTop($(document).height());
       return;

@@ -626,7 +626,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // User presses "home" button
   //
-  N.wire.on('forum.topic:nav_to_start', function navigate_to_start(data) {
+  N.wire.on('forum.topic:nav_to_start', function navigate_to_start() {
     var hid = $('.forum-post:first').data('post-hid');
 
     // if the first post is already loaded, scroll to the top
@@ -648,7 +648,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // User presses "end" button
   //
-  N.wire.on('forum.topic:nav_to_end', function navigate_to_end(data) {
+  N.wire.on('forum.topic:nav_to_end', function navigate_to_end() {
     var hid = $('.forum-post:last').data('post-hid');
 
     // if the last post is already loaded, scroll to the bottom

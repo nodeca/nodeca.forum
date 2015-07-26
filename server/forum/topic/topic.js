@@ -97,7 +97,6 @@ module.exports = function (N, apiPath) {
       }
 
       var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
-      var page_max = Math.ceil(post_count / posts_per_page) || 1;
 
       // If user requests a specific page, we know how many posts are displayed
       // before it.
