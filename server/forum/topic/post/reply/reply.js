@@ -337,6 +337,7 @@ module.exports = function (N, apiPath) {
 
     post.tail = env.data.parse_result.tail;
     post.imports = env.data.parse_result.imports;
+    post.import_users = env.data.parse_result.import_users;
     post.attach = env.params.attach.map(function (attach) {
       return attach.media_id;
     });

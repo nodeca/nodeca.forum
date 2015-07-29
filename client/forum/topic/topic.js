@@ -221,7 +221,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
         .done(function (res) {
 
-      $('#post' + postId).replaceWith(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
+      var $result = N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true }));
+
+      N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+        $('#post' + postId).replaceWith($result);
+      });
     });
   });
 
@@ -330,8 +334,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // Update whole post to correctly update votes counters and modifiers
       N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).done(function (res) {
-        $post.replaceWith(N.runtime.render('forum.blocks.posts_list', res));
-        callback();
+        var $result = N.runtime.render('forum.blocks.posts_list', res);
+
+        N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+          $post.replaceWith($result);
+          callback();
+        });
       });
     });
   });
@@ -393,8 +401,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           return;
         }
 
-        callback();
-        $post.replaceWith(N.runtime.render('forum.blocks.posts_list', res));
+        var $result = N.runtime.render('forum.blocks.posts_list', res);
+
+        N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+          $post.replaceWith($result);
+          callback();
+        });
       });
     });
   });
@@ -476,10 +488,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // render & inject posts list
       var $result = $(N.runtime.render('forum.blocks.posts_list', res));
-      $('.forum-postlist > :first').before($result);
 
-      // update scroll so it would point at the same spot as before
-      $(window).scrollTop($(window).scrollTop() + $('.forum-postlist').height() - old_height);
+      N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+        $('.forum-postlist > :first').before($result);
+
+        // update scroll so it would point at the same spot as before
+        $(window).scrollTop($(window).scrollTop() + $('.forum-postlist').height() - old_height);
+      });
 
     }).fail(N.io.NOT_FOUND, function () {
       // Topic moved or deleted, refreshing the page so user could
@@ -532,7 +547,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // render & inject posts list
       var $result = $(N.runtime.render('forum.blocks.posts_list', res));
-      $('.forum-postlist > :last').after($result);
+
+      N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+        $('.forum-postlist > :last').after($result);
+      });
 
     }).fail(N.io.NOT_FOUND, function () {
       // Topic moved or deleted, refreshing the page so user could

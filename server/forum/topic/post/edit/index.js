@@ -148,6 +148,16 @@ module.exports = function (N, apiPath) {
     env.data.users = env.data.users || [];
     env.data.users.push(env.data.post.user);
 
+    if (env.data.post.to_user) {
+      env.data.users.push(env.data.post.to_user);
+    }
+    if (env.data.post.del_by) {
+      env.data.users.push(env.data.post.del_by);
+    }
+    if (env.data.post.import_users) {
+      env.data.users = env.data.users.concat(env.data.post.import_users);
+    }
+
     env.res.user_id = env.data.post.user;
     env.res.md = env.data.post.md;
     env.res.attachments = env.data.attachments;

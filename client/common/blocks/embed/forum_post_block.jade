@@ -1,0 +1,15 @@
+blockquote(cite=self.href || false).quote
+  footer.quote__title
+    if self.href
+      .quote__controls.pull-right
+        button.quote__expand.btn.btn-xs.icon.icon-expand
+        button.quote__collapse.btn.btn-xs.icon.icon-collapse
+        a.quote__ref-local.btn.btn-xs.icon.icon-ref-local(href=self.href)
+        a.quote__ref-outer.btn.btn-xs.icon.icon-ref-outer(href=self.href)
+    if self.user
+      cite.quote__author
+        img._identicon(data-user-id=String(self.user._id), data-avatar-size='sm')
+        = self.user.nick
+      | :
+  .quote__content
+    != self.post.html

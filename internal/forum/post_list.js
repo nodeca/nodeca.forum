@@ -261,6 +261,9 @@ module.exports = function (N, apiPath) {
       if (post.del_by) {
         env.data.users.push(post.del_by);
       }
+      if (post.import_users) {
+        env.data.users = env.data.users.concat(post.import_users);
+      }
     });
   });
 

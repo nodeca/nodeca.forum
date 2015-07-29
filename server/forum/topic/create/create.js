@@ -275,11 +275,12 @@ module.exports = function (N, apiPath) {
       return attach.media_id;
     });
     post.tail = env.data.parse_result.tail;
-    post.imports = env.data.parse_result.imports;
     post.html = env.data.parse_result.html;
     post.md = env.params.txt;
     post.ip = env.req.ip;
     post.params = env.data.parse_options;
+    post.imports = env.data.parse_result.imports;
+    post.import_users = env.data.parse_result.import_users;
 
     if (env.user_info.hb) {
       post.st  = N.models.forum.Post.statuses.HB;

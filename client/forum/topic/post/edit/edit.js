@@ -100,13 +100,19 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
 
         N.MDEdit.hide();
 
-        $post.find('.forum-post__message').html(response.post.html);
+        var $result = $(response.post.html);
+
+        $post.find('.forum-post__message').empty().append($result);
+
         $post.find('.forum-post__tail').html(
           N.runtime.render('forum.blocks.posts_list.attachments', {
             post: response.post,
             user: { hid: $post.data('user-hid') }
           })
         );
+
+        N.wire.emit('navigate.update', { $: $result, locals: response });
+
         $post.removeClass('forum-post__m-flash');
         setTimeout(function () {
           $post.addClass('forum-post__m-flash');

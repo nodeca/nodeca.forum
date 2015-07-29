@@ -7,7 +7,8 @@ blockquote(cite=self.href || false).quote
         a.quote__ref-local.btn.btn-xs.icon.icon-ref-local(href=self.href)
         a.quote__ref-outer.btn.btn-xs.icon.icon-ref-outer(href=self.href)
     if self.user
-      cite.quote__author= self.user.nick
+      cite.quote__author
+        img._identicon(data-user-id=String(self.user._id), data-avatar-size='sm')
+        = self.user.nick
       | :
   .quote__content
-    != self.post.html
