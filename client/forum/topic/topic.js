@@ -750,3 +750,62 @@ N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
   $('.navbar-alt').empty();
   $('.navbar').removeClass('navbar__m-secondary');
 });
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Set a "same page" modifier to all block quotes which point to the same topic
+//
+
+// current topic params if we're on the topic page, null otherwise;
+var topicParams;
+
+
+// Set `quote__m-local` or `quote__m-outer` class on every quote
+// depending on whether its origin is in the same topic or not.
+//
+function set_quote_modifiers(selector) {
+  // if topicParams is not set, it means we aren't on a topic page
+  if (!topicParams) { return; }
+
+  selector.find('.quote').addBack('.quote').each(function () {
+    var $tag = $(this);
+
+    if ($tag.hasClass('quote__m-local') || $tag.hasClass('quote__m-outer')) {
+      return;
+    }
+
+    var cite = $tag.attr('cite');
+
+    if (!cite) { return; }
+
+    var match = N.router.match(cite);
+
+    if (!match) { return; }
+
+    if (match &&
+        match.meta.methods.get === 'forum.topic' &&
+        match.params.topic_hid === topicParams.topic_hid) {
+
+      $tag.addClass('quote__m-local');
+    } else {
+      $tag.addClass('quote__m-outer');
+    }
+  });
+}
+
+
+N.wire.on('navigate.done:' + module.apiPath, function set_quote_modifiers_on_init(data) {
+  topicParams = data.params;
+
+  set_quote_modifiers($(document));
+});
+
+
+N.wire.on('navigate.update', function set_quote_modifiers_on_update(data) {
+  set_quote_modifiers(data.$);
+});
+
+
+N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardown() {
+  topicParams = null;
+});
