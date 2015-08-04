@@ -45,8 +45,9 @@ each post, post_idx in self.posts
             if !post_idx || self.posts[post_idx - 1]._id !== post.to
               - var _reply_to_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid });
               - var _reply_to_user = self.users[post.to_user]
-              a.forum-post__reply-link(href=_reply_to_anchor)
+              a.forum-post__reply-to-link(href=_reply_to_anchor)
                 span.icon.icon-reply-for.icon-space-after
+                img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
                 = _reply_to_user.nick
 
           != self.timetag(post.ts, 'relative')
