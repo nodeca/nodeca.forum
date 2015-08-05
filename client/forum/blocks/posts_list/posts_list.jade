@@ -43,8 +43,14 @@ each post, post_idx in self.posts
 
           if post.to && post.to_user && self.users[post.to_user]
             if !post_idx || self.posts[post_idx - 1]._id !== post.to
-              - var _reply_to_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid });
+              - var _reply_to_params = {};
+              - _reply_to_params.section_hid = post.to_fhid || self.section.hid;
+              - _reply_to_params.topic_hid   = post.to_thid || self.topic.hid;
+              - _reply_to_params.post_hid    = post.to_phid;
+
+              - var _reply_to_anchor = self.link_to('forum.topic', _reply_to_params);
               - var _reply_to_user = self.users[post.to_user]
+
               a.forum-post__reply-to-link(href=_reply_to_anchor)
                 span.icon.icon-reply-for.icon-space-after
                 img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))

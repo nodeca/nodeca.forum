@@ -86,8 +86,10 @@ function createPost(topic, reply_to, callback) {
             /*eslint-disable new-cap*/
             ip:      charlatan.Internet.IPv4(),
 
-            to:      reply_to ? reply_to._id  : void 0,
-            to_user: reply_to ? reply_to.user : void 0,
+            /*eslint-disable no-undefined*/
+            to:      reply_to ? reply_to._id  : undefined,
+            to_user: reply_to ? reply_to.user : undefined,
+            to_phid: reply_to ? reply_to.hid  : undefined,
 
             ts:      new Date(2010, 0, postDay++),
 

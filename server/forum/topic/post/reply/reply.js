@@ -356,6 +356,7 @@ module.exports = function (N, apiPath) {
     if (env.data.post) {
       post.to = env.data.post._id;
       post.to_user = env.data.post.user;
+      post.to_phid = env.data.post.hid;
     }
 
     post.topic = env.data.topic._id;

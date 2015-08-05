@@ -22,10 +22,17 @@ module.exports = function (N, collectionName) {
 
     // Related post for replies
     to              : Schema.ObjectId,
-    to_user         : Schema.ObjectId,
     user            : Schema.ObjectId,
     ts              : { type: Date, 'default': Date.now },  // timestamp
     ip              : String,  // ip address
+
+    // Data for displaying "replied to" link
+    to_user         : Schema.ObjectId,
+    to_phid         : Number,
+
+    // those are rarely used (only if it's a reply to a different topic)
+    to_fhid         : Number,
+    to_thid         : Number,
 
     html            : String,  // displayed HTML
     md              : String,  // markdown source
