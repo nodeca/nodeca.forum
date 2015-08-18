@@ -183,11 +183,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      var ast = cheequery(env.data.parse_result.html);
-
-      ast.find('.emoji').remove();
-
-      if (punycode.ucs2.decode(ast.text().replace(/\s+/g, ' ').trim()).length < min_length) {
+      if (env.data.parse_result.text_length < min_length) {
         callback({
           code: N.io.CLIENT_ERROR,
           message: env.t('err_text_too_short', min_length)
