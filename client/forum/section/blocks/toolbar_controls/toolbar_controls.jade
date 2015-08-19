@@ -1,0 +1,27 @@
+.forum-topic__toolbar-controls
+  if self.settings.forum_can_start_topics
+    .nav-alt__btn
+      button.btn.btn-primary.icon.icon-plus(
+        data-on-click='forum.section:create'
+        data-section-hid=self.section.hid
+        data-section-title=self.section.title
+        type='button'
+        title=self.t('topic_create')
+      )
+
+  if self.runtime.is_member
+    .nav-alt__btn
+      button.btn.btn-default.icon.icon-check(
+        type='button'
+        title=self.t('mark_read')
+      )
+
+  .nav-alt__btn
+    button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+      span.caret
+    ul.dropdown-menu.dropdown-menu-right
+      li.disabled: a(href='#')= self.t('announce')
+      li.disabled: a(href='#')= self.t('add_moderator')
+      li.disabled: a(href='#')= self.t('mass_move')
+      li.disabled: a(href='#')= self.t('mass_prune')
+

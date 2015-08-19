@@ -25,6 +25,9 @@ article#content.forum-topic-root(
     - var canEdit = (topicOwner && topicOwner._id === self.runtime.user_id) && (self.settings.forum_edit_max_time === 0 || new Date(self.topic.cache.first_ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000);
 
     h1.forum-topic-title.page-head__title(itemprop='name')
+      .pull-right
+        != self.partial('@forum.topic.blocks.toolbar_controls')
+
       span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
 
       span.forum-topic-title__text= self.topic.title

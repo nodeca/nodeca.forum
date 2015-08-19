@@ -18,6 +18,8 @@ article#content.forum-section-root(
   != self.partial('@common.blocks.breadcrumbs')
 
   header.page-head
+    .pull-right
+      != self.partial('@forum.section.blocks.toolbar_controls')
     h1.page-head__title(itemprop='name')= self.section.title
     p.page-head__descr.hidden-xs(itemprop='description')
       | #{self.section.description}

@@ -8,17 +8,6 @@
   != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
 
 .pull-right
-  - var is_open = (self.topic.st === self.topic_statuses.OPEN || self.topic.ste === self.topic_statuses.OPEN);
-
-  if self.settings.forum_can_reply && is_open
-    .nav-alt__btn
-      button.forum-topic-menu__reply.btn.btn-primary.icon.icon-plus(
-        data-on-click='forum.topic:reply'
-        type='button'
-        title=self.t('post_add')
-      )
-
-  .nav-alt__btn
-    != self.partial('@forum.topic.blocks.dropdown_menu')
+  != self.partial('@forum.topic.blocks.toolbar_controls')
 
 .navbar-alt__title= self.topic.title

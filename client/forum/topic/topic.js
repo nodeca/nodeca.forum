@@ -162,20 +162,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       var pageData = _.merge({}, params.data, { topic: { st: null, ste: null } }, { topic: topic });
 
       // Need to re-render reply button and dropdown here
-      $('.navbar-alt')
-        .empty()
-        .append(N.runtime.render(module.apiPath + '.navbar_alt', {
+      $('.forum-topic__toolbar-controls')
+        .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', {
           settings:       pageData.settings,
           topic:          pageData.topic,
-          section_hid:    topicState.section_hid,
-          topic_statuses: topicStatuses,
-
-          page_progress: {
-            section_hid: topicState.section_hid,
-            topic_hid:   topicState.topic_hid,
-            current:     topicState.post_hid,
-            max:         topicState.max_post
-          }
+          section_hid:    topicState.section_hid
         }));
 
       if (pageData.topic.st === topicStatuses.OPEN || pageData.topic.ste === topicStatuses.OPEN) {
@@ -281,8 +272,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       selector: '.forum-topic-title',
       value: $title.text(),
       update: function (value, callback) {
+        value = value.trim();
 
-        if (punycode.ucs2.decode(value.trim()).length < N.runtime.page_data.settings.forum_topic_title_min_length) {
+        if (punycode.ucs2.decode(value).length < N.runtime.page_data.settings.forum_topic_title_min_length) {
           callback(t('err_title_too_short', N.runtime.page_data.settings.forum_topic_title_min_length));
           return;
         }
@@ -298,7 +290,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           topic_id: data.$this.data('topic-id'),
           title: value
         }).done(function () {
-          $title.text(value.trim());
+          $title.text(value);
+
+          // update title in navbar
+          $('.navbar-alt__title').text(value);
+
           callback();
         });
       }
