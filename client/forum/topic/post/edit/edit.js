@@ -95,28 +95,21 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         option_no_emojis: options.user_settings.no_emojis
       };
 
-      N.io.rpc('forum.topic.post.edit.update', params).done(function (response) {
+      N.io.rpc('forum.topic.post.edit.update', params).done(function (res) {
         var $post = $('#post' + data.post_id);
 
         N.MDEdit.hide();
 
-        var $result = $(response.post.html);
+        var $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        $post.find('.forum-post__message').empty().append($result);
+        N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+          $post.replaceWith($result);
 
-        $post.find('.forum-post__tail').html(
-          N.runtime.render('forum.blocks.posts_list.attachments', {
-            post: response.post,
-            user: { hid: $post.data('user-hid') }
-          })
-        );
-
-        N.wire.emit('navigate.update', { $: $result, locals: response });
-
-        $post.removeClass('forum-post__m-flash');
-        setTimeout(function () {
-          $post.addClass('forum-post__m-flash');
-        }, 0);
+          $post.removeClass('forum-post__m-flash');
+          setTimeout(function () {
+            $post.addClass('forum-post__m-flash');
+          }, 0);
+        });
       });
 
       return false;

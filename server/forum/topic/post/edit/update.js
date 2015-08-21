@@ -3,6 +3,7 @@
 
 var cheequery = require('nodeca.core/lib/parser/cheequery');
 
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -217,9 +218,23 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.post = { html: updateData.html, tail: updateData.tail };
-
       callback();
     });
+  });
+
+
+  function buildPostIds(env, callback) {
+    env.data.posts_ids = [ env.data.post._id ];
+    callback();
+  }
+
+
+  // Fetch post
+  //
+  N.wire.after(apiPath, function fetch_post(env, callback) {
+    env.data.topic_hid = env.data.topic.hid;
+    env.data.build_posts_ids = buildPostIds;
+
+    N.wire.emit('internal:forum.post_list', env, callback);
   });
 };

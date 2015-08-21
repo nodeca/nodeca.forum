@@ -212,7 +212,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
         .done(function (res) {
 
-      var $result = N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true }));
+      var $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
 
       N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
         $('#post' + postId).replaceWith($result);
@@ -330,7 +330,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // Update whole post to correctly update votes counters and modifiers
       N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).done(function (res) {
-        var $result = N.runtime.render('forum.blocks.posts_list', res);
+        var $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
         N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
           $post.replaceWith($result);
@@ -397,7 +397,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           return;
         }
 
-        var $result = N.runtime.render('forum.blocks.posts_list', res);
+        var $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
         N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
           $post.replaceWith($result);
