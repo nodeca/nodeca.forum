@@ -13,14 +13,7 @@ module.exports = function (N, apiPath) {
       type: 'array',
       required: true,
       uniqueItems: true,
-      items: {
-        type: 'object',
-        properties: {
-          media_id: { format: 'mongo', required: true },
-          file_name: 'string',
-          type: 'integer'
-        }
-      }
+      items: { format: 'mongo', required: true }
     },
     option_no_mlinks: { type: 'boolean', required: true },
     option_no_emojis: { type: 'boolean', required: true },
@@ -191,7 +184,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function post_update(env, callback) {
     var updateData = {
       tail:    env.data.parse_result.tail,
-      attach:  env.params.attach.map(function (attach) { return attach.media_id; }),
+      attach:  env.params.attach,
       html:    env.data.parse_result.html,
       md:      env.params.txt,
       params:  env.data.parse_options

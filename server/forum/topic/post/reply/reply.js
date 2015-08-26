@@ -15,14 +15,7 @@ module.exports = function (N, apiPath) {
       type: 'array',
       required: true,
       uniqueItems: true,
-      items: {
-        type: 'object',
-        properties: {
-          media_id: { format: 'mongo', required: true },
-          file_name: 'string',
-          type: 'integer'
-        }
-      }
+      items: { format: 'mongo', required: true }
     },
     option_no_mlinks: { type: 'boolean', required: true },
     option_no_emojis: { type: 'boolean', required: true }
@@ -333,9 +326,7 @@ module.exports = function (N, apiPath) {
     post.tail = env.data.parse_result.tail;
     post.imports = env.data.parse_result.imports;
     post.import_users = env.data.parse_result.import_users;
-    post.attach = env.params.attach.map(function (attach) {
-      return attach.media_id;
-    });
+    post.attach = env.params.attach;
     post.html = env.data.parse_result.html;
     post.md = env.params.txt;
     post.ip = env.req.ip;

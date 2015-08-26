@@ -107,7 +107,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         section_hid:      data.section_hid,
         title:            $('.topic-create__title').val(),
         txt:              N.MDEdit.text(),
-        attach:           N.MDEdit.attachments(),
+        attach:           _.pluck(N.MDEdit.attachments(), 'media_id'),
         option_no_mlinks: options.user_settings.no_mlinks,
         option_no_emojis: options.user_settings.no_emojis
       };

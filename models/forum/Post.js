@@ -17,8 +17,8 @@ module.exports = function (N, collectionName) {
 
 
   var Post = new Schema({
-    topic          : Schema.ObjectId,
-    hid            : Number,
+    topic           : Schema.ObjectId,
+    hid             : Number,
 
     // Related post for replies
     to              : Schema.ObjectId,
@@ -58,19 +58,19 @@ module.exports = function (N, collectionName) {
       ste: Number
     },
 
-    attach     : [ Schema.ObjectId ],  // all attachments
+    attach          : [ Schema.ObjectId ],  // all attachments
 
   // Post params
     params          : Schema.Types.Mixed,
 
-  // List of urls to resources being used to build this post (snippets, etc.)
-    imports       : [ String ],
+  // List of urls to accessible resources being used to build this post (snippets, etc.)
+    imports         : [ String ],
 
   // List of users to fetch in order to properly display the post
-    import_users  : [ Schema.ObjectId ],
+    import_users    : [ Schema.ObjectId ],
 
-  // Info to build post tail
-    tail     : [ new Schema({ // explicit definition to remove `_id` field
+  // Info to display post tail
+    tail            : [ new Schema({ // explicit definition to remove `_id` field
       media_id: Schema.ObjectId,
       file_name: String,
       type: { type: Number }
