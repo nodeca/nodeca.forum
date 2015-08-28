@@ -1,6 +1,7 @@
 // Get post src html, update post
 'use strict';
 
+var _         = require('lodash');
 var cheequery = require('nodeca.core/lib/parser/cheequery');
 
 
@@ -190,19 +191,14 @@ module.exports = function (N, apiPath) {
       params:  env.data.parse_options
     };
 
-    if (env.data.parse_result.imports.length) {
-      updateData.imports = env.data.parse_result.imports;
-    } else {
-      updateData.$unset = updateData.$unset || {};
-      updateData.$unset.imports = true;
-    }
-
-    if (env.data.parse_result.import_users.length) {
-      updateData.import_users = env.data.parse_result.import_users;
-    } else {
-      updateData.$unset = updateData.$unset || {};
-      updateData.$unset.import_users = true;
-    }
+    [ 'imports', 'import_users', 'image_info' ].forEach(function (field) {
+      if (!_.isEmpty(env.data.parse_result[field])) {
+        updateData[field] = env.data.parse_result[field];
+      } else {
+        updateData.$unset = updateData.$unset || {};
+        updateData.$unset[field] = true;
+      }
+    });
 
     N.models.forum.Post.update({ _id: env.params.post_id }, updateData, function (err) {
 

@@ -326,6 +326,7 @@ module.exports = function (N, apiPath) {
     post.tail = env.data.parse_result.tail;
     post.imports = env.data.parse_result.imports;
     post.import_users = env.data.parse_result.import_users;
+    post.image_info = env.data.parse_result.image_info;
     post.attach = env.params.attach;
     post.html = env.data.parse_result.html;
     post.md = env.params.txt;
