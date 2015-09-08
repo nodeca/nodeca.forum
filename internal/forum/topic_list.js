@@ -14,12 +14,14 @@
 //       posts: ...         # array, sanitized, with restricted fields
 //       section: ...       # with restricted fields
 //       own_bookmarks: ... # array of topics ids bookmarked by user
+//       read_marks:        # hash with keys as topic ids and values is object
+//                          # with fields `isNew`, `next` and `position`
+//       subscriptions:     # array of topics ids subscribed by user
 //     data:
 //       topics_visible_statuses: ...
 //       settings: ...
 //       topic: ...
 //       section: ...
-//       own_bookmarks: ...
 //
 
 'use strict';
@@ -147,9 +149,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch bookmarks
+  // Fill bookmarks
   //
-  N.wire.after(apiPath, function fetch_bookmarks(env, callback) {
+  N.wire.after(apiPath, function fill_bookmarks(env, callback) {
     var postIds = env.data.topics.map(function (topic) {
       return topic.cache.first_post;
     });
@@ -165,7 +167,61 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.own_bookmarks = bookmarks;
+      env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
+      callback();
+    });
+  });
+
+
+  // Fill subscriptions for section topics
+  //
+  N.wire.after(apiPath, function fill_subscriptions(env, callback) {
+    if (env.user_info.is_guest) {
+      env.res.subscriptions = [];
+
+      callback();
+      return;
+    }
+
+    N.models.users.Subscription.find()
+        .where('user_id').equals(env.user_info.user_id)
+        .where('to').in(env.data.topics_ids)
+        .where('type').ne(N.models.users.Subscription.types.UNSUBSCRIBED)
+        .lean(true)
+        .exec(function (err, subscriptions) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.subscriptions = _.pluck(subscriptions, 'to');
+      callback();
+    });
+  });
+
+
+  // Fill `isNew`, `next` and `position` markers
+  //
+  N.wire.after(apiPath, function fill_read_marks(env, callback) {
+    var data = [];
+
+    env.data.topics.forEach(function (topic) {
+      data.push({
+        categoryId: topic.section,
+        contentId: topic._id,
+        lastPosition: topic.last_post_hid,
+        lastPositionTs: topic.cache.last_ts
+      });
+    });
+
+    N.models.core.Marker.info(env.user_info.user_id, data, function (err, marks) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.read_marks = marks;
       callback();
     });
   });
@@ -225,7 +281,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill response except section
+  // Fill response fields
   //
   N.wire.after(apiPath, function fill_response(env) {
     // Fill topics
@@ -233,8 +289,5 @@ module.exports = function (N, apiPath) {
 
     // Fill settings
     env.res.settings = env.data.settings;
-
-    // Fill bookmarks
-    env.res.own_bookmarks = _.pluck(env.data.own_bookmarks, 'post_id');
   });
 };

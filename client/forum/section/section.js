@@ -122,6 +122,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     }, callback);
   });
 
+
+  // Click mark all read
+  //
+  N.wire.on('forum.section:mark_read', function reply(data) {
+    N.io.rpc('forum.section.mark_read', { hid: data.$this.data('section-hid') }).done(function () {
+      $('.forum-topicline.forum-topicline__m-new, .forum-topicline.forum-topicline__m-unread')
+        .removeClass('forum-topicline__m-new')
+        .removeClass('forum-topicline__m-unread');
+    });
+  });
+
+
   // Called when user submits dropdown menu form
   //
   N.wire.on('forum.section:nav_to_offset', function navigate_to_offset(data) {

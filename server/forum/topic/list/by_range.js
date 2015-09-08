@@ -9,27 +9,10 @@ var LIMIT = 50;
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_hid: {
-      type: 'integer',
-      required: true
-    },
-    post_hid: {
-      type: 'integer',
-      minimum: 1,
-      required: true
-    },
-    before: {
-      type: 'integer',
-      minimum: 0,
-      maximum: LIMIT,
-      required: true
-    },
-    after: {
-      type: 'integer',
-      minimum: 0,
-      maximum: LIMIT,
-      required: true
-    }
+    topic_hid: { type: 'integer', required: true },
+    post_hid:  { type: 'integer', required: true, minimum: 1 },
+    before:    { type: 'integer', required: true, minimum: 0, maximum: LIMIT },
+    after:     { type: 'integer', required: true, minimum: 0, maximum: LIMIT }
   });
 
   var buildPostHids = require('./_build_post_hids_by_range.js')(N);

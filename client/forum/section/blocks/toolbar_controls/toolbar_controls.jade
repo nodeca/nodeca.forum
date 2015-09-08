@@ -13,6 +13,8 @@
     .nav-alt__btn
       button.btn.btn-default.icon.icon-check(
         type='button'
+        data-on-click='forum.section:mark_read'
+        data-section-hid=self.section.hid
         title=self.t('mark_read')
       )
 

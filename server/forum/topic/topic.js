@@ -15,22 +15,10 @@ var LOAD_POSTS_AFTER_COUNT  = 15;
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     properties: {
-      section_hid: {
-        type: 'integer',
-        required: true
-      },
-      topic_hid: {
-        type: 'integer',
-        required: true
-      },
-      post_hid: {
-        type: 'integer',
-        minimum: 1
-      },
-      page: {
-        type: 'integer',
-        minimum: 1
-      }
+      section_hid: { type: 'integer', required: true },
+      topic_hid:   { type: 'integer', required: true },
+      post_hid:    { type: 'integer', minimum: 1 },
+      page:        { type: 'integer', minimum: 1 }
     },
 
     additionalProperties: false,
@@ -287,5 +275,12 @@ module.exports = function (N, apiPath) {
         });
       });
     });
+  });
+
+
+  // Mark topic as read
+  //
+  N.wire.after(apiPath, function mark_topic_read(env, callback) {
+    N.models.core.Marker.mark(env.user_info.user_id, env.data.topic._id, callback);
   });
 };

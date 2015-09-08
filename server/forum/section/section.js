@@ -10,15 +10,8 @@ module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     // section hid
-    hid: {
-      type: 'integer',
-      required: true
-    },
-    page: {
-      type: 'integer',
-      minimum: 1,
-      required: true
-    }
+    hid:  { type: 'integer', required: true },
+    page: { type: 'integer', required: true, minimum: 1 }
   });
 
   var buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);

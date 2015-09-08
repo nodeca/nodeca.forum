@@ -17,6 +17,8 @@ each topic, idx in self.topics
     class=(topic.st === topicStatuses.DELETED) ? 'forum-topicline__m-deleted' : ''
     class=(topic.st === topicStatuses.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
     class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
+    class=(self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1) ? 'forum-topicline__m-unread' : ''
+    class=(self.read_marks[topic._id].isNew) ? 'forum-topicline__m-new' : ''
     data-offset=(self.pagination.chunk_offset + idx)
     data-topic-id=topic._id
   )
@@ -28,7 +30,22 @@ each topic, idx in self.topics
             span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-sm.icon-dimmed.icon-space-after(title=self.t('bookmarked'))
             span.forum-topicline__deleted-marker.icon.icon-deleted.icon-sm.icon-dimmed.icon-space-after(title=self.t('deleted'))
             span.forum-topicline__closed-marker.icon.icon-closed.icon-sm.icon-dimmed.icon-space-after(title=self.t('closed'))
-            a.forum-topicline__title-link(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))= topic.title
+
+            - var href;
+
+            if (self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1)
+              //- If user subscribed and unread messages in topic - go to first unread
+              - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].next });
+
+            else if (self.read_marks[topic._id].position !== -1)
+              //- If we have position info - go to last position
+              - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].position });
+
+            else
+              //- Go to first post in topic
+              - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid });
+
+            a.forum-topicline__title-link(href=href)= topic.title
           //-a.mark-i-attach._tip(href="#")=topic.attach_count
 
           if topic.del_by
@@ -54,7 +71,7 @@ each topic, idx in self.topics
 
           .forum-topicline__enter.icon.icon-right-open.visible-xs-block
 
-          .forum-topicline__unread-marker
+          .forum-topicline__new-marker
 
       ul.forum-topicline__counters.col-sm-2.hidden-xs
         li.forum-topicline__counter-item
