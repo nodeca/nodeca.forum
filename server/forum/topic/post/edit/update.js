@@ -84,6 +84,7 @@ module.exports = function (N, apiPath) {
         text: env.params.txt,
         attachments: env.params.attach,
         options: env.data.parse_options,
+        image_info: env.data.post.image_info,
         env: env
       },
       function (err, result) {
@@ -216,6 +217,15 @@ module.exports = function (N, apiPath) {
     env.data.posts_ids = [ env.data.post._id ];
     callback();
   }
+
+
+  // Schedule image size fetch
+  //
+  N.wire.after(apiPath, function fill_image_info(env) {
+    N.queue.postpone('forum_post_images_fetch', {
+      post_id: env.data.post._id
+    }, function () {});
+  });
 
 
   // Fetch post

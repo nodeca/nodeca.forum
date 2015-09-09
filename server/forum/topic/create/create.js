@@ -328,6 +328,15 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Schedule image size fetch
+  //
+  N.wire.after(apiPath, function fill_image_info(env) {
+    N.queue.postpone('forum_post_images_fetch', {
+      post_id: env.data.new_post._id
+    }, function () {});
+  });
+
+
   // Update section counters
   //
   N.wire.after(apiPath, function update_section(env, callback) {
