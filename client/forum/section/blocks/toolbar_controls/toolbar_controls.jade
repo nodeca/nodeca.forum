@@ -1,24 +1,22 @@
-.forum-topic__toolbar-controls
+.page-actions
   if self.settings.forum_can_start_topics
-    .nav-alt__btn
-      button.btn.btn-primary.icon.icon-plus(
-        data-on-click='forum.section:create'
-        data-section-hid=self.section.hid
-        data-section-title=self.section.title
-        type='button'
-        title=self.t('topic_create')
-      )
+    button.btn.btn-primary.icon.icon-plus(
+      data-on-click='forum.section:create'
+      data-section-hid=self.section.hid
+      data-section-title=self.section.title
+      type='button'
+      title=self.t('topic_create')
+    )
 
   if self.runtime.is_member
-    .nav-alt__btn
-      button.btn.btn-default.icon.icon-check(
-        type='button'
-        data-on-click='forum.section:mark_read'
-        data-section-hid=self.section.hid
-        title=self.t('mark_read')
-      )
+    button.btn.btn-default.icon.icon-check(
+      type='button'
+      data-on-click='forum.section:mark_read'
+      data-section-hid=self.section.hid
+      title=self.t('mark_read')
+    )
 
-  .nav-alt__btn
+  .page-actions__dropdown
     button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
       span.caret
     ul.dropdown-menu.dropdown-menu-right
