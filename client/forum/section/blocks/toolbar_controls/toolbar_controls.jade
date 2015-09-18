@@ -3,8 +3,8 @@
 - var items = []
 
 if self.runtime.is_member
-  - items.push('subscription')
   - items.push('mark_read')
+  - items.push('subscription')
 
 if items.length > 0
   - items.push('divider')
@@ -32,7 +32,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     )
 
   if self.runtime.is_member
-    button.btn.btn-default.icon.icon-check(
+    button.btn.btn-default.hidden-xxs.icon.icon-check(
       type='button'
       data-on-click='forum.section:mark_read'
       data-section-hid=self.section.hid
@@ -53,7 +53,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-default.icon(
+    button.btn.btn-default.hidden-xxs.icon(
       title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.section:subscription'
@@ -73,7 +73,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
           case item
 
             when 'mark_read'
-              li: a(href='#'
+              li.visible-xxs-block: a(href='#'
                 data-on-click='forum.section:mark_read'
                 data-section-hid=self.section.hid
               )= self.t('mark_read')

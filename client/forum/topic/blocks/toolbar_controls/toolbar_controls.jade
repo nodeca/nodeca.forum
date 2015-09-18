@@ -78,7 +78,7 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-default.icon(
+    button.btn.btn-default.hidden-xxs.icon(
       title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.topic:subscription'
