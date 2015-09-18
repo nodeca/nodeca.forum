@@ -111,7 +111,11 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
                 data-on-click='forum.topic:subscription'
                 data-topic-hid=self.topic.hid
                 data-topic-subscription=self.subscription
-              )= self.t('subscription')
+              )
+                if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
+                  span.icon(class=subscriptionIcon)
+                  | 
+                = self.t('subscription')
 
             when 'delete'
               li: a(href='#'

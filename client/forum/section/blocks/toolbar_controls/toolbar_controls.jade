@@ -4,6 +4,7 @@
 
 if self.runtime.is_member
   - items.push('subscription')
+  - items.push('mark_read')
 
 if items.length > 0
   - items.push('divider')
@@ -71,12 +72,22 @@ if items.length > 0 && items[items.length - 1] === 'header'
         each item in items
           case item
 
+            when 'mark_read'
+              li: a(href='#'
+                data-on-click='forum.section:mark_read'
+                data-section-hid=self.section.hid
+              )= self.t('mark_read')
+
             when 'subscription'
               li: a(href='#'
                 data-on-click='forum.section:subscription'
                 data-section-hid=self.section.hid
                 data-section-subscription=self.subscription
-              )= self.t('subscription')
+              )
+                if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
+                  span.icon(class=subscriptionIcon)
+                  | 
+                = self.t('subscription')
 
             when 'divider'
               li.divider

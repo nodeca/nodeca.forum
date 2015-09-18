@@ -421,6 +421,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
       section:       N.runtime.page_data.section,
       parent_hid:    $('.forum-section-root').data('parent-hid'),
       section_level: $('.forum-section-root').data('section-level'),
+      subscription:   N.runtime.page_data.subscription,
 
       page_progress: {
         current:  sectionState.current_offset,

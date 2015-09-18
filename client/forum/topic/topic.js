@@ -738,6 +738,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
       topic:          N.runtime.page_data.topic,
       section_hid:    topicState.section_hid,
       topic_statuses: topicStatuses,
+      subscription:   N.runtime.page_data.subscription,
 
       page_progress: {
         section_hid: topicState.section_hid,
