@@ -1,0 +1,33 @@
+- var types = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+
+.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+  .modal-dialog
+    .modal-content
+      form(data-on-submit='forum.topic.topic_subscription:submit')
+        .modal-header
+          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+          h4.modal-title=self.t('title')
+        .modal-body
+          .radio
+            label
+              input(type='radio' name='type' tabindex='1' value=types.SUBSCRIBED checked=self.subscription === types.SUBSCRIBED)
+              =self.t('subscribed')
+              p.help-block=self.t('subscribed_desc')
+          .radio
+            label
+              input(type='radio' name='type' tabindex='2' value=types.IMMEDIATE checked=self.subscription === types.IMMEDIATE)
+              =self.t('immediate')
+              p.help-block=self.t('immediate_desc')
+          .radio
+            label
+              input(type='radio' name='type' tabindex='3' value=types.UNSUBSCRIBED checked=!self.subscription || self.subscription === types.UNSUBSCRIBED)
+              =self.t('unsubscribed')
+              p.help-block=self.t('unsubscribed_desc')
+          .radio
+            label
+              input(type='radio' name='type' tabindex='4' value=types.MUTED checked=self.subscription === types.MUTED)
+              =self.t('muted')
+              p.help-block=self.t('muted_desc')
+        .modal-footer
+          button.btn.btn-default(type='button' tabindex='5' data-dismiss='modal')=self.t('cancel')
+          button.btn.btn-danger(type='submit' tabindex='6')=self.t('ok')

@@ -186,7 +186,7 @@ module.exports = function (N, apiPath) {
     N.models.users.Subscription.find()
         .where('user_id').equals(env.user_info.user_id)
         .where('to').in(env.data.topics_ids)
-        .where('type').ne(N.models.users.Subscription.types.UNSUBSCRIBED)
+        .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
         .lean(true)
         .exec(function (err, subscriptions) {
 

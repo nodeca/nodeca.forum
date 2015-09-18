@@ -1,4 +1,5 @@
 - var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
+- var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
 - var topicOwnerId = self.topic.cache.first_user
 
 - var items = []
@@ -15,6 +16,9 @@ if topicOwnerId === self.runtime.user_id
       - items.push('close')
     if self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED
       - items.push('open')
+
+if self.runtime.is_member
+  - items.push('subscription')
 
 if items.length > 0
   - items.push('divider')
@@ -50,7 +54,7 @@ if items.length > 0 && items[items.length - 1] === 'divider'
 if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
   - items.push('mod_history')
 
-.page-actions
+.page-actions.forum-topic__toolbar-controls
   - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 
   if self.settings.forum_can_reply && isOpen
@@ -58,6 +62,23 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
       data-on-click='forum.topic:reply'
       type='button'
       title=self.t('post_add')
+    )
+
+  - var subscriptionIcon = 'icon-track-none'
+
+  if (self.subscription === subscriptionTypes.MUTED)
+    - subscriptionIcon = 'icon-deleted'
+  else if (self.subscription === subscriptionTypes.SUBSCRIBED)
+    - subscriptionIcon = 'icon-track-normal'
+  else if (self.subscription === subscriptionTypes.IMMEDIATE)
+    - subscriptionIcon = 'icon-track-instant'
+
+  if (self.subscription && self.subscription !== subscriptionTypes.UNSUBSCRIBED)
+    button.btn.btn-default.icon(
+      class=subscriptionIcon
+      data-on-click='forum.topic:subscription'
+      data-topic-hid=self.topic.hid
+      data-topic-subscription=self.subscription
     )
 
   if items.length > 0
@@ -79,6 +100,16 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
             when 'mod_history'
               //- TODO
               li.disabled: a(href='#')= self.t('history')
+
+            when 'subscription'
+              li: a(href='#'
+                data-on-click='forum.topic:subscription'
+                data-topic-hid=self.topic.hid
+                data-topic-subscription=self.subscription
+              )
+                span.icon(class=subscriptionIcon)
+                | 
+                = self.t('subscription')
 
             when 'delete'
               li: a(href='#'

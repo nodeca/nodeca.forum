@@ -75,6 +75,30 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill subscription type
+  //
+  N.wire.after(apiPath, function fill_subscription(env, callback) {
+    if (env.user_info.is_guest) {
+      env.res.subscription = null;
+
+      callback();
+      return;
+    }
+
+    N.models.users.Subscription.findOne({ to: env.data.topic._id }).lean(true).exec(function (err, subscription) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.subscription = subscription ? subscription.type : null;
+
+      callback();
+      return;
+    });
+  });
+
+
   // Fill `env.data.pagination` structure
   //
   N.wire.after(apiPath, function fetch_pagination(env, callback) {

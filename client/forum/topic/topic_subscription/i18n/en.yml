@@ -1,0 +1,12 @@
+en-US:
+  title: Subscribe
+  muted: Muted
+  muted_desc: You will never be notified of anything about this topic.
+  unsubscribed: Unsubscribed
+  unsubscribed_desc: You will be notified if someone mentions your @name or replies to you.
+  subscribed: Subscribed
+  subscribed_desc: You will be notified of every new reply in this topic in digest.
+  immediate: Immediate
+  immediate_desc: You will be notified of every new reply in this topic immediate.
+  ok: OK
+  cancel: Cancel

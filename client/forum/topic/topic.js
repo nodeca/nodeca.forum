@@ -147,57 +147,34 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Update topic menu and modifiers for new topic state
+  // Update topic menu and modifiers by page data
   //
-  // topic:
-  // - st
-  // - ste
-  //
-  function updateTopic(topic, callback) {
+  function updateTopicState(callback) {
     var params = {};
 
     N.wire.emit('navigate.get_page_raw', params, function () {
-      // - reset previous `st` and `ste`
-      // - set new `st` and `ste`
-      var pageData = _.merge({}, params.data, { topic: { st: null, ste: null } }, { topic: topic });
 
       // Need to re-render reply button and dropdown here
       $('.forum-topic__toolbar-controls')
-        .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', {
-          settings:       pageData.settings,
-          topic:          pageData.topic,
-          section_hid:    topicState.section_hid
-        }));
+        .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', params.data));
 
-      if (pageData.topic.st === topicStatuses.OPEN || pageData.topic.ste === topicStatuses.OPEN) {
-        $('.forum-topic-root').addClass('forum-topic-root__m-open');
-      } else {
-        $('.forum-topic-root').removeClass('forum-topic-root__m-open');
-      }
+      var modifiers = {
+        'forum-topic-root__m-open': topicStatuses.OPEN,
+        'forum-topic-root__m-closed': topicStatuses.CLOSED,
+        'forum-topic-root__m-deleted': topicStatuses.DELETED,
+        'forum-topic-root__m-deleted-hard': topicStatuses.DELETED_HARD,
+        'forum-topic-root__m-pinned': topicStatuses.PINNED
+      };
 
-      if (pageData.topic.st === topicStatuses.CLOSED || pageData.topic.ste === topicStatuses.CLOSED) {
-        $('.forum-topic-root').addClass('forum-topic-root__m-closed');
-      } else {
-        $('.forum-topic-root').removeClass('forum-topic-root__m-closed');
-      }
+      var $topicRoot = $('.forum-topic-root');
 
-      if (pageData.topic.st === topicStatuses.DELETED) {
-        $('.forum-topic-root').addClass('forum-topic-root__m-deleted');
-      } else {
-        $('.forum-topic-root').removeClass('forum-topic-root__m-deleted');
-      }
-
-      if (pageData.topic.st === topicStatuses.DELETED_HARD) {
-        $('.forum-topic-root').addClass('forum-topic-root__m-deleted-hard');
-      } else {
-        $('.forum-topic-root').removeClass('forum-topic-root__m-deleted-hard');
-      }
-
-      if (pageData.topic.st === topicStatuses.PINNED) {
-        $('.forum-topic-root').addClass('forum-topic-root__m-pinned');
-      } else {
-        $('.forum-topic-root').removeClass('forum-topic-root__m-pinned');
-      }
+      _.forEach(modifiers, function (state, modifier) {
+        if (params.data.topic.st === state || params.data.topic.ste === state) {
+          $topicRoot.addClass(modifier);
+        } else {
+          $topicRoot.removeClass(modifier);
+        }
+      });
 
       callback();
     });
@@ -228,14 +205,21 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var unpin = data.$this.data('unpin') || false;
 
     N.io.rpc('forum.topic.pin', { topic_id: topicId, unpin: unpin }).done(function (res) {
-      updateTopic(res.topic, function () {
-        if (unpin) {
-          N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
-        } else {
-          N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
-        }
+      var params = {};
 
-        callback();
+      N.wire.emit('navigate.get_page_raw', params, function () {
+        params.data.topic.st = res.topic.st;
+        params.data.topic.ste = res.topic.ste;
+
+        updateTopicState(function () {
+          if (unpin) {
+            N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
+          } else {
+            N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
+          }
+
+          callback();
+        });
       });
     });
   });
@@ -251,13 +235,21 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     };
 
     N.io.rpc('forum.topic.close', params).done(function (res) {
-      updateTopic(res.topic, function () {
-        if (params.reopen) {
-          N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
-        } else {
-          N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
-        }
-        callback();
+      var pageParams = {};
+
+      N.wire.emit('navigate.get_page_raw', pageParams, function () {
+        pageParams.data.topic.st = res.topic.st;
+        pageParams.data.topic.ste = res.topic.ste;
+
+        updateTopicState(function () {
+          if (params.reopen) {
+            N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
+          } else {
+            N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
+          }
+
+          callback();
+        });
       });
     });
   });
@@ -310,9 +302,16 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var topicId = data.$this.data('topic-id');
 
     N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function (res) {
-      updateTopic(res.topic, function () {
-        N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
-        callback();
+      var params = {};
+
+      N.wire.emit('navigate.get_page_raw', params, function () {
+        params.data.topic.st = res.topic.st;
+        params.data.topic.ste = res.topic.ste;
+
+        updateTopicState(function () {
+          N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
+          callback();
+        });
       });
     });
   });
@@ -352,6 +351,26 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         .removeClass('forum-post__m-deleted-hard');
 
       callback();
+    });
+  });
+
+
+  // Subscription topic handler
+  //
+  N.wire.on('forum.topic:subscription', function topic_subscription(data, callback) {
+    var hid = data.$this.data('topic-hid');
+    var params = { subscription: data.$this.data('topic-subscription') };
+
+    N.wire.emit('forum.topic.topic_subscription', params, function () {
+      N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }).done(function () {
+        var pageParams = {};
+
+        N.wire.emit('navigate.get_page_raw', pageParams, function () {
+          pageParams.data.subscription = params.subscription;
+
+          updateTopicState(callback);
+        });
+      });
     });
   });
 
