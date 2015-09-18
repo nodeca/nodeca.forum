@@ -33,6 +33,21 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fetch post params
+  //
+  N.wire.before(apiPath, function fetch_post_params(env, callback) {
+    N.models.core.MessageParams.getParams(env.data.post.params_ref, function (err, params) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.data.post_params = params;
+      callback();
+    });
+  });
+
+
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
@@ -161,6 +176,6 @@ module.exports = function (N, apiPath) {
     env.res.user_id = env.data.post.user;
     env.res.md = env.data.post.md;
     env.res.attachments = env.data.attachments;
-    env.res.params = env.data.post.params;
+    env.res.params = env.data.post_params;
   });
 };

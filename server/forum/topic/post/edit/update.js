@@ -1,7 +1,6 @@
 // Get post src html, update post
 'use strict';
 
-var _         = require('lodash');
 var cheequery = require('nodeca.core/lib/parser/cheequery');
 
 
@@ -184,31 +183,31 @@ module.exports = function (N, apiPath) {
   // Update post
   //
   N.wire.after(apiPath, function post_update(env, callback) {
-    var updateData = {
-      tail:    env.data.parse_result.tail,
-      attach:  env.params.attach,
-      html:    env.data.parse_result.html,
-      md:      env.params.txt,
-      params:  env.data.parse_options
-    };
-
-    [ 'imports', 'import_users', 'image_info' ].forEach(function (field) {
-      if (!_.isEmpty(env.data.parse_result[field])) {
-        updateData[field] = env.data.parse_result[field];
-      } else {
-        updateData.$unset = updateData.$unset || {};
-        updateData.$unset[field] = true;
-      }
-    });
-
-    N.models.forum.Post.update({ _id: env.params.post_id }, updateData, function (err) {
+    N.models.forum.Post
+        .findOne({ _id: env.data.post._id })
+        .lean(false)
+        .exec(function (err, post) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      callback();
+      if (!post) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      post.tail         = env.data.parse_result.tail;
+      post.attach       = env.params.attach;
+      post.html         = env.data.parse_result.html;
+      post.md           = env.params.txt;
+      post.params       = env.data.parse_options;
+      post.imports      = env.data.parse_result.imports;
+      post.import_users = env.data.parse_result.import_users;
+      post.image_info   = env.data.parse_result.image_info;
+
+      post.save(callback);
     });
   });
 

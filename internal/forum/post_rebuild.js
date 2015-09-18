@@ -22,35 +22,42 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      N.parse({
-        text:         post.md,
-        attachments:  post.attach,
-        options:      post.params,
-        imports:      post.imports,
-        import_users: post.import_users,
-        image_info:   post.image_info
-      }, function (err, result) {
-
+      N.models.core.MessageParams.getParams(post.params_ref, function (err, params) {
         if (err) {
           callback(err);
           return;
         }
 
-        var updateData = {
-          tail:    result.tail,
-          html:    result.html
-        };
+        N.parse({
+          text:         post.md,
+          attachments:  post.attach,
+          options:      params,
+          imports:      post.imports,
+          import_users: post.import_users,
+          image_info:   post.image_info
+        }, function (err, result) {
 
-        [ 'imports', 'import_users', 'image_info' ].forEach(function (field) {
-          if (!_.isEmpty(result[field])) {
-            updateData[field] = result[field];
-          } else {
-            updateData.$unset = updateData.$unset || {};
-            updateData.$unset[field] = true;
+          if (err) {
+            callback(err);
+            return;
           }
-        });
 
-        N.models.forum.Post.update({ _id: post._id }, updateData, callback);
+          var updateData = {
+            tail:    result.tail,
+            html:    result.html
+          };
+
+          [ 'imports', 'import_users', 'image_info' ].forEach(function (field) {
+            if (!_.isEmpty(result[field])) {
+              updateData[field] = result[field];
+            } else {
+              updateData.$unset = updateData.$unset || {};
+              updateData.$unset[field] = true;
+            }
+          });
+
+          N.models.forum.Post.update({ _id: post._id }, updateData, callback);
+        });
       });
     });
   });

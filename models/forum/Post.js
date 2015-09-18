@@ -61,7 +61,7 @@ module.exports = function (N, collectionName) {
     attach          : [ Schema.ObjectId ],  // all attachments
 
   // Post params
-    params          : Schema.Types.Mixed,
+    params_ref      : Schema.ObjectId,
 
   // List of urls to accessible resources being used to build this post (snippets, etc.)
     imports         : [ String ],
@@ -154,6 +154,25 @@ module.exports = function (N, collectionName) {
     }
 
     callback();
+  });
+
+
+  // Store parser options separately and save reference to them
+  //
+  Post.pre('save', function (callback) {
+    var self = this;
+
+    N.models.core.MessageParams.setParams(self.params, function (err, id) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      self.params = undefined;
+      self.params_ref = id;
+
+      callback();
+    });
   });
 
 
