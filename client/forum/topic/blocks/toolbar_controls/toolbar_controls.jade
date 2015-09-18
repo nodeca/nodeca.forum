@@ -64,17 +64,22 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
       title=self.t('post_add')
     )
 
-  - var subscriptionIcon = 'icon-track-none'
+  - var subscriptionIcon = 'icon-track-normal'
+  - var subscriptionTitle = self.t('subs_normal')
 
   if (self.subscription === subscriptionTypes.MUTED)
-    - subscriptionIcon = 'icon-deleted'
-  else if (self.subscription === subscriptionTypes.SUBSCRIBED)
-    - subscriptionIcon = 'icon-track-normal'
-  else if (self.subscription === subscriptionTypes.IMMEDIATE)
-    - subscriptionIcon = 'icon-track-instant'
+    - subscriptionIcon = 'icon-track-muted'
+    - subscriptionTitle = self.t('subs_muted')
+  else if (self.subscription === subscriptionTypes.TRACKING)
+    - subscriptionIcon = 'icon-track-tracking'
+    - subscriptionTitle = self.t('subs_tracking')
+  else if (self.subscription === subscriptionTypes.WATCHING)
+    - subscriptionIcon = 'icon-track-watching'
+    - subscriptionTitle = self.t('subs_watching')
 
-  if (self.subscription && self.subscription !== subscriptionTypes.UNSUBSCRIBED)
+  if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
     button.btn.btn-default.icon(
+      title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.topic:subscription'
       data-topic-hid=self.topic.hid
@@ -106,10 +111,7 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
                 data-on-click='forum.topic:subscription'
                 data-topic-hid=self.topic.hid
                 data-topic-subscription=self.subscription
-              )
-                span.icon(class=subscriptionIcon)
-                | 
-                = self.t('subscription')
+              )= self.t('subscription')
 
             when 'delete'
               li: a(href='#'

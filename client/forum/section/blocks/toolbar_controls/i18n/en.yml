@@ -1,8 +1,13 @@
 en-US:
   announce: Announce
+  mod_actions: Moderation
   add_moderator: Add moderator
   mass_move: Mass move
   mass_prune: Mass prune
-
   mark_read: Mark all read
   topic_create: New topic
+  subscription: Subscription
+  subs_muted: Muted. You will never be notified of anything about this section.
+  subs_normal: Normal. You will be notified if someone mentions your @name or replies to you.
+  subs_tracking: Tracking. You will see section updates in your subscriptions list.
+  subs_watching: Watching. You will be notified immediately on every new topic.

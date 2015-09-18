@@ -43,13 +43,3 @@ article#content.forum-section-root(
     else
       p.forum-section__notopics
         != self.t('no_topics')
-
-    //- Tracking options
-    if self.runtime.is_member
-      footer.forum-section__tracking
-        button.forum-section__tracking-btn.btn.btn-sm.btn-default(type='button')
-          span.icon.icon-track-normal.icon-space-after
-          | #{self.t('tracking')}
-
-        span.forum-section__tracking-text
-          | You will receive notifications because you subscribed this section

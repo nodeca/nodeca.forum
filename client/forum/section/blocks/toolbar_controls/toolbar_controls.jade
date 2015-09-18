@@ -1,4 +1,26 @@
-.page-actions
+- var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+
+- var items = []
+
+if self.runtime.is_member
+  - items.push('subscription')
+
+if items.length > 0
+  - items.push('divider')
+
+//- TODO: implement
+- items.push('mod_header')
+- items.push('mod_announce')
+- items.push('mod_add_moderator')
+- items.push('mod_mass_move')
+- items.push('mod_mass_prune')
+
+//- If last item is header - remove it
+if items.length > 0 && items[items.length - 1] === 'header'
+  - items.pop()
+
+
+.page-actions.forum-section__toolbar-controls
   if self.settings.forum_can_start_topics
     button.btn.btn-primary.icon.icon-plus(
       data-on-click='forum.section:create'
@@ -16,12 +38,60 @@
       title=self.t('mark_read')
     )
 
-  .page-actions__dropdown
-    button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
-      span.caret
-    ul.dropdown-menu.dropdown-menu-right
-      li.disabled: a(href='#')= self.t('announce')
-      li.disabled: a(href='#')= self.t('add_moderator')
-      li.disabled: a(href='#')= self.t('mass_move')
-      li.disabled: a(href='#')= self.t('mass_prune')
+  - var subscriptionIcon = 'icon-track-normal'
+  - var subscriptionTitle = self.t('subs_normal')
 
+  if (self.subscription === subscriptionTypes.MUTED)
+    - subscriptionIcon = 'icon-track-muted'
+    - subscriptionTitle = self.t('subs_muted')
+  else if (self.subscription === subscriptionTypes.TRACKING)
+    - subscriptionIcon = 'icon-track-tracking'
+    - subscriptionTitle = self.t('subs_tracking')
+  else if (self.subscription === subscriptionTypes.WATCHING)
+    - subscriptionIcon = 'icon-track-watching'
+    - subscriptionTitle = self.t('subs_watching')
+
+  if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
+    button.btn.btn-default.icon(
+      title=subscriptionTitle
+      class=subscriptionIcon
+      data-on-click='forum.section:subscription'
+      data-section-hid=self.section.hid
+      data-section-subscription=self.subscription
+    )
+
+  if items.length > 0
+    .page-actions__dropdown
+
+      button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
+        span.caret
+
+      ul.dropdown-menu.dropdown-menu-right
+
+        each item in items
+          case item
+
+            when 'subscription'
+              li: a(href='#'
+                data-on-click='forum.section:subscription'
+                data-section-hid=self.section.hid
+                data-section-subscription=self.subscription
+              )= self.t('subscription')
+
+            when 'divider'
+              li.divider
+
+            when 'mod_header'
+              li.dropdown-header= self.t('mod_actions')
+
+            when 'mod_announce'
+              li.disabled: a(href='#')= self.t('announce')
+
+            when 'mod_add_moderator'
+              li.disabled: a(href='#')= self.t('add_moderator')
+
+            when 'mod_mass_move'
+              li.disabled: a(href='#')= self.t('mass_move')
+
+            when 'mod_mass_prune'
+              li.disabled: a(href='#')= self.t('mass_prune')

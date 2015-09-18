@@ -113,6 +113,29 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Subscription section handler
+  //
+  N.wire.on('forum.section:subscription', function topic_subscription(data, callback) {
+    var hid = data.$this.data('section-hid');
+    var params = { subscription: data.$this.data('section-subscription') };
+
+    N.wire.emit('forum.section.subscription', params, function () {
+      N.io.rpc('forum.section.subscribe', { section_hid: hid, type: params.subscription }).done(function () {
+        var pageParams = {};
+
+        N.wire.emit('navigate.get_page_raw', pageParams, function () {
+          pageParams.data.subscription = params.subscription;
+
+          $('.forum-section__toolbar-controls')
+            .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', pageParams.data));
+
+          callback();
+        });
+      });
+    });
+  });
+
+
   // Click topic create
   //
   N.wire.on('forum.section:create', function reply(data, callback) {

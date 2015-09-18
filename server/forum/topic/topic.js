@@ -85,7 +85,10 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    N.models.users.Subscription.findOne({ to: env.data.topic._id }).lean(true).exec(function (err, subscription) {
+    N.models.users.Subscription.findOne({ user_id: env.user_info.user_id, to: env.data.topic._id })
+        .lean(true)
+        .exec(function (err, subscription) {
+
       if (err) {
         callback(err);
         return;

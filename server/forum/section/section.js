@@ -76,6 +76,33 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill subscription type
+  //
+  N.wire.after(apiPath, function fill_subscription(env, callback) {
+    if (env.user_info.is_guest) {
+      env.res.subscription = null;
+
+      callback();
+      return;
+    }
+
+    N.models.users.Subscription.findOne({ user_id: env.user_info.user_id, to: env.data.section._id })
+        .lean(true)
+        .exec(function (err, subscription) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.subscription = subscription ? subscription.type : null;
+
+      callback();
+      return;
+    });
+  });
+
+
   // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {

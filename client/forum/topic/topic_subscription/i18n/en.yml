@@ -2,11 +2,11 @@ en-US:
   title: Subscribe
   muted: Muted
   muted_desc: You will never be notified of anything about this topic.
-  unsubscribed: Unsubscribed
-  unsubscribed_desc: You will be notified if someone mentions your @name or replies to you.
-  subscribed: Subscribed
-  subscribed_desc: You will be notified of every new reply in this topic in digest.
-  immediate: Immediate
-  immediate_desc: You will be notified of every new reply in this topic immediate.
+  normal: Normal
+  normal_desc: You will be notified if someone mentions your @name or replies to you.
+  tracking: Tracking
+  tracking_desc: You will see topic updates in your subscriptions list.
+  watching: Watching
+  watching_desc: You will be notified immediately on every new message.
   ok: OK
   cancel: Cancel
