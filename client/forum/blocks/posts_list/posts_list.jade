@@ -77,7 +77,7 @@ each post, post_idx in self.posts
 
         - var tail = self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user });
         if tail
-          .forum-post__tail
+          .forum-post__tail.markup-tail
             !=tail
 
         footer.forum-post__controls.clearfix
