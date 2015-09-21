@@ -42,7 +42,14 @@ N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
 //
 N.wire.before(module.apiPath + ':begin', function fetch_options(__, callback) {
   N.io.rpc('forum.topic.post.options').done(function (opt) {
-    options = opt;
+    options = {
+      parse_options: opt.parse_options,
+      user_settings: {
+        no_mlinks: false,
+        no_emojis: false
+      }
+    };
+
     callback();
   });
 });

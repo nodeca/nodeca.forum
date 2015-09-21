@@ -16,24 +16,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill user settings
-  //
-  N.wire.before(apiPath, function fill_user_settings(env, callback) {
-
-    var userStore = N.settings.getStore('user');
-
-    userStore.get([ 'edit_no_mlinks', 'edit_no_emojis' ], { user_id: env.user_info.user_id }, {}, function (err, data) {
-      if (err) {
-        callback(err);
-      }
-
-      env.res.user_settings = { no_mlinks: data.edit_no_mlinks.value, no_emojis: data.edit_no_emojis.value };
-      callback();
-    });
-
-  });
-
-
   // Fill parse options
   //
   N.wire.on(apiPath, function fill_parse_options(env, callback) {

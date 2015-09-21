@@ -35,18 +35,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Save post options
-  //
-  N.wire.before(apiPath, function save_options(env, callback) {
-    var userStore = N.settings.getStore('user');
-
-    userStore.set({
-      edit_no_mlinks: { value: env.params.option_no_mlinks },
-      edit_no_emojis: { value: env.params.option_no_emojis }
-    }, { user_id: env.user_info.user_id }, callback);
-  });
-
-
   // Prepare parse options
   //
   N.wire.before(apiPath, function prepare_options(env, callback) {
