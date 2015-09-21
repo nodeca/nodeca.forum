@@ -21,7 +21,8 @@ var post;
 
 function updateOptions() {
   N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
-    medialink: options.user_settings.no_mlinks ? false : options.parse_options.medialink,
+    link_to_title: options.user_settings.no_mlinks ? false : options.parse_options.link_to_title,
+    link_to_snippet: options.user_settings.no_mlinks ? false : options.parse_options.link_to_snippet,
     emoji: options.user_settings.no_emojis ? false : options.parse_options.emoji
   }));
 }
@@ -44,7 +45,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data, callback) 
       options = {
         parse_options: opt.parse_options,
         user_settings: {
-          no_mlinks: !response.params.medialink,
+          no_mlinks: !response.params.link_to_title && !response.params.link_to_snippet,
           no_emojis: !response.params.emoji
         }
       };

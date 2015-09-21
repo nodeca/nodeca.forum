@@ -130,7 +130,8 @@ module.exports = function (N, apiPath) {
         }
 
         if (env.params.option_no_mlinks) {
-          settings.medialink = false;
+          settings.link_to_title = false;
+          settings.link_to_snippet = false;
         }
 
         if (env.params.option_no_emojis) {
