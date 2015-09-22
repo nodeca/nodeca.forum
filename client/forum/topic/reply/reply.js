@@ -24,9 +24,10 @@ var draft;
 
 function updateOptions() {
   N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
-    link_to_title: options.user_settings.no_mlinks ? false : options.parse_options.link_to_title,
-    link_to_snippet: options.user_settings.no_mlinks ? false : options.parse_options.link_to_snippet,
-    emoji: options.user_settings.no_emojis ? false : options.parse_options.emoji
+    link_to_title:   options.user_settings.no_mlinks         ? false : options.parse_options.link_to_title,
+    link_to_snippet: options.user_settings.no_mlinks         ? false : options.parse_options.link_to_snippet,
+    quote_collapse:  options.user_settings.no_quote_collapse ? false : options.parse_options.quote_collapse,
+    emoji:           options.user_settings.no_emojis         ? false : options.parse_options.emoji
   }));
 }
 
@@ -45,8 +46,9 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(__, callback) {
     options = {
       parse_options: opt.parse_options,
       user_settings: {
-        no_mlinks: false,
-        no_emojis: false
+        no_mlinks:         false,
+        no_emojis:         false,
+        no_quote_collapse: false
       }
     };
 
@@ -120,12 +122,13 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
     })
     .on('submit.nd.mdedit', function () {
       var params = {
-        section_hid:      data.section_hid,
-        topic_hid:        data.topic_hid,
-        txt:              N.MDEdit.text(),
-        attach:           _.pluck(N.MDEdit.attachments(), 'media_id'),
-        option_no_mlinks: options.user_settings.no_mlinks,
-        option_no_emojis: options.user_settings.no_emojis
+        section_hid:              data.section_hid,
+        topic_hid:                data.topic_hid,
+        txt:                      N.MDEdit.text(),
+        attach:                   _.pluck(N.MDEdit.attachments(), 'media_id'),
+        option_no_mlinks:         options.user_settings.no_mlinks,
+        option_no_emojis:         options.user_settings.no_emojis,
+        option_no_quote_collapse: options.user_settings.no_quote_collapse
       };
 
       if (data.post_id) {

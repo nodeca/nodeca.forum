@@ -9,17 +9,18 @@ var cheequery = require('nodeca.core/lib/parser/cheequery');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    section_hid:      { type: 'integer', required: true },
-    title:            { type: 'string', required: true },
-    txt:              { type: 'string', required: true },
-    attach:           {
+    section_hid:              { type: 'integer', required: true },
+    title:                    { type: 'string', required: true },
+    txt:                      { type: 'string', required: true },
+    attach:                   {
       type: 'array',
       required: true,
       uniqueItems: true,
       items: { format: 'mongo', required: true }
     },
-    option_no_mlinks: { type: 'boolean', required: true },
-    option_no_emojis: { type: 'boolean', required: true }
+    option_no_mlinks:         { type: 'boolean', required: true },
+    option_no_emojis:         { type: 'boolean', required: true },
+    option_no_quote_collapse: { type: 'boolean', required: true }
   });
 
 
@@ -124,6 +125,10 @@ module.exports = function (N, apiPath) {
 
         if (env.params.option_no_emojis) {
           settings.emoji = false;
+        }
+
+        if (env.params.option_no_quote_collapse) {
+          settings.quote_collapse = false;
         }
 
         env.data.parse_options = settings;

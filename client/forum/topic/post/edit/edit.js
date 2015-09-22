@@ -21,9 +21,10 @@ var post;
 
 function updateOptions() {
   N.MDEdit.parseOptions(_.assign({}, options.parse_options, {
-    link_to_title: options.user_settings.no_mlinks ? false : options.parse_options.link_to_title,
-    link_to_snippet: options.user_settings.no_mlinks ? false : options.parse_options.link_to_snippet,
-    emoji: options.user_settings.no_emojis ? false : options.parse_options.emoji
+    link_to_title:   options.user_settings.no_mlinks         ? false : options.parse_options.link_to_title,
+    link_to_snippet: options.user_settings.no_mlinks         ? false : options.parse_options.link_to_snippet,
+    quote_collapse:  options.user_settings.no_quote_collapse ? false : options.parse_options.quote_collapse,
+    emoji:           options.user_settings.no_emojis         ? false : options.parse_options.emoji
   }));
 }
 
@@ -45,8 +46,9 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data, callback) 
       options = {
         parse_options: opt.parse_options,
         user_settings: {
-          no_mlinks: !response.params.link_to_title && !response.params.link_to_snippet,
-          no_emojis: !response.params.emoji
+          no_mlinks:         !response.params.link_to_title && !response.params.link_to_snippet,
+          no_emojis:         !response.params.emoji,
+          no_quote_collapse: !response.params.quote_collapse
         }
       };
 
@@ -88,12 +90,13 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
     })
     .on('submit.nd.mdedit', function () {
       var params = {
-        as_moderator:     data.as_moderator,
-        post_id:          data.post_id,
-        txt:              N.MDEdit.text(),
-        attach:           _.pluck(N.MDEdit.attachments(), 'media_id'),
-        option_no_mlinks: options.user_settings.no_mlinks,
-        option_no_emojis: options.user_settings.no_emojis
+        as_moderator:             data.as_moderator,
+        post_id:                  data.post_id,
+        txt:                      N.MDEdit.text(),
+        attach:                   _.pluck(N.MDEdit.attachments(), 'media_id'),
+        option_no_mlinks:         options.user_settings.no_mlinks,
+        option_no_emojis:         options.user_settings.no_emojis,
+        option_no_quote_collapse: options.user_settings.no_quote_collapse
       };
 
       N.io.rpc('forum.topic.post.edit.update', params).done(function (res) {
