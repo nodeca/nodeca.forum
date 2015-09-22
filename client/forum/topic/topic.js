@@ -18,8 +18,8 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - posts_per_page:     an amount of visible posts per page
 // - first_post_offset:  total amount of visible posts in the topic before the first displayed post
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
-// - prev_page_loading:  true iff request to auto-load previous page is in flight
-// - next_page_loading:  true iff request to auto-load next page is in flight
+// - prev_loading_start: time when current xhr request for the previous page is started
+// - next_loading_start: time when current xhr request for the next page is started
 //
 var topicState = {};
 var scrollHandler = null;
@@ -37,8 +37,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.max_post           = N.runtime.page_data.topic.last_post_hid;
   topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
   topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
-  topicState.prev_page_loading  = false;
-  topicState.next_page_loading  = false;
+  topicState.prev_loading_start = 0;
+  topicState.next_loading_start = 0;
 
 
   // If user moves to a page (e.g. from a search engine),
@@ -455,12 +455,29 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // an amount of posts we try to load when user scrolls to the end of the page
   var LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
 
+  // an amount of time between successful xhr requests and failed xhr requests respectively
+  //
+  // For example, suppose user continuously scrolls. If server is up, each
+  // subsequent request will be sent each 500 ms. If server goes down, the
+  // interval between request initiations goes up to 2000 ms.
+  //
+  var LOAD_INTERVAL = 500;
+  var LOAD_AFTER_ERROR = 2000;
+
   // an amount of posts from top/bottom that triggers prefetch in that direction
   var LOAD_BORDER_SIZE = 3;
 
   function _load_prev_page() {
-    if (topicState.prev_page_loading) { return; }
-    topicState.prev_page_loading = true;
+    var now = Date.now();
+
+    // `prev_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(topicState.prev_loading_start - now) < LOAD_AFTER_ERROR) { return; }
+
+    topicState.prev_loading_start = now;
 
     var hid = $('.forum-post:first').data('post-hid');
     if (hid <= 1) {
@@ -511,20 +528,27 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $(window).scrollTop($(window).scrollTop() + $('.forum-postlist').height() - old_height);
       });
 
+      topicState.prev_loading_start = 0;
+
     }).fail(N.io.NOT_FOUND, function () {
       // Topic moved or deleted, refreshing the page so user could
       // see the error
       //
       N.wire.emit('navigate.reload');
-
-    }).finish(function () {
-      topicState.prev_page_loading = false;
     });
   }
 
   function _load_next_page() {
-    if (topicState.next_page_loading) { return; }
-    topicState.next_page_loading = true;
+    var now = Date.now();
+
+    // `next_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(topicState.next_loading_start - now) < LOAD_AFTER_ERROR) { return; }
+
+    topicState.next_loading_start = now;
 
     var hid = $('.forum-post:last').data('post-hid');
     if (hid >= topicState.max_post) {
@@ -567,19 +591,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $('.forum-postlist > :last').after($result);
       });
 
+      topicState.next_loading_start = 0;
+
     }).fail(N.io.NOT_FOUND, function () {
       // Topic moved or deleted, refreshing the page so user could
       // see the error
       //
       N.wire.emit('navigate.reload');
-
-    }).finish(function () {
-      topicState.next_page_loading = false;
     });
   }
 
-  var load_prev_page = _.debounce(_load_prev_page, 500, { leading: true, maxWait: 500 });
-  var load_next_page = _.debounce(_load_next_page, 500, { leading: true, maxWait: 500 });
+  var load_prev_page = _.debounce(_load_prev_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
+  var load_next_page = _.debounce(_load_next_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
 
   // If we're browsing one of the first/last 3 posts, load more pages from
   // the server in that direction.
