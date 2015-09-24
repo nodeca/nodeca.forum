@@ -5,6 +5,7 @@
 
 var _        = require('lodash');
 var punycode = require('punycode');
+var Bag      = require('bag.js');
 
 var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
@@ -847,4 +848,84 @@ N.wire.on('navigate.update', function set_quote_modifiers_on_update(data) {
 
 N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardown() {
   topicParams = null;
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Save scroll position
+//
+var bag = new Bag({ prefix: 'nodeca' });
+
+
+var uploadScrollPositions = _.debounce(function () {
+  bag.get('topics_scroll', function (__, positions) {
+    if (positions) {
+      _.forEach(positions, function (pos, id) {
+        N.live.emit('private.core.marker.set_pos', { content_id: id, position: pos });
+      });
+
+      bag.remove('topics_scroll');
+    }
+  });
+}, 2000);
+
+
+// Track scroll position
+//
+N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init() {
+  // Skip for guests
+  if (N.runtime.is_guest) {
+    return;
+  }
+
+  var lastPos = -1;
+
+  $(window).on('scroll.nd.forum.topic.save_scroll_position', _.debounce(function () {
+    var $window = $(window);
+    var viewportStart = $window.scrollTop() + navbarHeight;
+    var viewportEnd = $window.scrollTop() + $window.height();
+    var currentlyRead = 1;
+    var $post;
+
+    // TODO: use binary search
+    // Find hid of last completely visible post (or if upper edge above screen - for long posts)
+    $('.forum-post').each(function () {
+      $post = $(this);
+
+      // If upper post edge is above screen upper edge or post completely on screen - mark it as read
+      if ($post.offset().top < viewportStart || ($post.offset().top + $post.height()) < viewportEnd) {
+        currentlyRead = $post.data('post-hid');
+      } else {
+        return false; // break
+      }
+    });
+
+    if (lastPos === currentlyRead) {
+      return;
+    }
+
+    lastPos = currentlyRead;
+
+    // Save current position locally and request upload
+    bag.get('topics_scroll', function (__, positions) {
+      positions = positions || {};
+      positions[N.runtime.page_data.topic._id] = currentlyRead;
+
+      bag.set('topics_scroll', positions, function () {
+        uploadScrollPositions();
+      });
+    });
+  }, 300, { maxWait: 300 }));
+});
+
+
+// Try upload scroll positions on each `navigate.done`
+//
+N.wire.on('navigate.done', uploadScrollPositions);
+
+
+// Teardown scroll handler
+//
+N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teardown() {
+  $(window).off('scroll.nd.forum.topic.save_scroll_position');
 });
