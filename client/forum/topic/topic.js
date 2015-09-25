@@ -860,8 +860,8 @@ var bag = new Bag({ prefix: 'nodeca' });
 var uploadScrollPositions = _.debounce(function () {
   bag.get('topics_scroll', function (__, positions) {
     if (positions) {
-      _.forEach(positions, function (pos, id) {
-        N.live.emit('private.core.marker.set_pos', { content_id: id, position: pos });
+      _.forEach(positions, function (data, id) {
+        N.live.emit('private.core.marker.set_pos', { content_id: id, position: data.pos, max: data.max });
       });
 
       bag.remove('topics_scroll');
@@ -879,37 +879,62 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
   }
 
   var lastPos = -1;
+  var lastRead = -1;
 
   $(window).on('scroll.nd.forum.topic.save_scroll_position', _.debounce(function () {
     var $window = $(window);
     var viewportStart = $window.scrollTop() + navbarHeight;
     var viewportEnd = $window.scrollTop() + $window.height();
-    var currentlyRead = 1;
-    var $post;
+    var $posts = $('.forum-post');
 
-    // TODO: use binary search
-    // Find hid of last completely visible post (or if upper edge above screen - for long posts)
-    $('.forum-post').each(function () {
-      $post = $(this);
-
-      // If upper post edge is above screen upper edge or post completely on screen - mark it as read
-      if ($post.offset().top < viewportStart || ($post.offset().top + $post.height()) < viewportEnd) {
-        currentlyRead = $post.data('post-hid');
-      } else {
-        return false; // break
-      }
+    var currentIdx = _.sortedIndex($posts, null, function (post) {
+      if (!post) { return viewportStart; }
+      return $(post).offset().top + $(post).height();
     });
 
-    if (lastPos === currentlyRead) {
+    if (currentIdx >= $posts.length) {
+      currentIdx = $posts.length - 1;
+    }
+
+    var lastVisibleIdx = $posts.length - 1;
+
+    // Search last completely visible post
+    for (var i = currentIdx + 1; i < $posts.length; i++) {
+      if ($($posts[i]).offset().top + $($posts[i]).height() > viewportEnd) {
+        lastVisibleIdx = i - 1;
+        break;
+      }
+    }
+
+    // Last completely visible post on page to mark it as read
+    var read = $($posts[lastVisibleIdx]).data('post-hid');
+    // Current scroll (topic hid) position
+    var pos;
+
+    var $post = $($posts[currentIdx]);
+
+    // If first post in viewport hidden more than half height and second post is
+    // completely visible - set `pos` to second post hid
+    if ($post.offset().top + $post.height() / 2 < viewportStart && lastVisibleIdx > currentIdx) {
+      pos = $($posts[currentIdx + 1]).data('post-hid');
+    } else {
+      pos = $post.data('post-hid');
+    }
+
+    if (lastPos === pos && lastRead === read) {
       return;
     }
 
-    lastPos = currentlyRead;
+    lastPos = pos;
+    lastRead = read;
 
     // Save current position locally and request upload
     bag.get('topics_scroll', function (__, positions) {
       positions = positions || {};
-      positions[N.runtime.page_data.topic._id] = currentlyRead;
+      positions[N.runtime.page_data.topic._id] = {
+        pos: pos,
+        max: read
+      };
 
       bag.set('topics_scroll', positions, function () {
         uploadScrollPositions();
