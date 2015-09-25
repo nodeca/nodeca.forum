@@ -13,6 +13,7 @@
 var _         = require('lodash');
 var async     = require('async');
 var charlatan = require('charlatan');
+var ObjectId  = require('mongoose').Types.ObjectId;
 
 
 var Category;
@@ -74,7 +75,11 @@ function createPost(topic, reply_to, callback) {
             return;
           }
 
+          var ts = new Date(2010, 0, postDay++);
+
           var post = new Post({
+            _id: new ObjectId(Math.round(ts / 1000)),
+
             html:    result.html,
             md:      md,
 
@@ -91,7 +96,7 @@ function createPost(topic, reply_to, callback) {
             to_user: reply_to ? reply_to.user : undefined,
             to_phid: reply_to ? reply_to.hid  : undefined,
 
-            ts:      new Date(2010, 0, postDay++),
+            ts:      ts,
 
             params:  settings
           });
@@ -147,6 +152,8 @@ function createTopic(section, post_count, callback) {
   var last_post;
 
   var topic = new Topic({
+    _id: new ObjectId(Math.round(new Date(2010, 0, postDay) / 1000)),
+
     title: charlatan.Lorem.sentence().slice(0, -1),
 
     st: Topic.statuses.OPEN,
