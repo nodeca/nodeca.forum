@@ -855,6 +855,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardo
 // Save scroll position
 //
 var bag = new Bag({ prefix: 'nodeca' });
+var scrollPositionTracker = null;
 
 
 var uploadScrollPositions = _.debounce(function () {
@@ -881,7 +882,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
   var lastPos = -1;
   var lastRead = -1;
 
-  $(window).on('scroll.nd.forum.topic.save_scroll_position', _.debounce(function () {
+  scrollPositionTracker = _.debounce(function () {
     var $window = $(window);
     var viewportStart = $window.scrollTop() + navbarHeight;
     var viewportEnd = $window.scrollTop() + $window.height();
@@ -940,7 +941,9 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
         uploadScrollPositions();
       });
     });
-  }, 300, { maxWait: 300 }));
+  }, 300, { maxWait: 300 });
+
+  $(window).on('scroll', scrollPositionTracker);
 });
 
 
@@ -952,5 +955,7 @@ N.wire.on('navigate.done', uploadScrollPositions);
 // Teardown scroll handler
 //
 N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teardown() {
-  $(window).off('scroll.nd.forum.topic.save_scroll_position');
+  scrollPositionTracker.cancel();
+  $(window).off('scroll', scrollPositionTracker);
+  scrollPositionTracker = null;
 });
