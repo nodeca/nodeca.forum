@@ -1,5 +1,7 @@
 //- List of subsections
 
+- self.users = self.users || {};
+
 ul.forum-sections
   each section in self.subsections
     - var last_topic = section.cache.last_topic_hid
