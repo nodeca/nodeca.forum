@@ -955,7 +955,10 @@ N.wire.on('navigate.done', uploadScrollPositions);
 // Teardown scroll handler
 //
 N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teardown() {
-  scrollPositionTracker.cancel();
+  if (scrollPositionTracker) {
+    scrollPositionTracker.cancel();
+  }
+
   $(window).off('scroll', scrollPositionTracker);
   scrollPositionTracker = null;
 });
