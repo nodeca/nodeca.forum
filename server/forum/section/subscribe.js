@@ -84,7 +84,7 @@ module.exports = function (N, apiPath) {
     // Use `findOneAndUpdate` with `upsert` to avoid duplicates in case of multi click
     N.models.users.Subscription.findOneAndUpdate(
       data,
-      _.assign({}, data, { type: env.params.type }),
+      _.assign({}, data, { type: env.params.type, to_type: N.models.users.Subscription.to_types.FORUM_SECTION }),
       { upsert: true },
       callback
     );
