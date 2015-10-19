@@ -13,9 +13,14 @@ module.exports = function (N, apiPath) {
       required: true,
       patternProperties: {
         '.*': {
-          type: [ 'null', 'object' ],
-          additionalProperties: false,
-          properties: { value: { required: true } }
+          anyOf: [
+            { type: 'null' },
+            {
+              type: 'object',
+              additionalProperties: false,
+              properties: { value: { required: true } }
+            }
+          ]
         }
       }
     }
