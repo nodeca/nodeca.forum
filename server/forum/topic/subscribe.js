@@ -32,18 +32,37 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Subcall forum.access.topic
+  // Fetch topic
   //
-  N.wire.before(apiPath, function subcall_topic(env, callback) {
-    var data = { env: env, params: { topic_hid: env.params.topic_hid } };
-
-    N.wire.emit('internal:forum.access.topic', data, function (err) {
+  N.wire.before(apiPath, function fetch_topic(env, callback) {
+    N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true).exec(function (err, topic) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (!env.data.access_read) {
+      if (!topic) {
+        callback(N.io.NOT_FOUND);
+        return;
+      }
+
+      env.data.topic = topic;
+      callback();
+    });
+  });
+
+  // Subcall forum.access.topic
+  //
+  N.wire.before(apiPath, function subcall_topic(env, callback) {
+    var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
+
+    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!access_env.data.access_read) {
         callback(N.io.NOT_FOUND);
         return;
       }

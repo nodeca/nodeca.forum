@@ -67,16 +67,15 @@ module.exports = function (N, apiPath) {
   // Check if user can see this post
   //
   N.wire.before(apiPath, function check_access(env, callback) {
-    N.wire.emit('internal:forum.access.post', {
-      env:    env,
-      params: { topic_hid: env.data.topic.hid, post_hid: env.data.post.hid }
-    }, function (err) {
+    var access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
+
+    N.wire.emit('internal:forum.access.post', access_env, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (!env.data.access_read) {
+      if (!access_env.data.access_read) {
         callback(N.io.NOT_FOUND);
         return;
       }
