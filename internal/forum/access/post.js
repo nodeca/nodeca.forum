@@ -1,17 +1,25 @@
 // Check post permissions
 //
 // In:
-//  - env
-//  - params.topic_hid
-//  - params.post_hid
+//
+// - params.topic - hid, id or models.forum.Topic
+// - params.posts - array of hids, ids or models.forum.Post. Could be plain value
+// - params.user_info - user id or Object with `usergroups` array
+// - data - cache + result
+//   - access_read
+//   - posts
+//   - topic
 //
 // Out:
-//  - env.data.access_read
-//  - env.data.topic
-//  - env.data.post
 //
-
+// - data.access_read - array of boolean. If `params.posts` is not array - will be plain boolean
+//
 'use strict';
+
+
+var _        = require('lodash');
+var ObjectId = require('mongoose').Types.ObjectId;
+var userInfo = require('nodeca.users/lib/user_info');
 
 
 module.exports = function (N, apiPath) {
@@ -29,114 +37,240 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    N.wire.emit('internal:forum.access.post', {
-      env: env,
-      params: { topic_hid: match.params.topic_hid, post_hid: match.params.post_hid }
-    }, callback);
+    var access_env = {
+      params: {
+        topic: match.params.topic_hid,
+        posts: match.params.post_hid,
+        user_info: env.user_info
+      }
+    };
+
+    N.wire.emit('internal:forum.access.post', access_env, function (err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.data.access_read = access_env.data.access_read;
+      callback();
+    });
   });
 
 
-  //////////////////////////////////////////////////////////////////////////
-  // Initialize return value for env.data.access_read
+  /////////////////////////////////////////////////////////////////////////////
+  // Initialize return value for data.access_read
   //
-  N.wire.before(apiPath, { priority: -100 }, function init_access_read(data) {
-    data.env.data.access_read = null;
+  N.wire.before(apiPath, { priority: -100 }, function init_access_read(locals) {
+    locals.data = locals.data || {};
+
+    locals.data.posts = _.isArray(locals.params.posts) ? locals.params.posts : [ locals.params.posts ];
+
+    locals.data.access_read = locals.data.posts.map(function () {
+      return null;
+    });
+  });
+
+
+  // Check that all `data.posts` have same type
+  //
+  N.wire.before(apiPath, function check_params_type(locals) {
+    var items = locals.data.posts;
+    var type, curType;
+
+    for (var i = 0; i < items.length; i++) {
+      if (_.isNumber(items[i])) {
+        curType = 'Number';
+      } else if (ObjectId.isValid(String(items[i]))) {
+        curType = 'ObjectId';
+      } else {
+        curType = 'Object';
+      }
+
+      if (!type) {
+        type = curType;
+      }
+
+      if (curType !== type) {
+        return new Error('internal:forum.access.post - can\'t mix object types in request');
+      }
+    }
+
+    locals.data.type = type;
+  });
+
+
+  // Fetch user user_info if it's not present already
+  //
+  N.wire.before(apiPath, function fetch_usergroups(locals, callback) {
+    if (ObjectId.isValid(String(locals.params.user_info))) {
+      userInfo(N, locals.params.user_info, function (err, info) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        locals.data.user_info = info;
+        callback();
+      });
+      return;
+    }
+
+    // Use presented
+    locals.data.user_info = locals.params.user_info;
+    callback();
   });
 
 
   // Fetch topic if it's not present already
   //
-  N.wire.before(apiPath, function check_topic(data, callback) {
-    var env = data.env;
+  N.wire.before(apiPath, function fetch_topic(locals, callback) {
+    if (_.isNumber(locals.params.topic)) {
+      N.models.forum.Topic.findOne({ hid: locals.params.topic }).lean(true).exec(function (err, res) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    if (env.data.access_read === false) {
-      callback();
+        locals.data.topic = res;
+        callback();
+      });
       return;
     }
 
-    N.wire.emit('internal:forum.access.topic', {
-      env:    env,
-      params: { topic_hid: data.params.topic_hid }
-    }, function (err) {
+    if (ObjectId.isValid(String(locals.params.topic))) {
+      N.models.forum.Topic.findOne({ _id: locals.params.topic }).lean(true).exec(function (err, res) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        locals.data.topic = res;
+        callback();
+      });
+
+      return;
+    }
+
+    // Use presented
+    locals.data.topic = locals.params.topic;
+    callback();
+  });
+
+
+  // Check topic permission
+  //
+  N.wire.before(apiPath, function check_topic(locals, callback) {
+    var access_env = { params: { topics: locals.data.topic, user_info: locals.data.user_info } };
+
+    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      if (!env.data.access_read) {
-        callback();
-        return;
+      if (!access_env.data.access_read) {
+        locals.data.access_read = locals.data.access_read.map(function () {
+          return false;
+        });
       }
 
-      // subcall will set access_read to true, so reset it to null again
-      env.data.access_read = null;
       callback();
     });
   });
 
 
-  // Fetch post if it's not present already
+  // Fetch posts if it's not present already
   //
-  N.wire.on(apiPath, function fetch_post(data, callback) {
-    var env = data.env;
+  N.wire.before(apiPath, function fetch_posts(locals, callback) {
+    if (locals.data.type === 'Number') {
+      var hids = locals.data.posts.filter(function (__, i) {
+        return locals.data.access_read[i] !== false;
+      });
 
-    if (env.data.access_read === false) {
-      callback();
-      return;
-    }
+      N.models.forum.Post.find().where('hid').in(hids).select('hid st ste').lean(true).exec(function (err, result) {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-    if (env.data.post) {
-      callback();
-      return;
-    }
+        locals.data.posts.forEach(function (hid, i) {
+          if (locals.data.access_read[i] === false) {
+            return; // continue
+          }
 
-    N.models.forum.Post.findOne({ hid: data.params.post_hid, topic: env.data.topic._id })
-        .lean(true)
-        .exec(function (err, post) {
+          locals.data.posts[i] = _.find(result, { hid: hid });
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!post) {
-        env.data.access_read = false;
+          if (!locals.data.posts[i]) {
+            locals.data.access_read[i] = false;
+          }
+        });
         callback();
-        return;
-      }
+      });
+      return;
+    }
 
-      env.data.post = post;
-      callback();
-    });
+    if (locals.data.type === 'ObjectId') {
+      var ids = locals.data.posts.filter(function (__, i) {
+        return locals.data.access_read[i] !== false;
+      });
+
+      N.models.forum.Post.find().where('_id').in(ids).select('_id st ste').lean(true).exec(function (err, result) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        locals.data.posts.forEach(function (id, i) {
+          if (locals.data.access_read[i] === false) {
+            return; // continue
+          }
+
+          locals.data.posts[i] = _.find(result, { _id: String(id) });
+
+          if (!locals.data.posts[i]) {
+            locals.data.access_read[i] = false;
+          }
+        });
+        callback();
+      });
+      return;
+    }
+
+    callback();
+    return;
   });
 
 
   // Check post permissions
   //
-  N.wire.on(apiPath, function check_post_access(data, callback) {
+  N.wire.on(apiPath, function check_post_access(locals, callback) {
     var Post = N.models.forum.Post;
-    var env = data.env;
+    var params = {
+      user_id: locals.data.user_info.user_id,
+      usergroup_ids: locals.data.user_info.usergroups
+    };
 
-    if (env.data.access_read === false) {
-      callback();
-      return;
-    }
-
-    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+    N.settings.get('can_see_hellbanned', params, {}, function (err, can_see_hellbanned) {
       if (err) {
         callback(err);
         return;
       }
 
-      var allow_access = (env.data.post.st === Post.statuses.VISIBLE || env.data.post.ste === Post.statuses.VISIBLE);
+      locals.data.posts.forEach(function (post, i) {
+        if (locals.data.access_read[i] === false) {
+          return; // continue
+        }
 
-      if (env.data.post.st === Post.statuses.HB) {
-        allow_access = allow_access && (env.user_info.hb || can_see_hellbanned);
-      }
+        var allow_access = (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
 
-      if (!allow_access) {
-        env.data.access_read = false;
-      }
+        if (post.st === Post.statuses.HB) {
+          allow_access = allow_access && (locals.data.user_info.hb || can_see_hellbanned);
+        }
+
+        if (!allow_access) {
+          locals.data.access_read[i] = false;
+        }
+      });
 
       callback();
     });
@@ -145,13 +279,14 @@ module.exports = function (N, apiPath) {
 
   // If no function reported error at this point, allow access
   //
-  N.wire.after(apiPath, { priority: 100 }, function allow_read(data) {
-    var env = data.env;
+  N.wire.after(apiPath, { priority: 100 }, function allow_read(locals) {
+    locals.data.access_read = locals.data.access_read.map(function (val) {
+      return val !== false;
+    });
 
-    if (env.data.access_read === false) {
-      return;
+    // If `params.topics` is not array - `data.access_read` should be also not an array
+    if (!_.isArray(locals.params.posts)) {
+      locals.data.access_read = locals.data.access_read[0];
     }
-
-    data.env.data.access_read = true;
   });
 };
