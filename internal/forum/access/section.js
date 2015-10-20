@@ -26,8 +26,8 @@ module.exports = function (N, apiPath) {
   //////////////////////////////////////////////////////////////////////////
   // Hook for the "get permissions by url" feature, used in snippets
   //
-  N.wire.on('internal:common.access', function check_post_access(env, callback) {
-    var match = N.router.matchAll(env.params.url).reduce(function (acc, match) {
+  N.wire.on('internal:common.access', function check_post_access(access_env, callback) {
+    var match = N.router.matchAll(access_env.params.url).reduce(function (acc, match) {
       return match.meta.methods.get === 'forum.section' ? match : acc;
     }, null);
 
@@ -36,15 +36,15 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    var access_env = { params: { sections: match.params.hid, user_info: env.user_info } };
+    var access_env_sub = { params: { sections: match.params.hid, user_info: access_env.params.user_info } };
 
-    N.wire.emit('internal:forum.access.section', access_env, function (err) {
+    N.wire.emit('internal:forum.access.section', access_env_sub, function (err) {
       if (err) {
         callback(err);
         return;
       }
 
-      env.data.access_read = access_env.data.access_read;
+      access_env.data.access_read = access_env_sub.data.access_read;
       callback();
     });
   });

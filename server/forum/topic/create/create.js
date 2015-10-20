@@ -146,7 +146,7 @@ module.exports = function (N, apiPath) {
         text: env.params.txt,
         attachments: env.params.attach,
         options: env.data.parse_options,
-        env: env
+        user_info: env.user_info
       },
       function (err, result) {
         if (err) {

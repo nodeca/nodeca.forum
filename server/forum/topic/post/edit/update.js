@@ -78,7 +78,7 @@ module.exports = function (N, apiPath) {
         attachments: env.params.attach,
         options: env.data.parse_options,
         image_info: env.data.post.image_info,
-        env: env
+        user_info: env.user_info
       },
       function (err, result) {
         if (err) {
