@@ -78,3 +78,19 @@ packages:
 
     i18n_server:
       include: server/forum/**i18n/*.yml
+
+
+  users:
+    client:
+      include: client/users/**.js
+      exclude: /(^|\/|\\)_.*/
+
+    views:
+      include: client/users/**.jade
+      exclude: /(^|\/|\\)_.*/
+
+    i18n_client:
+      include: client/users/**i18n/*.yml
+
+    styles:
+      include: client/users/**.styl
