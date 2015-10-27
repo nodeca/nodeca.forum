@@ -308,6 +308,10 @@ module.exports = function (N, apiPath) {
   // Mark topic as read
   //
   N.wire.after(apiPath, function mark_topic_read(env, callback) {
+    if (env.user_info.is_guest) {
+      callback();
+      return;
+    }
     N.models.core.Marker.mark(env.user_info.user_id, env.data.topic._id, callback);
   });
 };
