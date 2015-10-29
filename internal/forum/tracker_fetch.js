@@ -3,9 +3,10 @@
 'use strict';
 
 
-var _      = require('lodash');
-var async  = require('async');
-var fields = require('./_fields/topic_list');
+var ObjectId = require('mongoose').Types.ObjectId;
+var _        = require('lodash');
+var async    = require('async');
+var fields   = require('./_fields/topic_list');
 
 
 module.exports = function (N) {
@@ -39,40 +40,31 @@ module.exports = function (N) {
       function (next) {
         var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_SECTION);
 
-        N.models.forum.Topic.find().where('section').in(_.pluck(subs, 'to')).lean(true).exec(function (err, result) {
+        N.settings.get('content_read_marks_expire', function (err, content_read_marks_expire) {
           if (err) {
-            next(err);
+            callback(err);
             return;
           }
 
-          topics = _.uniq(topics.concat(result || []), function (topic) {
-            return String(topic._id);
-          });
-          next();
-        });
-      },
+          var lastTs = Math.round((Date.now() - (content_read_marks_expire * 24 * 60 * 60 * 1000)) / 1000);
 
+          N.models.forum.Topic.find()
+              .where('section').in(_.pluck(subs, 'to'))
+              // Exclude old one
+              .where('_id').gt(new ObjectId(lastTs))
+              .lean(true)
+              .exec(function (err, result) {
 
-      // Check permissions subcall
-      //
-      function (next) {
-        var access_env = { params: { topics: topics, user_info: env.user_info } };
-
-        N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-          if (err) {
-            next(err);
-            return;
-          }
-
-          topics = topics.reduce(function (acc, topic, i) {
-            if (access_env.data.access_read[i]) {
-              acc.push(topic);
+            if (err) {
+              next(err);
+              return;
             }
 
-            return acc;
-          }, []);
-
-          next();
+            topics = _.uniq(topics.concat(result || []), function (topic) {
+              return String(topic._id);
+            });
+            next();
+          });
         });
       },
 
@@ -98,6 +90,40 @@ module.exports = function (N) {
           }
 
           marks = result;
+
+          // Filter new and unread topics
+          topics = topics.reduce(function (acc, topic) {
+            if (marks[topic._id].isNew || marks[topic._id].next !== -1) {
+              acc.push(topic);
+            }
+
+            return acc;
+          }, []);
+
+          next();
+        });
+      },
+
+
+      // Check permissions subcall
+      //
+      function (next) {
+        var access_env = { params: { topics: topics, user_info: env.user_info } };
+
+        N.wire.emit('internal:forum.access.topic', access_env, function (err) {
+          if (err) {
+            next(err);
+            return;
+          }
+
+          topics = topics.reduce(function (acc, topic, i) {
+            if (access_env.data.access_read[i]) {
+              acc.push(topic);
+            }
+
+            return acc;
+          }, []);
+
           next();
         });
       },
