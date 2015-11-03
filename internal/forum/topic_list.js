@@ -217,7 +217,7 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    N.models.core.Marker.info(env.user_info.user_id, data, function (err, marks) {
+    N.models.users.Marker.info(env.user_info.user_id, data, function (err, marks) {
       if (err) {
         callback(err);
         return;

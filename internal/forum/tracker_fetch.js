@@ -84,7 +84,7 @@ module.exports = function (N) {
           });
         });
 
-        N.models.core.Marker.info(env.user_info.user_id, data, function (err, result) {
+        N.models.users.Marker.info(env.user_info.user_id, data, function (err, result) {
           if (err) {
             next(err);
             return;

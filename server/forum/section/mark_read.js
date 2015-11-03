@@ -64,6 +64,6 @@ module.exports = function (N, apiPath) {
   // Mark topics as read
   //
   N.wire.on(apiPath, function mark_topics_read(env, callback) {
-    N.models.core.Marker.markAll(env.user_info.user_id, env.data.section._id, callback);
+    N.models.users.Marker.markAll(env.user_info.user_id, env.data.section._id, callback);
   });
 };

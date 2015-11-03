@@ -312,6 +312,6 @@ module.exports = function (N, apiPath) {
       callback();
       return;
     }
-    N.models.core.Marker.mark(env.user_info.user_id, env.data.topic._id, callback);
+    N.models.users.Marker.mark(env.user_info.user_id, env.data.topic._id, callback);
   });
 };

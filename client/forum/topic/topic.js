@@ -862,7 +862,7 @@ var uploadScrollPositions = _.debounce(function () {
   bag.get('topics_scroll', function (__, positions) {
     if (positions) {
       _.forEach(positions, function (data, id) {
-        N.live.emit('private.core.marker.set_pos', { content_id: id, position: data.pos, max: data.max });
+        N.live.emit('private.users.marker.set_pos', { content_id: id, position: data.pos, max: data.max });
       });
 
       bag.remove('topics_scroll');
