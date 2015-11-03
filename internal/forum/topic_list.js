@@ -26,7 +26,9 @@
 
 'use strict';
 
-var _ = require('lodash');
+var _                = require('lodash');
+var sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
+var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 var fields = require('./_fields/topic_list.js');
 
@@ -60,9 +62,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch permissions
+  // Fetch and fill permissions
   //
-  N.wire.before(apiPath, function fetch_permissions(env, callback) {
+  N.wire.before(apiPath, function fetch_and_fill_permissions(env, callback) {
     env.extras.settings.params.section_id = env.data.section._id;
 
     env.extras.settings.fetch(fields.settings, function (err, result) {
@@ -71,7 +73,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.settings = result;
+      env.res.settings = env.data.settings = result;
       callback();
     });
   });
@@ -243,51 +245,32 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Sanitize topics
+  // Sanitize and fill topics
   //
-  N.wire.after(apiPath, function topics_sanitize(env) {
-    env.data.topics_out = [];
-
-    env.data.topics.forEach(function (post) {
-      var restrictedTopic = _.pick(post, fields.topic);
-
-      if (restrictedTopic.st === Topic.statuses.HB && !env.data.settings.can_see_hellbanned) {
-        restrictedTopic.st = restrictedTopic.ste;
-        delete restrictedTopic.ste;
+  N.wire.after(apiPath, function topics_sanitize_and_fill(env, callback) {
+    sanitize_topic(N, env.data.topics, env.user_info, function (err, res) {
+      if (err) {
+        callback(err);
+        return;
       }
 
-      if (restrictedTopic.cache_hb && (env.user_info.hb || env.data.settings.can_see_hellbanned)) {
-        restrictedTopic.cache = restrictedTopic.cache_hb;
-      }
-
-      delete restrictedTopic.cache_hb;
-
-      env.data.topics_out.push(restrictedTopic);
+      env.res.topics = res;
+      callback();
     });
   });
 
 
   // Sanitize and fill section
   //
-  N.wire.after(apiPath, function section_sanitize(env) {
-    var section = _.pick(env.data.section, fields.section);
+  N.wire.after(apiPath, function section_sanitize_and_fill(env, callback) {
+    sanitize_section(N, env.data.section, env.user_info, function (err, res) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    if (section.cache_hb && (env.user_info.hb || env.data.settings.can_see_hellbanned)) {
-      section.cache = section.cache_hb;
-    }
-    delete section.cache_hb;
-
-    env.res.section = section;
-  });
-
-
-  // Fill response fields
-  //
-  N.wire.after(apiPath, function fill_response(env) {
-    // Fill topics
-    env.res.topics = env.data.topics_out;
-
-    // Fill settings
-    env.res.settings = env.data.settings;
+      env.res.section = res;
+      callback();
+    });
   });
 };

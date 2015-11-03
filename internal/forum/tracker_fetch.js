@@ -3,10 +3,11 @@
 'use strict';
 
 
-var ObjectId = require('mongoose').Types.ObjectId;
-var _        = require('lodash');
-var async    = require('async');
-var fields   = require('./_fields/topic_list');
+var ObjectId         = require('mongoose').Types.ObjectId;
+var _                = require('lodash');
+var async            = require('async');
+var sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
+var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 
 module.exports = function (N) {
@@ -161,45 +162,31 @@ module.exports = function (N) {
       },
 
 
-      // Sanitize topics and sections
+      // Sanitize topics
       //
       function (next) {
-        var Topic = N.models.forum.Topic;
-
-        env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+        sanitize_topic(N, topics, env.user_info, function (err, res) {
           if (err) {
             next(err);
             return;
           }
 
-          topics = topics.map(function (topic) {
-            var restrictedTopic = _.pick(topic, fields.topic);
+          topics = res;
+          next();
+        });
+      },
 
-            if (restrictedTopic.st === Topic.statuses.HB && !can_see_hellbanned) {
-              restrictedTopic.st = restrictedTopic.ste;
-              delete restrictedTopic.ste;
-            }
 
-            if (restrictedTopic.cache_hb && (env.user_info.hb || can_see_hellbanned)) {
-              restrictedTopic.cache = restrictedTopic.cache_hb;
-            }
+      // Sanitize sections
+      //
+      function (next) {
+        sanitize_section(N, sections, env.user_info, function (err, res) {
+          if (err) {
+            next(err);
+            return;
+          }
 
-            delete restrictedTopic.cache_hb;
-
-            return restrictedTopic;
-          });
-
-          sections = _.mapValues(sections, function (section) {
-            var restrictedSection = _.pick(section, fields.section);
-
-            if (restrictedSection.cache_hb && (env.user_info.hb || can_see_hellbanned)) {
-              restrictedSection.cache = restrictedSection.cache_hb;
-            }
-            delete restrictedSection.cache_hb;
-
-            return restrictedSection;
-          });
-
+          sections = res;
           next();
         });
       }

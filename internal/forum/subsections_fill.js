@@ -3,12 +3,10 @@
 'use strict';
 
 
-var _         = require('lodash');
-var async     = require('async');
-var memoizee  = require('memoizee');
-
-
-var subsections_fields = require('./_fields/subsections_fill.js').subsections_fields;
+var _                = require('lodash');
+var async            = require('async');
+var memoizee         = require('memoizee');
+var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,6 +113,7 @@ module.exports = function (N, apiPath) {
     });
   });
 
+
   // Fetch subsections data and add `level` property
   //
   N.wire.on(apiPath, function subsections_fetch_visible(env, callback) {
@@ -123,7 +122,6 @@ module.exports = function (N, apiPath) {
 
     N.models.forum.Section
       .find({ _id: { $in: _ids } })
-      .select(subsections_fields.join(' '))
       .lean(true)
       .exec(function (err, sections) {
 
@@ -140,25 +138,21 @@ module.exports = function (N, apiPath) {
       });
   });
 
+
   // Sanitize subsections
   //
-  N.wire.after(apiPath, function sanitize_sections(env, callback) {
-    env.extras.settings.fetch('can_see_hellbanned', function (err, can_see_hellbanned) {
+  N.wire.after(apiPath, function subsections_sanitize(env, callback) {
+    sanitize_section(N, env.data.subsections, env.user_info, function (err, res) {
       if (err) {
         callback(err);
         return;
       }
 
-      env.data.subsections.forEach(function (section) {
-        if (section.cache_hb && (env.user_info.hb || can_see_hellbanned)) {
-          section.cache = section.cache_hb;
-        }
-        delete section.cache_hb;
-      });
-
+      env.data.subsections = res;
       callback();
     });
   });
+
 
   // Fill response data
   //

@@ -1,45 +1,6 @@
 'use strict';
 
 module.exports = {
-
-  post: [
-    '_id',
-    'hid',
-    'to',
-    'to_user',
-    'to_fhid',
-    'to_thid',
-    'to_phid',
-    'tail',
-    'html',
-    'user',
-    'ts',
-    'st',
-    'ste',
-    'del_reason',
-    'del_by',
-    'votes',
-    'votes_hb',
-    'bookmarks'
-  ],
-
-  section: [
-    'hid'
-  ],
-
-  topic: [
-    '_id',
-    'hid',
-    'last_post_hid',
-    'cache',
-    'cache_hb',
-    'st',
-    'ste',
-    'title',
-    'del_reason',
-    'del_by'
-  ],
-
   settings: [
     'can_see_ip',
     'can_see_hellbanned',

@@ -28,7 +28,10 @@
 
 'use strict';
 
-var _ = require('lodash');
+var _                = require('lodash');
+var sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
+var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
+var sanitize_post    = require('nodeca.forum/lib/sanitizers/post');
 
 var fields = require('./_fields/post_list.js');
 
@@ -86,9 +89,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch permissions
+  // Fetch and fill permissions
   //
-  N.wire.before(apiPath, function fetch_permissions(env, callback) {
+  N.wire.before(apiPath, function fetch_and_fill_permissions(env, callback) {
     env.extras.settings.params.section_id = env.data.section._id;
 
     env.extras.settings.fetch(fields.settings, function (err, result) {
@@ -97,7 +100,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.data.settings = result;
+      env.res.settings = env.data.settings = result;
       callback();
     });
   });
@@ -200,9 +203,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch bookmarks
+  // Fetch and fill bookmarks
   //
-  N.wire.after(apiPath, function fetch_bookmarks(env, callback) {
+  N.wire.after(apiPath, function fetch_and_fill_bookmarks(env, callback) {
     N.models.forum.PostBookmark.find()
         .where('user_id').equals(env.user_info.user_id)
         .where('post_id').in(env.data.posts_ids)
@@ -215,14 +218,15 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.own_bookmarks = bookmarks;
+      env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
       callback();
     });
   });
 
 
-  // Fetch votes
+  // Fetch and fill votes
   //
-  N.wire.after(apiPath, function fetch_votes(env, callback) {
+  N.wire.after(apiPath, function fetch_and_fill_votes(env, callback) {
     N.models.users.Vote.find()
         .where('from').equals(env.user_info.user_id)
         .where('for').in(env.data.posts_ids)
@@ -236,6 +240,14 @@ module.exports = function (N, apiPath) {
       }
 
       env.data.own_votes = votes;
+
+      // [ { _id: ..., for: '562f3569c5b8d831367b0585', value: -1 } ] -> { 562f3569c5b8d831367b0585: -1 }
+      env.res.own_votes = votes.reduce(function (acc, vote) {
+        acc[vote.for] = vote.value;
+
+        return acc;
+      }, {});
+
       callback();
     });
   });
@@ -267,80 +279,47 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Sanitize post statuses
+  // Sanitize and fill posts
   //
-  N.wire.after(apiPath, function post_statuses_sanitize(env) {
-    env.data.posts_out = [];
-
-    env.data.posts.forEach(function (post) {
-      var restrictedPost = _.pick(post, fields.post);
-
-      // Sanitize statuses
-      if (restrictedPost.st === Post.statuses.HB && !env.data.settings.can_see_hellbanned) {
-        restrictedPost.st = restrictedPost.ste;
-        delete restrictedPost.ste;
+  N.wire.after(apiPath, function posts_sanitize_and_fill(env, callback) {
+    sanitize_post(N, env.data.posts, env.user_info, function (err, res) {
+      if (err) {
+        callback(err);
+        return;
       }
 
-      env.data.posts_out.push(restrictedPost);
-    });
-  });
-
-
-  // Sanitize post votes
-  //
-  N.wire.after(apiPath, function post_votes_sanitize(env) {
-    env.data.posts_out.forEach(function (post) {
-
-      // Show `votes_hb` counter only for hellbanned users
-      if (env.user_info.hb) {
-        post.votes = post.votes_hb;
-      }
-
-      delete post.votes_hb;
+      env.res.posts = res;
+      callback();
     });
   });
 
 
   // Sanitize and fill topic
   //
-  N.wire.after(apiPath, function topic_sanitize(env) {
-    var topic = _.pick(env.data.topic, fields.topic);
+  N.wire.after(apiPath, function topic_sanitize_and_fill(env, callback) {
+    sanitize_topic(N, env.data.topic, env.user_info, function (err, res) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    // Sanitize topic
-    if (topic.st === Topic.statuses.HB && !env.data.settings.can_see_hellbanned) {
-      topic.st = topic.ste;
-      delete topic.ste;
-    }
-
-    if (topic.cache_hb && (env.user_info.hb || env.data.settings.can_see_hellbanned)) {
-      topic.cache = topic.cache_hb;
-    }
-
-    delete topic.cache_hb;
-
-    env.res.topic = topic;
+      env.res.topic = res;
+      callback();
+    });
   });
 
 
-  // Fill response except topic
+  // Sanitize and fill section
   //
-  N.wire.after(apiPath, function fill_response(env) {
+  N.wire.after(apiPath, function section_sanitize_and_fill(env, callback) {
+    sanitize_section(N, env.data.section, env.user_info, function (err, res) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    // Fill posts
-    env.res.posts = env.data.posts_out;
-
-    // Fill section
-    env.res.section = _.pick(env.data.section, fields.section);
-
-    // Fill settings
-    env.res.settings = env.data.settings;
-
-    // Fill bookmarks
-    env.res.own_bookmarks = _.pluck(env.data.own_bookmarks, 'post_id');
-
-    // Fill votes
-    env.res.own_votes = _.mapValues(_.indexBy(env.data.own_votes || [], 'for'), function (vote) {
-      return vote.value;
+      env.res.section = res;
+      callback();
     });
   });
 };

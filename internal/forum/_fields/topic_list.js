@@ -1,29 +1,6 @@
 'use strict';
 
 module.exports = {
-  topic: [
-    '_id',
-    'hid',
-    'title',
-    'views_count',
-    'cache',
-    'cache_hb',
-    'st',
-    'ste',
-    'del_reason',
-    'del_by',
-    'section'
-  ],
-
-  section: [
-    'hid',
-    'title',
-    'description',
-    'is_category',
-    'cache',
-    'cache_hb'
-  ],
-
   settings: [
     'forum_can_view',
     'can_see_hellbanned',
