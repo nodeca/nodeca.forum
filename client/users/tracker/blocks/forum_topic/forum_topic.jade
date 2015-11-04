@@ -1,7 +1,7 @@
-- var user = self.users[self.data.topic.cache.last_user];
-- var topic = self.data.topic;
-- var mark = self.data.read_mark;
-- var section = self.data.section;
+- var topic = self.forum_topics[self.item.id];
+- var section = self.forum_sections[topic.section];
+- var user = self.forum_sections[topic.cache.last_user];
+- var mark = self.read_marks[topic._id];
 - var href;
 
 if (mark.next !== -1)

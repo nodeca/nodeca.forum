@@ -15,7 +15,7 @@ module.exports = function (N) {
   N.wire.on('internal:users.tracker.fetch', function tracker_fetch_topics(env, callback) {
     var topics = [];
     var sections;
-    var marks;
+    var read_marks;
 
     async.series([
 
@@ -41,21 +41,19 @@ module.exports = function (N) {
       function (next) {
         var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_SECTION);
 
-        N.settings.get('content_read_marks_expire', function (err, content_read_marks_expire) {
+        N.models.users.Marker.cuts(env.user_info.user_id, _.pluck(subs, 'to'), function (err, cuts) {
           if (err) {
-            callback(err);
+            next(err);
             return;
           }
 
-          var lastTs = Math.round((Date.now() - (content_read_marks_expire * 24 * 60 * 60 * 1000)) / 1000);
+          var queryParts = [];
 
-          N.models.forum.Topic.find()
-              .where('section').in(_.pluck(subs, 'to'))
-              // Exclude old one
-              .where('_id').gt(new ObjectId(lastTs))
-              .lean(true)
-              .exec(function (err, result) {
+          _.forEach(cuts, function (cutTs, id) {
+            queryParts.push({ $and: [ { section: id }, { _id: { $gt: new ObjectId(Math.round(cutTs / 1000)) } } ] });
+          });
 
+          N.models.forum.Topic.find({ $or: queryParts }).lean(true).exec(function (err, result) {
             if (err) {
               next(err);
               return;
@@ -64,6 +62,7 @@ module.exports = function (N) {
             topics = _.uniq(topics.concat(result || []), function (topic) {
               return String(topic._id);
             });
+
             next();
           });
         });
@@ -90,11 +89,11 @@ module.exports = function (N) {
             return;
           }
 
-          marks = result;
+          read_marks = result;
 
           // Filter new and unread topics
           topics = topics.reduce(function (acc, topic) {
-            if (marks[topic._id].isNew || marks[topic._id].next !== -1) {
+            if (read_marks[topic._id].isNew || read_marks[topic._id].next !== -1) {
               acc.push(topic);
             }
 
@@ -140,7 +139,7 @@ module.exports = function (N) {
       },
 
 
-      // Fetch sections hid
+      // Fetch sections
       //
       function (next) {
         N.models.forum.Section.find()
@@ -153,10 +152,7 @@ module.exports = function (N) {
             return;
           }
 
-          sections = (result || []).reduce(function (acc, section) {
-            acc[section._id] = section;
-            return acc;
-          }, {});
+          sections = result;
           next();
         });
       },
@@ -196,15 +192,15 @@ module.exports = function (N) {
         return;
       }
 
+      env.res.forum_topics = _.indexBy(topics, '_id');
+      env.res.forum_sections = _.indexBy(sections, '_id');
+      env.res.read_marks = _.assign(env.res.read_marks || {}, read_marks);
+
       topics.forEach(function (topic) {
         env.data.items.push({
-          data: {
-            topic: topic,
-            read_mark: marks[topic._id],
-            section: sections[topic.section]
-          },
-          ts: topic.cache.last_ts,
-          type: 'forum_topic'
+          type: 'forum_topic',
+          last_ts: topic.cache.last_ts,
+          id: topic._id
         });
       });
 
