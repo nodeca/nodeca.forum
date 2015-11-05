@@ -1,4 +1,4 @@
-// Popup dialog to subscribe topic
+// Popup dialog to subscribe
 //
 // options:
 //
@@ -8,16 +8,20 @@
 
 'use strict';
 
+
+var _ = require('lodash');
+
+
 var $dialog;
 var params;
 var doneCallback;
 
 
-N.wire.once('forum.topic.topic_subscription', function init_handlers() {
+N.wire.once(module.apiPath, function init_handlers() {
 
   // Submit button handler
   //
-  N.wire.on('forum.topic.topic_subscription:submit', function submit_topic_subscription(form) {
+  N.wire.on(module.apiPath + ':submit', function submit_subscription_dlg(form) {
     params.subscription = +form.fields.type;
 
     $dialog
@@ -38,11 +42,11 @@ N.wire.once('forum.topic.topic_subscription', function init_handlers() {
 
 // Init dialog
 //
-N.wire.on('forum.topic.topic_subscription', function show_topic_subscription(options, callback) {
+N.wire.on(module.apiPath, function show_subscription_dlg(options, callback) {
   params = options;
   doneCallback = callback;
 
-  $dialog = $(N.runtime.render('forum.topic.topic_subscription', params));
+  $dialog = $(N.runtime.render(module.apiPath, _.assign({ submit_action: module.apiPath + ':submit' }, params)));
 
   $('body').append($dialog);
 
