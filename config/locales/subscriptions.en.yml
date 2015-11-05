@@ -1,0 +1,6 @@
+i18n:
+  en-US:
+    users:
+      subscriptions:
+        forum_topic: Forum topics
+        forum_section: Forum sections

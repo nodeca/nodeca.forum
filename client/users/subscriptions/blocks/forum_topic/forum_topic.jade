@@ -1,0 +1,24 @@
+- var topic = self.forum_topics[self.item.to];
+- var section = self.forum_sections[topic.section];
+
+li.user-subscriptions-item
+  .row
+    .col-sm-9
+      h2.user-subscriptions-item__title
+        a.user-subscriptions-item__title-link(href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid }))=topic.title
+      .user-subscriptions-item__desc
+        a.user-subscriptions-item__desc-link(href=self.link_to('forum.section', { hid: section.hid }))=section.title
+    .col-sm-3
+      a(href='#'
+        title=self.t('delete_subscription')
+        data-on-click='users.subscriptions:delete'
+        data-subscription=self.item
+        data-block-name=self.block_name
+      ).user-subscriptions-item__btn-delete.btn.btn-default.icon.icon-deleted.pull-right
+      a(href='#'
+        title=self.t('edit_subscription')
+        data-on-click='users.subscriptions:update'
+        data-subscription=self.item
+        data-block-name=self.block_name
+        class=self.icon(self.item.type)
+      ).user-subscriptions-item__btn-edit.btn.btn-default.icon.pull-right

@@ -1,0 +1,12 @@
+en-US:
+  title: Subscription type
+  muted: Muted
+  muted_desc: You will never be notified of anything about this topic.
+  normal: Normal
+  normal_desc: You will be notified if someone mentions your @name or replies to your message.
+  tracking: Tracking
+  tracking_desc: You will see topic updates in your subscriptions list.
+  watching: Watching
+  watching_desc: You will be notified immediately on every new message.
+  ok: OK
+  cancel: Cancel

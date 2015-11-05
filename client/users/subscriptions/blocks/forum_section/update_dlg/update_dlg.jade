@@ -1,0 +1,41 @@
+- var types = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+
+.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+  .modal-dialog
+    .modal-content
+      form(data-on-submit=self.submit_action)
+        .modal-header
+          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+          h4.modal-title=self.t('title')
+        .modal-body
+          .radio
+            label
+              input(type='radio' name='type' tabindex='2' value=types.WATCHING checked=self.subscription === types.WATCHING)
+              span.icon.icon-track-watching
+              | 
+              =self.t('watching')
+              p.help-block=self.t('watching_desc')
+          .radio
+            label
+              input(type='radio' name='type' tabindex='1' value=types.TRACKING checked=self.subscription === types.TRACKING)
+              span.icon.icon-track-tracking
+              | 
+              =self.t('tracking')
+              p.help-block=self.t('tracking_desc')
+          .radio
+            label
+              input(type='radio' name='type' tabindex='3' value=types.NORMAL checked=!self.subscription || self.subscription === types.NORMAL)
+              span.icon.icon-track-normal
+              | 
+              =self.t('normal')
+              p.help-block=self.t('normal_desc')
+          .radio
+            label
+              input(type='radio' name='type' tabindex='4' value=types.MUTED checked=self.subscription === types.MUTED)
+              span.icon.icon-track-muted
+              | 
+              =self.t('muted')
+              p.help-block=self.t('muted_desc')
+        .modal-footer
+          button.btn.btn-default(type='button' tabindex='5' data-dismiss='modal')=self.t('cancel')
+          button.btn.btn-primary(type='submit' tabindex='6')=self.t('ok')
