@@ -107,14 +107,12 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
               li.disabled: a(href='#')= self.t('history')
 
             when 'subscription'
-              - var subscribed = self.subscription && self.subscription !== subscriptionTypes.NORMAL;
-
               li: a(href='#'
                 data-on-click='forum.topic:subscription'
                 data-topic-hid=self.topic.hid
-                data-topic-subscription=subscribed ? self.subscription : subscriptionTypes[self.settings.default_subscription_mode]
+                data-topic-subscription=self.subscription
               )
-                if subscribed
+                if self.subscription && self.subscription !== subscriptionTypes.NORMAL
                   span.icon(class=subscriptionIcon)
                   | 
                 = self.t('subscription')
