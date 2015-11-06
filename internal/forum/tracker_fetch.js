@@ -14,7 +14,7 @@ module.exports = function (N) {
 
   N.wire.on('internal:users.tracker.fetch', function tracker_fetch_topics(env, callback) {
     var topics = [];
-    var sections;
+    var sections = [];
     var read_marks;
 
     async.series([
@@ -23,6 +23,11 @@ module.exports = function (N) {
       //
       function (next) {
         var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_TOPIC);
+
+        if (subs.length === 0) {
+          next();
+          return;
+        }
 
         N.models.forum.Topic.find().where('_id').in(_.pluck(subs, 'to')).lean(true).exec(function (err, result) {
           if (err) {
@@ -40,6 +45,11 @@ module.exports = function (N) {
       //
       function (next) {
         var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_SECTION);
+
+        if (subs.length === 0) {
+          next();
+          return;
+        }
 
         N.models.users.Marker.cuts(env.user_info.user_id, _.pluck(subs, 'to'), function (err, cuts) {
           if (err) {
