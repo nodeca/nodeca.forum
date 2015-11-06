@@ -79,12 +79,14 @@ if items.length > 0 && items[items.length - 1] === 'header'
               )= self.t('mark_read')
 
             when 'subscription'
+              - var subscribed = self.subscription && self.subscription !== subscriptionTypes.NORMAL;
+
               li: a(href='#'
                 data-on-click='forum.section:subscription'
                 data-section-hid=self.section.hid
-                data-section-subscription=self.subscription
+                data-section-subscription=subscribed ? self.subscription : subscriptionTypes[self.settings.default_subscription_mode]
               )
-                if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
+                if subscribed
                   span.icon(class=subscriptionIcon)
                   | 
                 = self.t('subscription')

@@ -175,6 +175,23 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill default subscription mode
+  //
+  N.wire.after(apiPath, function fill_default_subscription_mode(env, callback) {
+    env.extras.settings.fetch('default_subscription_mode', function (err, default_subscription_mode) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.settings = env.res.settings || {};
+      env.res.settings.default_subscription_mode = default_subscription_mode;
+
+      callback();
+    });
+  });
+
+
   // Fill head meta
   //
   N.wire.after(apiPath, function fill_meta(env) {
