@@ -187,7 +187,13 @@ module.exports = function (N, apiPath) {
         return locals.data.access_read[i] !== false;
       });
 
-      N.models.forum.Post.find().where('hid').in(hids).select('hid st ste').lean(true).exec(function (err, result) {
+      N.models.forum.Post.find()
+          .where('topic').equals(locals.data.topic._id)
+          .where('hid').in(hids)
+          .select('hid st ste')
+          .lean(true)
+          .exec(function (err, result) {
+
         if (err) {
           callback(err);
           return;
@@ -214,7 +220,12 @@ module.exports = function (N, apiPath) {
         return locals.data.access_read[i] !== false;
       });
 
-      N.models.forum.Post.find().where('_id').in(ids).select('_id st ste').lean(true).exec(function (err, result) {
+      N.models.forum.Post.find()
+          .where('_id').in(ids)
+          .select('_id st ste')
+          .lean(true)
+          .exec(function (err, result) {
+
         if (err) {
           callback(err);
           return;
