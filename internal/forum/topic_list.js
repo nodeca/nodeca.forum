@@ -212,8 +212,8 @@ module.exports = function (N, apiPath) {
       data.push({
         categoryId: topic.section,
         contentId: topic._id,
-        lastPosition: topic.last_post_hid,
-        lastPositionTs: topic.cache.last_ts
+        lastPostNumber: topic.last_post_hid,
+        lastPostTs: topic.cache.last_ts
       });
     });
 
