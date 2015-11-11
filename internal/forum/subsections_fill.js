@@ -154,6 +154,21 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fill read marks
+  //
+  N.wire.after(apiPath, function fill_marks(env, callback) {
+    N.models.users.Marker.cuts(env.user_info.user_id, _.pluck(env.data.subsections, '_id'), function (err, res) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      env.res.subsections_marks = res;
+      callback();
+    });
+  });
+
+
   // Fill response data
   //
   N.wire.after(apiPath, function subsections_fill_response(env) {
