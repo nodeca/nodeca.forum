@@ -862,7 +862,12 @@ var uploadScrollPositions = _.debounce(function () {
   bag.get('topics_scroll', function (__, positions) {
     if (positions) {
       _.forEach(positions, function (data, id) {
-        N.live.emit('private.users.marker.set_pos', { content_id: id, position: data.pos, max: data.max });
+        N.live.emit('private.forum.marker_set_pos', {
+          content_id: id,
+          position: data.pos,
+          max: data.max,
+          category_id: data.category_id
+        });
       });
 
       bag.remove('topics_scroll');
@@ -934,7 +939,8 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       positions = positions || {};
       positions[N.runtime.page_data.topic._id] = {
         pos: pos,
-        max: read
+        max: read,
+        category_id: N.runtime.page_data.topic.section
       };
 
       bag.set('topics_scroll', positions, function () {

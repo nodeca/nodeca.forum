@@ -312,6 +312,19 @@ module.exports = function (N, apiPath) {
       callback();
       return;
     }
-    N.models.users.Marker.mark(env.user_info.user_id, env.data.topic._id, callback);
+
+    // Don't need wait for callback, just log error if needed
+    N.models.users.Marker.mark(
+      env.user_info.user_id,
+      env.data.topic._id,
+      env.data.section._id,
+      'forum_topic',
+      function (err) {
+        if (err) {
+          N.logger.error('Marker cannot mark topic as read: %s', err);
+        }
+      });
+
+    callback();
   });
 };
