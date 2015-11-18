@@ -225,6 +225,13 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Increment topic version to invalidate old post count cache
+  //
+  N.wire.after(apiPath, function remove_old_post_count_cache(env, callback) {
+    N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: { version: 1 } }).exec(callback);
+  });
+
+
   // Update section counters
   //
   N.wire.after(apiPath, function update_section(env, callback) {

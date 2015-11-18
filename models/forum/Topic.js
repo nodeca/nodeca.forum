@@ -50,6 +50,9 @@ module.exports = function (N, collectionName) {
 
     section:        Schema.ObjectId,
 
+    // Incremented when remove post from topic
+    version:        { type: Number, 'default': 0 },
+
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
     st:             Number,

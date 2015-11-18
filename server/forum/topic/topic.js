@@ -132,47 +132,31 @@ module.exports = function (N, apiPath) {
       // If user requests a post by its hid, we need to retrieve a number
       // of posts before it to calculate pagination info
       //
-      var Post = N.models.forum.Post;
-
-      // Posts with this statuses are counted on page (others are shown, but not counted)
-      var countable_statuses = [ Post.statuses.VISIBLE ];
-
-      // For hellbanned users - count hellbanned posts too
-      if (env.user_info.hb) {
-        countable_statuses.push(Post.statuses.HB);
-      }
-
-      // Calculate pagination info
-      //
       // Both id builders used in this controller return hids,
       // so we use hids to utilize index.
       //
-      var query = Post.find()
-                      .where('topic').equals(env.data.topic._id)
-                      .where('st').in(countable_statuses);
+      N.models.forum.PostCountCache.getCount(
+        env.data.topic._id,
+        env.data.topic.version,
+        // `env.data.posts_hids` could not be empty, but we should avoid exception in all cases.
+        env.data.posts_hids[0] || 0,
+        env.user_info.hb,
+        function (err, current_post_number) {
+          if (err) {
+            callback(err);
+            return;
+          }
 
-      // If no posts_hids are specified, calculate pagination for the post
-      // after the last one.
-      //
-      if (env.data.posts_hids.length) {
-        query = query.where('hid').lt(env.data.posts_hids[0]);
-      }
+          // Create page info
+          env.data.pagination = {
+            total:        post_count,
+            per_page:     posts_per_page,
+            chunk_offset: current_post_number
+          };
 
-      query.count(function (err, current_post_number) {
-        if (err) {
-          callback(err);
-          return;
+          callback();
         }
-
-        // Create page info
-        env.data.pagination = {
-          total:        post_count,
-          per_page:     posts_per_page,
-          chunk_offset: current_post_number
-        };
-
-        callback();
-      });
+      );
     });
   });
 
