@@ -13,7 +13,6 @@
 // Out:
 //
 // - env.data.topics_ids
-// - env.data.pagination
 //
 // Needed in:
 //
@@ -22,43 +21,13 @@
 'use strict';
 
 
-var async = require('async');
-var _     = require('lodash');
+var _ = require('lodash');
 
 
 module.exports = function (N) {
 
   // Shortcut
   var Topic = N.models.forum.Topic;
-
-
-  // Get topics count.
-  //
-  // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
-  //
-  function topicsCount(section_id, statuses, callback) {
-    var result = 0;
-
-    async.each(statuses, function (st, next) {
-
-      Topic.where('section').equals(section_id)
-          .where('st').equals(st)
-          .count(function (err, cnt) {
-
-        if (err) {
-          next(err);
-          return;
-        }
-
-        result += cnt;
-        next();
-      });
-
-    }, function (err) {
-      callback(err, result);
-    });
-  }
-
 
   return function buildTopicsIds(env, callback) {
 
@@ -68,40 +37,46 @@ module.exports = function (N) {
         return;
       }
 
-      var statuses = _.without(env.data.topics_visible_statuses, Topic.statuses.PINNED);
+      // Page numbers starts from 1, not from 0
+      var page_current = parseInt(env.params.page, 10);
 
-      // Fetch visible topic count to calculate pagination. Don't use cache here - need
-      // live pagination updates for users with different permissions.
-      topicsCount(env.data.section._id, statuses, function (err, topic_count) {
+      var topic_sort = env.user_info.hb ? { 'cache_hb.last_post': -1 } : { 'cache.last_post': -1 };
+
+      // Algorithm:
+      //
+      // - get all visible topics IDs except pinned
+      // - if at first page - add pinned topic ids
+      // - insert pinned topic IDs at start
+
+      Topic.find()
+          .where('section').equals(env.data.section._id)
+          .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+          .select('_id')
+          .sort(topic_sort)
+          .skip((page_current - 1) * topics_per_page)
+          .limit(topics_per_page)
+          .lean(true)
+          .exec(function (err, topics) {
+
         if (err) {
           callback(err);
           return;
         }
 
-        // Page numbers starts from 1, not from 0
-        var page_current = parseInt(env.params.page, 10);
+        env.data.topics_ids = _.pluck(topics, '_id');
 
-        env.data.pagination = {
-          total:        topic_count,
-          per_page:     topics_per_page,
-          chunk_offset: topics_per_page * (page_current - 1)
-        };
+        // Exit here if pinned topics not needed
+        if (page_current > 1 || env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) === -1) {
+          callback();
+          return;
+        }
 
-        var topic_sort = env.user_info.hb ? { 'cache_hb.last_post': -1 } : { 'cache.last_post': -1 };
-
-        // Algorithm:
-        //
-        // - get all visible topics IDs except pinned
-        // - if at first page - add pinned topic ids
-        // - insert pinned topic IDs at start
-
+        // Fetch pinned topics ids for first page
         Topic.find()
             .where('section').equals(env.data.section._id)
-            .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+            .where('st').equals(Topic.statuses.PINNED)
             .select('_id')
             .sort(topic_sort)
-            .skip((page_current - 1) * topics_per_page)
-            .limit(topics_per_page)
             .lean(true)
             .exec(function (err, topics) {
 
@@ -110,32 +85,9 @@ module.exports = function (N) {
             return;
           }
 
-          env.data.topics_ids = _.pluck(topics, '_id');
-
-          // Exit here if pinned topics not needed
-          if (page_current > 1 || env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) === -1) {
-            callback();
-            return;
-          }
-
-          // Fetch pinned topics ids for first page
-          Topic.find()
-              .where('section').equals(env.data.section._id)
-              .where('st').equals(Topic.statuses.PINNED)
-              .select('_id')
-              .sort(topic_sort)
-              .lean(true)
-              .exec(function (err, topics) {
-
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            // Put pinned topics IDs to start of `env.data.topics_ids`
-            env.data.topics_ids = _.pluck(topics, '_id').concat(env.data.topics_ids);
-            callback();
-          });
+          // Put pinned topics IDs to start of `env.data.topics_ids`
+          env.data.topics_ids = _.pluck(topics, '_id').concat(env.data.topics_ids);
+          callback();
         });
       });
     });

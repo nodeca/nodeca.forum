@@ -4,6 +4,8 @@
 
 
 var memoizee  = require('memoizee');
+var async     = require('async');
+var _         = require('lodash');
 
 
 module.exports = function (N, apiPath) {
@@ -38,6 +40,66 @@ module.exports = function (N, apiPath) {
     env.data.build_topics_ids = buildTopicsIds;
 
     N.wire.emit('internal:forum.topic_list', env, callback);
+  });
+
+
+  // Fetch pagination
+  //
+  N.wire.after(apiPath, function fetch_pagination(env, callback) {
+
+    // Get topics count.
+    //
+    // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
+    //
+    function topicsCount(section_id, statuses, callback) {
+      var result = 0;
+
+      async.each(statuses, function (st, next) {
+
+        N.models.forum.Topic.where('section').equals(section_id)
+          .where('st').equals(st)
+          .count(function (err, cnt) {
+
+          if (err) {
+            next(err);
+            return;
+          }
+
+          result += cnt;
+          next();
+        });
+
+      }, function (err) {
+        callback(err, result);
+      });
+    }
+
+    env.extras.settings.fetch('topics_per_page', function (err, topics_per_page) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      var statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+
+      topicsCount(env.data.section._id, statuses, function (err, topic_count) {
+        if (err) {
+          callback(err);
+          return;
+        }
+
+        // Page numbers starts from 1, not from 0
+        var page_current = parseInt(env.params.page, 10);
+
+        env.data.pagination = {
+          total: topic_count,
+          per_page: topics_per_page,
+          chunk_offset: topics_per_page * (page_current - 1)
+        };
+
+        callback();
+      });
+    });
   });
 
 
