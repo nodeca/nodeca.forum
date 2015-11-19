@@ -22,13 +22,31 @@
 'use strict';
 
 
-var _ = require('lodash');
+var async = require('async');
+var _     = require('lodash');
 
 
 module.exports = function (N) {
 
   // Shortcut
   var Topic = N.models.forum.Topic;
+
+
+  // Get topics count.
+  //
+  // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
+  //
+  function topicsCount(section_id, statuses, callback) {
+    async.reduce(statuses, 0, function (acc, st, next) {
+      Topic.where('section').equals(section_id)
+          .where('st').equals(st)
+          .count(function (err, cnt) {
+
+        next(err, acc + cnt);
+      });
+    }, callback);
+  }
+
 
   return function buildTopicsIds(env, callback) {
 
@@ -38,12 +56,11 @@ module.exports = function (N) {
         return;
       }
 
+      var statuses = _.without(env.data.topics_visible_statuses, Topic.statuses.PINNED);
+
       // Fetch visible topic count to calculate pagination. Don't use cache here - need
       // live pagination updates for users with different permissions.
-      Topic.where('section').equals(env.data.section._id)
-          .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-          .count(function (err, topic_count) {
-
+      topicsCount(env.data.section._id, statuses, function (err, topic_count) {
         if (err) {
           callback(err);
           return;
