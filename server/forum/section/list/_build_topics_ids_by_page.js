@@ -37,14 +37,26 @@ module.exports = function (N) {
   // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
   //
   function topicsCount(section_id, statuses, callback) {
-    async.reduce(statuses, 0, function (acc, st, next) {
+    var result = 0;
+
+    async.each(statuses, function (st, next) {
+
       Topic.where('section').equals(section_id)
           .where('st').equals(st)
           .count(function (err, cnt) {
 
-        next(err, acc + cnt);
+        if (err) {
+          next(err);
+          return;
+        }
+
+        result += cnt;
+        next();
       });
-    }, callback);
+
+    }, function (err) {
+      callback(err, result);
+    });
   }
 
 
