@@ -86,16 +86,10 @@ module.exports = function (N, collectionName) {
 
   // Topics list, ordered by last post
   //
-  // We use separate indices for normal and hellbanned users,
-  // optimised for descending and ascending sort. This, 2x2=4 indices total.
-  //
-  // TODO: check in production that we really need different indices for sorting,
-  //       chances are mongo can use just one index in reverse (same as in Post)
+  // We use separate indices for normal and hellbanned users.
   //
   Topic.index({ section: 1, 'cache.last_post':    -1, st: 1, _id: 1 });
   Topic.index({ section: 1, 'cache_hb.last_post': -1, st: 1, _id: 1 });
-  Topic.index({ section: 1, 'cache.last_post':     1, st: 1, _id: 1 });
-  Topic.index({ section: 1, 'cache_hb.last_post':  1, st: 1, _id: 1 });
 
   // lookup _id by hid (for routing)
   Topic.index({ hid: 1 });

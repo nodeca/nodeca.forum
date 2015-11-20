@@ -96,17 +96,6 @@ module.exports = function (N, collectionName) {
     st:    1
   });
 
-  //  - get posts by hid range + desc hid sort
-  //
-  // TODO: check in production that we really need two indices for this,
-  //       chances are mongo can use just one index in reverse
-  //
-  Post.index({
-    topic: 1,
-    hid:  -1,
-    st:    1
-  });
-
   // Set 'hid' for the new post.
   //
   Post.pre('save', function (callback) {
