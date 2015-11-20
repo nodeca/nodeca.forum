@@ -15,7 +15,7 @@ mixin _page_progress_dropdown_menu()
         type='number'
         min='1'
         max=self.max
-        value=self.current
+        value=self.current || 0
         placeholder=self.t('placeholder')
       )
       span.input-group-btn
@@ -39,7 +39,7 @@ ul.page-progress(data-current=current, data-total=total, data-section=self.secti
       href='#'
       data-toggle='dropdown'
     )
-      .page-progress__label= self.t('label', { current: current, total: total })
+      .page-progress__label= self.t('label', { current: current || 0, total: total })
       .page-progress__bar
         .page-progress__bar-fill(style="width: " + (current / total * 100).toFixed(2) + "%")
 

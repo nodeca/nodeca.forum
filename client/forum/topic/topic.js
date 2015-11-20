@@ -481,6 +481,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     topicState.prev_loading_start = now;
 
     var hid = $('.forum-post:first').data('post-hid');
+
+    if (!hid) {
+      // No posts on the page
+      return;
+    }
+
     if (hid <= 1) {
       // If the first post on the page is hid=1, it's a first page,
       // so we don't need to load anything
@@ -552,6 +558,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     topicState.next_loading_start = now;
 
     var hid = $('.forum-post:last').data('post-hid');
+
+    if (!hid) {
+      // No posts on the page
+      return;
+    }
+
     if (hid >= topicState.max_post) {
       // If the last post on the page is visible, no need to scroll further.
       //
@@ -910,6 +922,11 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
         lastVisibleIdx = i - 1;
         break;
       }
+    }
+
+    if (lastVisibleIdx < 0) {
+      // No posts on the page
+      return;
     }
 
     // Last completely visible post on page to mark it as read
