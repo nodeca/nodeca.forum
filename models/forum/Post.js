@@ -88,12 +88,19 @@ module.exports = function (N, collectionName) {
 
   //  - get a post by topic + hid
   //  - get posts by hid range
-  //  - count all posts before current (pagination)
   //
   Post.index({
     topic: 1,
     hid:   1,
     st:    1
+  });
+
+  // - count all posts before current (pagination)
+  //
+  Post.index({
+    topic: 1,
+    st:    1,
+    hid:   1
   });
 
   // Set 'hid' for the new post.

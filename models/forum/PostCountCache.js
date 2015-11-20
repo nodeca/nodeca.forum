@@ -6,6 +6,7 @@
 var Mongoose = require('mongoose');
 var Schema = Mongoose.Schema;
 var _        = require('lodash');
+var async    = require('async');
 
 
 // Step between cached hids. Value should be big enough to:
@@ -44,6 +45,11 @@ module.exports = function (N, collectionName) {
   // - callback (Function) - `function (err, cnt)`
   //
   PostCountCache.statics.getCount = function (src, version, hid, hb, callback) {
+
+    // Get post count.
+    //
+    // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
+    //
     function countFn(hid, cut_from, callback) {
       var Post = N.models.forum.Post;
 
@@ -55,12 +61,28 @@ module.exports = function (N, collectionName) {
         countable_statuses.push(Post.statuses.HB);
       }
 
-      Post.find()
-        .where('topic').equals(src)
-        .where('st').in(countable_statuses)
-        .where('hid').lt(hid)
-        .where('hid').gte(cut_from)
-        .count(callback);
+      var result = 0;
+
+      async.each(countable_statuses, function (st, next) {
+        Post.find()
+            .where('topic').equals(src)
+            .where('st').equals(st)
+            .where('hid').lt(hid)
+            .where('hid').gte(cut_from)
+            .count(function (err, cnt) {
+
+          if (err) {
+            next(err);
+            return;
+          }
+
+          result += cnt;
+          next();
+        });
+
+      }, function (err) {
+        callback(err, result);
+      });
     }
 
     var cached_hid = hid - hid % CACHE_STEP_SIZE;
