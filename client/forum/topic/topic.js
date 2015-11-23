@@ -16,6 +16,7 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - topic_hid:          current topic hid
 // - post_hid:           current post hid
 // - max_post:           hid of the last post in this topic
+// - post_count:         an amount of visible posts in the topic
 // - posts_per_page:     an amount of visible posts per page
 // - first_post_offset:  total amount of visible posts in the topic before the first displayed post
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
@@ -34,8 +35,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.section_hid        = data.params.section_hid;
   topicState.topic_hid          = data.params.topic_hid;
   topicState.post_hid           = data.params.post_hid || 1;
+  topicState.post_count         = N.runtime.page_data.pagination.total;
   topicState.posts_per_page     = N.runtime.page_data.pagination.per_page;
-  topicState.max_post           = N.runtime.page_data.topic.last_post_hid;
+  topicState.max_post           = N.runtime.page_data.max_post;
   topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
   topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
   topicState.prev_loading_start = 0;
@@ -502,8 +504,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:    LOAD_POSTS_COUNT,
       after:     0
     }).done(function (res) {
-      if (res.last_post_hid && res.last_post_hid !== topicState.max_post) {
-        topicState.max_post = res.last_post_hid;
+      topicState.post_count = res.topic.cache.post_count;
+
+      if (res.max_post && res.max_post !== topicState.max_post) {
+        topicState.max_post = res.max_post;
 
         N.wire.emit('forum.topic.blocks.page_progress:update', {
           max: topicState.max_post
@@ -520,7 +524,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       res.pagination = {
         // used in paginator
-        total:        N.runtime.page_data.pagination.total,
+        total:        topicState.post_count,
         per_page:     N.runtime.page_data.pagination.per_page,
         chunk_offset: topicState.first_post_offset
       };
@@ -576,8 +580,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:    0,
       after:     LOAD_POSTS_COUNT
     }).done(function (res) {
-      if (res.last_post_hid && res.last_post_hid !== topicState.max_post) {
-        topicState.max_post = res.last_post_hid;
+      topicState.post_count = res.topic.cache.post_count;
+
+      if (res.max_post && res.max_post !== topicState.max_post) {
+        topicState.max_post = res.max_post;
 
         N.wire.emit('forum.topic.blocks.page_progress:update', {
           max: topicState.max_post
@@ -590,7 +596,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       res.pagination = {
         // used in paginator
-        total:        N.runtime.page_data.pagination.total,
+        total:        topicState.post_count,
         per_page:     N.runtime.page_data.pagination.per_page,
         chunk_offset: topicState.last_post_offset + 1
       };

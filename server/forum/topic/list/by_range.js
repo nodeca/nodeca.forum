@@ -30,7 +30,28 @@ module.exports = function (N, apiPath) {
   // Add last post number, so client can update its progress bar
   // if somebody created a new post.
   //
-  N.wire.on(apiPath, function attach_last_post_hid(env) {
-    env.res.last_post_hid = env.data.topic.last_post_hid;
+  N.wire.after(apiPath, function attach_last_post_hid(env, callback) {
+    var cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
+
+    N.models.forum.Post.findById(cache.last_post)
+        .select('hid')
+        .lean(true)
+        .exec(function (err, post) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!post) {
+        // cache is invalid?
+        env.res.max_post = env.data.topic.last_post_hid;
+        callback();
+        return;
+      }
+
+      env.res.max_post = post.hid;
+      callback();
+    });
   });
 };

@@ -198,6 +198,34 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Add last post number, used for navigation and progress bar display
+  //
+  N.wire.on(apiPath, function attach_last_post_hid(env, callback) {
+    var cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
+
+    N.models.forum.Post.findById(cache.last_post)
+        .select('hid')
+        .lean(true)
+        .exec(function (err, post) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!post) {
+        // cache is invalid?
+        env.res.max_post = env.data.topic.last_post_hid;
+        callback();
+        return;
+      }
+
+      env.res.max_post = post.hid;
+      callback();
+    });
+  });
+
+
   // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
