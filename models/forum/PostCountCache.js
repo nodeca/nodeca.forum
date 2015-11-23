@@ -39,7 +39,7 @@ module.exports = function (N, collectionName) {
   // Get cached count
   //
   // - src (ObjectId) - source _id
-  // - version (Number) - incremental src version
+  // - version (Number) - optional, incremental src version, default 0
   // - hid (Number) - required position
   // - hb (Boolean) - user hellbanned status
   // - callback (Function) - `function (err, cnt)`
@@ -103,7 +103,7 @@ module.exports = function (N, collectionName) {
         return;
       }
 
-      var path = [ 'data', version, (hb ? 'hb' : 'normal'), cached_hid ].join('.');
+      var path = [ 'data', (version || 0), (hb ? 'hb' : 'normal'), cached_hid ].join('.');
 
       // If cache does not exists - use direct count and rebuild cache mark
       if (_.has(cache, path)) {
@@ -139,7 +139,7 @@ module.exports = function (N, collectionName) {
 
         // Remove all previous version keys if exists
         Object.keys((cache || {}).data || {}).forEach(function (cache_version) {
-          if (cache_version < version) {
+          if (cache_version < (version || 0)) {
             update.$unset = update.$unset || {};
             update.$unset['data.' + cache_version] = '';
           }
