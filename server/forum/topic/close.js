@@ -6,7 +6,7 @@
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_id:     { format: 'mongo', required: true },
+    topic_hid:    { type: 'integer', required: true },
     reopen:       { type: 'boolean', required: true },
     as_moderator: { type: 'boolean', required: true }
   });
@@ -15,7 +15,7 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ _id: env.params.topic_id })
+    N.models.forum.Topic.findOne({ hid: env.params.topic_hid })
         .lean(true).exec(function (err, topic) {
 
       if (err) {

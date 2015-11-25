@@ -10,14 +10,8 @@ var _     = require('lodash');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    section_hid: {
-      type: 'integer',
-      required: true
-    },
-    topic_id: {
-      format: 'mongo',
-      required: true
-    }
+    section_hid: { type: 'integer', required: true },
+    topic_hid:   { type: 'integer', required: true }
   });
 
   // Shortcuts
@@ -28,7 +22,7 @@ module.exports = function (N, apiPath) {
   // Fetch topic
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
-    Topic.findById(env.params.topic_id)
+    Topic.findOne({ hid: env.params.topic_hid })
         .lean(true)
         .exec(function (err, topic) {
 

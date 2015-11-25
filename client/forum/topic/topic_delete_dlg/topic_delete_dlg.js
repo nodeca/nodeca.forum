@@ -21,7 +21,7 @@ N.wire.once('forum.topic.topic_delete_dlg', function init_handlers() {
   //
   N.wire.on('forum.topic.topic_delete_dlg:submit', function submit_topic_delete_dlg(form) {
     var data = {
-      topic_id: params.topicId,
+      topic_hid: params.topicHid,
       method: form.fields.method || 'soft',
       as_moderator: params.asModerator
     };

@@ -204,10 +204,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Pin/unpin topic
   //
   N.wire.on('forum.topic.pin', function topic_pin(data, callback) {
-    var topicId = data.$this.data('topic-id');
+    var topicHid = data.$this.data('topic-hid');
     var unpin = data.$this.data('unpin') || false;
 
-    N.io.rpc('forum.topic.pin', { topic_id: topicId, unpin: unpin }).done(function (res) {
+    N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin: unpin }).done(function (res) {
       var params = {};
 
       N.wire.emit('navigate.get_page_raw', params, function () {
@@ -232,7 +232,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.topic.close', function topic_close(data, callback) {
     var params = {
-      topic_id: data.$this.data('topic-id'),
+      topic_hid: data.$this.data('topic-hid'),
       reopen: data.$this.data('reopen') || false,
       as_moderator: data.$this.data('as-moderator') || false
     };
@@ -282,7 +282,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
         N.io.rpc('forum.topic.title_update', {
           as_moderator: data.$this.data('as-moderator') || false,
-          topic_id: data.$this.data('topic-id'),
+          topic_hid: data.$this.data('topic-hid'),
           title: value
         }).done(function () {
           $title.text(value);
@@ -302,9 +302,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Undelete topic handler
   //
   N.wire.on('forum.topic.topic_undelete', function topic_undelete(data, callback) {
-    var topicId = data.$this.data('topic-id');
+    var topicHid = data.$this.data('topic-hid');
 
-    N.io.rpc('forum.topic.undelete', { topic_id: topicId }).done(function (res) {
+    N.io.rpc('forum.topic.undelete', { topic_hid: topicHid }).done(function (res) {
       var params = {};
 
       N.wire.emit('navigate.get_page_raw', params, function () {
@@ -382,7 +382,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.topic.topic_delete', function topic_delete(data) {
     var params = {
-      topicId: data.$this.data('topic-id'),
+      topicHid: data.$this.data('topic-hid'),
       asModerator: data.$this.data('as-moderator') || false,
       canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
     };
@@ -752,7 +752,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic:level_up', function level_up(data) {
     N.io.rpc('forum.topic.offset', {
       section_hid: topicState.section_hid,
-      topic_id: data.$this.data('topic-id')
+      topic_hid: data.$this.data('topic-hid')
     }).done(function (res) {
       var page = Math.floor(res.topic_offset / res.topics_per_page) + 1;
 

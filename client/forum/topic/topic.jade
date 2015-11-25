@@ -38,7 +38,7 @@ article#content.forum-topic-root(
           href='#'
           title=self.t('edit_title')
           data-on-click='forum.topic.edit_title'
-          data-topic-id=self.topic._id
+          data-topic-hid=self.topic.hid
           data-as-moderator='#{!canEdit}'
         )
 

@@ -120,46 +120,46 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
             when 'delete'
               li: a(href='#'
                 data-on-click='forum.topic.topic_delete'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
               )= self.t('delete')
 
             when 'close'
               li: a(href='#'
                 data-on-click='forum.topic.close'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
               )= self.t('close')
 
             when 'open'
               li: a(href='#'
                 data-on-click='forum.topic.close'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
                 data-reopen='true'
               )= self.t('open')
 
             when 'mod_delete'
               li: a(href='#'
                 data-on-click='forum.topic.topic_delete'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
                 data-as-moderator='true'
               )= self.t('delete')
 
             when 'mod_undelete'
               li: a(href='#'
                 data-on-click='forum.topic.topic_undelete'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
               )= self.t('undelete')
 
             when 'mod_close'
               li: a(href='#'
                 data-on-click='forum.topic.close'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
                 data-as-moderator='true'
               )= self.t('close')
 
             when 'mod_open'
               li: a(href='#'
                 data-on-click='forum.topic.close'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
                 data-reopen='true'
                 data-as-moderator='true'
               )= self.t('open')
@@ -167,12 +167,12 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
             when 'mod_pin'
               li: a(href='#'
                 data-on-click='forum.topic.pin'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
               )=self.t('pin')
 
             when 'mod_unpin'
               li: a(href='#'
                 data-on-click='forum.topic.pin'
-                data-topic-id=self.topic._id
+                data-topic-hid=self.topic.hid
                 data-unpin='true'
               )=self.t('unpin')

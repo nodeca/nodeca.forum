@@ -4,8 +4,8 @@
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_id: { format: 'mongo', required: true },
-    unpin:    { type: 'boolean', required: true }
+    topic_hid: { type: 'integer', required: true },
+    unpin:     { type: 'boolean', required: true }
   });
 
 
@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function fetch_topic(env, callback) {
     var statuses = N.models.forum.Topic.statuses;
-    var query = { _id: env.params.topic_id };
+    var query = { hid: env.params.topic_hid };
 
     if (env.params.unpin) {
       query.st = statuses.PINNED;

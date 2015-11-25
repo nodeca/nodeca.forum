@@ -144,7 +144,7 @@ each post, post_idx in self.posts
                 button.btn.forum-post__action(
                   data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
                   data-post-id=post._id
-                  data-topic-id=self.topic._id
+                  data-topic-hid=self.topic.hid
                   title=self.t('delete')
                 )
                   span.icon.icon-trash
@@ -207,14 +207,14 @@ each post, post_idx in self.posts
                         a(href='#'
                           data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
                           data-post-id=post._id
-                          data-topic-id=self.topic._id
+                          data-topic-hid=self.topic.hid
                           data-as-moderator='true'
                         )= self.t('delete')
                       li.forum-post__undelete
                         a(href='#'
                           data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
                           data-post-id=post._id
-                          data-topic-id=self.topic._id
+                          data-topic-hid=self.topic.hid
                         )= self.t('undelete')
 
 

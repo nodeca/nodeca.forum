@@ -8,7 +8,7 @@ var punycode = require('punycode');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_id:         { format: 'mongo', required: true },
+    topic_hid:        { type: 'integer', required: true },
     title:            { type: 'string', minLength: 1, required: true },
     as_moderator:     { type: 'boolean', required: true }
   });
@@ -40,7 +40,7 @@ module.exports = function (N, apiPath) {
     var statuses = N.models.forum.Topic.statuses;
 
     N.models.forum.Topic
-        .findOne({ _id: env.params.topic_id })
+        .findOne({ hid: env.params.topic_hid })
         .lean(true)
         .exec(function (err, topic) {
 
