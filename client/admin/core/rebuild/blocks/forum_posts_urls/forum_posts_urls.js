@@ -91,7 +91,7 @@ N.wire.once('navigate.done:admin.core.rebuild', function rebuild_forum_posts_url
   N.wire.on(module.apiPath + '.stop', function rebuild_stop() {
     var prev_runid = last_runid;
 
-    N.io.rpc('admin.core.rebuild.forum_posts_urls.start')
+    N.io.rpc('admin.core.rebuild.forum_posts_urls.stop')
       .done(function () {
         // reset progress bar to zero,
         // and ignore all updates on the last task
