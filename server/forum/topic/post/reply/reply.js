@@ -449,4 +449,20 @@ module.exports = function (N, apiPath) {
       post_hid: env.data.new_post.hid
     });
   });
+
+
+  // Add reply notification for parent post owner
+  //
+  N.wire.after(apiPath, function add_reply_notification(env, callback) {
+    if (!env.data.new_post.to) {
+      callback();
+      return;
+    }
+
+    N.wire.emit('internal:users.notify', {
+      src: env.data.new_post._id,
+      to: env.data.new_post.to_user,
+      type: 'FORUM_REPLY'
+    }, callback);
+  });
 };
