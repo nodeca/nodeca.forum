@@ -38,6 +38,15 @@ router:
           type: integer
           default: 1
 
+    forum.topic.unsubscribe:
+      "/f{section_hid}/topic{topic_hid}/unsubscribe":
+        section_hid:
+          match: /\d+/
+          type: integer
+        topic_hid:
+          match: /\d+/
+          type: integer
+
     admin.forum.section.index:
       "/forum/section": ~
 

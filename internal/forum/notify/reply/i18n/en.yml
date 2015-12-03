@@ -7,3 +7,7 @@ en-US:
     Follow this link to read answer:
 
     #{link}
+
+    Follow this link to unsubscribe:
+
+    #{unsubscribe}

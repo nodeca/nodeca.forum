@@ -178,7 +178,7 @@ module.exports = function (N) {
             return;
           }
 
-          var locale, subject, url, text;
+          var locale, subject, url, text, unsubscribe;
 
           local_env.to.forEach(function (user_id) {
             locale = users_info[user_id].locale || N.config.locales['default'];
@@ -194,12 +194,18 @@ module.exports = function (N) {
               post_hid: post.hid
             });
 
-            text = N.i18n.t(locale, 'forum.notify.reply.text', {
-              post_html: post.html,
-              link: url
+            unsubscribe = N.router.linkTo('forum.topic.unsubscribe', {
+              section_hid: section.hid,
+              topic_hid: topic.hid
             });
 
-            local_env.messages[user_id] = { subject, text, url };
+            text = N.i18n.t(locale, 'forum.notify.reply.text', {
+              post_html: post.html,
+              link: url,
+              unsubscribe
+            });
+
+            local_env.messages[user_id] = { subject, text, url, unsubscribe };
           });
 
           next();
