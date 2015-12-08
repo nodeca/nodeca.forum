@@ -6,7 +6,7 @@
 
 module.exports = function (N) {
   N.wire.after('server:admin.core.rebuild', { priority: 30 }, function posts_urls_widget(env, callback) {
-    N.queue.status('queue:forum_posts_urls:forum_posts_urls', function (err, data) {
+    N.queue.status('forum_posts_urls', N.queue.worker('forum_posts_urls').taskID(), function (err, data) {
       if (err) {
         callback(err);
         return;
