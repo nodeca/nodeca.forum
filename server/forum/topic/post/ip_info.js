@@ -4,7 +4,7 @@
 
 
 var dns   = require('dns');
-var whois = require('node-whois');
+var whois = require('whois');
 
 
 module.exports = function (N, apiPath) {
