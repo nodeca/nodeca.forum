@@ -160,18 +160,17 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    var data = {
-      'for': env.params.post_id,
-      from: env.user_info.user_id,
-      to: env.data.post.user,
-      type: N.models.users.Vote.types.FORUM_POST,
-      value: env.params.value === 1 ? 1 : -1,
-      hb: env.user_info.hb
-    };
-
-    N.models.users.Vote.findOneAndUpdate(
-      { 'for': env.params.post_id, from: env.user_info.user_id },
-      data,
+    N.models.users.Vote.update(
+      {
+        'for': env.params.post_id,
+        from: env.user_info.user_id
+      },
+      {
+        to: env.data.post.user,
+        type: N.models.users.Vote.types.FORUM_POST,
+        value: env.params.value === 1 ? 1 : -1,
+        hb: env.user_info.hb
+      },
       { upsert: true },
       callback
     );

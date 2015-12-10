@@ -75,15 +75,16 @@ module.exports = function (N, apiPath) {
   // Add/remove subscription
   //
   N.wire.on(apiPath, function subscription_add_remove(env, callback) {
-    var data = {
-      user_id: env.user_info.user_id,
-      to: env.data.topic._id
-    };
-
-    // Use `findOneAndUpdate` with `upsert` to avoid duplicates in case of multi click
-    N.models.users.Subscription.findOneAndUpdate(
-      data,
-      _.assign({}, data, { type: env.params.type, to_type: N.models.users.Subscription.to_types.FORUM_TOPIC }),
+    // Use `update` with `upsert` to avoid duplicates in case of multi click
+    N.models.users.Subscription.update(
+      {
+        user_id: env.user_info.user_id,
+        to: env.data.topic._id
+      },
+      {
+        type: env.params.type,
+        to_type: N.models.users.Subscription.to_types.FORUM_TOPIC
+      },
       { upsert: true },
       callback
     );
