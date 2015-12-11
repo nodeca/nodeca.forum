@@ -1,0 +1,12 @@
+en-US:
+  subject: '#{project_name}: new reply in topic "#{topic_title}"'
+  text: |
+    #{post_html}
+
+    Follow this link to read answer:
+
+    #{link}
+
+    Follow this link to unsubscribe:
+
+    #{unsubscribe}

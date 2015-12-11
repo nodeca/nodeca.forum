@@ -2,6 +2,7 @@
 
 'use strict';
 
+var _         = require('lodash');
 var cheequery = require('nodeca.core/lib/parser/cheequery');
 
 module.exports = function (N, apiPath) {
@@ -464,5 +465,39 @@ module.exports = function (N, apiPath) {
       to: env.data.new_post.to_user,
       type: 'FORUM_REPLY'
     }, callback);
+  });
+
+
+  // Add new post notification for subscribers
+  //
+  N.wire.after(apiPath, function add_new_post_notification(env, callback) {
+    N.models.users.Subscription.find()
+        .where('to').equals(env.data.topic._id)
+        .where('type').equals(N.models.users.Subscription.types.WATCHING)
+        .lean(true)
+        .exec(function (err, subscriptions) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      // If `to_user` is set, don't send him this notification because reply
+      // notification already sent
+      if (env.data.new_post.to_user) {
+        subscriptions = subscriptions.filter(s => String(s.user_id) !== String(env.data.new_post.to_user));
+      }
+
+      if (!subscriptions.length) {
+        callback();
+        return;
+      }
+
+      N.wire.emit('internal:users.notify', {
+        src: env.data.new_post._id,
+        to: _.pluck(subscriptions, 'user_id'),
+        type: 'FORUM_NEW_POST'
+      }, callback);
+    });
   });
 };
