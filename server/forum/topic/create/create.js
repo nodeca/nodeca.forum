@@ -383,7 +383,8 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      // TODO: filter current user
+      // Don't send notification to user who create this topic
+      subscriptions = subscriptions.filter(s => String(s.user_id) !== String(env.user_info.user_id));
 
       if (!subscriptions.length) {
         callback();
