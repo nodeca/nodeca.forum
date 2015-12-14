@@ -1,0 +1,8 @@
+en-US:
+  title: Unsubscribe
+  message: "You will now receive less notifications for section #{link}."
+  button:
+    tracking: Tracking
+    watching: Watching
+    normal: Normal
+    muted: Muted

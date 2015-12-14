@@ -13,6 +13,12 @@ router:
           type: integer
           default: 1
 
+    forum.section.unsubscribe:
+      "/f{section_hid}/unsubscribe":
+        section_hid:
+          match: /\d+/
+          type: integer
+
     forum.topic:
       "/f{section_hid}/topic{topic_hid}(/page{page})":
         section_hid:

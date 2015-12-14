@@ -1,0 +1,9 @@
+#content.forum-section-unsubscribe
+  header.page-head
+    h1.page-head__title(itemprop='name')= self.t('title')
+
+  - var url = self.link_to('forum.section', { hid: self.section.hid });
+  - var title = jade.escape(self.section.title);
+  != self.partial('button')
+  = ' '
+  != self.t('message', { link: '<a href="' + url + '">' + title + '</a>' })
