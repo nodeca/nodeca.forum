@@ -367,4 +367,34 @@ module.exports = function (N, apiPath) {
       );
     });
   });
+
+
+  // Add new topic notification for subscribers
+  //
+  N.wire.after(apiPath, function add_new_post_notification(env, callback) {
+    N.models.users.Subscription.find()
+        .where('to').equals(env.data.section._id)
+        .where('type').equals(N.models.users.Subscription.types.WATCHING)
+        .lean(true)
+        .exec(function (err, subscriptions) {
+
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      // TODO: filter current user
+
+      if (!subscriptions.length) {
+        callback();
+        return;
+      }
+
+      N.wire.emit('internal:users.notify', {
+        src: env.data.new_topic._id,
+        to: _.pluck(subscriptions, 'user_id'),
+        type: 'FORUM_NEW_TOPIC'
+      }, callback);
+    });
+  });
 };
