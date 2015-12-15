@@ -3,7 +3,7 @@
     h1.page-head__title(itemprop='name')= self.t('title')
 
   - var url = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid });
-  - var title = jade.escape(self.topic.title);
+  - var link = '<a href="' + jade.escape(url) + '">' + jade.escape(self.topic.title) + '</a>';
   != self.partial('button')
   = ' '
-  != self.t('message', { link: '<a href="' + url + '">' + title + '</a>' })
+  != self.t('message', { link: link })
