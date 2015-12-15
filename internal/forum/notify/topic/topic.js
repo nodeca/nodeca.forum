@@ -105,6 +105,13 @@ module.exports = function (N) {
         });
       },
 
+      // Filter topic owner (don't send notification to user who create this topic)
+      //
+      function (next) {
+        local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.user));
+        next();
+      },
+
       // Filter users who not watching this section
       //
       function (next) {

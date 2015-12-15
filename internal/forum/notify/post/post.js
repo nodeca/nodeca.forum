@@ -105,6 +105,23 @@ module.exports = function (N) {
         });
       },
 
+      // Filter post owner (don't send notification to user who create this post)
+      //
+      function (next) {
+        local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.user));
+        next();
+      },
+
+      // If `post.to_user` is set, don't send him this notification because reply
+      // notification already sent
+      //
+      function (next) {
+        if (post.to_user) {
+          local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.to_user));
+        }
+        next();
+      },
+
       // Filter users who not watching this topic
       //
       function (next) {

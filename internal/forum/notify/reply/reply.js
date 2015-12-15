@@ -123,6 +123,13 @@ module.exports = function (N) {
         });
       },
 
+      // Filter by post owner (don't send notification if user reply to own post)
+      //
+      function (next) {
+        local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.user));
+        next();
+      },
+
       // Filter users who muted this topic
       //
       function (next) {

@@ -460,12 +460,6 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    // Don't send notification if user reply to own post
-    if (String(env.user_info.user_id) === String(env.data.new_post.to)) {
-      callback();
-      return;
-    }
-
     N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
       to: env.data.new_post.to_user,
@@ -487,15 +481,6 @@ module.exports = function (N, apiPath) {
         callback(err);
         return;
       }
-
-      // If `to_user` is set, don't send him this notification because reply
-      // notification already sent
-      if (env.data.new_post.to_user) {
-        subscriptions = subscriptions.filter(s => String(s.user_id) !== String(env.data.new_post.to_user));
-      }
-
-      // Don't send notification to user who create this post
-      subscriptions = subscriptions.filter(s => String(s.user_id) !== String(env.user_info.user_id));
 
       if (!subscriptions.length) {
         callback();
