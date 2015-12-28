@@ -23,6 +23,7 @@ module.exports = function (N, collectionName) {
     // Related post for replies
     to              : Schema.ObjectId,
     user            : Schema.ObjectId,
+    legacy_nick     : String,  // only if user id is undefined, e.g. guests
     ts              : { type: Date, 'default': Date.now },  // timestamp
     ip              : String,  // ip address
 
