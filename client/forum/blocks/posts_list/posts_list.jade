@@ -67,10 +67,10 @@ each post, post_idx in self.posts
             span.forum-post__author=post.legacy_nick
       .forum-post__aside
         if user
-          a.forum-post__userpic(href='#')
+          a.forum-post__userpic(href=self.link_to('users.member', { user_hid: user.hid }))
             img.av-l(alt=user.name)&attributes(self.avatar(user, 'md'))
         else if post.legacy_nick
-          a.forum-post__userpic(href='#')
+          span.forum-post__userpic
             img.av-l(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
         else
           .av-l
