@@ -45,92 +45,50 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    Topic.findOne({ hid: env.data.topic_hid })
-        .lean(true)
-        .exec(function (err, topic) {
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    let topic = yield Topic.findOne({ hid: env.data.topic_hid }).lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!topic) { throw N.io.NOT_FOUND; }
 
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    env.data.topic = topic;
   });
 
 
   // Fetch section
   //
-  N.wire.before(apiPath, function fetch_section(env, callback) {
-    Section.findOne({ _id: env.data.topic.section })
-        .lean(true)
-        .exec(function (err, section) {
+  N.wire.before(apiPath, function* fetch_section(env) {
+    let section = yield Section.findOne({ _id: env.data.topic.section }).lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!section) { throw N.io.NOT_FOUND; }
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+    env.data.section = section;
   });
 
 
   // Fetch and fill permissions
   //
-  N.wire.before(apiPath, function fetch_and_fill_permissions(env, callback) {
+  N.wire.before(apiPath, function* fetch_and_fill_permissions(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    env.extras.settings.fetch(fields.settings, function (err, result) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.settings = env.data.settings = result;
-      callback();
-    });
+    env.res.settings = env.data.settings = yield env.extras.settings.fetch(fields.settings);
   });
 
 
   // Check access permissions
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
-    var access_env = { params: { topics: env.data.topic.hid, user_info: env.user_info } };
+  N.wire.before(apiPath, function* check_access(env) {
+    let access_env = { params: { topics: env.data.topic.hid, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) { throw N.io.NOT_FOUND; }
   });
 
 
   // Define visible post statuses
   //
   N.wire.before(apiPath, function define_visible_post_st(env) {
-    var postVisibleSt = [ Post.statuses.VISIBLE ];
+    let postVisibleSt = [ Post.statuses.VISIBLE ];
 
     if (env.data.settings.can_see_hellbanned || env.user_info.hb) {
       postVisibleSt.push(Post.statuses.HB);
@@ -157,99 +115,72 @@ module.exports = function (N, apiPath) {
 
   // Fetch posts
   //
-  N.wire.on(apiPath, function fetch_posts(env, callback) {
-    var by_hid = !!env.data.posts_hids;
+  N.wire.on(apiPath, function* fetch_posts(env) {
+    let by_hid = !!env.data.posts_hids;
 
-    Post.find()
-        .where(by_hid ? 'hid' : '_id').in(env.data[by_hid ? 'posts_hids' : 'posts_ids'])
-        .where('st').in(env.data.posts_visible_statuses)
-        .where('topic').equals(env.data.topic._id)
-        .lean(true)
-        .exec(function (err, posts) {
+    let posts = yield Post.find()
+                        .where(by_hid ? 'hid' : '_id').in(env.data[by_hid ? 'posts_hids' : 'posts_ids'])
+                        .where('st').in(env.data.posts_visible_statuses)
+                        .where('topic').equals(env.data.topic._id)
+                        .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
+    // 1. Fill `env.data.posts_ids` if doesn't yet exist (if selecting by hids)
+    // 2. Push results to `env.data.posts` in `env.data.posts_ids` order
+    //
+    var postsById = posts.reduce((acc, p) => {
+      acc[by_hid ? p.hid : p._id] = p;
+      return acc;
+    }, {});
+
+    env.data.posts = [];
+
+    if (by_hid) {
+      env.data.posts_ids = [];
+    }
+
+    env.data[by_hid ? 'posts_hids' : 'posts_ids'].forEach(id => {
+      var post = postsById[id];
+
+      if (post) {
+        env.data.posts.push(post);
       }
-
-      // 1. Fill `env.data.posts_ids` if doesn't yet exist (if selecting by hids)
-      // 2. Push results to `env.data.posts` in `env.data.posts_ids` order
-      //
-      var postsById = posts.reduce(function (acc, p) {
-        acc[by_hid ? p.hid : p._id] = p;
-        return acc;
-      }, {});
-
-      env.data.posts = [];
 
       if (by_hid) {
-        env.data.posts_ids = [];
+        env.data.posts_ids.push(post._id);
       }
-
-      env.data[by_hid ? 'posts_hids' : 'posts_ids'].forEach(function (id) {
-        var post = postsById[id];
-
-        if (post) {
-          env.data.posts.push(post);
-        }
-
-        if (by_hid) {
-          env.data.posts_ids.push(post._id);
-        }
-      });
-
-      callback();
     });
   });
 
 
   // Fetch and fill bookmarks
   //
-  N.wire.after(apiPath, function fetch_and_fill_bookmarks(env, callback) {
-    N.models.forum.PostBookmark.find()
-        .where('user_id').equals(env.user_info.user_id)
-        .where('post_id').in(env.data.posts_ids)
-        .lean(true)
-        .exec(function (err, bookmarks) {
+  N.wire.after(apiPath, function* fetch_and_fill_bookmarks(env) {
+    let bookmarks = yield N.models.forum.PostBookmark.find()
+                            .where('user_id').equals(env.user_info.user_id)
+                            .where('post_id').in(env.data.posts_ids)
+                            .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.own_bookmarks = bookmarks;
-      env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
-      callback();
-    });
+    env.data.own_bookmarks = bookmarks;
+    env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
   });
 
 
   // Fetch and fill votes
   //
-  N.wire.after(apiPath, function fetch_and_fill_votes(env, callback) {
-    N.models.users.Vote.find()
-        .where('from').equals(env.user_info.user_id)
-        .where('for').in(env.data.posts_ids)
-        .where('value').in([ 1, -1 ])
-        .lean(true)
-        .exec(function (err, votes) {
+  N.wire.after(apiPath, function* fetch_and_fill_votes(env) {
+    let votes = yield N.models.users.Vote.find()
+                          .where('from').equals(env.user_info.user_id)
+                          .where('for').in(env.data.posts_ids)
+                          .where('value').in([ 1, -1 ])
+                          .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    env.data.own_votes = votes;
 
-      env.data.own_votes = votes;
-
-      // [ { _id: ..., for: '562f3569c5b8d831367b0585', value: -1 } ] -> { 562f3569c5b8d831367b0585: -1 }
-      env.res.own_votes = votes.reduce(function (acc, vote) {
-        acc[vote.for] = vote.value;
-
-        return acc;
-      }, {});
-
-      callback();
-    });
+    // [ { _id: ..., for: '562f3569c5b8d831367b0585', value: -1 } ] -> { 562f3569c5b8d831367b0585: -1 }
+    env.res.own_votes = votes.reduce((acc, vote) => {
+      acc[vote.for] = vote.value;
+      return acc;
+    }, {});
   });
 
 
@@ -262,7 +193,7 @@ module.exports = function (N, apiPath) {
       env.data.users.push(env.data.topic.del_by);
     }
 
-    env.data.posts.forEach(function (post) {
+    env.data.posts.forEach(post => {
       if (post.user) {
         env.data.users.push(post.user);
       }
@@ -281,45 +212,9 @@ module.exports = function (N, apiPath) {
 
   // Sanitize and fill posts
   //
-  N.wire.after(apiPath, function posts_sanitize_and_fill(env, callback) {
-    sanitize_post(N, env.data.posts, env.user_info, function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.posts = res;
-      callback();
-    });
-  });
-
-
-  // Sanitize and fill topic
-  //
-  N.wire.after(apiPath, function topic_sanitize_and_fill(env, callback) {
-    sanitize_topic(N, env.data.topic, env.user_info, function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.topic = res;
-      callback();
-    });
-  });
-
-
-  // Sanitize and fill section
-  //
-  N.wire.after(apiPath, function section_sanitize_and_fill(env, callback) {
-    sanitize_section(N, env.data.section, env.user_info, function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.section = res;
-      callback();
-    });
+  N.wire.after(apiPath, function* posts_sanitize_and_fill(env) {
+    env.res.posts   = yield sanitize_post(N, env.data.posts, env.user_info);
+    env.res.topic   = yield sanitize_topic(N, env.data.topic, env.user_info);
+    env.res.section = yield sanitize_section(N, env.data.section, env.user_info);
   });
 };

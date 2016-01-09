@@ -7,6 +7,7 @@ var Mongoose = require('mongoose');
 var Schema = Mongoose.Schema;
 var _        = require('lodash');
 var async    = require('async');
+var thenify  = require('thenify');
 
 
 // Step between cached hids. Value should be big enough to:
@@ -44,7 +45,7 @@ module.exports = function (N, collectionName) {
   // - hb (Boolean) - user hellbanned status
   // - callback (Function) - `function (err, cnt)`
   //
-  PostCountCache.statics.getCount = function (src, version, hid, hb, callback) {
+  PostCountCache.statics.getCount = thenify.withCallback(function (src, version, hid, hb, callback) {
 
     // Get post count.
     //
@@ -166,7 +167,7 @@ module.exports = function (N, collectionName) {
         });
       });
     });
-  };
+  });
 
 
   N.wire.on('init:models', function emit_init_PostCountCache(__, callback) {

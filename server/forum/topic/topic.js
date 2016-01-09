@@ -77,87 +77,62 @@ module.exports = function (N, apiPath) {
 
   // Fill subscription type
   //
-  N.wire.after(apiPath, function fill_subscription(env, callback) {
+  N.wire.after(apiPath, function* fill_subscription(env) {
     if (env.user_info.is_guest) {
       env.res.subscription = null;
-
-      callback();
       return;
     }
 
-    N.models.users.Subscription.findOne({ user_id: env.user_info.user_id, to: env.data.topic._id })
-        .lean(true)
-        .exec(function (err, subscription) {
+    let subscription = N.models.users.Subscription
+                          .findOne({ user_id: env.user_info.user_id, to: env.data.topic._id })
+                          .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.subscription = subscription ? subscription.type : null;
-
-      callback();
-      return;
-    });
+    env.res.subscription = subscription ? subscription.type : null;
   });
 
 
   // Fill `env.data.pagination` structure
   //
-  N.wire.after(apiPath, function fetch_pagination(env, callback) {
-    env.extras.settings.fetch('posts_per_page', function (err, posts_per_page) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.after(apiPath, function* fetch_pagination(env) {
+    let posts_per_page = yield env.extras.settings.fetch('posts_per_page');
 
-      var post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
+    let post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
 
-      // If user requests a specific page, we know how many posts are displayed
-      // before it.
-      //
-      if (env.params.page) {
-        var page_current = parseInt(env.params.page, 10);
+    // If user requests a specific page, we know how many posts are displayed
+    // before it.
+    //
+    if (env.params.page) {
+      let page_current = parseInt(env.params.page, 10);
 
-        env.data.pagination = {
-          total:        post_count,
-          per_page:     posts_per_page,
-          chunk_offset: posts_per_page * (page_current - 1)
-        };
+      env.data.pagination = {
+        total:        post_count,
+        per_page:     posts_per_page,
+        chunk_offset: posts_per_page * (page_current - 1)
+      };
 
-        callback();
-        return;
-      }
+      return;
+    }
 
-      // If user requests a post by its hid, we need to retrieve a number
-      // of posts before it to calculate pagination info
-      //
-      // Both id builders used in this controller return hids,
-      // so we use hids to utilize index.
-      //
-      N.models.forum.PostCountCache.getCount(
-        env.data.topic._id,
-        env.data.topic.version,
-        // `env.data.posts_hids` could not be empty, but we should avoid exception in all cases.
-        env.data.posts_hids[0] || 0,
-        env.user_info.hb,
-        function (err, current_post_number) {
-          if (err) {
-            callback(err);
-            return;
-          }
+    // If user requests a post by its hid, we need to retrieve a number
+    // of posts before it to calculate pagination info
+    //
+    // Both id builders used in this controller return hids,
+    // so we use hids to utilize index.
+    //
+    let current_post_number = yield N.models.forum.PostCountCache.getCount(
+      env.data.topic._id,
+      env.data.topic.version,
+      // `env.data.posts_hids` could not be empty, but we should avoid exception in all cases.
+      env.data.posts_hids[0] || 0,
+      env.user_info.hb);
 
-          // Create page info
-          env.data.pagination = {
-            total:        post_count,
-            per_page:     posts_per_page,
-            chunk_offset: current_post_number
-          };
 
-          callback();
-        }
-      );
-    });
+    // Create page info
+    env.data.pagination = {
+      total:        post_count,
+      per_page:     posts_per_page,
+      chunk_offset: current_post_number
+    };
   });
 
 
@@ -200,29 +175,20 @@ module.exports = function (N, apiPath) {
 
   // Add last post number, used for navigation and progress bar display
   //
-  N.wire.on(apiPath, function attach_last_post_hid(env, callback) {
+  N.wire.on(apiPath, function* attach_last_post_hid(env) {
     var cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
 
-    N.models.forum.Post.findById(cache.last_post)
-        .select('hid')
-        .lean(true)
-        .exec(function (err, post) {
+    let post = yield N.models.forum.Post.findById(cache.last_post)
+                                        .select('hid')
+                                        .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!post) {
+      // cache is invalid?
+      env.res.max_post = env.data.topic.last_post_hid;
+      return;
+    }
 
-      if (!post) {
-        // cache is invalid?
-        env.res.max_post = env.data.topic.last_post_hid;
-        callback();
-        return;
-      }
-
-      env.res.max_post = post.hid;
-      callback();
-    });
+    env.res.max_post = post.hid;
   });
 
 

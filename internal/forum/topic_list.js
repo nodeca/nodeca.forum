@@ -41,41 +41,21 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function fetch_section(env, callback) {
-    Section.findOne({ hid: env.data.section_hid })
-        .lean(true)
-        .exec(function (err, section) {
+  N.wire.before(apiPath, function* fetch_section(env) {
+    let section = yield Section.findOne({ hid: env.data.section_hid }).lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!section) { throw N.io.NOT_FOUND; }
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+    env.data.section = section;
   });
 
 
   // Fetch and fill permissions
   //
-  N.wire.before(apiPath, function fetch_and_fill_permissions(env, callback) {
+  N.wire.before(apiPath, function* fetch_and_fill_permissions(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    env.extras.settings.fetch(fields.settings, function (err, result) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.settings = env.data.settings = result;
-      callback();
-    });
+    env.res.settings = env.data.settings = yield env.extras.settings.fetch(fields.settings);
   });
 
 
@@ -118,88 +98,57 @@ module.exports = function (N, apiPath) {
 
   // Fetch and sort topics
   //
-  N.wire.on(apiPath, function fetch_and_sort_topics(env, callback) {
+  N.wire.on(apiPath, function* fetch_and_sort_topics(env) {
 
-    Topic.find()
-        .where('_id').in(env.data.topics_ids)
-        .where('st').in(env.data.topics_visible_statuses)
-        .where('section').equals(env.data.section._id)
-        .lean(true)
-        .exec(function (err, topics) {
+    let topics = yield Topic.find()
+                        .where('_id').in(env.data.topics_ids)
+                        .where('st').in(env.data.topics_visible_statuses)
+                        .where('section').equals(env.data.section._id)
+                        .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
+    env.data.topics = [];
+
+    // Sort in `env.data.topics_ids` order.
+    // May be slow on large topics volumes
+    env.data.topics_ids.forEach(id => {
+      var topic = _.find(topics, t => t._id.equals(id));
+
+      if (topic) {
+        env.data.topics.push(topic);
       }
-
-      env.data.topics = [];
-
-      // Sort in `env.data.topics_ids` order.
-      // May be slow on large topics volumes
-      env.data.topics_ids.forEach(function (id) {
-        var topic = _.find(topics, function (t) {
-          return t._id.equals(id);
-        });
-
-        if (topic) {
-          env.data.topics.push(topic);
-        }
-      });
-
-      callback();
     });
   });
 
 
   // Fill bookmarks
   //
-  N.wire.after(apiPath, function fill_bookmarks(env, callback) {
-    var postIds = env.data.topics.map(function (topic) {
-      return topic.cache.first_post;
-    });
+  N.wire.after(apiPath, function* fill_bookmarks(env) {
+    var postIds = env.data.topics.map(topic => topic.cache.first_post);
 
-    N.models.forum.PostBookmark.find()
-        .where('user_id').equals(env.user_info.user_id)
-        .where('post_id').in(postIds)
-        .lean(true)
-        .exec(function (err, bookmarks) {
+    let bookmarks = yield N.models.forum.PostBookmark.find()
+                              .where('user_id').equals(env.user_info.user_id)
+                              .where('post_id').in(postIds)
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
-      callback();
-    });
+    env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
   });
 
 
   // Fill subscriptions for section topics
   //
-  N.wire.after(apiPath, function fill_subscriptions(env, callback) {
+  N.wire.after(apiPath, function* fill_subscriptions(env) {
     if (env.user_info.is_guest) {
       env.res.subscriptions = [];
-
-      callback();
       return;
     }
 
-    N.models.users.Subscription.find()
-        .where('user_id').equals(env.user_info.user_id)
-        .where('to').in(env.data.topics_ids)
-        .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
-        .lean(true)
-        .exec(function (err, subscriptions) {
+    let subscriptions = yield N.models.users.Subscription.find()
+                          .where('user_id').equals(env.user_info.user_id)
+                          .where('to').in(env.data.topics_ids)
+                          .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
+                          .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.subscriptions = _.pluck(subscriptions, 'to');
-      callback();
-    });
+    env.res.subscriptions = _.pluck(subscriptions, 'to');
   });
 
 
@@ -247,30 +196,8 @@ module.exports = function (N, apiPath) {
 
   // Sanitize and fill topics
   //
-  N.wire.after(apiPath, function topics_sanitize_and_fill(env, callback) {
-    sanitize_topic(N, env.data.topics, env.user_info, function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.topics = res;
-      callback();
-    });
-  });
-
-
-  // Sanitize and fill section
-  //
-  N.wire.after(apiPath, function section_sanitize_and_fill(env, callback) {
-    sanitize_section(N, env.data.section, env.user_info, function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.section = res;
-      callback();
-    });
+  N.wire.after(apiPath, function* topics_sanitize_and_fill(env) {
+    env.res.topics  = yield sanitize_topic(N, env.data.topics, env.user_info);
+    env.res.section = yield sanitize_section(N, env.data.section, env.user_info);
   });
 };

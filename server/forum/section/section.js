@@ -4,8 +4,8 @@
 
 
 var memoizee  = require('memoizee');
-var async     = require('async');
 var _         = require('lodash');
+var thenify   = require('thenify');
 
 
 module.exports = function (N, apiPath) {
@@ -19,7 +19,7 @@ module.exports = function (N, apiPath) {
   var buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);
 
 
-  var fetchSection = memoizee(
+  var fetchSection = thenify(memoizee(
     function (id, callback) {
       N.models.forum.Section.findById(id)
         .lean(true)
@@ -30,7 +30,7 @@ module.exports = function (N, apiPath) {
       maxAge:     60000, // cache TTL = 60 seconds
       primitive:  true   // params keys are calculated as toString
     }
-  );
+  ));
 
 
   // Subcall forum.topic_list
@@ -45,61 +45,29 @@ module.exports = function (N, apiPath) {
 
   // Fetch pagination
   //
-  N.wire.after(apiPath, function fetch_pagination(env, callback) {
+  N.wire.after(apiPath, function* fetch_pagination(env) {
 
-    // Get topics count.
-    //
-    // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
-    //
-    function topicsCount(section_id, statuses, callback) {
-      var result = 0;
+    let topics_per_page = yield env.extras.settings.fetch('topics_per_page');
 
-      async.each(statuses, function (st, next) {
+    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
-        N.models.forum.Topic.where('section').equals(section_id)
-          .where('st').equals(st)
-          .count(function (err, cnt) {
+    let counters_by_status = yield statuses.map(
+      st => N.models.forum.Topic
+                .where('section').equals(env.data.section._id)
+                .where('st').equals(st)
+                .count()
+    );
 
-          if (err) {
-            next(err);
-            return;
-          }
+    let topic_count = _.sum(counters_by_status);
 
-          result += cnt;
-          next();
-        });
+    // Page numbers starts from 1, not from 0
+    let page_current = parseInt(env.params.page, 10);
 
-      }, function (err) {
-        callback(err, result);
-      });
-    }
-
-    env.extras.settings.fetch('topics_per_page', function (err, topics_per_page) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      var statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
-
-      topicsCount(env.data.section._id, statuses, function (err, topic_count) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        // Page numbers starts from 1, not from 0
-        var page_current = parseInt(env.params.page, 10);
-
-        env.data.pagination = {
-          total: topic_count,
-          per_page: topics_per_page,
-          chunk_offset: topics_per_page * (page_current - 1)
-        };
-
-        callback();
-      });
-    });
+    env.data.pagination = {
+      total: topic_count,
+      per_page: topics_per_page,
+      chunk_offset: topics_per_page * (page_current - 1)
+    };
   });
 
 
@@ -140,49 +108,31 @@ module.exports = function (N, apiPath) {
 
   // Fill subscription type
   //
-  N.wire.after(apiPath, function fill_subscription(env, callback) {
+  N.wire.after(apiPath, function* fill_subscription(env) {
     if (env.user_info.is_guest) {
       env.res.subscription = null;
-
-      callback();
       return;
     }
 
-    N.models.users.Subscription.findOne({ user_id: env.user_info.user_id, to: env.data.section._id })
-        .lean(true)
-        .exec(function (err, subscription) {
+    let subscription = yield N.models.users.Subscription
+                                .findOne({ user_id: env.user_info.user_id, to: env.data.section._id })
+                                .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.subscription = subscription ? subscription.type : null;
-
-      callback();
-      return;
-    });
+    env.res.subscription = subscription ? subscription.type : null;
   });
 
 
   // Fill breadcrumbs info
   //
-  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
+  N.wire.after(apiPath, function* fill_topic_breadcrumbs(env) {
 
     if (!env.data.section) {
-      callback();
       return;
     }
 
-    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
+    let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
-    });
+    yield N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents });
   });
 
 
@@ -204,36 +154,21 @@ module.exports = function (N, apiPath) {
 
   // Get parent section
   //
-  N.wire.after(apiPath, function fill_parent_hid(env, callback) {
-    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
+  N.wire.after(apiPath, function* fill_parent_hid(env) {
+    let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!parents.length) {
+      return;
+    }
 
-      if (!parents.length) {
-        callback();
-        return;
-      }
+    let section = yield fetchSection(parents[parents.length - 1]);
 
-      fetchSection(parents[parents.length - 1], function (err, section) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    if (!section) {
+      return;
+    }
 
-        if (!section) {
-          callback();
-          return;
-        }
-
-        env.res.section_level = parents.length;
-        env.res.parent_hid = section.hid;
-
-        callback();
-      });
-    });
+    env.res.section_level = parents.length;
+    env.res.parent_hid = section.hid;
   });
 
 

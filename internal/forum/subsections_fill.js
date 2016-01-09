@@ -7,6 +7,7 @@ var _                = require('lodash');
 var async            = require('async');
 var memoizee         = require('memoizee');
 var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
+var thenify          = require('thenify');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +22,7 @@ module.exports = function (N, apiPath) {
    *
    * Returns  hash { _id: Boolean(visibility) } for selected subsections
    */
-  var filterVisibility = memoizee(
+  var filterVisibility = thenify(memoizee(
     function (s_ids, g_ids, callback) {
       var result = {};
       async.each(s_ids, function (_id, next) {
@@ -40,7 +41,7 @@ module.exports = function (N, apiPath) {
       maxAge:     60000, // cache TTL = 60 seconds
       primitive:  true   // keys are calculated as toStrings, ok for our case
     }
-  );
+  ));
 
   /*
    *  to_tree(source[, root = null]) -> array
@@ -84,73 +85,47 @@ module.exports = function (N, apiPath) {
 
   // Get subsections tree in flat style (id, level) & filter visibility
   //
-  N.wire.before(apiPath, function fetch_subsections_tree_info(env, callback) {
+  N.wire.before(apiPath, function* fetch_subsections_tree_info(env) {
 
     // We need to show 3 levels [0,1,2] for index, 2 levels [0,1] for section
-    N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
-      env.data.section ? 2 : 3, function (err, subsections) {
+    let subsections = yield N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
+                                                               env.data.section ? 2 : 3);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    // sections order is always fixed, no needs to sort.
+    let s_ids = subsections.map(s => s._id.toString());
 
-      // sections order is always fixed, no needs to sort.
-      var s_ids = subsections.map(function (s) { return s._id.toString(); });
+    // groups should be sorted, to avoid cache duplication
+    var g_ids = env.user_info.usergroups.sort();
 
-      // groups should be sorted, to avoid cache duplication
-      var g_ids = env.user_info.usergroups.sort();
+    let visibility = yield filterVisibility(s_ids, g_ids);
 
-      filterVisibility(s_ids, g_ids, function (err, visibility) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.data.subsections_info = _.filter(subsections, function (s) { return visibility[s._id]; });
-        callback(err);
-      });
-    });
+    env.data.subsections_info = _.filter(subsections, s => visibility[s._id]);
   });
 
 
   // Fetch subsections data and add `level` property
   //
-  N.wire.on(apiPath, function subsections_fetch_visible(env, callback) {
-    var _ids = env.data.subsections_info.map(function (s) { return s._id; });
+  N.wire.on(apiPath, function* subsections_fetch_visible(env) {
+    var _ids = env.data.subsections_info.map(s => s._id);
     env.data.subsections = [];
 
-    N.models.forum.Section
-      .find({ _id: { $in: _ids } })
-      .lean(true)
-      .exec(function (err, sections) {
+    let sections = yield N.models.forum.Section
+                            .find({ _id: { $in: _ids } })
+                            .lean(true);
 
-        // sort result in the same order as ids
-        _.forEach(env.data.subsections_info, function (subsectionInfo) {
-          var foundSection = _.find(sections, function (section) {
-            return section._id.equals(subsectionInfo._id);
-          });
-          foundSection.level = subsectionInfo.level;
-          env.data.subsections.push(foundSection);
-        });
-
-        callback(err);
-      });
+    // sort result in the same order as ids
+    _.forEach(env.data.subsections_info, function (subsectionInfo) {
+      var foundSection = _.find(sections, s => s._id.equals(subsectionInfo._id));
+      foundSection.level = subsectionInfo.level;
+      env.data.subsections.push(foundSection);
+    });
   });
 
 
   // Sanitize subsections
   //
-  N.wire.after(apiPath, function subsections_sanitize(env, callback) {
-    sanitize_section(N, env.data.subsections, env.user_info, function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.subsections = res;
-      callback();
-    });
+  N.wire.after(apiPath, function* subsections_sanitize(env) {
+    env.data.subsections = yield sanitize_section(N, env.data.subsections, env.user_info);
   });
 
 

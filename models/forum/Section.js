@@ -5,6 +5,7 @@ var Mongoose = require('mongoose');
 var Schema   = Mongoose.Schema;
 var async    = require('async');
 var memoizee = require('memoizee');
+var thenify  = require('thenify');
 
 
 module.exports = function (N, collectionName) {
@@ -234,7 +235,7 @@ module.exports = function (N, collectionName) {
 
   // Returns list of parent _id-s for given section `_id`
   //
-  Section.statics.getParentList = function (sectionID, callback) {
+  Section.statics.getParentList = thenify.withCallback(function (sectionID, callback) {
 
     getSectionsTree(function (err, sections) {
 
@@ -253,7 +254,7 @@ module.exports = function (N, collectionName) {
 
       callback(null, parentList);
     });
-  };
+  });
 
 
   // Returns list of child sections, including subsections until the given deepness.
@@ -267,7 +268,7 @@ module.exports = function (N, collectionName) {
   //
   // - [ {_id, level} ]
   //
-  Section.statics.getChildren = function (sectionID, deepness, callback) {
+  Section.statics.getChildren = thenify.withCallback(function (sectionID, deepness, callback) {
 
     // shift parameters
     if (typeof deepness === 'undefined') {
@@ -306,7 +307,7 @@ module.exports = function (N, collectionName) {
       fillChildren(storedSection, 0, deepness);
       callback(null, children);
     });
-  };
+  });
 
   // Provide a possibility to clear section tree cache (used in seeds)
   //
