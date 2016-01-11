@@ -188,7 +188,7 @@ module.exports = function (N) {
           var locale, subject, url, text, unsubscribe;
 
           local_env.to.forEach(function (user_id) {
-            locale = users_info[user_id].locale || N.config.locales.enabled[0];
+            locale = users_info[user_id].locale || N.config.locales[0];
 
             subject = N.i18n.t(locale, 'forum.notify.reply.subject', {
               project_name: general_project_name,
