@@ -2,97 +2,25 @@ bundles:
   frontend:
     - forum
 
-
 packages:
   admin:
-    client:
-      include: client/admin/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    views:
-      include: client/admin/**.jade
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_client:
-      include: client/admin/**i18n/*.yml
-
-    styles:
-      include: client/admin/**.styl
-
-    server:
-      include: server/admin/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_server:
-      include: server/admin/**i18n/*.yml
-
+    entries:
+      - client/admin
+      - server/admin
 
   common:
-    client:
-      include: client/common/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    views:
-      include: client/common/**.jade
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_client:
-      include: client/common/**i18n/*.yml
-
-    styles:
-      include: client/common/**.styl
-
-    server:
-      include: server/common/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_server:
-      include: server/common/**i18n/*.yml
-
+    entries:
+      - client/common
+      - server/common
 
   forum:
     depends:
       - common
 
-    client:
-      include: client/forum/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    views:
-      include: client/forum/**.jade
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_client:
-      include: client/forum/**i18n/*.yml
-
-    styles:
-      include: client/forum/**.styl
-
-    server:
-      include: server/forum/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    internal:
-      include: internal/forum/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_server:
-      include:
-        - server/forum/**i18n/*.yml
-        - internal/forum/**i18n/*.yml
-
+    entries:
+      - client/forum
+      - server/forum
 
   users:
-    client:
-      include: client/users/**.js
-      exclude: /(^|\/|\\)_.*/
-
-    views:
-      include: client/users/**.jade
-      exclude: /(^|\/|\\)_.*/
-
-    i18n_client:
-      include: client/users/**i18n/*.yml
-
-    styles:
-      include: client/users/**.styl
+    entries:
+      - client/users
