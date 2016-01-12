@@ -2,7 +2,7 @@
 
 
 var _          = require('lodash');
-var Bloodhound = window.Bloodhound;
+var Bloodhound = require('typeahead.js/dist/bloodhound.js');
 
 var $moderatorSelectDialog;
 var bloodhound;
@@ -75,8 +75,12 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
       remote: {
         // Hack to get nick in first param of transport call
         url: '%QUERY',
-        transport: function (url, o, onSuccess, onError) {
-          N.io.rpc('admin.core.user_lookup', { nick: url, strict: false }).done(onSuccess).fail(onError);
+        wildcard: '%QUERY',
+        // Reroute request to rpc
+        transport: function (req, onSuccess, onError) {
+          N.io.rpc('admin.core.user_lookup', { nick: req.url, strict: false })
+            .done(onSuccess)
+            .fail(onError);
         }
       },
       datumTokenizer: function (d) {
@@ -93,10 +97,10 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
     },
     {
       source: bloodhound.ttAdapter(),
-      displayKey: 'nick',
+      display: 'nick',
       templates: {
         suggestion: function (user) {
-          return user.name;
+          return '<div>' + _.escape(user.name) + '</div>';
         }
       }
     }
