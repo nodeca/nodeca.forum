@@ -39,9 +39,9 @@ module.exports = function (N, apiPath) {
   //
   // Redirect here to avoid fetching posts twice.
   //
-  function buildPostHidsAndCheckRedirect(env, callback) {
+  function buildPostHidsAndCheckRedirect(env) {
     if (env.data.section.hid !== +env.params.section_hid) {
-      callback({
+      return Promise.reject({
         code: N.io.REDIRECT,
         head: {
           Location: N.router.linkTo('forum.topic', {
@@ -52,16 +52,16 @@ module.exports = function (N, apiPath) {
           })
         }
       });
-      return;
     }
 
     if (env.params.post_hid) {
       env.params.before = LOAD_POSTS_BEFORE_COUNT;
       env.params.after  = LOAD_POSTS_AFTER_COUNT;
-      buildPostHidsByRange(env, callback);
-    } else {
-      buildPostHidsByPage(env, callback);
+
+      return buildPostHidsByRange(env);
     }
+
+    return buildPostHidsByPage(env);
   }
 
 

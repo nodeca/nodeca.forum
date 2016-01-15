@@ -3,7 +3,7 @@
 'use strict';
 
 // Max posts ids to fetch
-var LIMIT = 100;
+const LIMIT = 100;
 
 module.exports = function (N, apiPath) {
 
@@ -22,9 +22,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  function buildPostIds(env, callback) {
+  function buildPostIds(env) {
     env.data.posts_ids = env.params.posts_ids;
-    callback();
+    return Promise.resolve();
   }
 
 

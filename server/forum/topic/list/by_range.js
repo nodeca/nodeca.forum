@@ -4,7 +4,7 @@
 'use strict';
 
 // Max posts to fetch before and after
-var LIMIT = 50;
+const LIMIT = 50;
 
 module.exports = function (N, apiPath) {
 
@@ -15,7 +15,7 @@ module.exports = function (N, apiPath) {
     after:     { type: 'integer', required: true, minimum: 0, maximum: LIMIT }
   });
 
-  var buildPostHids = require('./_build_post_hids_by_range.js')(N);
+  let buildPostHids = require('./_build_post_hids_by_range.js')(N);
 
   // Fetch posts subcall
   //
@@ -30,28 +30,19 @@ module.exports = function (N, apiPath) {
   // Add last post number, so client can update its progress bar
   // if somebody created a new post.
   //
-  N.wire.after(apiPath, function attach_last_post_hid(env, callback) {
-    var cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
+  N.wire.after(apiPath, function* attach_last_post_hid(env) {
+    let cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
 
-    N.models.forum.Post.findById(cache.last_post)
-        .select('hid')
-        .lean(true)
-        .exec(function (err, post) {
+    let post = yield N.models.forum.Post.findById(cache.last_post)
+                                        .select('hid')
+                                        .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!post) {
+      // cache is invalid?
+      env.res.max_post = env.data.topic.last_post_hid;
+      return;
+    }
 
-      if (!post) {
-        // cache is invalid?
-        env.res.max_post = env.data.topic.last_post_hid;
-        callback();
-        return;
-      }
-
-      env.res.max_post = post.hid;
-      callback();
-    });
+    env.res.max_post = post.hid;
   });
 };

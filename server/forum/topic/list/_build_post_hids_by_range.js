@@ -23,106 +23,87 @@
 'use strict';
 
 
-var _     = require('lodash');
-var async = require('async');
+const _  = require('lodash');
+const co = require('co');
 
 
 module.exports = function (N) {
 
   // Shortcut
-  var Post = N.models.forum.Post;
+  const Post = N.models.forum.Post;
 
-  return function buildPostHids(env, callback) {
-    var range = [ env.params.post_hid - 1, env.params.post_hid + 1 ];
+  return co.wrap(function* buildPostHids(env) {
+    let range = [ env.params.post_hid - 1, env.params.post_hid + 1 ];
 
     // Posts with this statuses are counted on page (others are shown, but not counted)
-    var countable_statuses = [ Post.statuses.VISIBLE ];
+    let countable_statuses = [ Post.statuses.VISIBLE ];
 
     // For hellbanned users - count hellbanned posts too
     if (env.user_info.hb) {
       countable_statuses.push(Post.statuses.HB);
     }
 
-    function select_visible_before(cb) {
-      var posts_count = env.params.before;
-      if (posts_count <= 0) { return cb(); }
+    function select_visible_before() {
+      let posts_count = env.params.before;
+      if (posts_count <= 0) { return Promise.resolve([]); }
 
-      Post.find()
-          .where('topic').equals(env.data.topic._id)
-          .where('st').in(countable_statuses)
-          .where('hid').lt(env.params.post_hid)
-          .select('hid -_id')
-          .sort({ hid: -1 })
-          .limit(posts_count + 1)
-          .lean(true)
-          .exec(function (err, countable) {
+      return Post.find()
+        .where('topic').equals(env.data.topic._id)
+        .where('st').in(countable_statuses)
+        .where('hid').lt(env.params.post_hid)
+        .select('hid -_id')
+        .sort({ hid: -1 })
+        .limit(posts_count + 1)
+        .lean(true)
+        .then(countable => {
 
-        if (err) { return cb(err); }
+          if (countable.length) {
+            range[0] = countable[countable.length - 1].hid;
+          }
 
-        if (countable.length) {
-          range[0] = countable[countable.length - 1].hid;
-        }
-        if (countable.length < posts_count + 1) {
-          // we reached the last post, so it should be included as well
-          range[0]--;
-        }
-
-        cb();
-      });
+          if (countable.length < posts_count + 1) {
+            // we reached the last post, so it should be included as well
+            range[0]--;
+          }
+        });
     }
 
-    function select_visible_after(cb) {
-      var posts_count = env.params.after;
-      if (posts_count <= 0) { return cb(); }
+    function select_visible_after() {
+      let posts_count = env.params.after;
+      if (posts_count <= 0) { return Promise.resolve(); }
 
-      Post.find()
-          .where('topic').equals(env.data.topic._id)
-          .where('st').in(countable_statuses)
-          .where('hid').gt(env.params.post_hid)
-          .select('hid -_id')
-          .sort({ hid: 1 })
-          .limit(posts_count + 1)
-          .lean(true)
-          .exec(function (err, countable) {
+      return Post.find()
+        .where('topic').equals(env.data.topic._id)
+        .where('st').in(countable_statuses)
+        .where('hid').gt(env.params.post_hid)
+        .select('hid -_id')
+        .sort({ hid: 1 })
+        .limit(posts_count + 1)
+        .lean(true)
+        .then(countable => {
 
-        if (err) { return cb(err); }
+          if (countable.length) {
+            range[1] = countable[countable.length - 1].hid;
+          }
 
-        if (countable.length) {
-          range[1] = countable[countable.length - 1].hid;
-        }
-        if (countable.length < posts_count + 1) {
-          // we reached the last post, so it should be included as well
-          range[1]++;
-        }
-
-        cb();
-      });
+          if (countable.length < posts_count + 1) {
+            // we reached the last post, so it should be included as well
+            range[1]++;
+          }
+        });
     }
 
-    async.parallel([ select_visible_before, select_visible_after ], function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield [ select_visible_before(), select_visible_after() ];
 
-      Post.find()
-          .where('topic').equals(env.data.topic._id)
-          .where('st').in(env.data.posts_visible_statuses)
-          .where('hid').gt(range[0])
-          .where('hid').lt(range[1])
-          .select('hid -_id')
-          .sort('hid')
-          .lean(true)
-          .exec(function (err, posts) {
+    let posts = yield Post.find()
+                          .where('topic').equals(env.data.topic._id)
+                          .where('st').in(env.data.posts_visible_statuses)
+                          .where('hid').gt(range[0])
+                          .where('hid').lt(range[1])
+                          .select('hid -_id')
+                          .sort('hid')
+                          .lean(true);
 
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.data.posts_hids = _.pluck(posts, 'hid');
-        callback();
-      });
-    });
-  };
+    env.data.posts_hids = _.pluck(posts, 'hid');
+  });
 };

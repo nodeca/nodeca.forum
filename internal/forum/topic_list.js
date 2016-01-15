@@ -91,8 +91,8 @@ module.exports = function (N, apiPath) {
 
   // Get topics ids
   //
-  N.wire.before(apiPath, function get_topics_ids(env, callback) {
-    env.data.build_topics_ids(env, callback);
+  N.wire.before(apiPath, function* get_topics_ids(env) {
+    yield env.data.build_topics_ids(env);
   });
 
 

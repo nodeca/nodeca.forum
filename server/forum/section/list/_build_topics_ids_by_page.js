@@ -21,75 +21,53 @@
 'use strict';
 
 
-var _ = require('lodash');
+const _  = require('lodash');
+const co = require('co');
 
 
 module.exports = function (N) {
 
   // Shortcut
-  var Topic = N.models.forum.Topic;
+  const Topic = N.models.forum.Topic;
 
-  return function buildTopicsIds(env, callback) {
+  return co.wrap(function* buildTopicsIds(env) {
 
-    env.extras.settings.fetch('topics_per_page', function (err, topics_per_page) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let topics_per_page = yield env.extras.settings.fetch('topics_per_page');
 
-      // Page numbers starts from 1, not from 0
-      var page_current = parseInt(env.params.page, 10);
+    // Page numbers starts from 1, not from 0
+    let page_current = parseInt(env.params.page, 10);
 
-      var topic_sort = env.user_info.hb ? { 'cache_hb.last_post': -1 } : { 'cache.last_post': -1 };
+    let topic_sort = env.user_info.hb ? { 'cache_hb.last_post': -1 } : { 'cache.last_post': -1 };
 
-      // Algorithm:
-      //
-      // - get all visible topics IDs except pinned
-      // - if at first page - add pinned topic ids
-      // - insert pinned topic IDs at start
+    // Algorithm:
+    //
+    // - get all visible topics IDs except pinned
+    // - if at first page - add pinned topic ids
+    // - insert pinned topic IDs at start
 
-      Topic.find()
-          .where('section').equals(env.data.section._id)
-          .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-          .select('_id')
-          .sort(topic_sort)
-          .skip((page_current - 1) * topics_per_page)
-          .limit(topics_per_page)
-          .lean(true)
-          .exec(function (err, topics) {
+    let topics = yield Topic.find()
+                            .where('section').equals(env.data.section._id)
+                            .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+                            .select('_id')
+                            .sort(topic_sort)
+                            .skip((page_current - 1) * topics_per_page)
+                            .limit(topics_per_page)
+                            .lean(true);
 
-        if (err) {
-          callback(err);
-          return;
-        }
+    // Exit here if pinned topics not needed
+    if (page_current <= 1 && env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) !== -1) {
+      // Fetch pinned topics ids for first page
+      let pinned = yield Topic.find()
+                              .where('section').equals(env.data.section._id)
+                              .where('st').equals(Topic.statuses.PINNED)
+                              .select('_id')
+                              .sort(topic_sort)
+                              .lean(true);
 
-        env.data.topics_ids = _.pluck(topics, '_id');
+      // Put pinned topics IDs to start of `env.data.topics_ids`
+      topics = pinned.concat(topics);
+    }
 
-        // Exit here if pinned topics not needed
-        if (page_current > 1 || env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) === -1) {
-          callback();
-          return;
-        }
-
-        // Fetch pinned topics ids for first page
-        Topic.find()
-            .where('section').equals(env.data.section._id)
-            .where('st').equals(Topic.statuses.PINNED)
-            .select('_id')
-            .sort(topic_sort)
-            .lean(true)
-            .exec(function (err, topics) {
-
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          // Put pinned topics IDs to start of `env.data.topics_ids`
-          env.data.topics_ids = _.pluck(topics, '_id').concat(env.data.topics_ids);
-          callback();
-        });
-      });
-    });
-  };
+    env.data.topics_ids = _.pluck(topics, '_id');
+  });
 };
