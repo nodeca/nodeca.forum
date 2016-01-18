@@ -93,7 +93,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         as_moderator:             data.as_moderator,
         post_id:                  data.post_id,
         txt:                      N.MDEdit.text(),
-        attach:                   _.pluck(N.MDEdit.attachments(), 'media_id'),
+        attach:                   _.map(N.MDEdit.attachments(), 'media_id'),
         option_no_mlinks:         options.user_settings.no_mlinks,
         option_no_emojis:         options.user_settings.no_emojis,
         option_no_quote_collapse: options.user_settings.no_quote_collapse

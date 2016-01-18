@@ -161,7 +161,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
     env.data.own_bookmarks = bookmarks;
-    env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
+    env.res.own_bookmarks = _.map(bookmarks, 'post_id');
   });
 
 

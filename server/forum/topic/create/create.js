@@ -390,7 +390,7 @@ module.exports = function (N, apiPath) {
 
       N.wire.emit('internal:users.notify', {
         src: env.data.new_topic._id,
-        to: _.pluck(subscriptions, 'user_id'),
+        to: _.map(subscriptions, 'user_id'),
         type: 'FORUM_NEW_TOPIC'
       }, callback);
     });

@@ -68,6 +68,6 @@ module.exports = function (N) {
       topics = pinned.concat(topics);
     }
 
-    env.data.topics_ids = _.pluck(topics, '_id');
+    env.data.topics_ids = _.map(topics, '_id');
   });
 };

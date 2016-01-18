@@ -104,6 +104,6 @@ module.exports = function (N) {
                           .sort('hid')
                           .lean(true);
 
-    env.data.posts_hids = _.pluck(posts, 'hid');
+    env.data.posts_hids = _.map(posts, 'hid');
   });
 };

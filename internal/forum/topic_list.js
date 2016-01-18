@@ -130,7 +130,7 @@ module.exports = function (N, apiPath) {
                               .where('post_id').in(postIds)
                               .lean(true);
 
-    env.res.own_bookmarks = _.pluck(bookmarks, 'post_id');
+    env.res.own_bookmarks = _.map(bookmarks, 'post_id');
   });
 
 
@@ -148,7 +148,7 @@ module.exports = function (N, apiPath) {
                           .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
                           .lean(true);
 
-    env.res.subscriptions = _.pluck(subscriptions, 'to');
+    env.res.subscriptions = _.map(subscriptions, 'to');
   });
 
 

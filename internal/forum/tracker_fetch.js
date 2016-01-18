@@ -29,7 +29,7 @@ module.exports = function (N) {
           return;
         }
 
-        N.models.forum.Topic.find().where('_id').in(_.pluck(subs, 'to')).lean(true).exec(function (err, result) {
+        N.models.forum.Topic.find().where('_id').in(_.map(subs, 'to')).lean(true).exec(function (err, result) {
           if (err) {
             next(err);
             return;
@@ -51,7 +51,7 @@ module.exports = function (N) {
           return;
         }
 
-        N.models.users.Marker.cuts(env.user_info.user_id, _.pluck(subs, 'to'), function (err, cuts) {
+        N.models.users.Marker.cuts(env.user_info.user_id, _.map(subs, 'to'), function (err, cuts) {
           if (err) {
             next(err);
             return;
@@ -69,7 +69,7 @@ module.exports = function (N) {
               return;
             }
 
-            topics = _.uniq(topics.concat(result || []), function (topic) {
+            topics = _.uniqBy(topics.concat(result || []), function (topic) {
               return String(topic._id);
             });
 
@@ -143,8 +143,8 @@ module.exports = function (N) {
       //
       function (next) {
         env.data.users = env.data.users || [];
-        env.data.users = env.data.users.concat(_.pluck(topics, 'cache.last_user'));
-        env.data.users = env.data.users.concat(_.pluck(topics, 'cache.first_user'));
+        env.data.users = env.data.users.concat(_.map(topics, 'cache.last_user'));
+        env.data.users = env.data.users.concat(_.map(topics, 'cache.first_user'));
         next();
       },
 
@@ -153,7 +153,7 @@ module.exports = function (N) {
       //
       function (next) {
         N.models.forum.Section.find()
-            .where('_id').in(_.pluck(topics, 'section'))
+            .where('_id').in(_.map(topics, 'section'))
             .lean(true)
             .exec(function (err, result) {
 
@@ -202,8 +202,8 @@ module.exports = function (N) {
         return;
       }
 
-      env.res.forum_topics = _.indexBy(topics, '_id');
-      env.res.forum_sections = _.indexBy(sections, '_id');
+      env.res.forum_topics = _.keyBy(topics, '_id');
+      env.res.forum_sections = _.keyBy(sections, '_id');
       env.res.read_marks = _.assign(env.res.read_marks || {}, read_marks);
 
       topics.forEach(function (topic) {

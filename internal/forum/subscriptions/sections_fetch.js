@@ -20,7 +20,7 @@ module.exports = function (N) {
       function (next) {
         var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_SECTION);
 
-        N.models.forum.Section.find().where('_id').in(_.pluck(subs, 'to')).lean(true).exec(function (err, result) {
+        N.models.forum.Section.find().where('_id').in(_.map(subs, 'to')).lean(true).exec(function (err, result) {
           if (err) {
             next(err);
             return;
@@ -73,7 +73,7 @@ module.exports = function (N) {
         return;
       }
 
-      env.res.forum_sections = _.assign(env.res.forum_sections || {}, _.indexBy(sections, '_id'));
+      env.res.forum_sections = _.assign(env.res.forum_sections || {}, _.keyBy(sections, '_id'));
 
       callback();
     });

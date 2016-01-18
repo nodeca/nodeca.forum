@@ -40,7 +40,7 @@ module.exports = function (N) {
         }
 
         Section.find({
-          _id: { $in: _.pluck(children, '_id') }
+          _id: { $in: _.map(children, '_id') }
         }, function (err, sections) {
 
           if (err) {

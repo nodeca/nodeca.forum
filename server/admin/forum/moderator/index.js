@@ -100,7 +100,7 @@ module.exports = function (N, apiPath) {
   // Collect user ids for `users_join` hook. (provides users info)
   //
   N.wire.after(apiPath, function users_prepare(env) {
-    env.data.users = (env.data.users || []).concat(_.pluck(env.res.moderators, '_id'));
+    env.data.users = (env.data.users || []).concat(_.map(env.res.moderators, '_id'));
   });
 
 

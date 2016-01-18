@@ -38,7 +38,7 @@ module.exports = function (N, apiPath) {
         return;
       }
 
-      env.res.media_ids = _.pluck(res, 'media_id');
+      env.res.media_ids = _.map(res, 'media_id');
       callback();
     });
   });

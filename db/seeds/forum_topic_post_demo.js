@@ -338,7 +338,7 @@ function updateSectionStat(section, callback) {
 
         Topic.aggregate(
           { $match: {
-            section: { $in: _.pluck(sections.concat([ section ]), '_id') }
+            section: { $in: _.map(sections.concat([ section ]), '_id') }
           } },
           { $group: {
             _id: null,

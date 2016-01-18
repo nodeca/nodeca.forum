@@ -50,7 +50,7 @@ module.exports = function (N) {
                   .sort(sort)
                   .limit(count)
                   .lean(true)
-                  .then(topics => _.pluck(topics, '_id').reverse());
+                  .then(topics => _.map(topics, '_id').reverse());
     }
 
     function select_visible_after() {
@@ -68,7 +68,7 @@ module.exports = function (N) {
                   .sort(sort)
                   .limit(count)
                   .lean(true)
-                  .then(topics => _.pluck(topics, '_id'));
+                  .then(topics => _.map(topics, '_id'));
     }
 
 
@@ -97,7 +97,7 @@ module.exports = function (N) {
                               .lean(true);
 
       // Put pinned topics IDs to start of `env.data.topics_ids`
-      env.data.topics_ids = _.pluck(topics, '_id').concat(env.data.topics_ids);
+      env.data.topics_ids = _.map(topics, '_id').concat(env.data.topics_ids);
     }
   });
 };
