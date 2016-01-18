@@ -1,58 +1,37 @@
 'use strict';
 
-const async   = require('async');
-const thenify = require('thenify');
 
-module.exports.up = thenify(function (N, cb) {
-  var models = N.models;
+const co = require('co');
 
-  var usergroupStore = N.settings.getStore('usergroup');
 
-  async.series([
-    // add usergroup settings for admin
-    function (callback) {
-      models.users.UserGroup.findOne({ short_name: 'administrators' })
+module.exports.up = co.wrap(function* (N) {
+  let usergroupStore = N.settings.getStore('usergroup');
 
-        .exec(function (err, group) {
-          if (err) {
-            callback(err);
-            return;
-          }
+  // add usergroup settings for admin
 
-          usergroupStore.set({
-            forum_can_reply: { value: true },
-            forum_can_start_topics: { value: true },
-            forum_mod_can_pin_topic: { value: true },
-            forum_mod_can_edit_posts: { value: true },
-            forum_mod_can_delete_topics: { value: true },
-            forum_mod_can_edit_titles: { value: true },
-            forum_mod_can_close_topic: { value: true },
-            forum_mod_can_hard_delete_topics: { value: true },
-            forum_mod_can_see_hard_deleted_topics: { value: true }
-          }, { usergroup_id: group._id }, callback);
-        });
-    },
+  let adminGroup = yield N.models.users.UserGroup.findOne({ short_name: 'administrators' });
 
-    // add usergroup settings for member
-    function (callback) {
-      models.users.UserGroup.findOne({ short_name: 'members' })
-        .exec(function (err, group) {
+  yield usergroupStore.set({
+    forum_can_reply: { value: true },
+    forum_can_start_topics: { value: true },
+    forum_mod_can_pin_topic: { value: true },
+    forum_mod_can_edit_posts: { value: true },
+    forum_mod_can_delete_topics: { value: true },
+    forum_mod_can_edit_titles: { value: true },
+    forum_mod_can_close_topic: { value: true },
+    forum_mod_can_hard_delete_topics: { value: true },
+    forum_mod_can_see_hard_deleted_topics: { value: true }
+  }, { usergroup_id: adminGroup._id });
 
-          if (err) {
-            callback(err);
-            return;
-          }
+  // add usergroup settings for member
 
-          usergroupStore.set({
-            forum_can_reply: { value: true },
-            forum_can_start_topics: { value: true }
-          }, { usergroup_id: group._id }, callback);
-        });
-    },
+  let memberGroup = yield N.models.users.UserGroup.findOne({ short_name: 'members' });
 
-    // Recalculate store settings of all groups.
-    function (callback) {
-      usergroupStore.updateInherited(callback);
-    }
-  ], cb);
+  yield usergroupStore.set({
+    forum_can_reply: { value: true },
+    forum_can_start_topics: { value: true }
+  }, { usergroup_id: memberGroup._id });
+
+  // Recalculate store settings of all groups.
+  yield usergroupStore.updateInherited();
 });
