@@ -285,9 +285,8 @@ module.exports = function (N, apiPath) {
 
   // Mark topic as read
   //
-  N.wire.after(apiPath, function mark_topic_read(env, callback) {
+  N.wire.after(apiPath, function mark_topic_read(env) {
     if (env.user_info.is_guest) {
-      callback();
       return;
     }
 
@@ -296,13 +295,6 @@ module.exports = function (N, apiPath) {
       env.user_info.user_id,
       env.data.topic._id,
       env.data.section._id,
-      'forum_topic',
-      function (err) {
-        if (err) {
-          N.logger.error('Marker cannot mark topic as read: %s', err);
-        }
-      });
-
-    callback();
+      'forum_topic').catch(err => N.logger.error(`Marker cannot mark topic as read: ${err}`));
   });
 };

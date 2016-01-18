@@ -20,33 +20,29 @@ var validate = require('is-my-json-valid')({
 
 
 module.exports = function (N) {
-  N.wire.on('internal.live.post:private.forum.marker_set_pos', function set_scroll_position(data, callback) {
+  N.wire.on('internal.live.post:private.forum.marker_set_pos', function* set_scroll_position(data) {
     if (!validate(data.message.data)) {
-      callback(N.io.BAD_REQUEST);
-      return;
+      throw N.io.BAD_REQUEST;
     }
 
     data.allowed = true;
 
-    data.getSession(function (err, session) {
+    data.getSession((err, session) => {
       if (err) {
-        callback(err);
-        return;
+        throw err;
       }
 
       if (!session.user_id) {
-        callback();
         return;
       }
 
-      N.models.users.Marker.setPos(
+      yield N.models.users.Marker.setPos(
         session.user_id,
         data.message.data.content_id,
         data.message.data.position,
         data.message.data.max,
         data.message.data.category_id,
-        'forum_topic',
-        callback
+        'forum_topic'
       );
     });
   });

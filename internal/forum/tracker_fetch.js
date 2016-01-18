@@ -51,13 +51,8 @@ module.exports = function (N) {
           return;
         }
 
-        N.models.users.Marker.cuts(env.user_info.user_id, _.map(subs, 'to'), function (err, cuts) {
-          if (err) {
-            next(err);
-            return;
-          }
-
-          var queryParts = [];
+        N.models.users.Marker.cuts(env.user_info.user_id, _.map(subs, 'to')).catch(next).then((cuts) => {
+          let queryParts = [];
 
           _.forEach(cuts, function (cutTs, id) {
             queryParts.push({ $and: [ { section: id }, { _id: { $gt: new ObjectId(Math.round(cutTs / 1000)) } } ] });
@@ -82,7 +77,7 @@ module.exports = function (N) {
       // Fetch read marks
       //
       function (next) {
-        var data = [];
+        let data = [];
 
         topics.forEach(function (topic) {
           data.push({
@@ -93,12 +88,7 @@ module.exports = function (N) {
           });
         });
 
-        N.models.users.Marker.info(env.user_info.user_id, data, function (err, result) {
-          if (err) {
-            next(err);
-            return;
-          }
-
+        N.models.users.Marker.info(env.user_info.user_id, data).catch(next).then(result => {
           read_marks = result;
 
           // Filter new and unread topics

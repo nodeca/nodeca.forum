@@ -131,16 +131,9 @@ module.exports = function (N, apiPath) {
 
   // Fill read marks
   //
-  N.wire.after(apiPath, function fill_marks(env, callback) {
-    N.models.users.Marker.cuts(env.user_info.user_id, _.map(env.data.subsections, '_id'), function (err, res) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.subsections_marks = res;
-      callback();
-    });
+  N.wire.after(apiPath, function* fill_marks(env) {
+    env.res.subsections_marks =
+      yield N.models.users.Marker.cuts(env.user_info.user_id, _.map(env.data.subsections, '_id'));
   });
 
 

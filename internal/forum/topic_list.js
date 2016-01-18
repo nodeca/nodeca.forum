@@ -154,10 +154,10 @@ module.exports = function (N, apiPath) {
 
   // Fill `isNew`, `next` and `position` markers
   //
-  N.wire.after(apiPath, function fill_read_marks(env, callback) {
-    var data = [];
+  N.wire.after(apiPath, function* fill_read_marks(env) {
+    let data = [];
 
-    env.data.topics.forEach(function (topic) {
+    env.data.topics.forEach(topic => {
       data.push({
         categoryId: topic.section,
         contentId: topic._id,
@@ -166,15 +166,7 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    N.models.users.Marker.info(env.user_info.user_id, data, function (err, marks) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.read_marks = marks;
-      callback();
-    });
+    env.res.read_marks = yield N.models.users.Marker.info(env.user_info.user_id, data);
   });
 
 

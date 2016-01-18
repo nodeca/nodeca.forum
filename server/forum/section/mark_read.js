@@ -42,28 +42,20 @@ module.exports = function (N, apiPath) {
 
   // Subcall forum.access.section
   //
-  N.wire.before(apiPath, function subcall_section(env, callback) {
-    var access_env = { params: { sections: env.data.section, user_info: env.user_info } };
+  N.wire.before(apiPath, function* subcall_section(env) {
+    let access_env = { params: { sections: env.data.section, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.section', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.section', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
   // Mark topics as read
   //
-  N.wire.on(apiPath, function mark_topics_read(env, callback) {
-    N.models.users.Marker.markAll(env.user_info.user_id, env.data.section._id, callback);
+  N.wire.on(apiPath, function* mark_topics_read(env) {
+    yield N.models.users.Marker.markAll(env.user_info.user_id, env.data.section._id);
   });
 };
