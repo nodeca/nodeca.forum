@@ -12,6 +12,7 @@
 
 var _         = require('lodash');
 var async     = require('async');
+var thenify   = require('thenify');
 var charlatan = require('charlatan');
 var ObjectId  = require('mongoose').Types.ObjectId;
 
@@ -486,7 +487,7 @@ function addModerators(callback) {
     });
 }
 
-module.exports = function (N, callback) {
+module.exports = thenify(function (N, callback) {
   Category  = N.models.forum.Section;
   Section   = N.models.forum.Section;
   Topic     = N.models.forum.Topic;
@@ -506,4 +507,4 @@ module.exports = function (N, callback) {
     addModerators
 
   ], callback);
-};
+});
