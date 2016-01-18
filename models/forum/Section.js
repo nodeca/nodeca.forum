@@ -342,7 +342,7 @@ module.exports = function (N, collectionName) {
   //
   var updateCache = require('./lib/_update_section_cache')(N);
 
-  Section.statics.updateCache = function (sectionID, full, callback) {
+  Section.statics.updateCache = thenify.withCallback(function (sectionID, full, callback) {
     updateCache[full ? 'full' : 'simple'](sectionID, callback);
-  };
+  });
 };
