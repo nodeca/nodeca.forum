@@ -1,9 +1,11 @@
 // Save new reply
-
+//
 'use strict';
 
-var _         = require('lodash');
-var cheequery = require('nodeca.core/lib/parser/cheequery');
+
+const _         = require('lodash');
+const cheequery = require('nodeca.core/lib/parser/cheequery');
+
 
 module.exports = function (N, apiPath) {
 
@@ -35,43 +37,27 @@ module.exports = function (N, apiPath) {
 
   // Fetch section info
   //
-  N.wire.before(apiPath, function fetch_section_info(env, callback) {
+  N.wire.before(apiPath, function* fetch_section_info(env) {
+    let section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
-    N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true).exec(function (err, section) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!section) {
+      throw N.io.NOT_FOUND;
+    }
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+    env.data.section = section;
   });
 
 
   // Check permission to reply in this section
   //
-  N.wire.before(apiPath, function check_can_reply(env, callback) {
+  N.wire.before(apiPath, function* check_can_reply(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    env.extras.settings.fetch('forum_can_reply', function (err, forum_can_reply) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let forum_can_reply = yield env.extras.settings.fetch('forum_can_reply');
 
-      if (!forum_can_reply) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!forum_can_reply) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
@@ -84,125 +70,83 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic info
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    var Topic = N.models.forum.Topic;
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    let topic = yield N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
 
-    Topic.findOne({ hid: env.params.topic_hid }).lean(true).exec(function (err, topic) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!topic) {
+      throw N.io.NOT_FOUND;
+    }
 
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    env.data.topic = topic;
   });
 
 
   // Check if user can see this topic
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
-    var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
+  N.wire.before(apiPath, function* check_access(env) {
+    let access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
   // Fetch parent post
   //
-  N.wire.before(apiPath, function fetch_parent_post(env, callback) {
-    var Post = N.models.forum.Post;
-
+  N.wire.before(apiPath, function* fetch_parent_post(env) {
     if (!env.params.parent_post_id) {
-      callback();
       return;
     }
 
-    Post.findOne({ _id: env.params.parent_post_id }).lean(true).exec(function (err, post) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let post = yield N.models.forum.Post.findOne({ _id: env.params.parent_post_id }).lean(true);
 
-      if (!post) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('error_invalid_parent_post')
-        });
-        return;
-      }
+    if (!post) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('error_invalid_parent_post')
+      };
+    }
 
-      env.data.post = post;
+    env.data.post = post;
 
-      var access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
+    let access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
 
-      N.wire.emit('internal:forum.access.post', access_env, function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    yield N.wire.emit('internal:forum.access.post', access_env);
 
-        if (!access_env.data.access_read) {
-          callback({
-            code: N.io.CLIENT_ERROR,
-            message: env.t('error_invalid_parent_post')
-          });
-          return;
-        }
-
-        callback();
-      });
-    });
+    if (!access_env.data.access_read) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('error_invalid_parent_post')
+      };
+    }
   });
 
 
   // Prepare parse options
   //
-  N.wire.before(apiPath, function prepare_options(env, callback) {
-    N.settings.getByCategory(
+  N.wire.before(apiPath, function* prepare_options(env) {
+    let settings = yield N.settings.getByCategory(
       'forum_markup',
       { usergroup_ids: env.user_info.usergroups },
-      { alias: true },
-      function (err, settings) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      { alias: true });
 
-        if (env.params.option_no_mlinks) {
-          settings.link_to_title = false;
-          settings.link_to_snippet = false;
-        }
+    if (env.params.option_no_mlinks) {
+      settings.link_to_title = false;
+      settings.link_to_snippet = false;
+    }
 
-        if (env.params.option_no_emojis) {
-          settings.emoji = false;
-        }
+    if (env.params.option_no_emojis) {
+      settings.emoji = false;
+    }
 
-        if (env.params.option_no_quote_collapse) {
-          settings.quote_collapse = false;
-        }
+    if (env.params.option_no_quote_collapse) {
+      settings.quote_collapse = false;
+    }
 
-        env.data.parse_options = settings;
-        callback();
-      }
-    );
+    env.data.parse_options = settings;
   });
 
 
@@ -231,90 +175,64 @@ module.exports = function (N, apiPath) {
 
   // Check post length
   //
-  N.wire.after(apiPath, function check_post_length(env, callback) {
-    env.extras.settings.fetch('forum_post_text_min_length', function (err, min_length) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.after(apiPath, function* check_post_length(env) {
+    let min_length = yield env.extras.settings.fetch('forum_post_text_min_length');
 
-      if (env.data.parse_result.text_length < min_length) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('err_text_too_short', min_length)
-        });
-        return;
-      }
-
-      callback();
-    });
+    if (env.data.parse_result.text_length < min_length) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_text_too_short', min_length)
+      };
+    }
   });
 
 
   // Limit an amount of images in the post
   //
-  N.wire.after(apiPath, function check_images_count(env, callback) {
-    env.extras.settings.fetch('forum_post_text_max_images', function (err, max_images) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.after(apiPath, function* check_images_count(env) {
+    let max_images = yield env.extras.settings.fetch('forum_post_text_max_images');
 
-      if (max_images <= 0) {
-        callback();
-        return;
-      }
+    if (max_images <= 0) {
+      return;
+    }
 
-      var ast         = cheequery(env.data.parse_result.html);
-      var images      = ast.find('.image').length;
-      var attachments = ast.find('.attach').length;
-      var tail        = env.data.parse_result.tail.length;
+    let ast         = cheequery(env.data.parse_result.html);
+    let images      = ast.find('.image').length;
+    let attachments = ast.find('.attach').length;
+    let tail        = env.data.parse_result.tail.length;
 
-      if (images + attachments + tail > max_images) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('err_too_many_images', max_images)
-        });
-        return;
-      }
-
-      callback();
-    });
+    if (images + attachments + tail > max_images) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_too_many_images', max_images)
+      };
+    }
   });
 
 
   // Limit an amount of emoticons in the post
   //
-  N.wire.after(apiPath, function check_emoji_count(env, callback) {
-    env.extras.settings.fetch('forum_post_text_max_emojis', function (err, max_emojis) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.after(apiPath, function* check_emoji_count(env) {
+    let max_emojis = yield env.extras.settings.fetch('forum_post_text_max_emojis');
 
-      if (max_emojis < 0) {
-        callback();
-        return;
-      }
+    if (max_emojis < 0) {
+      return;
+    }
 
-      if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('err_too_many_emojis', max_emojis)
-        });
-        return;
-      }
-
-      callback();
-    });
+    if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_too_many_emojis', max_emojis)
+      };
+    }
   });
 
 
   // Save new post
   //
-  N.wire.after(apiPath, function save_new_post(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-    var post = new N.models.forum.Post();
+  N.wire.after(apiPath, function* save_new_post(env) {
+    let statuses = N.models.forum.Post.statuses;
+    let post = new N.models.forum.Post();
 
     post.tail = env.data.parse_result.tail;
     post.imports = env.data.parse_result.imports;
@@ -342,16 +260,9 @@ module.exports = function (N, apiPath) {
     post.topic = env.data.topic._id;
     post.user = env.user_info.user_id;
 
-    post.save(function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield post.save();
 
-      env.data.new_post = post;
-
-      callback();
-    });
+    env.data.new_post = post;
   });
 
 
@@ -366,10 +277,10 @@ module.exports = function (N, apiPath) {
 
   // Update topic counters
   //
-  N.wire.after(apiPath, function update_topic(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-    var post = env.data.new_post;
-    var incData = {};
+  N.wire.after(apiPath, function* update_topic(env) {
+    let statuses = N.models.forum.Post.statuses;
+    let post = env.data.new_post;
+    let incData = {};
 
     if (post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
@@ -379,31 +290,19 @@ module.exports = function (N, apiPath) {
     incData['cache_hb.post_count'] = 1;
     incData['cache_hb.attach_count'] = post.attach.length;
 
-
-    N.models.forum.Topic.update(
-      { _id: env.data.topic._id },
-      { $inc: incData },
-      function (err) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        N.models.forum.Topic.updateCache(env.data.topic._id, false, callback);
-      }
-    );
+    yield N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: incData });
+    yield N.models.forum.Topic.updateCache(env.data.topic._id, false);
   });
 
 
   // Update section counters
   //
-  N.wire.after(apiPath, function update_section(env, callback) {
-    var post_statuses = N.models.forum.Post.statuses;
-    var topic_statuses = N.models.forum.Topic.statuses;
-    var topic = env.data.topic;
-    var post = env.data.new_post;
-    var incData = {};
+  N.wire.after(apiPath, function* update_section(env) {
+    let post_statuses = N.models.forum.Post.statuses;
+    let topic_statuses = N.models.forum.Topic.statuses;
+    let topic = env.data.topic;
+    let post = env.data.new_post;
+    let incData = {};
 
     // Increment normal cache if both topic and post are visible
     //
@@ -417,27 +316,15 @@ module.exports = function (N, apiPath) {
       incData['cache_hb.post_count'] = 1;
     }
 
+    let parents = yield N.models.forum.Section.getParentList(topic.section);
 
-    N.models.forum.Section.getParentList(topic.section, function (err, parents) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.models.forum.Section.update(
+      { _id: { $in: parents.concat([ topic.section ]) } },
+      { $inc: incData },
+      { multi: true }
+    );
 
-      N.models.forum.Section.update(
-        { _id: { $in: parents.concat([ topic.section ]) } },
-        { $inc: incData },
-        { multi: true },
-        function (err) {
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          N.models.forum.Section.updateCache(topic.section, false, callback);
-        }
-      );
-    });
+    yield N.models.forum.Section.updateCache(topic.section, false);
   });
 
 
@@ -454,44 +341,35 @@ module.exports = function (N, apiPath) {
 
   // Add reply notification for parent post owner
   //
-  N.wire.after(apiPath, function add_reply_notification(env, callback) {
+  N.wire.after(apiPath, function* add_reply_notification(env) {
     if (!env.data.new_post.to) {
-      callback();
       return;
     }
 
-    N.wire.emit('internal:users.notify', {
+    yield N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
       to: env.data.new_post.to_user,
       type: 'FORUM_REPLY'
-    }, callback);
+    });
   });
 
 
   // Add new post notification for subscribers
   //
-  N.wire.after(apiPath, function add_new_post_notification(env, callback) {
-    N.models.users.Subscription.find()
-        .where('to').equals(env.data.topic._id)
-        .where('type').equals(N.models.users.Subscription.types.WATCHING)
-        .lean(true)
-        .exec(function (err, subscriptions) {
+  N.wire.after(apiPath, function* add_new_post_notification(env) {
+    let subscriptions = yield N.models.users.Subscription.find()
+      .where('to').equals(env.data.topic._id)
+      .where('type').equals(N.models.users.Subscription.types.WATCHING)
+      .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!subscriptions.length) {
+      return;
+    }
 
-      if (!subscriptions.length) {
-        callback();
-        return;
-      }
-
-      N.wire.emit('internal:users.notify', {
-        src: env.data.new_post._id,
-        to: _.map(subscriptions, 'user_id'),
-        type: 'FORUM_NEW_POST'
-      }, callback);
+    yield N.wire.emit('internal:users.notify', {
+      src: env.data.new_post._id,
+      to: _.map(subscriptions, 'user_id'),
+      type: 'FORUM_NEW_POST'
     });
   });
 };

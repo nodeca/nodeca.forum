@@ -1,8 +1,9 @@
 'use strict';
 
 
-var Mongoose = require('mongoose');
-var Schema = Mongoose.Schema;
+const Mongoose = require('mongoose');
+const Schema   = Mongoose.Schema;
+const thenify  = require('thenify');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -138,7 +139,7 @@ module.exports = function (N, collectionName) {
   // - topicID  - id of topic to update
   // - full     - update 'cache' even if last post is hellbanned
   //
-  Topic.statics.updateCache = function (topicID, full, callback) {
+  Topic.statics.updateCache = thenify.withCallback(function (topicID, full, callback) {
     var Post = N.models.forum.Post;
     var updateData = {};
 
@@ -186,7 +187,7 @@ module.exports = function (N, collectionName) {
             N.models.forum.Topic.update({ _id: topicID }, updateData, callback);
           });
       });
-  };
+  });
 
 
   N.wire.on('init:models', function emit_init_Topic(__, callback) {

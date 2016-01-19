@@ -1,7 +1,10 @@
 // Remove post by id
+//
 'use strict';
 
-var _ = require('lodash');
+
+const _ = require('lodash');
+
 
 module.exports = function (N, apiPath) {
 
@@ -15,104 +18,68 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function fetch_post(env, callback) {
-    N.models.forum.Post.findOne({ _id: env.params.post_id })
-      .lean(true).exec(function (err, post) {
-        if (err) {
-          callback(err);
-          return;
-        }
+  N.wire.before(apiPath, function* fetch_post(env) {
+    let post = yield N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
 
-        if (!post) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
+    if (!post) {
+      throw N.io.NOT_FOUND;
+    }
 
-        env.data.post = post;
-        callback();
-      });
+    env.data.post = post;
   });
 
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    var Topic = N.models.forum.Topic;
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    let topic = yield N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
 
-    Topic.findOne({ _id: env.data.post.topic })
-      .lean(true).exec(function (err, topic) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    if (!topic) {
+      throw N.io.NOT_FOUND;
+    }
 
-        if (!topic) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
-        env.data.topic = topic;
-        callback();
-      });
+    env.data.topic = topic;
   });
 
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
-    var access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
+  N.wire.before(apiPath, function* check_access(env) {
+    let access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.post', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.post', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
+  N.wire.before(apiPath, function* check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
     // We can't delete first port. Topic operation should be requested instead
     if (String(env.data.topic.cache.first_post) === String(env.data.post._id)) {
-      callback(N.io.FORBIDDEN);
-      return;
+      throw N.io.NOT_FOUND;
     }
 
     // Check moderator permissions
 
     if (env.params.as_moderator) {
-      env.extras.settings.fetch(
-        [ 'forum_mod_can_delete_topics', 'forum_mod_can_hard_delete_topics' ],
-        function (err, settings) {
-          if (err) {
-            callback(err);
-            return;
-          }
+      let settings = yield env.extras.settings.fetch([
+        'forum_mod_can_delete_topics',
+        'forum_mod_can_hard_delete_topics'
+      ]);
 
-          if (!settings.forum_mod_can_delete_topics && env.params.method === 'soft') {
-            callback(N.io.FORBIDDEN);
-            return;
-          }
+      if (!settings.forum_mod_can_delete_topics && env.params.method === 'soft') {
+        throw N.io.FORBIDDEN;
+      }
 
-          if (!settings.forum_mod_can_hard_delete_topics && env.params.method === 'hard') {
-            callback(N.io.FORBIDDEN);
-            return;
-          }
-
-          callback();
-        }
-      );
+      if (!settings.forum_mod_can_hard_delete_topics && env.params.method === 'hard') {
+        throw N.io.FORBIDDEN;
+      }
 
       return;
     }
@@ -121,41 +88,31 @@ module.exports = function (N, apiPath) {
 
     // User can't hard delete posts
     if (env.params.method === 'hard') {
-      callback(N.io.FORBIDDEN);
-      return;
+      throw N.io.FORBIDDEN;
     }
 
     // Check post owner
     if (env.user_info.user_id !== String(env.data.post.user)) {
-      callback(N.io.FORBIDDEN);
-      return;
+      throw N.io.FORBIDDEN;
     }
 
-    env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let forum_edit_max_time = yield env.extras.settings.fetch('forum_edit_max_time');
 
-      if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('err_perm_expired')
-        });
-        return;
-      }
-
-      callback();
-    });
+    if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_perm_expired')
+      };
+    }
   });
 
 
   // Remove post
   //
-  N.wire.on(apiPath, function delete_post(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-    var post = env.data.post;
-    var update = {
+  N.wire.on(apiPath, function* delete_post(env) {
+    let statuses = N.models.forum.Post.statuses;
+    let post = env.data.post;
+    let update = {
       st: env.params.method === 'hard' ? statuses.DELETED_HARD : statuses.DELETED,
       $unset: { ste: 1 },
       prev_st: _.pick(post, [ 'st', 'ste' ]),
@@ -166,19 +123,15 @@ module.exports = function (N, apiPath) {
       update.del_reason = env.params.reason;
     }
 
-    N.models.forum.Post.update(
-      { _id: post._id },
-      update,
-      callback
-    );
+    yield N.models.forum.Post.update({ _id: post._id }, update);
   });
 
 
   // Update topic counters
   //
-  N.wire.after(apiPath, function update_topic(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-    var incData = {};
+  N.wire.after(apiPath, function* update_topic(env) {
+    let statuses = N.models.forum.Post.statuses;
+    let incData = {};
 
     if (env.data.post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = -1;
@@ -188,56 +141,40 @@ module.exports = function (N, apiPath) {
     incData['cache_hb.post_count'] = -1;
     incData['cache_hb.attach_count'] = -env.data.post.attach.length;
 
-
-    N.models.forum.Topic.update(
+    yield N.models.forum.Topic.update(
       { _id: env.data.topic._id },
-      { $inc: incData },
-      function (err) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        N.models.forum.Topic.updateCache(env.data.topic._id, true, callback);
-      }
+      { $inc: incData }
     );
+
+    yield N.models.forum.Topic.updateCache(env.data.topic._id, true);
   });
 
 
   // Remove votes
   //
-  N.wire.after(apiPath, function remove_votes(env, callback) {
-    N.models.users.Vote.collection.update(
+  N.wire.after(apiPath, function* remove_votes(env) {
+    yield N.models.users.Vote.collection.update(
       { 'for': env.data.post._id },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } },
-      { multi: true },
-      function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        callback();
-      }
+      { multi: true }
     );
   });
 
 
   // Increment topic version to invalidate old post count cache
   //
-  N.wire.after(apiPath, function remove_old_post_count_cache(env, callback) {
-    N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: { version: 1 } }).exec(callback);
+  N.wire.after(apiPath, function* remove_old_post_count_cache(env) {
+    yield N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: { version: 1 } });
   });
 
 
   // Update section counters
   //
-  N.wire.after(apiPath, function update_section(env, callback) {
-    var statuses = N.models.forum.Post.statuses;
-    var topic = env.data.topic;
-    var incData = {};
+  N.wire.after(apiPath, function* update_section(env) {
+    let statuses = N.models.forum.Post.statuses;
+    let topic = env.data.topic;
+    let incData = {};
 
     if (env.data.post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = -1;
@@ -245,28 +182,15 @@ module.exports = function (N, apiPath) {
 
     incData['cache_hb.post_count'] = -1;
 
+    let parents = yield N.models.forum.Section.getParentList(topic.section);
 
-    N.models.forum.Section.getParentList(topic.section, function (err, parents) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.models.forum.Section.update(
+      { _id: { $in: parents.concat([ topic.section ]) } },
+      { $inc: incData },
+      { multi: true }
+    );
 
-      N.models.forum.Section.update(
-        { _id: { $in: parents.concat([ topic.section ]) } },
-        { $inc: incData },
-        { multi: true },
-        function (err) {
-
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          N.models.forum.Section.updateCache(env.data.topic.section, true, callback);
-        }
-      );
-    });
+    yield N.models.forum.Section.updateCache(env.data.topic.section, true);
   });
 
   // TODO: log moderator actions
