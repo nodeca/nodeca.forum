@@ -15,10 +15,11 @@
 'use strict';
 
 
-var _        = require('lodash');
-var async    = require('async');
-var memoizee = require('memoizee');
-var format   = require('util').format;
+const _        = require('lodash');
+const async    = require('async');
+const memoizee = require('memoizee');
+const format   = require('util').format;
+const thenify  = require('thenify');
 
 
 module.exports = function (N) {
@@ -202,7 +203,7 @@ module.exports = function (N) {
   //     { ... }
   //   ]
   //
-  SectionModeratorStore.getModeratorsInfo = function getModeratorsInfo(sectionId, callback) {
+  SectionModeratorStore.getModeratorsInfo = thenify.withCallback(function getModeratorsInfo(sectionId, callback) {
     fetchSectionSettings(sectionId, function (err, section_settings) {
       if (err) {
         callback(err);
@@ -231,14 +232,14 @@ module.exports = function (N) {
         return String(moderator._id);
       }));
     });
-  };
+  });
 
 
   // Update inherited setting on all sections.
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionModeratorStore.updateInherited = function updateInherited(sectionId, callback) {
+  SectionModeratorStore.updateInherited = thenify.withCallback(function updateInherited(sectionId, callback) {
     var self = this;
 
     if (_.isFunction(sectionId)) {
@@ -449,12 +450,12 @@ module.exports = function (N) {
         }, callback);
       });
     });
-  };
+  });
 
 
   // Remove single moderator entry at section.
   //
-  SectionModeratorStore.removeModerator = function removeModerator(sectionId, userId, callback) {
+  SectionModeratorStore.removeModerator = thenify.withCallback(function removeModerator(sectionId, userId, callback) {
     var self = this;
 
     N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId }, function (err, section_settings) {
@@ -487,7 +488,7 @@ module.exports = function (N) {
         self.updateInherited(sectionId, callback);
       });
     });
-  };
+  });
 
 
   return SectionModeratorStore;

@@ -26,47 +26,33 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  N.wire.on(apiPath, function group_permissions_update(env, callback) {
-    var SectionUsergroupStore = N.settings.getStore('section_usergroup');
+  N.wire.on(apiPath, function* group_permissions_update(env) {
+    let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     if (!SectionUsergroupStore) {
-      callback({
+      throw {
         code:    N.io.APP_ERROR,
         message: 'Settings store `section_usergroup` is not registered.'
-      });
-      return;
+      };
     }
 
     // Fetch forum section just to ensure it exists.
-    N.models.forum.Section.findById(env.params.section_id, '_id', { lean: true }, function (err, section) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let section = yield N.models.forum.Section.findById(env.params.section_id)
+                                              .lean(true);
+    if (!section) {
+      throw N.io.NOT_FOUND;
+    }
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+    // Fetch usergroup just to ensure it exists.
+    let usergroup = yield N.models.users.UserGroup.findById(env.params.usergroup_id)
+                                                  .lean(true);
+    if (!usergroup) {
+      throw N.io.NOT_FOUND;
+    }
 
-      // Fetch usergroup just to ensure it exists.
-      N.models.users.UserGroup.findById(env.params.usergroup_id, '_id', { lean: true }, function (err, usergroup) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        if (!usergroup) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
-        SectionUsergroupStore.set(
-          env.params.settings,
-          { section_id: section._id, usergroup_id: usergroup._id },
-          callback
-        );
-      });
-    });
+    yield SectionUsergroupStore.set(
+      env.params.settings,
+      { section_id: section._id, usergroup_id: usergroup._id }
+    );
   });
 };

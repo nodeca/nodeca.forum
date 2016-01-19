@@ -15,10 +15,11 @@
 'use strict';
 
 
-var _        = require('lodash');
-var async    = require('async');
-var memoizee = require('memoizee');
-var format   = require('util').format;
+const _        = require('lodash');
+const async    = require('async');
+const memoizee = require('memoizee');
+const format   = require('util').format;
+const thenify  = require('thenify');
 
 
 module.exports = function (N) {
@@ -194,7 +195,7 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionUsergroupStore.updateInherited = function updateInherited(sectionId, callback) {
+  SectionUsergroupStore.updateInherited = thenify.withCallback(function updateInherited(sectionId, callback) {
     var self = this;
 
     if (_.isFunction(sectionId)) {
@@ -361,12 +362,13 @@ module.exports = function (N) {
         });
       });
     });
-  };
+  });
 
 
   // Remove all overriden usergroup settings at specific section.
   //
-  SectionUsergroupStore.removePermissions = function removePermissions(sectionId, usergroupId, callback) {
+  /*eslint-disable max-len*/
+  SectionUsergroupStore.removePermissions = thenify.withCallback(function removePermissions(sectionId, usergroupId, callback) {
     var self = this;
 
     N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId }, function (err, section_settings) {
@@ -399,12 +401,12 @@ module.exports = function (N) {
         self.updateInherited(sectionId, callback);
       });
     });
-  };
+  });
 
 
   // Remove all setting entries for specific usergroup.
   //
-  SectionUsergroupStore.removeUsergroup = function removeUsergroup(usergroupId, callback) {
+  SectionUsergroupStore.removeUsergroup = thenify.withCallback(function removeUsergroup(usergroupId, callback) {
     N.models.forum.SectionUsergroupStore.find({}, function (err, sections) {
       if (err) {
         callback(err);
@@ -424,7 +426,7 @@ module.exports = function (N) {
         section_settings.save(next);
       }, callback);
     });
-  };
+  });
 
 
   return SectionUsergroupStore;

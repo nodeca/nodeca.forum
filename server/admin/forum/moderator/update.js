@@ -26,43 +26,35 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  N.wire.on(apiPath, function moderator_update(env, callback) {
-    var SectionModeratorStore = N.settings.getStore('section_moderator');
+  N.wire.on(apiPath, function* moderator_update(env) {
+    let SectionModeratorStore = N.settings.getStore('section_moderator');
 
     if (!SectionModeratorStore) {
-      callback({
+      throw {
         code:    N.io.APP_ERROR,
         message: 'Settings store `section_moderator` is not registered.'
-      });
-      return;
+      };
     }
 
     // Fetch forum section just to ensure it exists.
-    N.models.forum.Section.findById(env.params.section_id, '_id', { lean: true }, function (err, section) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+    let section = yield N.models.forum.Section
+                            .findById(env.params.section_id)
+                            .lean(true);
+    if (!section) {
+      throw N.io.NOT_FOUND;
+    }
 
       // Fetch usergroup just to ensure it exists.
-      N.models.users.User.findById(env.params.user_id, '_id', { lean: true }, function (err, user) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    let user = yield N.models.users.User
+                          .findById(env.params.user_id)
+                          .lean(true);
+    if (!user) {
+      throw N.io.NOT_FOUND;
+    }
 
-        if (!user) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
-
-        SectionModeratorStore.set(env.params.settings, { section_id: section._id, user_id: user._id }, callback);
-      });
-    });
+    yield SectionModeratorStore.set(
+      env.params.settings,
+      { section_id: section._id, user_id: user._id }
+    );
   });
 };

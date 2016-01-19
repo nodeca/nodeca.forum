@@ -4,9 +4,6 @@
 'use strict';
 
 
-var async = require('async');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_id: { format: 'mongo', required: true },
@@ -14,16 +11,16 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function setting_stores_check() {
+  N.wire.before(apiPath, function* setting_stores_check() {
     if (!N.settings.getStore('section_moderator')) {
-      return {
+      throw {
         code:    N.io.APP_ERROR,
         message: 'Settings store `section_moderator` is not registered.'
       };
     }
 
     if (!N.settings.getStore('usergroup')) {
-      return {
+      throw {
         code:    N.io.APP_ERROR,
         message: 'Settings store `usergroup` is not registered.'
       };
@@ -31,53 +28,30 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function section_fetch(env, callback) {
-    N.models.forum.Section
-        .findById(env.params.section_id)
-        .lean(true)
-        .exec(function (err, section) {
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+  N.wire.before(apiPath, function* section_fetch(env) {
+    env.data.section = yield N.models.forum.Section
+                                .findById(env.params.section_id)
+                                .lean(true);
+    if (!env.data.section) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
-  N.wire.before(apiPath, function user_fetch(env, callback) {
-    N.models.users.User
-        .findById(env.params.user_id)
-        .lean(true)
-        .exec(function (err, user) {
+  N.wire.before(apiPath, function* user_fetch(env) {
+    env.data.user = yield N.models.users.User
+                              .findById(env.params.user_id)
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!user) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.user = user;
-      callback();
-    });
+    if (!env.data.user) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
-  N.wire.on(apiPath, function group_permissions_edit(env, callback) {
-    var SectionModeratorStore = N.settings.getStore('section_moderator'),
-        UsergroupStore      = N.settings.getStore('usergroup');
+  N.wire.on(apiPath, function* group_permissions_edit(env) {
+    let SectionModeratorStore = N.settings.getStore('section_moderator'),
+        UsergroupStore        = N.settings.getStore('usergroup');
 
     // Setting schemas to build client interface.
     env.res.setting_schemas = N.config.setting_schemas.section_moderator;
@@ -85,56 +59,30 @@ module.exports = function (N, apiPath) {
     // Expose moderator's full name.
     env.res.moderator_name = env.data.user.name;
 
-    async.parallel([
-      //
-      // Fetch settings with inheritance info for current edit section.
-      //
-      function (next) {
-        SectionModeratorStore.get(
-          SectionModeratorStore.keys,
-          { section_id: env.data.section._id, user_id: env.data.user._id },
-          { skipCache: true, extended: true },
-          function (err, editSettings) {
-            env.res.settings = editSettings;
-            next(err);
-          }
-        );
-      },
-      //
-      // Fetch inherited settings from section's parent.
-      //
-      function (next) {
-        if (!env.data.section.parent) {
-          env.res.parent_settings = null;
-          next();
-          return;
-        }
+    // Fetch settings with inheritance info for current edit section.
+    env.res.settings = yield SectionModeratorStore.get(
+      SectionModeratorStore.keys,
+      { section_id: env.data.section._id, user_id: env.data.user._id },
+      { skipCache: true, extended: true }
+    );
 
-        SectionModeratorStore.get(
-          SectionModeratorStore.keys,
-          { section_id: env.data.section.parent, user_id: env.data.user._id },
-          { skipCache: true, extended: true },
-          function (err, parentSettings) {
-            env.res.parent_settings = parentSettings;
-            next(err);
-          }
-        );
-      },
-      //
-      // Fetch inherited settings from usergroup.
-      //
-      function (next) {
-        UsergroupStore.get(
-          UsergroupStore.keys,
-          { usergroup_ids: env.data.user.usergroups },
-          { skipCache: true },
-          function (err, usergroupSettings) {
-            env.res.usergroup_settings = usergroupSettings;
-            next(err);
-          }
-        );
-      }
-    ], callback);
+    // Fetch inherited settings from section's parent.
+    if (!env.data.section.parent) {
+      env.res.parent_settings = null;
+    } else {
+      env.res.parent_settings = yield SectionModeratorStore.get(
+        SectionModeratorStore.keys,
+        { section_id: env.data.section.parent, user_id: env.data.user._id },
+        { skipCache: true, extended: true }
+      );
+    }
+
+    // Fetch inherited settings from usergroup.
+    env.res.usergroup_settings = yield UsergroupStore.get(
+      UsergroupStore.keys,
+      { usergroup_ids: env.data.user.usergroups },
+      { skipCache: true }
+    );
   });
 
 
