@@ -3,7 +3,7 @@
 
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
-const thenify  = require('thenify');
+const co       = require('co');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@ module.exports = function (N, collectionName) {
   //
   // - PINNED, HB - status_ext contains OPEN/CLOSED/PENDING state
   //
-  var statuses = {
+  let statuses = {
     OPEN:         1,
     CLOSED:       2,
     PINNED:       3,
@@ -30,7 +30,7 @@ module.exports = function (N, collectionName) {
   statuses.LIST_VISIBLE = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ];
 
 
-  var cache = {
+  let cache = {
     post_count:   { type: Number, 'default': 0 },
     attach_count: { type: Number, 'default': 0 },
 
@@ -44,7 +44,7 @@ module.exports = function (N, collectionName) {
     last_ts:      Date
   };
 
-  var Topic = new Schema({
+  let Topic = new Schema({
     title:          String,
     // user-friendly id (autoincremented)
     hid:            Number,
@@ -121,14 +121,13 @@ module.exports = function (N, collectionName) {
       return;
     }
 
-    var self = this;
-    N.models.core.Increment.next('topic', function (err, value) {
+    N.models.core.Increment.next('topic', (err, value) => {
       if (err) {
         callback(err);
         return;
       }
 
-      self.hid = value;
+      this.hid = value;
       callback();
     });
   });
@@ -139,54 +138,40 @@ module.exports = function (N, collectionName) {
   // - topicID  - id of topic to update
   // - full     - update 'cache' even if last post is hellbanned
   //
-  Topic.statics.updateCache = thenify.withCallback(function (topicID, full, callback) {
-    var Post = N.models.forum.Post;
-    var updateData = {};
+  Topic.statics.updateCache = co.wrap(function* (topicID, full) {
+    let Post = N.models.forum.Post;
+    let updateData = {};
 
-    N.models.forum.Post
+    let post = yield N.models.forum.Post
       .findOne({ topic: topicID, $or: [ { st: Post.statuses.VISIBLE }, { st: Post.statuses.HB } ] })
       .sort('-_id')
-      .select('_id user ts st')
-      .exec(function (err, post) {
+      .select('_id user ts st');
 
-        if (err) {
-          callback(err);
-          return;
-        }
+    if (post.st === Post.statuses.VISIBLE) {
+      updateData['cache.last_post'] = post._id;
+      updateData['cache.last_user'] = post.user;
+      updateData['cache.last_ts'] = post.ts;
+    }
 
-        if (post.st === Post.statuses.VISIBLE) {
-          updateData['cache.last_post'] = post._id;
-          updateData['cache.last_user'] = post.user;
-          updateData['cache.last_ts'] = post.ts;
-        }
+    updateData['cache_hb.last_post'] = post._id;
+    updateData['cache_hb.last_user'] = post.user;
+    updateData['cache_hb.last_ts'] = post.ts;
 
-        updateData['cache_hb.last_post'] = post._id;
-        updateData['cache_hb.last_user'] = post.user;
-        updateData['cache_hb.last_ts'] = post.ts;
+    if (!full || post.st === Post.statuses.VISIBLE) {
+      yield N.models.forum.Topic.update({ _id: topicID }, updateData);
+      return;
+    }
 
-        if (!full || post.st === Post.statuses.VISIBLE) {
-          N.models.forum.Topic.update({ _id: topicID }, updateData, callback);
-          return;
-        }
+    post = yield N.models.forum.Post
+      .findOne({ topic: topicID, st: Post.statuses.VISIBLE })
+      .sort('-_id')
+      .select('_id user ts');
 
-        N.models.forum.Post
-          .findOne({ topic: topicID, st: Post.statuses.VISIBLE })
-          .sort('-_id')
-          .select('_id user ts')
-          .exec(function (err, post) {
+    updateData['cache.last_post'] = post._id;
+    updateData['cache.last_user'] = post.user;
+    updateData['cache.last_ts'] = post.ts;
 
-            if (err) {
-              callback(err);
-              return;
-            }
-
-            updateData['cache.last_post'] = post._id;
-            updateData['cache.last_user'] = post.user;
-            updateData['cache.last_ts'] = post.ts;
-
-            N.models.forum.Topic.update({ _id: topicID }, updateData, callback);
-          });
-      });
+    yield N.models.forum.Topic.update({ _id: topicID }, updateData);
   });
 
 
