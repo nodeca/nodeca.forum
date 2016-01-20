@@ -14,7 +14,7 @@ var co       = require('co');
 // - improve count performance (between cached and required hids)
 // - avoid frequency cache hits misses
 //
-const CACHE_STEP_SIZE = 10;
+const CACHE_STEP_SIZE = 100;
 
 
 module.exports = function (N, collectionName) {
