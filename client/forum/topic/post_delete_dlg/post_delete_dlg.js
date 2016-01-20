@@ -33,8 +33,10 @@ N.wire.once('forum.topic.post_delete_dlg', function init_handlers() {
     N.io.rpc('forum.topic.post.destroy', data).done(function () {
       params.method = data.method;
 
+      let done = doneCallback;
+
       $dialog
-        .on('hidden.bs.modal', doneCallback)
+        .on('hidden.bs.modal', () => done())
         .modal('hide');
     });
   });

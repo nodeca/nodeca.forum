@@ -24,8 +24,10 @@ N.wire.once(module.apiPath, function init_handlers() {
   N.wire.on(module.apiPath + ':submit', function submit_subscription_dlg(form) {
     params.subscription = +form.fields.type;
 
+    let done = doneCallback;
+
     $dialog
-      .on('hidden.bs.modal', doneCallback)
+      .on('hidden.bs.modal', () => done())
       .modal('hide');
   });
 
