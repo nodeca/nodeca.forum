@@ -83,7 +83,7 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    let subscription = N.models.users.Subscription
+    let subscription = yield N.models.users.Subscription
                           .findOne({ user_id: env.user_info.user_id, to: env.data.topic._id })
                           .lean(true);
 
