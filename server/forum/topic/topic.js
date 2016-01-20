@@ -8,8 +8,8 @@
 //
 // This is needed to avoid triggering autoload code just after page load
 //
-var LOAD_POSTS_BEFORE_COUNT = 5;
-var LOAD_POSTS_AFTER_COUNT  = 15;
+const LOAD_POSTS_BEFORE_COUNT = 5;
+const LOAD_POSTS_AFTER_COUNT  = 15;
 
 
 module.exports = function (N, apiPath) {
@@ -30,7 +30,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  var buildPostHidsByPage  = require('./list/_build_post_hids_by_page.js')(N),
+  let buildPostHidsByPage  = require('./list/_build_post_hids_by_page.js')(N),
       buildPostHidsByRange = require('./list/_build_post_hids_by_range.js')(N);
 
 
@@ -124,7 +124,8 @@ module.exports = function (N, apiPath) {
       env.data.topic.version,
       // `env.data.posts_hids` could not be empty, but we should avoid exception in all cases.
       env.data.posts_hids[0] || 0,
-      env.user_info.hb);
+      env.user_info.hb
+    );
 
 
     // Create page info
@@ -155,7 +156,7 @@ module.exports = function (N, apiPath) {
   // Redirect to last page, if requested > available
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
-    var page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+    let page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
 
     if (env.params.page > page_max) {
       // Requested page is BIGGER than maximum - redirect to the last one
@@ -176,7 +177,7 @@ module.exports = function (N, apiPath) {
   // Add last post number, used for navigation and progress bar display
   //
   N.wire.on(apiPath, function* attach_last_post_hid(env) {
-    var cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
+    let cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
 
     let post = yield N.models.forum.Post.findById(cache.last_post)
                                         .select('hid')
@@ -194,27 +195,21 @@ module.exports = function (N, apiPath) {
 
   // Fill breadcrumbs info
   //
-  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
+  N.wire.after(apiPath, function* fill_topic_breadcrumbs(env) {
+    let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
 
-    N.models.forum.Section.getParentList(env.data.section._id, function (err, parents) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      // add current section
-      parents.push(env.data.section._id);
-      N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents }, callback);
-    });
+    // add current section
+    parents.push(env.data.section._id);
+    yield N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents });
   });
 
 
   // Fill head meta
   //
   N.wire.after(apiPath, function fill_meta(env) {
-    var topic  = env.data.topic;
-    var current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
-    var max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+    let topic  = env.data.topic;
+    let current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
+    let max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
 
     env.res.head = env.res.head || {};
 
@@ -261,8 +256,8 @@ module.exports = function (N, apiPath) {
     N.redis.time(function (err, time) {
       if (err) { return; }
 
-      var score = Math.floor(time[0] * 1000 + time[1] / 1000);
-      var key   = env.data.topic._id + '-' + env.session_id;
+      let score = Math.floor(time[0] * 1000 + time[1] / 1000);
+      let key   = env.data.topic._id + '-' + env.session_id;
 
       N.redis.zscore('views:forum_topic:track_last', key, function (err, old_score) {
         if (err) { return; }

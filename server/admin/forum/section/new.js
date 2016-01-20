@@ -1,9 +1,9 @@
 // Show create form for new section.
-
-
+//
 'use strict';
 
-var _  = require('lodash');
+
+const _ = require('lodash');
 
 
 module.exports = function (N, apiPath) {
@@ -13,49 +13,31 @@ module.exports = function (N, apiPath) {
 
   // fetch sections tree
   //
-  N.wire.before(apiPath, function section_new(env, callback) {
-    N.models.forum.Section.getChildren(function (err, allSections) {
-
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.allowed_parents = allSections;
-      callback();
-    });
+  N.wire.before(apiPath, function* section_new(env) {
+    env.data.allowed_parents = yield N.models.forum.Section.getChildren();
   });
 
 
   // Prepare data
   //
-  N.wire.on(apiPath, function section_new(env, callback) {
+  N.wire.on(apiPath, function* section_new(env) {
 
-    var _ids = env.data.allowed_parents.map(function (s) { return s._id; });
+    let _ids = env.data.allowed_parents.map(function (s) { return s._id; });
+
     env.res.allowed_parents = [];
 
     // Add title to sections
-    N.models.forum.Section
+    let sections = yield N.models.forum.Section
       .find({ _id: { $in: _ids } })
       .select('_id title')
-      .lean(true)
-      .exec(function (err, sections) {
+      .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    // sort result in the same order as ids
+    env.data.allowed_parents.forEach(allowedParent => {
+      let foundSection = _.find(sections, section => section._id.equals(allowedParent._id));
 
-      // sort result in the same order as ids
-      env.data.allowed_parents.forEach(function (allowedParent) {
-        var foundSection = _.find(sections, function (section) {
-          return section._id.equals(allowedParent._id);
-        });
-        foundSection.level = allowedParent.level;
-        env.res.allowed_parents.push(foundSection);
-      });
-
-      callback();
+      foundSection.level = allowedParent.level;
+      env.res.allowed_parents.push(foundSection);
     });
   });
 

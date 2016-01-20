@@ -1,16 +1,16 @@
 'use strict';
 
 
-var Mongoose = require('mongoose');
-var Schema   = Mongoose.Schema;
-var async    = require('async');
-var memoizee = require('memoizee');
-var thenify  = require('thenify');
+const Mongoose = require('mongoose');
+const Schema   = Mongoose.Schema;
+const memoizee = require('memoizee');
+const thenify  = require('thenify');
+const co       = require('co');
 
 
 module.exports = function (N, collectionName) {
 
-  var cache = {
+  let cache = {
     topic_count:      { type: Number, 'default': 0 },
     post_count:       { type: Number, 'default': 0 },
 
@@ -22,7 +22,7 @@ module.exports = function (N, collectionName) {
     last_ts:          Date
   };
 
-  var Section = new Schema({
+  let Section = new Schema({
     title:            String,
     description:      String,
     display_order:    Number,
@@ -77,11 +77,9 @@ module.exports = function (N, collectionName) {
   // Compute `parent_list` and `level` fields before save.
   //
   Section.pre('save', function (next) {
-    var self = this;
-
     // Record modified state of `parent` field for post hook.
     // Always assume true for unsaved models.
-    self.__isParentModified__ = self.isModified('parent') || self.isNew;
+    this.__isParentModified__ = this.isModified('parent') || this.isNew;
 
     next();
   });
@@ -101,14 +99,13 @@ module.exports = function (N, collectionName) {
       return;
     }
 
-    var self = this;
-    N.models.core.Increment.next('section', function (err, value) {
+    N.models.core.Increment.next('section', (err, value) => {
       if (err) {
         callback(err);
         return;
       }
 
-      self.hid = value;
+      this.hid = value;
       callback();
     });
   });
@@ -122,41 +119,23 @@ module.exports = function (N, collectionName) {
       return;
     }
 
-    async.series([
+    co(function* () {
+      let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
-      function (next) {
-        var SectionUsergroupStore = N.settings.getStore('section_usergroup');
-
-        if (!SectionUsergroupStore) {
-          N.logger.error('Settings store `section_usergroup` is not registered.');
-          next();
-          return;
-        }
-
-        SectionUsergroupStore.updateInherited(section._id, function (err) {
-          if (err) {
-            N.logger.error('%s', err);
-          }
-          next();
-        });
-      },
-      function (next) {
-        var SectionModeratorStore = N.settings.getStore('section_moderator');
-
-        if (!SectionModeratorStore) {
-          N.logger.error('Settings store `section_moderator` is not registered.');
-          next();
-          return;
-        }
-
-        SectionModeratorStore.updateInherited(section._id, function (err) {
-          if (err) {
-            N.logger.error('%s', err);
-          }
-          next();
-        });
+      if (SectionUsergroupStore) {
+        yield SectionUsergroupStore.updateInherited(section._id);
+      } else {
+        N.logger.error('Settings store `section_usergroup` is not registered.');
       }
-    ]);
+
+      let SectionModeratorStore = N.settings.getStore('section_moderator');
+
+      if (SectionModeratorStore) {
+        yield SectionModeratorStore.updateInherited(section._id);
+      } else {
+        N.logger.error('Settings store `section_moderator` is not registered.');
+      }
+    }).catch(err => N.logger.error(err));
   });
 
 
@@ -176,114 +155,94 @@ module.exports = function (N, collectionName) {
   //   - parent - link to parent section object
   //   - children[ { _id, parent, children[...] } ]
   //
-  var getSectionsTree = memoizee(
+  let getSectionsTree = thenify(memoizee(callback => {
+    let result = {};
 
-    function (callback) {
-
-      var result = {};
-
-      N.models.forum.Section.find()
+    N.models.forum.Section
+        .find()
         .sort('display_order')
         .select('_id parent')
         .lean(true)
         .exec(function (err, sections) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        // create hash of trees for each section
-        sections.forEach(function (section) {
-
-          // check if section was already added by child. If not found, create it
-          result[section._id] = result[section._id] || { _id: section._id, children: [] };
-
-          // if section has parent, try to find it and push section to its children.
-          // If parent not found, create it.
-          if (section.parent) {
-            // find parent in hash table
-            if (result[section.parent]) {
-              result[section.parent].children.push(result[section._id]);
-            } else {
-              // no parent in hash table, create and add it
-              result[section.parent] = { _id: section.parent, children: [ result[section._id] ] };
-            }
-            // set link from section to parent
-            result[section._id].parent = result[section.parent];
-          }
-        });
-
-        // root is a special fake `section` that contains array of the root-level sections
-        result.root = { children: [] };
-        // fill root chirden
-        sections.forEach(function (section) {
-          if (!section.parent) {
-            result.root.children.push(result[section._id]);
-          }
-        });
-
-        callback(err, result);
-      });
-    },
-    {
-      async: true,
-      maxAge:     60000, // cache TTL = 60 seconds
-      primitive:  true   // params keys are calculated as toString, ok for our case
-    }
-  );
-
-  // Returns list of parent _id-s for given section `_id`
-  //
-  Section.statics.getParentList = thenify.withCallback(function (sectionID, callback) {
-
-    getSectionsTree(function (err, sections) {
 
       if (err) {
         callback(err);
         return;
       }
 
-      var parentList = [];
-      var current = sections[sectionID].parent;
+      // create hash of trees for each section
+      sections.forEach(section => {
+        // check if section was already added by child. If not found, create it
+        result[section._id] = result[section._id] || { _id: section._id, children: [] };
+
+        // if section has parent, try to find it and push section to its children.
+        // If parent not found, create it.
+        if (section.parent) {
+          // find parent in hash table
+          if (result[section.parent]) {
+            result[section.parent].children.push(result[section._id]);
+          } else {
+            // no parent in hash table, create and add it
+            result[section.parent] = { _id: section.parent, children: [ result[section._id] ] };
+          }
+          // set link from section to parent
+          result[section._id].parent = result[section.parent];
+        }
+      });
+
+      // root is a special fake `section` that contains array of the root-level sections
+      result.root = { children: [] };
+      // fill root chirden
+      sections.forEach(section => {
+        if (!section.parent) {
+          result.root.children.push(result[section._id]);
+        }
+      });
+
+      callback(null, result);
+    });
+  }, {
+    async:      true,
+    maxAge:     60000, // cache TTL = 60 seconds
+    primitive:  true   // params keys are calculated as toString, ok for our case
+  }));
+
+  // Returns list of parent _id-s for given section `_id`
+  //
+  Section.statics.getParentList = function (sectionID) {
+    return getSectionsTree().then(sections => {
+      let parentList = [];
+      let current = sections[sectionID].parent;
 
       while (current) {
         parentList.unshift(current._id);
         current = current.parent;
       }
 
-      callback(null, parentList);
+      return parentList;
     });
-  });
+  };
 
 
   // Returns list of child sections, including subsections until the given deepness.
   // Also, sets `level` property for found sections
   //
-  // - getChildren((section, deepness, callback)
-  // - getChildren(deepness, callback) - for root (on index page)
-  // - getChildren(callback) - for all
+  // - getChildren((section, deepness)
+  // - getChildren(deepness) - for root (on index page)
+  // - getChildren() - for all
   //
   // result:
   //
   // - [ {_id, level} ]
   //
-  Section.statics.getChildren = thenify.withCallback(function (sectionID, deepness, callback) {
+  Section.statics.getChildren = function (sectionID, deepness) {
 
-    // shift parameters
-    if (typeof deepness === 'undefined') {
-      // single parameter is callback
-      callback = sectionID;
-      deepness = -1;
-      sectionID = null;
-    } else if (callback === null) {
-      // two parameters are deepness and callback
-      callback = deepness;
+    if (arguments.length === 1) {
       deepness = sectionID;
       sectionID = null;
     }
 
-    var children = [];
+    let children = [];
 
     function fillChildren(section, curDeepness, maxDeepness) {
 
@@ -291,29 +250,23 @@ module.exports = function (N, collectionName) {
         return;
       }
 
-      section.children.forEach(function (childSection) {
+      section.children.forEach(childSection => {
         children.push({ _id: childSection._id, level: curDeepness });
         fillChildren(childSection, curDeepness + 1, maxDeepness);
       });
     }
 
-    getSectionsTree(function (err, sections) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    return Promise.resolve(getSectionsTree()).then(sections => {
+      let storedSection = sections[sectionID || 'root'];
 
-      var storedSection = sections[sectionID || 'root'];
       fillChildren(storedSection, 0, deepness);
-      callback(null, children);
+      return children;
     });
-  });
+  };
 
   // Provide a possibility to clear section tree cache (used in seeds)
   //
-  Section.statics.getChildren.clear = function () {
-    getSectionsTree.clear();
-  };
+  Section.statics.getChildren.clear = () => getSectionsTree.clear();
 
 
   // Update `last_post`, `last_topic`, `last_user`, `last_ts` fields
@@ -340,9 +293,7 @@ module.exports = function (N, collectionName) {
   //
   //  `full=false` mode should **only** be used when you're creating a new post
   //
-  var updateCache = require('./lib/_update_section_cache')(N);
+  let updateCache = require('./lib/_update_section_cache')(N);
 
-  Section.statics.updateCache = thenify.withCallback(function (sectionID, full, callback) {
-    updateCache[full ? 'full' : 'simple'](sectionID, callback);
-  });
+  Section.statics.updateCache = (sectionID, full) => updateCache[full ? 'full' : 'simple'](sectionID);
 };
