@@ -206,9 +206,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  function buildPostIds(env, callback) {
+  function buildPostIds(env) {
     env.data.posts_ids = [ env.data.post._id ];
-    callback();
+    return Promise.resolve();
   }
 
 
