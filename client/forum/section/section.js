@@ -342,7 +342,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     // Get offset of the first topic in the viewport
     //
-    currentIdx = _.sortedIndex(topics, null, function (topic) {
+    currentIdx = _.sortedIndexBy(topics, null, function (topic) {
       if (!topic) { return viewportStart; }
       return $(topic).offset().top + $(topic).height();
     });

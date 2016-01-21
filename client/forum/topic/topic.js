@@ -56,7 +56,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   //
   if (topicState.post_hid > 1) {
     var posts = $('.forum-post');
-    var i = _.sortedIndex(posts, null, function (post) {
+    var i = _.sortedIndexBy(posts, null, function (post) {
       if (!post) { return topicState.post_hid; }
       return $(post).data('post-hid');
     });
@@ -654,7 +654,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     // Get offset of the first post in the viewport
     //
-    currentIdx = _.sortedIndex(posts, null, function (post) {
+    currentIdx = _.sortedIndexBy(posts, null, function (post) {
       if (!post) { return viewportStart; }
       return $(post).offset().top + $(post).height();
     });
@@ -911,7 +911,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     var viewportEnd = $window.scrollTop() + $window.height();
     var $posts = $('.forum-post');
 
-    var currentIdx = _.sortedIndex($posts, null, function (post) {
+    var currentIdx = _.sortedIndexBy($posts, null, function (post) {
       if (!post) { return viewportStart; }
       return $(post).offset().top + $(post).height();
     });
