@@ -762,7 +762,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           hid:   topicState.section_hid,
           page:  page
         },
-        anchor: 'topic' + data.$this.data('topic-id')
+        anchor: 'topic' + data.$this.data('topic-hid')
       });
     });
   });

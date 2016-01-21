@@ -21,7 +21,7 @@ each topic, idx in self.topics
     class=(self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1) ? 'forum-topicline__m-unread' : ''
     class=(self.read_marks[topic._id].isNew) ? 'forum-topicline__m-new' : ''
     data-offset=(self.pagination.chunk_offset + idx)
-    data-topic-id=topic._id
+    id='topic' + topic.hid
   )
     .row
       .col-sm-7

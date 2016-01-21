@@ -82,14 +82,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       return;
     }
 
-  } else if (anchor.match(/^#topic/)) {
-    var topic_id = anchor.replace(/^#topic/, '');
-
-    if (topic_id.match(/^[0-9a-f]{24}/)) {
-      el = $('.forum-topicline[data-topic-id="' + topic_id + '"]');
-    } else {
-      el = $('.forum-topicline[data-offset="' + topic_id + '"]');
-    }
+  } else if (anchor.match(/^#topic\d+$/)) {
+    el = $(anchor);
 
     if (el.length) {
       scrollIntoView(el, 0.3);
