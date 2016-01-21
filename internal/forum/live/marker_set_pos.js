@@ -26,24 +26,19 @@ module.exports = function (N) {
     }
 
     data.allowed = true;
+    let session = yield data.getSession();
 
-    data.getSession((err, session) => {
-      if (err) {
-        throw err;
-      }
+    if (!session.user_id) {
+      return;
+    }
 
-      if (!session.user_id) {
-        return;
-      }
-
-      yield N.models.users.Marker.setPos(
-        session.user_id,
-        data.message.data.content_id,
-        data.message.data.position,
-        data.message.data.max,
-        data.message.data.category_id,
-        'forum_topic'
-      );
-    });
+    yield N.models.users.Marker.setPos(
+      session.user_id,
+      data.message.data.content_id,
+      data.message.data.position,
+      data.message.data.max,
+      data.message.data.category_id,
+      'forum_topic'
+    );
   });
 };
