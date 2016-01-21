@@ -152,24 +152,13 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.on(apiPath, function parse_text(env, callback) {
-    N.parse(
-      {
-        text: env.params.txt,
-        attachments: env.params.attach,
-        options: env.data.parse_options,
-        user_info: env.user_info
-      },
-      function (err, result) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.data.parse_result = result;
-        callback();
-      }
-    );
+  N.wire.on(apiPath, function* parse_text(env) {
+    env.data.parse_result = yield N.parse({
+      text: env.params.txt,
+      attachments: env.params.attach,
+      options: env.data.parse_options,
+      user_info: env.user_info
+    });
   });
 
 

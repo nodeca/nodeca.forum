@@ -1,7 +1,6 @@
 // Get post src html, update post
+//
 'use strict';
-
-var async = require('async');
 
 
 module.exports = function (N, apiPath) {
@@ -14,145 +13,86 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function fetch_post(env, callback) {
-    N.models.forum.Post.findOne({ _id: env.params.post_id })
-      .lean(true).exec(function (err, post) {
-        if (err) {
-          callback(err);
-          return;
-        }
+  N.wire.before(apiPath, function* fetch_post(env) {
+    let post = yield N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
 
-        if (!post) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
+    if (!post) {
+      throw N.io.NOT_FOUND;
+    }
 
-        env.data.post = post;
-        callback();
-      });
+    env.data.post = post;
   });
 
 
   // Fetch post params
   //
-  N.wire.before(apiPath, function fetch_post_params(env, callback) {
-    N.models.core.MessageParams.getParams(env.data.post.params_ref, function (err, params) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.data.post_params = params;
-      callback();
-    });
+  N.wire.before(apiPath, function* fetch_post_params(env) {
+    env.data.post_params = yield N.models.core.MessageParams.getParams(env.data.post.params_ref);
   });
 
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ _id: env.data.post.topic })
-      .lean(true).exec(function (err, topic) {
-        if (err) {
-          callback(err);
-          return;
-        }
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    let topic = yield N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
 
-        if (!topic) {
-          callback(N.io.NOT_FOUND);
-          return;
-        }
+    if (!topic) {
+      throw N.io.NOT_FOUND;
+    }
 
-        env.data.topic = topic;
-        callback();
-      });
+    env.data.topic = topic;
   });
 
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
-    var access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
+  N.wire.before(apiPath, function* check_access(env) {
+    let access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.post', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.post', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) {
+      throw N.io.NOT_FOUND;
+    }
   });
 
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
-
+  N.wire.before(apiPath, function* check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch('forum_mod_can_edit_posts', function (err, forum_mod_can_edit_posts) {
+    let forum_mod_can_edit_posts = yield env.extras.settings.fetch('forum_mod_can_edit_posts');
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (forum_mod_can_edit_posts && env.params.as_moderator) {
+      return;
+    }
 
-      if (forum_mod_can_edit_posts && env.params.as_moderator) {
-        callback();
-        return;
-      }
+    if (!env.user_info.user_id || String(env.user_info.user_id) !== String(env.data.post.user)) {
+      throw N.io.FORBIDDEN;
+    }
 
-      if (!env.user_info.user_id || String(env.user_info.user_id) !== String(env.data.post.user)) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
+    let forum_edit_max_time = yield env.extras.settings.fetch('forum_edit_max_time');
 
-      env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-          callback({
-            code: N.io.CLIENT_ERROR,
-            message: env.t('@forum.topic.post.edit.err_perm_expired')
-          });
-          return;
-        }
-
-        callback();
-      });
-    });
+    if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('@forum.topic.post.edit.err_perm_expired')
+      };
+    }
   });
 
 
-  N.wire.before(apiPath, function fetch_attachments(env, callback) {
+  N.wire.before(apiPath, function* fetch_attachments(env) {
     env.data.attachments = [];
 
-    async.each(env.data.post.attach, function (mediaId, next) {
-      N.models.users.MediaInfo
-          .findOne({ media_id: mediaId })
-          .select('media_id file_name type')
-          .lean(true)
-          .exec(function (err, result) {
-
-        if (err) {
-          next(err);
-          return;
-        }
-
-        env.data.attachments.push(result);
-        next();
-      });
-    }, callback);
+    yield env.data.post.attach.map(mediaId => {
+      return N.models.users.MediaInfo
+        .findOne({ media_id: mediaId })
+        .select('media_id file_name type')
+        .lean(true)
+        .then(result => env.data.attachments.push(result));
+    });
   });
 
 
