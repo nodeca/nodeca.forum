@@ -155,7 +155,7 @@ module.exports = function (N, collectionName) {
   //   - parent - link to parent section object
   //   - children[ { _id, parent, children[...] } ]
   //
-  let getSectionsTree = thenify(memoizee(callback => {
+  let getSectionsTree = memoizee(callback => {
     let result = {};
 
     N.models.forum.Section
@@ -205,7 +205,13 @@ module.exports = function (N, collectionName) {
     async:      true,
     maxAge:     60000, // cache TTL = 60 seconds
     primitive:  true   // params keys are calculated as toString, ok for our case
-  }));
+  });
+
+  // Save clear method before wrap with thenify.
+  let getSectionsTreeClear = getSectionsTree.clear;
+
+  getSectionsTree = thenify(getSectionsTree);
+
 
   // Returns list of parent _id-s for given section `_id`
   //
@@ -266,7 +272,7 @@ module.exports = function (N, collectionName) {
 
   // Provide a possibility to clear section tree cache (used in seeds)
   //
-  Section.statics.getChildren.clear = () => getSectionsTree.clear();
+  Section.statics.getChildren.clear = () => getSectionsTreeClear();
 
 
   // Update `last_post`, `last_topic`, `last_user`, `last_ts` fields
