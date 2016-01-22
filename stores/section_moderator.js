@@ -20,6 +20,7 @@ const async    = require('async');
 const memoizee = require('memoizee');
 const format   = require('util').format;
 const thenify  = require('thenify');
+const co       = require('co');
 
 
 module.exports = function (N) {
@@ -203,35 +204,29 @@ module.exports = function (N) {
   //     { ... }
   //   ]
   //
-  SectionModeratorStore.getModeratorsInfo = thenify.withCallback(function getModeratorsInfo(sectionId, callback) {
-    fetchSectionSettings(sectionId, function (err, section_settings) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  SectionModeratorStore.getModeratorsInfo = co.wrap(function* getModeratorsInfo(sectionId) {
+    let section_settings = yield N.models.forum.SectionModeratorStore
+                                    .findOne({ section_id: sectionId })
+                                    .lean(true);
 
-      if (!section_settings) {
-        callback(format('`section_moderator` store for forum section %s does not exist.', sectionId));
-        return;
-      }
+    if (!section_settings) {
+      throw `'section_moderator' store for forum section ${sectionId} does not exist.`;
+    }
 
-      var result = [];
+    let result = [];
 
-      if (section_settings.data) {
-        Object.keys(section_settings.data).forEach(function (userId) {
-          result.push({
-            _id:       userId,
-            own:       _.filter(section_settings.data[userId], { own: true  }).length,
-            inherited: _.filter(section_settings.data[userId], { own: false }).length
-          });
+    if (section_settings.data) {
+      Object.keys(section_settings.data).forEach(userId => {
+        result.push({
+          _id:       userId,
+          own:       _.filter(section_settings.data[userId], { own: true  }).length,
+          inherited: _.filter(section_settings.data[userId], { own: false }).length
         });
-      }
+      });
+    }
 
-      // Sort moderators by ObjectId.
-      callback(null, _.sortBy(result, function (moderator) {
-        return String(moderator._id);
-      }));
-    });
+    // Sort moderators by ObjectId.
+    return _.sortBy(result, moderator => String(moderator._id));
   });
 
 
@@ -455,39 +450,24 @@ module.exports = function (N) {
 
   // Remove single moderator entry at section.
   //
-  SectionModeratorStore.removeModerator = thenify.withCallback(function removeModerator(sectionId, userId, callback) {
-    var self = this;
+  SectionModeratorStore.removeModerator = co.wrap(function* removeModerator(sectionId, userId) {
+    let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId });
 
-    N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId }, function (err, section_settings) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!section_settings) {
+      throw `Forum section ${sectionId} does not exist.`;
+    }
 
-      if (!section_settings) {
-        callback(format('Forum section %s does not exist.', sectionId));
-        return;
-      }
+    let user_settings = section_settings.data[userId];
 
-      var user_settings = section_settings.data[userId];
+    if (!user_settings) {
+      return;
+    }
 
-      if (!user_settings) {
-        callback();
-        return;
-      }
+    delete section_settings.data[userId];
+    section_settings.markModified('data');
 
-      delete section_settings.data[userId];
-      section_settings.markModified('data');
-
-      section_settings.save(function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        self.updateInherited(sectionId, callback);
-      });
-    });
+    yield section_settings.save();
+    yield this.updateInherited(sectionId);
   });
 
 

@@ -20,6 +20,7 @@ const async    = require('async');
 const memoizee = require('memoizee');
 const format   = require('util').format;
 const thenify  = require('thenify');
+const co       = require('co');
 
 
 module.exports = function (N) {
@@ -368,63 +369,37 @@ module.exports = function (N) {
   // Remove all overriden usergroup settings at specific section.
   //
   /*eslint-disable max-len*/
-  SectionUsergroupStore.removePermissions = thenify.withCallback(function removePermissions(sectionId, usergroupId, callback) {
-    var self = this;
+  SectionUsergroupStore.removePermissions = co.wrap(function* removePermissions(sectionId, usergroupId) {
+    let section_settings = yield N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId });
 
-    N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId }, function (err, section_settings) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!section_settings) {
+      return;
+    }
 
-      if (!section_settings) {
-        callback();
-        return;
-      }
+    delete section_settings.data[usergroupId];
+    section_settings.markModified('data');
 
-      var usergroup_settings = section_settings.data[usergroupId];
-
-      if (!usergroup_settings) {
-        callback();
-        return;
-      }
-
-      delete section_settings.data[usergroupId];
-      section_settings.markModified('data');
-
-      section_settings.save(function (err) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        self.updateInherited(sectionId, callback);
-      });
-    });
+    yield section_settings.save();
+    yield this.updateInherited(sectionId);
   });
 
 
   // Remove all setting entries for specific usergroup.
   //
-  SectionUsergroupStore.removeUsergroup = thenify.withCallback(function removeUsergroup(usergroupId, callback) {
-    N.models.forum.SectionUsergroupStore.find({}, function (err, sections) {
-      if (err) {
-        callback(err);
-        return;
+  SectionUsergroupStore.removeUsergroup = co.wrap(function* removeUsergroup(usergroupId) {
+    let sections = yield N.models.forum.SectionUsergroupStore.find({});
+
+    sections.map(section_settings => {
+      let usergroup_settings = section_settings.data[usergroupId];
+
+      if (!usergroup_settings) {
+        return Promise.resolve();
       }
 
-      async.each(sections, function (section_settings, next) {
-        var usergroup_settings = section_settings.data[usergroupId];
+      delete section_settings.data[usergroupId];
+      section_settings.markModified('data');
 
-        if (!usergroup_settings) {
-          next();
-          return;
-        }
-
-        delete section_settings.data[usergroupId];
-        section_settings.markModified('data');
-        section_settings.save(next);
-      }, callback);
+      return section_settings.save();
     });
   });
 

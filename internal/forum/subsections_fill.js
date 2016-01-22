@@ -95,7 +95,7 @@ module.exports = function (N, apiPath) {
     let s_ids = subsections.map(s => s._id.toString());
 
     // groups should be sorted, to avoid cache duplication
-    var g_ids = env.user_info.usergroups.sort();
+    let g_ids = env.user_info.usergroups.sort();
 
     let visibility = yield filterVisibility(s_ids, g_ids);
 

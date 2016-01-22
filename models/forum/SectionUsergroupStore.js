@@ -44,17 +44,15 @@ module.exports = function (N, collectionName) {
   // some usergroup itself is removed.
   N.wire.before('init:models.users.UserGroup', function setup_usergroup_tracking_for_usergroup_store(schema) {
     schema.post('remove', function (usergroup) {
-      var store = N.settings.getStore('section_usergroup');
+      let store = N.settings.getStore('section_usergroup');
 
       if (!store) {
         N.logger.error('Settings store `section_usergroup` is not registered.');
         return;
       }
 
-      store.removeUsergroup(usergroup._id, function (err) {
-        if (err) {
-          N.logger.error('After %s usergroup is removed, cannot remove related settings: %s', usergroup._id, err);
-        }
+      store.removeUsergroup(usergroup._id).catch(err => {
+        N.logger.error(`After ${usergroup._id} usergroup is removed, cannot remove related settings: ${err}`);
       });
     });
   });
