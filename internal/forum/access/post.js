@@ -17,9 +17,9 @@
 'use strict';
 
 
-var _        = require('lodash');
-var ObjectId = require('mongoose').Types.ObjectId;
-var userInfo = require('nodeca.users/lib/user_info');
+const _        = require('lodash');
+const ObjectId = require('mongoose').Types.ObjectId;
+const userInfo = require('nodeca.users/lib/user_info');
 
 
 module.exports = function (N, apiPath) {
@@ -27,17 +27,16 @@ module.exports = function (N, apiPath) {
   //////////////////////////////////////////////////////////////////////////
   // Hook for the "get permissions by url" feature, used in snippets
   //
-  N.wire.on('internal:common.access', function check_post_access(access_env, callback) {
-    var match = N.router.matchAll(access_env.params.url).reduce(function (acc, match) {
+  N.wire.on('internal:common.access', function* check_post_access(access_env) {
+    let match = N.router.matchAll(access_env.params.url).reduce((acc, match) => {
       return match.meta.methods.get === 'forum.topic' && match.params.post_hid ? match : acc;
     }, null);
 
     if (!match) {
-      callback();
       return;
     }
 
-    var access_env_sub = {
+    let access_env_sub = {
       params: {
         topic: match.params.topic_hid,
         posts: match.params.post_hid,
@@ -45,15 +44,9 @@ module.exports = function (N, apiPath) {
       }
     };
 
-    N.wire.emit('internal:forum.access.post', access_env_sub, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.post', access_env_sub);
 
-      access_env.data.access_read = access_env_sub.data.access_read;
-      callback();
-    });
+    access_env.data.access_read = access_env_sub.data.access_read;
   });
 
 
@@ -74,10 +67,10 @@ module.exports = function (N, apiPath) {
   // Check that all `data.posts` have same type
   //
   N.wire.before(apiPath, function check_params_type(locals) {
-    var items = locals.data.posts;
-    var type, curType;
+    let items = locals.data.posts;
+    let type, curType;
 
-    for (var i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length; i++) {
       if (_.isNumber(items[i])) {
         curType = 'Number';
       } else if (ObjectId.isValid(String(items[i]))) {
@@ -101,189 +94,127 @@ module.exports = function (N, apiPath) {
 
   // Fetch user user_info if it's not present already
   //
-  N.wire.before(apiPath, function fetch_usergroups(locals, callback) {
+  N.wire.before(apiPath, function* fetch_usergroups(locals) {
     if (ObjectId.isValid(String(locals.params.user_info))) {
-      userInfo(N, locals.params.user_info, function (err, info) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        locals.data.user_info = info;
-        callback();
-      });
+      locals.data.user_info = yield userInfo(N, locals.params.user_info);
       return;
     }
 
     // Use presented
     locals.data.user_info = locals.params.user_info;
-    callback();
   });
 
 
   // Fetch topic if it's not present already
   //
-  N.wire.before(apiPath, function fetch_topic(locals, callback) {
+  N.wire.before(apiPath, function* fetch_topic(locals) {
     if (_.isNumber(locals.params.topic)) {
-      N.models.forum.Topic.findOne({ hid: locals.params.topic }).lean(true).exec(function (err, res) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        locals.data.topic = res;
-        callback();
-      });
+      locals.data.topic = yield N.models.forum.Topic
+                                    .findOne({ hid: locals.params.topic })
+                                    .lean(true);
       return;
     }
 
     if (ObjectId.isValid(String(locals.params.topic))) {
-      N.models.forum.Topic.findOne({ _id: locals.params.topic }).lean(true).exec(function (err, res) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        locals.data.topic = res;
-        callback();
-      });
-
+      locals.data.topic = yield N.models.forum.Topic
+                                    .findOne({ _id: locals.params.topic })
+                                    .lean(true);
       return;
     }
 
     // Use presented
     locals.data.topic = locals.params.topic;
-    callback();
   });
 
 
   // Check topic permission
   //
-  N.wire.before(apiPath, function check_topic(locals, callback) {
-    var access_env = { params: { topics: locals.data.topic, user_info: locals.data.user_info } };
+  N.wire.before(apiPath, function* check_topic(locals) {
+    let access_env = { params: { topics: locals.data.topic, user_info: locals.data.user_info } };
 
-    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      if (!access_env.data.access_read) {
-        locals.data.access_read = locals.data.access_read.map(function () {
-          return false;
-        });
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) {
+      locals.data.access_read = locals.data.access_read.map(() => false);
+    }
   });
 
 
   // Fetch posts if it's not present already
   //
-  N.wire.before(apiPath, function fetch_posts(locals, callback) {
+  N.wire.before(apiPath, function* fetch_posts(locals) {
     if (locals.data.type === 'Number') {
-      var hids = locals.data.posts.filter(function (__, i) {
-        return locals.data.access_read[i] !== false;
-      });
+      let hids = locals.data.posts.filter((__, i) => locals.data.access_read[i] !== false);
 
-      N.models.forum.Post.find()
-          .where('topic').equals(locals.data.topic._id)
-          .where('hid').in(hids)
-          .select('hid st ste')
-          .lean(true)
-          .exec(function (err, result) {
+      let result = yield N.models.forum.Post.find()
+                            .where('topic').equals(locals.data.topic._id)
+                            .where('hid').in(hids)
+                            .select('hid st ste')
+                            .lean(true);
 
-        if (err) {
-          callback(err);
-          return;
+      locals.data.posts.forEach((hid, i) => {
+        if (locals.data.access_read[i] === false) {
+          return; // continue
         }
 
-        locals.data.posts.forEach(function (hid, i) {
-          if (locals.data.access_read[i] === false) {
-            return; // continue
-          }
+        locals.data.posts[i] = _.find(result, { hid: hid });
 
-          locals.data.posts[i] = _.find(result, { hid: hid });
-
-          if (!locals.data.posts[i]) {
-            locals.data.access_read[i] = false;
-          }
-        });
-        callback();
+        if (!locals.data.posts[i]) {
+          locals.data.access_read[i] = false;
+        }
       });
       return;
     }
 
     if (locals.data.type === 'ObjectId') {
-      var ids = locals.data.posts.filter(function (__, i) {
-        return locals.data.access_read[i] !== false;
-      });
+      let ids = locals.data.posts.filter((__, i) => locals.data.access_read[i] !== false);
 
-      N.models.forum.Post.find()
-          .where('_id').in(ids)
-          .select('_id st ste')
-          .lean(true)
-          .exec(function (err, result) {
+      let result = yield N.models.forum.Post.find()
+                            .where('_id').in(ids)
+                            .select('_id st ste')
+                            .lean(true);
 
-        if (err) {
-          callback(err);
-          return;
+      locals.data.posts.forEach((id, i) => {
+        if (locals.data.access_read[i] === false) {
+          return; // continue
         }
 
-        locals.data.posts.forEach(function (id, i) {
-          if (locals.data.access_read[i] === false) {
-            return; // continue
-          }
+        locals.data.posts[i] = _.find(result, { _id: String(id) });
 
-          locals.data.posts[i] = _.find(result, { _id: String(id) });
-
-          if (!locals.data.posts[i]) {
-            locals.data.access_read[i] = false;
-          }
-        });
-        callback();
+        if (!locals.data.posts[i]) {
+          locals.data.access_read[i] = false;
+        }
       });
       return;
     }
-
-    callback();
-    return;
   });
 
 
   // Check post permissions
   //
-  N.wire.on(apiPath, function check_post_access(locals, callback) {
-    var Post = N.models.forum.Post;
-    var params = {
+  N.wire.on(apiPath, function* check_post_access(locals) {
+    let Post = N.models.forum.Post;
+    let params = {
       user_id: locals.data.user_info.user_id,
       usergroup_ids: locals.data.user_info.usergroups
     };
 
-    N.settings.get('can_see_hellbanned', params, {}, function (err, can_see_hellbanned) {
-      if (err) {
-        callback(err);
-        return;
+    let can_see_hellbanned = yield N.settings.get('can_see_hellbanned', params, {});
+
+    locals.data.posts.forEach((post, i) => {
+      if (locals.data.access_read[i] === false) {
+        return; // continue
       }
 
-      locals.data.posts.forEach(function (post, i) {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
+      let allow_access = (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
 
-        var allow_access = (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
+      if (post.st === Post.statuses.HB) {
+        allow_access = allow_access && (locals.data.user_info.hb || can_see_hellbanned);
+      }
 
-        if (post.st === Post.statuses.HB) {
-          allow_access = allow_access && (locals.data.user_info.hb || can_see_hellbanned);
-        }
-
-        if (!allow_access) {
-          locals.data.access_read[i] = false;
-        }
-      });
-
-      callback();
+      if (!allow_access) {
+        locals.data.access_read[i] = false;
+      }
     });
   });
 
@@ -291,9 +222,7 @@ module.exports = function (N, apiPath) {
   // If no function reported error at this point, allow access
   //
   N.wire.after(apiPath, { priority: 100 }, function allow_read(locals) {
-    locals.data.access_read = locals.data.access_read.map(function (val) {
-      return val !== false;
-    });
+    locals.data.access_read = locals.data.access_read.map(val => val !== false);
 
     // If `params.topics` is not array - `data.access_read` should be also not an array
     if (!_.isArray(locals.params.posts)) {

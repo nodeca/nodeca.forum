@@ -16,10 +16,9 @@
 'use strict';
 
 
-var _        = require('lodash');
-var ObjectId = require('mongoose').Types.ObjectId;
-var async    = require('async');
-var userInfo = require('nodeca.users/lib/user_info');
+const _        = require('lodash');
+const ObjectId = require('mongoose').Types.ObjectId;
+const userInfo = require('nodeca.users/lib/user_info');
 
 
 module.exports = function (N, apiPath) {
@@ -40,10 +39,10 @@ module.exports = function (N, apiPath) {
   // Check that all `data.topics` have same type
   //
   N.wire.before(apiPath, function check_params_type(locals) {
-    var items = locals.data.topics;
-    var type, curType;
+    let items = locals.data.topics;
+    let type, curType;
 
-    for (var i = 0; i < items.length; i++) {
+    for (let i = 0; i < items.length; i++) {
       if (_.isNumber(items[i])) {
         curType = 'Number';
       } else if (ObjectId.isValid(String(items[i]))) {
@@ -67,150 +66,121 @@ module.exports = function (N, apiPath) {
 
   // Fetch user user_info if it's not present already
   //
-  N.wire.before(apiPath, function fetch_usergroups(locals, callback) {
+  N.wire.before(apiPath, function* fetch_usergroups(locals) {
     if (ObjectId.isValid(String(locals.params.user_info))) {
-      userInfo(N, locals.params.user_info, function (err, info) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        locals.data.user_info = info;
-        callback();
-      });
+      locals.data.user_info = yield userInfo(N, locals.params.user_info);
       return;
     }
 
     // Use presented
     locals.data.user_info = locals.params.user_info;
-    callback();
   });
 
 
   // Fetch topics if it's not present already
   //
-  N.wire.before(apiPath, function fetch_topics(locals, callback) {
+  N.wire.before(apiPath, function* fetch_topics(locals) {
     if (locals.data.type === 'Number') {
-      var hids = locals.data.topics.filter(function (__, i) {
-        return locals.data.access_read[i] !== false;
-      });
+      let hids = locals.data.topics.filter((__, i) => locals.data.access_read[i] !== false);
 
-      N.models.forum.Topic.find()
-          .where('hid').in(hids).select('hid st ste section').lean(true).exec(function (err, result) {
+      let result = yield N.models.forum.Topic
+                            .find()
+                            .where('hid').in(hids)
+                            .select('hid st ste section')
+                            .lean(true);
 
-        if (err) {
-          callback(err);
-          return;
+      locals.data.topics.forEach((hid, i) => {
+        if (locals.data.access_read[i] === false) {
+          return; // continue
         }
 
-        locals.data.topics.forEach(function (hid, i) {
-          if (locals.data.access_read[i] === false) {
-            return; // continue
-          }
+        locals.data.topics[i] = _.find(result, { hid: hid });
 
-          locals.data.topics[i] = _.find(result, { hid: hid });
-
-          if (!locals.data.topics[i]) {
-            locals.data.access_read[i] = false;
-          }
-        });
-        callback();
+        if (!locals.data.topics[i]) {
+          locals.data.access_read[i] = false;
+        }
       });
       return;
     }
 
     if (locals.data.type === 'ObjectId') {
-      var ids = locals.data.topics.filter(function (__, i) {
-        return locals.data.access_read[i] !== false;
-      });
+      let ids = locals.data.topics.filter((__, i) => locals.data.access_read[i] !== false);
 
-      N.models.forum.Topic.find()
-          .where('_id').in(ids).select('_id st ste section').lean(true).exec(function (err, result) {
+      let result = yield N.models.forum.Topic
+                            .find()
+                            .where('_id').in(ids)
+                            .select('_id st ste section')
+                            .lean(true);
 
-        if (err) {
-          callback(err);
-          return;
+      locals.data.topics.forEach(function (id, i) {
+        if (locals.data.access_read[i] === false) {
+          return; // continue
         }
 
-        locals.data.topics.forEach(function (id, i) {
-          if (locals.data.access_read[i] === false) {
-            return; // continue
-          }
+        locals.data.topics[i] = _.find(result, { _id: String(id) });
 
-          locals.data.topics[i] = _.find(result, { _id: String(id) });
-
-          if (!locals.data.topics[i]) {
-            locals.data.access_read[i] = false;
-          }
-        });
-        callback();
+        if (!locals.data.topics[i]) {
+          locals.data.access_read[i] = false;
+        }
       });
       return;
     }
-
-    callback();
-    return;
   });
 
 
   // Check topic and section permissions
   //
-  N.wire.on(apiPath, function check_topic_access(locals, callback) {
-    var Topic = N.models.forum.Topic;
-    var setting_names = [
+  N.wire.on(apiPath, function* check_topic_access(locals) {
+    let Topic = N.models.forum.Topic;
+    let setting_names = [
       'can_see_hellbanned',
       'forum_can_view',
       'forum_mod_can_delete_topics',
       'forum_mod_can_see_hard_deleted_topics'
     ];
 
-    async.forEachOf(locals.data.topics, function (topic, i, next) {
+    function check(topic, i) {
       if (locals.data.access_read[i] === false) {
-        next();
-        return;
+        return Promise.resolve();
       }
 
-      var params = {
+      let params = {
         user_id: locals.data.user_info.user_id,
         usergroup_ids: locals.data.user_info.usergroups,
         section_id: topic.section
       };
 
-      N.settings.get(setting_names, params, {}, function (err, settings) {
-        if (err) {
-          next(err);
-          return;
-        }
+      return N.settings.get(setting_names, params, {})
+        .then(settings => {
 
-        // Section permission
-        if (!settings.forum_can_view) {
-          locals.data.access_read[i] = false;
-          next();
-          return;
-        }
+          // Section permission
+          if (!settings.forum_can_view) {
+            locals.data.access_read[i] = false;
+            return;
+          }
 
-        // Topic permissions
-        var topicVisibleSt = Topic.statuses.LIST_VISIBLE.slice(0);
+          // Topic permissions
+          let topicVisibleSt = Topic.statuses.LIST_VISIBLE.slice(0);
 
-        if (locals.data.user_info.hb || settings.can_see_hellbanned) {
-          topicVisibleSt.push(Topic.statuses.HB);
-        }
+          if (locals.data.user_info.hb || settings.can_see_hellbanned) {
+            topicVisibleSt.push(Topic.statuses.HB);
+          }
 
-        if (settings.forum_mod_can_delete_topics) {
-          topicVisibleSt.push(Topic.statuses.DELETED);
-        }
+          if (settings.forum_mod_can_delete_topics) {
+            topicVisibleSt.push(Topic.statuses.DELETED);
+          }
 
-        if (settings.forum_mod_can_see_hard_deleted_topics) {
-          topicVisibleSt.push(Topic.statuses.DELETED_HARD);
-        }
+          if (settings.forum_mod_can_see_hard_deleted_topics) {
+            topicVisibleSt.push(Topic.statuses.DELETED_HARD);
+          }
 
-        if (topicVisibleSt.indexOf(topic.st) === -1) {
-          locals.data.access_read[i] = false;
-        }
+          if (topicVisibleSt.indexOf(topic.st) === -1) {
+            locals.data.access_read[i] = false;
+          }
+        });
+    }
 
-        next();
-      });
-    }, callback);
+    yield _.map(locals.data.topics, (topic, i) => check(topic, i));
   });
 
 
