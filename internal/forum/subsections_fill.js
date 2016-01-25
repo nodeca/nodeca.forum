@@ -3,11 +3,11 @@
 'use strict';
 
 
-var _                = require('lodash');
-var async            = require('async');
-var memoizee         = require('memoizee');
-var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
-var thenify          = require('thenify');
+const _                = require('lodash');
+const async            = require('async');
+const memoizee         = require('memoizee');
+const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
+const thenify          = require('thenify');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,19 +22,18 @@ module.exports = function (N, apiPath) {
    *
    * Returns  hash { _id: Boolean(visibility) } for selected subsections
    */
-  var filterVisibility = thenify(memoizee(
+  let filterVisibility = thenify(memoizee(
     function (s_ids, g_ids, callback) {
-      var result = {};
-      async.each(s_ids, function (_id, next) {
-        var params = { section_id: _id, usergroup_ids: g_ids };
+      let result = {};
+
+      async.each(s_ids, (_id, next) => {
+        let params = { section_id: _id, usergroup_ids: g_ids };
 
         N.settings.get([ 'forum_can_view' ], params, function (err, data) {
           result[_id] = data.forum_can_view;
           next(err);
         });
-      }, function (err) {
-        callback(err, result);
-      });
+      }, err => callback(err, result));
     },
     {
       async:      true,
@@ -51,10 +50,10 @@ module.exports = function (N, apiPath) {
    *  Build sections tree (nested) from flat sorted array.
    */
   function to_tree(source, root) {
-    var result = [];
-    var nodes = {};
+    let result = [];
+    let nodes = {};
 
-    source.forEach(function (node) {
+    source.forEach(node => {
       node.child_list = [];
       nodes[node._id] = node;
     });
@@ -63,7 +62,7 @@ module.exports = function (N, apiPath) {
 
     // set children links for all nodes
     // and collect root children to result array
-    source.forEach(function (node) {
+    source.forEach(node => {
       node.parent = node.parent ? node.parent.toString() : null;
 
       if (node.parent === root) {
@@ -106,7 +105,7 @@ module.exports = function (N, apiPath) {
   // Fetch subsections data and add `level` property
   //
   N.wire.on(apiPath, function* subsections_fetch_visible(env) {
-    var _ids = env.data.subsections_info.map(s => s._id);
+    let _ids = env.data.subsections_info.map(s => s._id);
     env.data.subsections = [];
 
     let sections = yield N.models.forum.Section
@@ -114,8 +113,9 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
     // sort result in the same order as ids
-    _.forEach(env.data.subsections_info, function (subsectionInfo) {
-      var foundSection = _.find(sections, s => s._id.equals(subsectionInfo._id));
+    _.forEach(env.data.subsections_info, subsectionInfo => {
+      let foundSection = _.find(sections, s => s._id.equals(subsectionInfo._id));
+
       foundSection.level = subsectionInfo.level;
       env.data.subsections.push(foundSection);
     });
@@ -160,7 +160,7 @@ module.exports = function (N, apiPath) {
 
     // Collect users/moderators from subsections. Only first & second levels required
     // Calculate deepness limit, depending on `forum index` or `forum.section`
-    var max_subsection_level = Number((env.data.section || {}).level) + 2;
+    let max_subsection_level = Number((env.data.section || {}).level) + 2;
 
     env.data.subsections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
@@ -177,7 +177,7 @@ module.exports = function (N, apiPath) {
     });
 
     // build response tree
-    var root = (env.data.section || {})._id || null;
+    let root = (env.data.section || {})._id || null;
     env.res.subsections = to_tree(env.data.subsections, root);
   });
 };

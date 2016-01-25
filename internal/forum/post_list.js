@@ -25,22 +25,23 @@
 //       own_bookmarks: ...
 //       own_votes: ...
 //
-
 'use strict';
 
-var _                = require('lodash');
-var sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
-var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
-var sanitize_post    = require('nodeca.forum/lib/sanitizers/post');
 
-var fields = require('./_fields/post_list.js');
+const _                = require('lodash');
+const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
+const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
+const sanitize_post    = require('nodeca.forum/lib/sanitizers/post');
+
+const fields = require('./_fields/post_list.js');
+
 
 module.exports = function (N, apiPath) {
 
   // Shortcuts
-  var Section = N.models.forum.Section;
-  var Topic   = N.models.forum.Topic;
-  var Post    = N.models.forum.Post;
+  const Section = N.models.forum.Section;
+  const Topic   = N.models.forum.Topic;
+  const Post    = N.models.forum.Post;
 
 
   // Fetch topic
@@ -127,7 +128,7 @@ module.exports = function (N, apiPath) {
     // 1. Fill `env.data.posts_ids` if doesn't yet exist (if selecting by hids)
     // 2. Push results to `env.data.posts` in `env.data.posts_ids` order
     //
-    var postsById = posts.reduce((acc, p) => {
+    let postsById = posts.reduce((acc, p) => {
       acc[by_hid ? p.hid : p._id] = p;
       return acc;
     }, {});
@@ -139,7 +140,7 @@ module.exports = function (N, apiPath) {
     }
 
     env.data[by_hid ? 'posts_hids' : 'posts_ids'].forEach(id => {
-      var post = postsById[id];
+      let post = postsById[id];
 
       if (post) {
         env.data.posts.push(post);

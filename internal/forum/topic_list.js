@@ -23,20 +23,21 @@
 //       topic: ...
 //       section: ...
 //
-
 'use strict';
 
-var _                = require('lodash');
-var sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
-var sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
-var fields = require('./_fields/topic_list.js');
+const _                = require('lodash');
+const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
+const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
+
+const fields = require('./_fields/topic_list.js');
+
 
 module.exports = function (N, apiPath) {
 
   // Shortcuts
-  var Section = N.models.forum.Section;
-  var Topic = N.models.forum.Topic;
+  const Section = N.models.forum.Section;
+  const Topic = N.models.forum.Topic;
 
 
   // Fetch section
@@ -71,7 +72,7 @@ module.exports = function (N, apiPath) {
   // Define visible topic statuses
   //
   N.wire.before(apiPath, function define_visible_statuses(env) {
-    var statuses = Topic.statuses;
+    let statuses = Topic.statuses;
 
     env.data.topics_visible_statuses = statuses.LIST_VISIBLE.slice(0);
 
@@ -111,7 +112,7 @@ module.exports = function (N, apiPath) {
     // Sort in `env.data.topics_ids` order.
     // May be slow on large topics volumes
     env.data.topics_ids.forEach(id => {
-      var topic = _.find(topics, t => t._id.equals(id));
+      let topic = _.find(topics, t => t._id.equals(id));
 
       if (topic) {
         env.data.topics.push(topic);
@@ -123,7 +124,7 @@ module.exports = function (N, apiPath) {
   // Fill bookmarks
   //
   N.wire.after(apiPath, function* fill_bookmarks(env) {
-    var postIds = env.data.topics.map(topic => topic.cache.first_post);
+    let postIds = env.data.topics.map(topic => topic.cache.first_post);
 
     let bookmarks = yield N.models.forum.PostBookmark.find()
                               .where('user_id').equals(env.user_info.user_id)
