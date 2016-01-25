@@ -20,7 +20,7 @@ module.exports = function (N) {
       // Fetch topics
       //
       function (next) {
-        var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_TOPIC);
+        var subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_TOPIC });
 
         N.models.forum.Topic.find().where('_id').in(_.map(subs, 'to')).lean(true).exec(function (err, result) {
           if (err) {

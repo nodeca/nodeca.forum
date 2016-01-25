@@ -22,7 +22,7 @@ module.exports = function (N) {
       // Fetch topics by topic subscriptions
       //
       function (next) {
-        var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_TOPIC);
+        var subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_TOPIC });
 
         if (subs.length === 0) {
           next();
@@ -44,7 +44,7 @@ module.exports = function (N) {
       // Fetch topics by section subscriptions
       //
       function (next) {
-        var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_SECTION);
+        var subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_SECTION });
 
         if (subs.length === 0) {
           next();

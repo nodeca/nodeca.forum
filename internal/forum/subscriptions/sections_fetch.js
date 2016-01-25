@@ -18,7 +18,7 @@ module.exports = function (N) {
       // Fetch sections
       //
       function (next) {
-        var subs = _.filter(env.data.subscriptions, 'to_type', N.models.users.Subscription.to_types.FORUM_SECTION);
+        var subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_SECTION });
 
         N.models.forum.Section.find().where('_id').in(_.map(subs, 'to')).lean(true).exec(function (err, result) {
           if (err) {
