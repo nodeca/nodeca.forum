@@ -74,7 +74,7 @@ module.exports = function (N) {
     // Filter users by access
     //
     yield local_env.to.slice().map(user_id => {
-      let access_env = { params: { topic: topic, posts: post, user_info: users_info[user_id] } };
+      let access_env = { params: { topic, posts: post, user_info: users_info[user_id] } };
 
       return N.wire.emit('internal:forum.access.post', access_env)
         .then(() => {

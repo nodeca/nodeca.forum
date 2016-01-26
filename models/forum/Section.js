@@ -50,7 +50,7 @@ module.exports = function (N, collectionName) {
     prefix_groups:    [ Schema.ObjectId ], // allowed groups of prefixes
 
     // Cache
-    cache:            cache,
+    cache,
     cache_hb:         cache,
 
     // Setting storage. Only `section_usergroup` settings store should access this.

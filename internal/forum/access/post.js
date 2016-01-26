@@ -157,7 +157,7 @@ module.exports = function (N, apiPath) {
           return; // continue
         }
 
-        locals.data.posts[i] = _.find(result, { hid: hid });
+        locals.data.posts[i] = _.find(result, { hid });
 
         if (!locals.data.posts[i]) {
           locals.data.access_read[i] = false;

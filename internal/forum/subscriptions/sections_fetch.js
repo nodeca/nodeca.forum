@@ -18,7 +18,7 @@ module.exports = function (N) {
 
     // Check permissions subcall
     //
-    let access_env = { params: { sections: sections, user_info: env.user_info } };
+    let access_env = { params: { sections, user_info: env.user_info } };
 
     yield N.wire.emit('internal:forum.access.section', access_env);
 

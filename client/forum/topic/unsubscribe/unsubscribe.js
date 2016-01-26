@@ -12,7 +12,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }).done(function () {
 
         data.$this.replaceWith(
-          N.runtime.render(module.apiPath + '.button', { topic: { hid: hid }, subscription: params.subscription })
+          N.runtime.render(module.apiPath + '.button', { topic: { hid }, subscription: params.subscription })
         );
 
         callback();

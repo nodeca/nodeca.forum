@@ -21,7 +21,7 @@ function Setting(name, schema, value, overriden) {
 
   this._value = ko.observable(value).extend({ dirty: false });
   this.value = ko.computed({
-    read: function () {
+    read() {
       if (this.overriden()) {
         // Use overriden.
         return this.type === 'number' ? Number(this._value()) : this._value();
@@ -42,7 +42,7 @@ function Setting(name, schema, value, overriden) {
       // Use defaults.
       return schema['default'];
     },
-    write: function (value) {
+    write(value) {
       this.overriden(true);
       this._value(value);
     },

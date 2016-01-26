@@ -19,7 +19,7 @@ module.exports = function (N, apiPath) {
   // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
-    N.wire.emit('internal:forum.breadcrumbs_fill', { env: env }, callback);
+    N.wire.emit('internal:forum.breadcrumbs_fill', { env }, callback);
   });
 
   // Fill head meta

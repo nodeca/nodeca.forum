@@ -58,7 +58,7 @@ const createPost = co.wrap(function* (topic, reply_to) {
   let result = yield parser({
     text: md,
     attachments: [],
-    options: options
+    options
   });
 
   let ts = new Date(2010, 0, postDay++);
@@ -67,12 +67,12 @@ const createPost = co.wrap(function* (topic, reply_to) {
     _id: new ObjectId(Math.round(ts / 1000)),
 
     html:    result.html,
-    md:      md,
+    md,
 
     st:      Post.statuses.VISIBLE,
     topic:   topic._id,
 
-    user:    user,
+    user,
 
     /*eslint-disable new-cap*/
     ip:      charlatan.Internet.IPv4(),
@@ -82,7 +82,7 @@ const createPost = co.wrap(function* (topic, reply_to) {
     to_user: reply_to ? reply_to.user : undefined,
     to_phid: reply_to ? reply_to.hid  : undefined,
 
-    ts:      ts,
+    ts,
 
     params:  settings
   });
@@ -106,7 +106,7 @@ const addVotes = co.wrap(function* (post) {
       from:   user._id,
       'for':  post._id,
       type:   Vote.types.FORUM_POST,
-      value:  value
+      value
     });
 
     votes += value;
@@ -114,7 +114,7 @@ const addVotes = co.wrap(function* (post) {
     yield vote.save();
   }
 
-  yield post.update({ votes: votes });
+  yield post.update({ votes });
 });
 
 

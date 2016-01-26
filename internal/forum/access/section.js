@@ -115,7 +115,7 @@ module.exports = function (N, apiPath) {
           return; // continue
         }
 
-        locals.data.sections[i] = _.find(result, { hid: hid });
+        locals.data.sections[i] = _.find(result, { hid });
 
         if (!locals.data.sections[i]) {
           locals.data.access_read[i] = false;

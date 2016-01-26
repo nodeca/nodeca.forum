@@ -22,7 +22,7 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
   current = Math.max(1, Math.min(current, total));
 
   $('.page-progress__label').text(
-    N.runtime.t(module.apiPath + '.label', { current: current, total: total })
+    N.runtime.t(module.apiPath + '.label', { current, total })
   );
 
   $('.page-progress__bar-fill').css({
@@ -36,9 +36,9 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
   }
 
   $('.page-progress__button-last').attr('href', N.router.linkTo('forum.topic', {
-    section_hid:  section_hid,
-    topic_hid:    topic_hid,
-    post_hid:     total
+    section_hid,
+    topic_hid,
+    post_hid: total
   }));
 
   $('.page-progress').data('current', current).data('total', total);

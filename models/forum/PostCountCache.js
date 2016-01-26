@@ -83,7 +83,7 @@ module.exports = function (N, collectionName) {
     // Fetch cache record
     return co(function* () {
       let cache = yield N.models.forum.PostCountCache
-                            .findOne({ src: src })
+                            .findOne({ src })
                             .lean(true);
 
       let path = [ 'data', (version || 0), (hb ? 'hb' : 'normal'), cached_hid ].join('.');
@@ -105,7 +105,7 @@ module.exports = function (N, collectionName) {
       // If cache does not exists - use direct count and rebuild cache mark
       let cached_hid_value = yield countFn(cached_hid, 0);
 
-      let update = { $set: { src: src } };
+      let update = { $set: { src } };
 
       update.$set[path] = cached_hid_value;
 
@@ -119,7 +119,7 @@ module.exports = function (N, collectionName) {
 
       // Update cache record
       yield N.models.forum.PostCountCache
-                .update({ src: src }, update, { upsert: true });
+                .update({ src }, update, { upsert: true });
 
       // Get count between cached hid and required hid
       let cnt = yield countFn(hid, cached_hid);

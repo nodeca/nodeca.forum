@@ -132,7 +132,7 @@ module.exports = function (N, apiPath) {
 
     let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
 
-    yield N.wire.emit('internal:forum.breadcrumbs_fill', { env: env, parents: parents });
+    yield N.wire.emit('internal:forum.breadcrumbs_fill', { env, parents });
   });
 
 

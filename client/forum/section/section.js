@@ -358,7 +358,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     N.wire.emit('navigate.replace', {
       href: N.router.linkTo('forum.section', {
         hid:  sectionState.hid,
-        page: page
+        page
       })
     });
 

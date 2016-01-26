@@ -22,7 +22,7 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
   current = Math.max(1, Math.min(current, total));
 
   $('.page-progress__label').text(
-    N.runtime.t(module.apiPath + '.label', { current: current, total: total })
+    N.runtime.t(module.apiPath + '.label', { current, total })
   );
 
   $('.page-progress__bar-fill').css({

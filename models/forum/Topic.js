@@ -72,7 +72,7 @@ module.exports = function (N, collectionName) {
     last_post_hid:  { type: Number, 'default': 0 },
 
     // Cache
-    cache:          cache,
+    cache,
     cache_hb:       cache,
 
     views_count:    { type: Number, 'default': 0 }

@@ -146,7 +146,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic.post_show_ip', function post_show_ip(data) {
     var postId = data.$this.data('post-id');
 
-    N.wire.emit('forum.topic.ip_info_dlg', { postId: postId });
+    N.wire.emit('forum.topic.ip_info_dlg', { postId });
   });
 
 
@@ -207,7 +207,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var topicHid = data.$this.data('topic-hid');
     var unpin = data.$this.data('unpin') || false;
 
-    N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin: unpin }).done(function (res) {
+    N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin }).done(function (res) {
       var params = {};
 
       N.wire.emit('navigate.get_page_raw', params, function () {
@@ -266,7 +266,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var params = {
       selector: '.forum-topic-title',
       value: $title.text(),
-      update: function (value, callback) {
+      update(value, callback) {
         value = value.trim();
 
         if (punycode.ucs2.decode(value).length < N.runtime.page_data.settings.forum_topic_title_min_length) {
@@ -328,7 +328,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var $post = $('#post' + postId);
     var topicHid = topicState.topic_hid;
 
-    N.io.rpc('forum.topic.post.vote', { post_id: postId, value: value }).done(function () {
+    N.io.rpc('forum.topic.post.vote', { post_id: postId, value }).done(function () {
 
       // Update whole post to correctly update votes counters and modifiers
       N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).done(function (res) {
@@ -400,7 +400,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var $post = $('#post' + postId);
 
     var params = {
-      postId: postId,
+      postId,
       asModerator: data.$this.data('as-moderator') || false,
       canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
       method: null
@@ -437,7 +437,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var remove = data.$this.data('remove') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove: remove }).done(function (res) {
+    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove }).done(function (res) {
       if (remove) {
         $post.removeClass('forum-post__m-bookmarked');
       } else {
@@ -759,8 +759,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       N.wire.emit('navigate.to', {
         apiPath: 'forum.section',
         params: {
-          hid:   topicState.section_hid,
-          page:  page
+          hid: topicState.section_hid,
+          page
         },
         anchor: 'topic' + data.$this.data('topic-hid')
       });
@@ -961,7 +961,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     bag.get('topics_scroll', function (__, positions) {
       positions = positions || {};
       positions[N.runtime.page_data.topic._id] = {
-        pos: pos,
+        pos,
         max: read,
         category_id: N.runtime.page_data.topic.section
       };

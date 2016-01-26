@@ -20,10 +20,7 @@ module.exports = function (N) {
                             data.chunks.active + data.chunks.pending;
       }
 
-      env.res.blocks.push({
-        name:      'forum_posts_urls',
-        task_info: task_info
-      });
+      env.res.blocks.push({ name: 'forum_posts_urls', task_info });
 
       callback();
     });

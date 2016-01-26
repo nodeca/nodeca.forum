@@ -21,7 +21,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     doNotClear: true,
     isTree: true,
     expandOnHover: 700,
-    stop: function (event, ui) {
+    stop(event, ui) {
 
       var request = {
         _id:           ui.item.data('id'),
@@ -77,13 +77,13 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
         url: '%QUERY',
         wildcard: '%QUERY',
         // Reroute request to rpc
-        transport: function (req, onSuccess, onError) {
+        transport(req, onSuccess, onError) {
           N.io.rpc('admin.core.user_lookup', { nick: req.url, strict: false })
             .done(onSuccess)
             .fail(onError);
         }
       },
-      datumTokenizer: function (d) {
+      datumTokenizer(d) {
         return Bloodhound.tokenizers.whitespace(d.nick);
       },
       queryTokenizer: Bloodhound.tokenizers.whitespace
@@ -99,7 +99,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
       source: bloodhound.ttAdapter(),
       display: 'nick',
       templates: {
-        suggestion: function (user) {
+        suggestion(user) {
           return '<div>' + _.escape(user.name) + '</div>';
         }
       }
@@ -122,9 +122,9 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
 N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(data) {
   var nick = data.fields.nick;
 
-  N.io.rpc('admin.core.user_lookup', { nick: nick, strict: true }).done(function (res) {
+  N.io.rpc('admin.core.user_lookup', { nick, strict: true }).done(function (res) {
     if (_.isEmpty(res)) {
-      N.wire.emit('notify', t('error_no_user_with_such_nick', { nick: nick }));
+      N.wire.emit('notify', t('error_no_user_with_such_nick', { nick }));
       return;
     }
 
