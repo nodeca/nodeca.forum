@@ -71,7 +71,7 @@ module.exports = function (N, apiPath) {
       let selectedSections = env.data.sections.filter(s => String(s.parent || null) === String(parent));
 
       // Collect children subtree for each section.
-      selectedSections.forEach(s => s.children = buildSectionsTree(s._id));
+      selectedSections.forEach(s => { s.children = buildSectionsTree(s._id); });
 
       return selectedSections;
     }
