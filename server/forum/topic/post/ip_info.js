@@ -16,20 +16,12 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
-    env.extras.settings.fetch('can_see_ip', function (err, can_see_ip) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.before(apiPath, function* check_permissions(env) {
+    let can_see_ip = yield env.extras.settings.fetch('can_see_ip');
 
-      if (!can_see_ip) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
-
-      callback();
-    });
+    if (!can_see_ip) {
+      throw N.io.FORBIDDEN;
+    }
   });
 
 

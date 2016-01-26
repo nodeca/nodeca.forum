@@ -18,20 +18,11 @@ module.exports = function (N, apiPath) {
 
   // Fill parse options
   //
-  N.wire.on(apiPath, function fill_parse_options(env, callback) {
-    N.settings.getByCategory(
+  N.wire.on(apiPath, function* fill_parse_options(env) {
+    env.res.parse_options = yield N.settings.getByCategory(
       'forum_markup',
       { usergroup_ids: env.user_info.usergroups },
-      { alias: true },
-      function (err, settings) {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        env.res.parse_options = settings;
-        callback();
-      }
+      { alias: true }
     );
   });
 };

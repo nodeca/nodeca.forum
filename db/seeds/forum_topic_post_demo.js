@@ -53,12 +53,7 @@ const createPost = co.wrap(function* (topic, reply_to) {
   let md = charlatan.Lorem.paragraphs(charlatan.Helpers.rand(5, 1)).join('\n\n');
   let user = users[charlatan.Helpers.rand(USER_COUNT)];
 
-  let options = yield thenify(callback => settings.getByCategory(
-    'forum_markup',
-    { usergroup_ids: user.usergroups },
-    { alias: true },
-    callback
-  ));
+  let options = yield settings.getByCategory('forum_markup', { usergroup_ids: user.usergroups }, { alias: true });
 
   let result = yield parser({
     text: md,

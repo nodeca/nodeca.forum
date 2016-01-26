@@ -57,31 +57,20 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
-
+  N.wire.before(apiPath, function* check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch([ 'forum_can_close_topic', 'forum_mod_can_close_topic' ], function (err, settings) {
+    let settings = yield env.extras.settings.fetch([ 'forum_can_close_topic', 'forum_mod_can_close_topic' ]);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    // Permit open/close as moderator
+    if (settings.forum_mod_can_close_topic && env.params.as_moderator) {
+      return;
+    }
 
-      // Permit open/close as moderator
-      if (settings.forum_mod_can_close_topic && env.params.as_moderator) {
-        callback();
-        return;
-      }
-
-      // Check topic owner and `forum_can_close_topic` permission
-      if ((env.user_info.user_id !== String(env.data.topic.cache.first_user)) || !settings.forum_can_close_topic) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
-
-      callback();
-    });
+    // Check topic owner and `forum_can_close_topic` permission
+    if ((env.user_info.user_id !== String(env.data.topic.cache.first_user)) || !settings.forum_can_close_topic) {
+      throw N.io.FORBIDDEN;
+    }
   });
 
 

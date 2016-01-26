@@ -16,21 +16,13 @@ module.exports = function (N, apiPath) {
 
   // Check title length
   //
-  N.wire.before(apiPath, function check_title_length(env, callback) {
-    env.extras.settings.fetch('forum_topic_title_min_length', function (err, min_length) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.before(apiPath, function* check_title_length(env) {
+    let min_length = yield env.extras.settings.fetch('forum_topic_title_min_length');
 
-      if (punycode.ucs2.decode(env.params.title.trim()).length < min_length) {
-        // Real check is done on the client, no need to care about details here
-        callback(N.io.BAD_REQUEST);
-        return;
-      }
-
-      callback();
-    });
+    if (punycode.ucs2.decode(env.params.title.trim()).length < min_length) {
+      // Real check is done on the client, no need to care about details here
+      throw N.io.BAD_REQUEST;
+    }
   });
 
 
@@ -89,45 +81,27 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
-
+  N.wire.before(apiPath, function* check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch('forum_mod_can_edit_titles', function (err, forum_mod_can_edit_titles) {
+    let forum_mod_can_edit_titles = yield env.extras.settings.fetch('forum_mod_can_edit_titles');
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    // Permit as moderator
+    if (forum_mod_can_edit_titles && env.params.as_moderator) {
+      return;
+    }
 
-      // Permit as moderator
-      if (forum_mod_can_edit_titles && env.params.as_moderator) {
-        callback();
-        return;
-      }
+    // Check is user topic owner
+    if (env.user_info.user_id !== String(env.data.topic.cache.first_user)) {
+      throw N.io.FORBIDDEN;
+    }
 
-      // Check is user topic owner
-      if (env.user_info.user_id !== String(env.data.topic.cache.first_user)) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
+    let forum_edit_max_time = yield env.extras.settings.fetch('forum_edit_max_time');
 
-      env.extras.settings.fetch('forum_edit_max_time', function (err, forum_edit_max_time) {
-
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        // Check, that topic created not more than 30 minutes ago
-        if (forum_edit_max_time !== 0 && env.data.topic.cache.first_ts < Date.now() - forum_edit_max_time * 60 * 1000) {
-          callback(N.io.FORBIDDEN);
-          return;
-        }
-
-        callback();
-      });
-    });
+    // Check, that topic created not more than 30 minutes ago
+    if (forum_edit_max_time !== 0 && env.data.topic.cache.first_ts < Date.now() - forum_edit_max_time * 60 * 1000) {
+      throw N.io.FORBIDDEN;
+    }
   });
 
 

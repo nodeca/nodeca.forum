@@ -59,7 +59,7 @@ module.exports = function (N) {
     // values will be returned instead. Such values have the lowest priority,
     // so other stores can take advance.
     //
-    get: function (keys, params, options, callback) {
+    get: thenify.withCallback(function (keys, params, options, callback) {
       var self = this;
 
       if (!params.section_id) {
@@ -125,14 +125,14 @@ module.exports = function (N) {
 
         callback(null, results);
       });
-    },
+    }),
 
     //
     // params:
     //   section_id     - ObjectId
     //   usergroup_id - ObjectId
     //
-    set: function (settings, params, callback) {
+    set: thenify.withCallback(function (settings, params, callback) {
       var self = this;
 
       if (!params.section_id) {
@@ -188,7 +188,7 @@ module.exports = function (N) {
           self.updateInherited(params.section_id, callback);
         });
       });
-    }
+    })
   });
 
   // Update inherited setting on all sections.

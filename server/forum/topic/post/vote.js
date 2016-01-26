@@ -87,58 +87,40 @@ module.exports = function (N, apiPath) {
 
   // Check topic permissions
   //
-  N.wire.before(apiPath, function check_topic_permissions(env, callback) {
-    var topic = env.data.topic;
+  N.wire.before(apiPath, function* check_topic_permissions(env) {
+    let topic = env.data.topic;
 
     env.extras.settings.params.section_id = topic.section;
 
-    env.extras.settings.fetch('can_vote', function (err, can_vote) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let can_vote = yield env.extras.settings.fetch('can_vote');
 
-      if (!can_vote) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
-
-      callback();
-    });
+    if (!can_vote) {
+      throw N.io.FORBIDDEN;
+    }
   });
 
 
   // Check post permissions
   //
-  N.wire.before(apiPath, function check_post_permissions(env, callback) {
-    var post = env.data.post;
+  N.wire.before(apiPath, function* check_post_permissions(env) {
+    let post = env.data.post;
+    let votes_add_max_time = yield env.extras.settings.fetch('votes_add_max_time');
 
-    env.extras.settings.fetch('votes_add_max_time', function (err, votes_add_max_time) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    // Check is own post
+    if (post.user.equals(env.user_info.user_id)) {
+      // Hardcode msg, because that should never happen
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: "Can't vote own post"
+      };
+    }
 
-      // Check is own post
-      if (post.user.equals(env.user_info.user_id)) {
-        // Hardcode msg, because that should never happen
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: "Can't vote own post"
-        });
-        return;
-      }
-
-      if (votes_add_max_time !== 0 && post.ts < Date.now() - votes_add_max_time * 60 * 60 * 1000) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('err_perm_expired')
-        });
-        return;
-      }
-
-      callback();
-    });
+    if (votes_add_max_time !== 0 && post.ts < Date.now() - votes_add_max_time * 60 * 60 * 1000) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_perm_expired')
+      };
+    }
   });
 
 

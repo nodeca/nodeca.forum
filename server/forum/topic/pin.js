@@ -44,23 +44,14 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function check_permissions(env, callback) {
+  N.wire.before(apiPath, function* check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    env.extras.settings.fetch('forum_mod_can_pin_topic', function (err, forum_mod_can_pin_topic) {
+    let forum_mod_can_pin_topic = yield env.extras.settings.fetch('forum_mod_can_pin_topic');
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!forum_mod_can_pin_topic) {
-        callback(N.io.FORBIDDEN);
-        return;
-      }
-
-      callback();
-    });
+    if (!forum_mod_can_pin_topic) {
+      throw N.io.FORBIDDEN;
+    }
   });
 
 

@@ -29,10 +29,10 @@ module.exports = function (N, apiPath) {
       async.each(s_ids, (_id, next) => {
         let params = { section_id: _id, usergroup_ids: g_ids };
 
-        N.settings.get([ 'forum_can_view' ], params, function (err, data) {
+        N.settings.get([ 'forum_can_view' ], params).then(data => {
           result[_id] = data.forum_can_view;
-          next(err);
-        });
+          process.nextTick(next);
+        }, err => process.nextTick(() => next(err)));
       }, err => callback(err, result));
     },
     {
