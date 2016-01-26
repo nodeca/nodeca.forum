@@ -28,9 +28,9 @@ module.exports = function (N, apiPath) {
   // Hook for the "get permissions by url" feature, used in snippets
   //
   N.wire.on('internal:common.access', function* check_post_access(access_env) {
-    let match = N.router.matchAll(access_env.params.url).reduce((acc, match) => {
-      return match.meta.methods.get === 'forum.topic' && match.params.post_hid ? match : acc;
-    }, null);
+    let match = N.router.matchAll(access_env.params.url).reduce(
+      (acc, match) => match.meta.methods.get === 'forum.topic' && (match.params.post_hid ? match : acc),
+      null);
 
     if (!match) {
       return;

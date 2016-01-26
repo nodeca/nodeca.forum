@@ -65,12 +65,10 @@ module.exports = function (N, apiPath) {
     env.res.sections       = env.data.sectionsById;
 
     env.res.moderators = _(sectionsByModerator)
-      .map((sections, userId) => {
-        return {
-          _id:      userId,
-          sections: _.sortBy(sections, s => env.data.sectionsById[s._id].title)
-        };
-      })
+      .map((sections, userId) => ({
+        _id:      userId,
+        sections: _.sortBy(sections, s => env.data.sectionsById[s._id].title)
+      }))
       .sortBy(moderator => String(moderator._id)) // Sort moderators by user id.
       .value();
   });

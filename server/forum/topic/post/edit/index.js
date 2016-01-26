@@ -86,13 +86,12 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_attachments(env) {
     env.data.attachments = [];
 
-    yield env.data.post.attach.map(mediaId => {
-      return N.models.users.MediaInfo
-        .findOne({ media_id: mediaId })
-        .select('media_id file_name type')
-        .lean(true)
-        .then(result => env.data.attachments.push(result));
-    });
+    yield env.data.post.attach.map(
+      mediaId => N.models.users.MediaInfo
+                    .findOne({ media_id: mediaId })
+                    .select('media_id file_name type')
+                    .lean(true)
+                    .then(result => env.data.attachments.push(result)));
   });
 
 

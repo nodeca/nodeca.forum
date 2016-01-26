@@ -46,10 +46,9 @@ module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, function section_index(env) {
     function buildSectionsTree(parent) {
-      let selectedSections = env.data.sections.filter(section => {
+      let selectedSections = env.data.sections.filter(
         // Universal way for equal check on: Null, ObjectId, and String.
-        return String(section.parent || null) === String(parent);
-      });
+        section => String(section.parent || null) === String(parent));
 
       selectedSections.forEach(section => {
         // Recursively collect descendants.
