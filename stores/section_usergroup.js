@@ -11,12 +11,10 @@
 //             value: Mixed
 //             own: Boolean
 //
-
 'use strict';
 
 
 const _        = require('lodash');
-const async    = require('async');
 const memoizee = require('memoizee');
 const thenify  = require('thenify');
 const co       = require('co');
@@ -36,14 +34,16 @@ module.exports = function (N) {
   // Memoized version of `fetchSectionSettings` helper.
   // Revalidate cache after 30 seconds.
   //
-  var fetchSectionSettingsCached = memoizee(fetchSectionSettings, {
+  let fetchSectionSettingsCached = thenify(memoizee(fetchSectionSettings, {
     async:     true,
     maxAge:    30000,
     primitive: true
-  });
+  }));
+
+  let fetchSectionSettingsAsync = thenify(fetchSectionSettings);
 
 
-  var SectionUsergroupStore = N.settings.createStore({
+  let SectionUsergroupStore = N.settings.createStore({
     //
     // params:
     //   section_id      - ObjectId
@@ -59,72 +59,60 @@ module.exports = function (N) {
     // values will be returned instead. Such values have the lowest priority,
     // so other stores can take advance.
     //
-    get: thenify.withCallback(function (keys, params, options, callback) {
-      var self = this;
-
+    get: co.wrap(function* (keys, params, options) {
       if (!params.section_id) {
-        callback('`section_id` parameter is required for getting settings from `section_usergroup` store.');
-        return;
+        throw '`section_id` parameter is required for getting settings from `section_usergroup` store.';
       }
 
       if (!_.isArray(params.usergroup_ids) || _.isEmpty(params.usergroup_ids)) {
-        callback('`usergroup_ids` parameter required to be non-empty array for getting' +
-                 'settings from `section_usergroup` store.');
-        return;
+        throw '`usergroup_ids` parameter required to be non-empty array for getting ' +
+              'settings from `section_usergroup` store.';
       }
 
-      var fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
+      let fetch = options.skipCache ? fetchSectionSettingsAsync : fetchSectionSettingsCached;
+      let section_settings = yield fetch(params.section_id);
+      let results = {};
 
-      fetch(params.section_id, function (err, section_settings) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      if (!section_settings) {
+        throw `'section_usergroup' store for forum section ${params.section_id} does not exist.`;
+      }
 
-        if (!section_settings) {
-          callback(`'section_usergroup' store for forum section ${params.section_id} does not exist.`);
-          return;
-        }
+      keys.forEach(settingName => {
+        let settings = [];
 
-        var results = {};
+        // Collect settings for given usergroups. Use empty values non-provided
+        // settings to fallback to another store if possible.
+        params.usergroup_ids.forEach(usergroupId => {
+          if (!section_settings.data ||
+            !section_settings.data[usergroupId] ||
+            !section_settings.data[usergroupId][settingName]) {
 
-        keys.forEach(function (settingName) {
-          var settings = [];
+            // Use empty value instead.
+            settings.push({
+              value: this.getEmptyValue(settingName),
+              force: false
+            });
+            return;
+          }
 
-          // Collect settings for given usergroups. Use empty values non-provided
-          // settings to fallback to another store if possible.
-          params.usergroup_ids.forEach(function (usergroupId) {
-            if (!section_settings.data ||
-                !section_settings.data[usergroupId] ||
-                !section_settings.data[usergroupId][settingName]) {
+          let setting = section_settings.data[usergroupId][settingName];
 
-              // Use empty value instead.
-              settings.push({
-                value: self.getEmptyValue(settingName),
-                force: false
-              });
-              return;
-            }
+          // For extended mode - get copy of whole setting object.
+          // For normal mode - get copy of only value field.
+          setting = options.extended ? _.clone(setting) : _.pick(setting, 'value');
 
-            var setting = section_settings.data[usergroupId][settingName];
+          // This store always implies `force` option, but we don't keep it
+          // in the database.
+          setting.force = true;
 
-            // For extended mode - get copy of whole setting object.
-            // For normal mode - get copy of only value field.
-            setting = options.extended ? _.clone(setting) : _.pick(setting, 'value');
-
-            // This store always implies `force` option, but we don't keep it
-            // in the database.
-            setting.force = true;
-
-            settings.push(setting);
-          });
-
-          // Get merged value.
-          results[settingName] = N.settings.mergeValues(settings);
+          settings.push(setting);
         });
 
-        callback(null, results);
+        // Get merged value.
+        results[settingName] = N.settings.mergeValues(settings);
       });
+
+      return results;
     }),
 
     //
@@ -132,62 +120,45 @@ module.exports = function (N) {
     //   section_id     - ObjectId
     //   usergroup_id - ObjectId
     //
-    set: thenify.withCallback(function (settings, params, callback) {
+    set: co.wrap(function* (settings, params) {
       var self = this;
 
       if (!params.section_id) {
-        callback('`section_id` parameter is required for saving settings into `section_usergroup` store.');
-        return;
+        throw '`section_id` parameter is required for saving settings into `section_usergroup` store.';
       }
 
       if (!params.usergroup_id) {
-        callback('`usergroup_id` parameter required for saving settings into `section_usergroup` store.');
-        return;
+        throw '`usergroup_id` parameter required for saving settings into `section_usergroup` store.';
       }
 
-      N.models.forum.SectionUsergroupStore
-          .findOne({ section_id: params.section_id })
-          .exec(function (err, section_settings) {
+      let section_settings = yield N.models.forum.SectionUsergroupStore.findOne({ section_id: params.section_id });
 
-        if (err) {
-          callback(err);
-          return;
+      if (!section_settings) {
+        throw `'section_usergroup' store for forum section ${params.section_id} does not exist.`;
+      }
+
+      let usergroup_settings = section_settings.data[params.usergroup_id] || {};
+
+      Object.keys(settings).forEach(key => {
+        let setting = settings[key];
+
+        if (setting !== null) {
+          // NOTE: It's no need to put `force` flag into the database, since
+          // this store always implies `force` at `Store#get`.
+          usergroup_settings[key] = {
+            value: setting.value,
+            own:   true
+          };
+        } else {
+          delete usergroup_settings[key];
         }
-
-        if (!section_settings) {
-          callback(`'section_usergroup' store for forum section ${params.section_id} does not exist.`);
-          return;
-        }
-
-        var usergroup_settings = section_settings.data[params.usergroup_id] || {};
-
-        Object.keys(settings).forEach(function (key) {
-          var setting = settings[key];
-
-          if (setting !== null) {
-            // NOTE: It's no need to put `force` flag into the database, since
-            // this store always implies `force` at `Store#get`.
-            usergroup_settings[key] = {
-              value: setting.value,
-              own:   true
-            };
-          } else {
-            delete usergroup_settings[key];
-          }
-        });
-
-        section_settings.data[params.usergroup_id] = usergroup_settings;
-        section_settings.markModified('data');
-
-        section_settings.save(function (err) {
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          self.updateInherited(params.section_id, callback);
-        });
       });
+
+      section_settings.data[params.usergroup_id] = usergroup_settings;
+      section_settings.markModified('data');
+
+      yield section_settings.save();
+      yield self.updateInherited(params.section_id);
     })
   });
 
@@ -195,173 +166,150 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionUsergroupStore.updateInherited = thenify.withCallback(function updateInherited(sectionId, callback) {
-    var self = this;
+  SectionUsergroupStore.updateInherited = co.wrap(function* updateInherited(sectionId) {
+    let self = this;
+    let allSections = yield N.models.forum.Section.find({}).select('_id parent').lean(true);
+    let allSettings = yield N.models.forum.SectionUsergroupStore.find({});
 
-    if (_.isFunction(sectionId)) {
-      callback  = sectionId;
-      sectionId = null;
+
+    // Get section from allSections array by its id
+    //
+    function getSectionById(id) {
+      return allSections.filter(
+        // Universal way for equal check on: Null, ObjectId, and String.
+        section => String(section._id) === String(id)
+      )[0];
     }
 
-    N.models.forum.Section.find({})
-        .select('_id parent')
-        .lean(true)
-        .exec(function (err, allSections) {
 
-      if (err) {
-        callback(err);
-        return;
+    // Get section settings from allSettings array by section id
+    //
+    function getSettingsBySectionId(id) {
+      return allSettings.filter(
+        // Universal way for equal check on: Null, ObjectId, and String.
+        s => String(id) === String(s.section_id)
+      )[0];
+    }
+
+
+    // Collect flat list of section's descendants.
+    //
+    function selectSectionDescendants(parentId) {
+      let result = [];
+
+      let children = allSections.filter(
+        // Universal way for equal check on: Null, ObjectId, and String.
+        section => String(section.parent || null) === String(parentId)
+      );
+
+      children.forEach(child => result.push(child));
+
+      children.forEach(child => {
+        selectSectionDescendants(child._id).forEach(grandchild => result.push(grandchild));
+      });
+
+      return result;
+    }
+
+
+    // Find first own setting by name for usergroup.
+    //
+    function findInheritedSetting(sectionId, usergroupId, settingName) {
+      if (!sectionId) {
+        return null;
       }
 
-      N.models.forum.SectionUsergroupStore.find({}, function (err, allSettings) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      let sect = getSectionById(sectionId);
 
-        // Get section from allSections array by its id
-        //
-        function getSectionById(id) {
-          return allSections.filter(function (section) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(section._id) === String(id);
-          })[0];
-        }
+      if (!sect) {
+        N.logger.warn(`Forum sections collection contains a reference to non-existent section ${sectionId}`);
+        return null;
+      }
 
-        // Get section settings from allSettings array by section id
-        //
-        function getSettingsBySectionId(id) {
-          return allSettings.filter(function (s) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(id) === String(s.section_id);
-          })[0];
-        }
+      let section_settings = getSettingsBySectionId(sectionId);
 
+      if (!section_settings) {
+        N.logger.warn(`'section_usergroup' store for forum section ${sectionId} does not exist.`);
+        return null;
+      }
 
-        // Collect flat list of section's descendants.
-        //
-        function selectSectionDescendants(parentId) {
-          var result = [];
+      let usergroup_settings = section_settings.data[usergroupId] || {};
 
-          var children = allSections.filter(function (section) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(section.parent || null) === String(parentId);
-          });
+      // Setting exists, and it is not inherited from another section.
+      if (usergroup_settings[settingName] &&
+        usergroup_settings[settingName].own) {
+        return usergroup_settings[settingName];
+      }
 
-          children.forEach(function (child) {
-            result.push(child);
-          });
+      // Recursively walk through ancestors sequence.
+      if (sect.parent) {
+        return findInheritedSetting(sect.parent, usergroupId, settingName);
+      }
 
-          children.forEach(function (child) {
-            selectSectionDescendants(child._id).forEach(function (grandchild) {
-              result.push(grandchild);
-            });
-          });
-
-          return result;
-        }
+      return null;
+    }
 
 
-        // Find first own setting by name for usergroup.
-        //
-        function findInheritedSetting(sectionId, usergroupId, settingName) {
-          if (!sectionId) {
-            return null;
-          }
+    // List of sections to recompute settings and save. All by default.
+    let sectionsToUpdate = allSections;
 
-          var sect = getSectionById(sectionId);
-          if (!sect) {
-            N.logger.warn('Forum sections collection contains a reference to non-existent section %s', sectionId);
-            return null;
-          }
+    // If we want update only a subtree of sections,
+    // collect different `sectionsToUpdate` list.
+    if (sectionId) {
+      let section = getSectionById(sectionId);
 
-          var section_settings = getSettingsBySectionId(sectionId);
-          if (!section_settings) {
-            N.logger.warn('`section_usergroup` store for forum section %s does not exist.', sectionId);
-            return null;
-          }
+      if (!section) {
+        throw `Forum sections collection contains a reference to non-existent section ${sectionId}`;
+      }
 
-          var usergroup_settings = section_settings.data[usergroupId] || {};
+      sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
+    }
 
-          // Setting exists, and it is not inherited from another section.
+    // Fetch list of all existent usergroup ids.
+    let usergroups = yield N.models.users.UserGroup.find({}, '_id', { lean: true });
+
+
+    function updateOne(section) {
+      let section_settings = getSettingsBySectionId(section._id);
+
+      if (!section_settings) {
+        N.logger.warn(`'section_usergroup' store for forum section ${section._id} does not exist.`);
+        return Promise.resolve();
+      }
+
+      usergroups.forEach(usergroup => {
+        let usergroup_settings = section_settings.data[usergroup._id] || {};
+
+        self.keys.forEach(settingName => {
+          // Do not touch own settings. We only update inherited settings.
           if (usergroup_settings[settingName] &&
-              usergroup_settings[settingName].own) {
-            return usergroup_settings[settingName];
-          }
-
-          // Recursively walk through ancestors sequence.
-          if (sect.parent) {
-            return findInheritedSetting(sect.parent, usergroupId, settingName);
-          }
-
-          return null;
-        }
-
-
-        // List of sections to recompute settings and save. All by default.
-        var sectionsToUpdate = allSections;
-
-        // If we want update only a subtree of sections,
-        // collect different `sectionsToUpdate` list.
-        if (sectionId) {
-          var section = getSectionById(sectionId);
-          if (!section) {
-            callback(`Forum sections collection contains a reference to non-existent section ${sectionId}`);
+            usergroup_settings[settingName].own) {
             return;
           }
 
-          sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
-        }
+          let setting = findInheritedSetting(section.parent, usergroup._id, settingName);
 
-        // Fetch list of all existent usergroup ids.
-        N.models.users.UserGroup.find({}, '_id', { lean: true }, function (err, usergroups) {
-          if (err) {
-            callback(err);
-            return;
+          if (setting) {
+            // Set/update inherited setting.
+            usergroup_settings[settingName] = {
+              value: setting.value,
+              own:   false
+            };
+          } else {
+            // Drop deprected inherited setting.
+            delete usergroup_settings[settingName];
           }
-
-          function updateOne(section, next) {
-            var section_settings = getSettingsBySectionId(section._id);
-            if (!section_settings) {
-              N.logger.warn('`section_usergroup` store for forum section %s does not exist.', section._id);
-              return next();
-            }
-
-            usergroups.forEach(function (usergroup) {
-              var usergroup_settings = section_settings.data[usergroup._id] || {};
-
-              self.keys.forEach(function (settingName) {
-                // Do not touch own settings. We only update inherited settings.
-                if (usergroup_settings[settingName] &&
-                    usergroup_settings[settingName].own) {
-                  return;
-                }
-
-                var setting = findInheritedSetting(section.parent, usergroup._id, settingName);
-
-                if (setting) {
-                  // Set/update inherited setting.
-                  usergroup_settings[settingName] = {
-                    value: setting.value,
-                    own:   false
-                  };
-                } else {
-                  // Drop deprected inherited setting.
-                  delete usergroup_settings[settingName];
-                }
-              });
-
-              section_settings.data[usergroup._id] = usergroup_settings;
-              section_settings.markModified('data');
-            });
-
-            section_settings.save(next);
-          }
-
-          async.each(sectionsToUpdate, updateOne, callback);
         });
+
+        section_settings.data[usergroup._id] = usergroup_settings;
+        section_settings.markModified('data');
       });
-    });
+
+      return section_settings.save();
+    }
+
+
+    yield sectionsToUpdate.map(updateOne);
   });
 
 

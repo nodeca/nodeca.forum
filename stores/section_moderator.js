@@ -11,12 +11,10 @@
 //             value: Mixed
 //             own: Boolean
 //
-
 'use strict';
 
 
 const _        = require('lodash');
-const async    = require('async');
 const memoizee = require('memoizee');
 const thenify  = require('thenify');
 const co       = require('co');
@@ -36,14 +34,16 @@ module.exports = function (N) {
   // Memoized version of `fetchSectionSettings` helper.
   // Revalidate cache after 30 seconds.
   //
-  var fetchSectionSettingsCached = memoizee(fetchSectionSettings, {
+  let fetchSectionSettingsCached = thenify(memoizee(fetchSectionSettings, {
     async:     true,
     maxAge:    30000,
     primitive: true
-  });
+  }));
+
+  let fetchSectionSettingsAsync = thenify(fetchSectionSettings);
 
 
-  var SectionModeratorStore = N.settings.createStore({
+  let SectionModeratorStore = N.settings.createStore({
     //
     // params:
     //   section_id - ObjectId
@@ -59,64 +59,51 @@ module.exports = function (N) {
     // will be returned instead. Such values have the lowest priority, so
     // other stores can take advance.
     //
-    get: thenify.withCallback(function (keys, params, options, callback) {
-      var self = this;
-
+    get: co.wrap(function* (keys, params, options) {
       if (!params.section_id) {
-        callback('`section_id` parameter is required for getting settings from `section_moderator` store.');
-        return;
+        throw '`section_id` parameter is required for getting settings from `section_moderator` store.';
       }
 
       if (!params.user_id) {
-        callback('`user_id` parameter is required for getting settings from `section_moderator` store.');
-        return;
+        throw '`user_id` parameter is required for getting settings from `section_moderator` store.';
       }
 
-      var fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
+      let fetch = options.skipCache ? fetchSectionSettingsAsync : fetchSectionSettingsCached;
+      let section_settings = yield fetch(params.section_id);
 
-      fetch(params.section_id, function (err, section_settings) {
-        if (err) {
-          callback(err);
+      if (!section_settings) throw `'section_moderator' store for forum section ${params.section_id} does not exist.`;
+
+      let results = {};
+
+      // Collect settings for the given user_id. Use empty values
+      // non-provided settings to fallback to another store if possible.
+      keys.forEach(settingName => {
+        if (!section_settings.data ||
+          !section_settings.data[params.user_id] ||
+          !section_settings.data[params.user_id][settingName]) {
+
+          // Use empty value instead.
+          results[settingName] = {
+            value: this.getEmptyValue(settingName),
+            force: false
+          };
           return;
         }
 
-        if (!section_settings) {
-          callback(`'section_moderator' store for forum section ${params.section_id} does not exist.`);
-          return;
-        }
+        let setting = section_settings.data[params.user_id][settingName];
 
-        var results = {};
+        // For extended mode - get copy of whole setting object.
+        // For normal mode - get copy of only value field.
+        setting = options.extended ? _.clone(setting) : _.pick(setting, 'value');
 
-        // Collect settings for the given user_id. Use empty values
-        // non-provided settings to fallback to another store if possible.
-        keys.forEach(function (settingName) {
-          if (!section_settings.data ||
-              !section_settings.data[params.user_id] ||
-              !section_settings.data[params.user_id][settingName]) {
+        // This store always implies `force` option, but we don't keep it
+        // in the database.
+        setting.force = true;
 
-            // Use empty value instead.
-            results[settingName] = {
-              value: self.getEmptyValue(settingName),
-              force: false
-            };
-            return;
-          }
-
-          var setting = section_settings.data[params.user_id][settingName];
-
-          // For extended mode - get copy of whole setting object.
-          // For normal mode - get copy of only value field.
-          setting = options.extended ? _.clone(setting) : _.pick(setting, 'value');
-
-          // This store always implies `force` option, but we don't keep it
-          // in the database.
-          setting.force = true;
-
-          results[settingName] = setting;
-        });
-
-        callback(null, results);
+        results[settingName] = setting;
       });
+
+      return results;
     }),
 
     //
@@ -124,68 +111,49 @@ module.exports = function (N) {
     //   section_id - ObjectId
     //   user_id  - ObjectId
     //
-    set: thenify.withCallback(function (settings, params, callback) {
-      var self = this;
-
+    set: co.wrap(function* (settings, params) {
       if (!params.section_id) {
-        callback('`section_id` parameter is required for saving settings into `section_moderator` store.');
-        return;
+        throw '`section_id` parameter is required for saving settings into `section_moderator` store.';
       }
 
       if (!params.user_id) {
-        callback('`user_id` parameter required for saving settings into `section_moderator` store.');
-        return;
+        throw '`user_id` parameter required for saving settings into `section_moderator` store.';
       }
 
-      N.models.forum.SectionModeratorStore
-          .findOne({ section_id: params.section_id })
-          .exec(function (err, section_settings) {
+      let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: params.section_id });
 
-        if (err) {
-          callback(err);
-          return;
-        }
+      if (!section_settings) {
+        throw `'section_moderator' store for forum section ${params.section_id} does not exist.`;
+      }
 
-        if (!section_settings) {
-          callback(`'section_moderator' store for forum section ${params.section_id} does not exist.`);
-          return;
-        }
+      let user_settings = section_settings[params.user_id] || {};
 
-        var user_settings = section_settings[params.user_id] || {};
+      Object.keys(settings).forEach(key => {
+        let setting = settings[key];
 
-        Object.keys(settings).forEach(function (key) {
-          var setting = settings[key];
-
-          if (setting !== null) {
-            // NOTE: It's no need to put `force` flag into the database, since
-            // this store always implies `force` at `Store#get`.
-            user_settings[key] = {
-              value: setting.value,
-              own:   true
-            };
-          } else {
-            delete user_settings[key];
-          }
-        });
-
-        if (_.isEmpty(user_settings)) {
-          // Drop empty moderator entries.
-          delete section_settings.data[params.user_id];
+        if (setting !== null) {
+          // NOTE: It's no need to put `force` flag into the database, since
+          // this store always implies `force` at `Store#get`.
+          user_settings[key] = {
+            value: setting.value,
+            own:   true
+          };
         } else {
-          section_settings.data[params.user_id] = user_settings;
+          delete user_settings[key];
         }
-
-        section_settings.markModified('data');
-
-        section_settings.save(function (err) {
-          if (err) {
-            callback(err);
-            return;
-          }
-
-          self.updateInherited(params.section_id, callback);
-        });
       });
+
+      if (_.isEmpty(user_settings)) {
+        // Drop empty moderator entries.
+        delete section_settings.data[params.user_id];
+      } else {
+        section_settings.data[params.user_id] = user_settings;
+      }
+
+      section_settings.markModified('data');
+
+      yield section_settings.save();
+      yield this.updateInherited(params.section_id);
     })
   });
 
@@ -233,215 +201,188 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionModeratorStore.updateInherited = thenify.withCallback(function updateInherited(sectionId, callback) {
-    var self = this;
+  SectionModeratorStore.updateInherited = co.wrap(function* updateInherited(sectionId) {
+    let allSections = yield N.models.forum.Section.find({}).select('_id parent moderators');
+    let allSettings = yield N.models.forum.SectionModeratorStore.find({});
 
-    if (_.isFunction(sectionId)) {
-      callback  = sectionId;
-      sectionId = null;
+
+    // Get section from allSections array by its id
+    //
+    function getSectionById(id) {
+      return allSections.filter(
+        // Universal way for equal check on: Null, ObjectId, and String.
+        section => String(section._id) === String(id)
+      )[0];
     }
 
-    N.models.forum.Section.find({})
-        .select('_id parent moderators')
-        .exec(function (err, allSections) {
+    // Get section settings from allSettings array by section id
+    //
+    function getSettingsBySectionId(id) {
+      return allSettings.filter(
+        // Universal way for equal check on: Null, ObjectId, and String.
+        s => String(id) === String(s.section_id)
+      )[0];
+    }
 
-      if (err) {
-        callback(err);
-        return;
+
+    // Collect flat list of section's descendants.
+    //
+    function selectSectionDescendants(parentId) {
+      let result = [];
+
+      let children = allSections.filter(
+        // Universal way for equal check on: Null, ObjectId, and String.
+        section => String(section.parent || null) === String(parentId)
+      );
+
+      children.forEach(child => result.push(child));
+
+      children.forEach(child => {
+        selectSectionDescendants(child._id).forEach(grandchild => result.push(grandchild));
+      });
+
+      return result;
+    }
+
+
+    // Find first own setting by name for moderator.
+    //
+    function findInheritedSetting(sectionId, userId, settingName) {
+      if (!sectionId) {
+        return null;
       }
 
-      N.models.forum.SectionModeratorStore.find({}, function (err, allSettings) {
-        if (err) {
-          callback(err);
-          return;
-        }
+      let sect = getSectionById(sectionId);
 
-        // Get section from allSections array by its id
-        //
-        function getSectionById(id) {
-          return allSections.filter(function (section) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(section._id) === String(id);
-          })[0];
-        }
+      if (!sect) {
+        N.logger.warn(`Forum sections collection contains a reference to non-existent section ${sectionId}`);
+        return null;
+      }
 
-        // Get section settings from allSettings array by section id
-        //
-        function getSettingsBySectionId(id) {
-          return allSettings.filter(function (s) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(id) === String(s.section_id);
-          })[0];
-        }
+      let section_settings = getSettingsBySectionId(sectionId);
 
+      if (!section_settings) {
+        N.logger.warn(`'section_moderator' store for forum section ${sectionId} does not exist.`);
+        return null;
+      }
 
-        // Collect flat list of section's descendants.
-        //
-        function selectSectionDescendants(parentId) {
-          var result = [];
+      let user_settings = section_settings.data[userId] || {};
 
-          var children = allSections.filter(function (section) {
-            // Universal way for equal check on: Null, ObjectId, and String.
-            return String(section.parent || null) === String(parentId);
-          });
+      // Setting exists, and it is not inherited from another section.
+      if (user_settings[settingName] &&
+        user_settings[settingName].own) {
+        return user_settings[settingName];
+      }
 
-          children.forEach(function (child) {
-            result.push(child);
-          });
+      // Recursively walk through ancestors sequence.
+      if (sect.parent) {
+        return findInheritedSetting(sect.parent, userId, settingName);
+      }
 
-          children.forEach(function (child) {
-            selectSectionDescendants(child._id).forEach(function (grandchild) {
-              result.push(grandchild);
-            });
-          });
-
-          return result;
-        }
+      return null;
+    }
 
 
-        // Find first own setting by name for moderator.
-        //
-        function findInheritedSetting(sectionId, userId, settingName) {
-          if (!sectionId) {
-            return null;
-          }
+    // Collect flat list of unique moderator ids on given section
+    // and all ancestor sections.
+    //
+    function collectModeratorIds(sectionId) {
+      if (!sectionId) {
+        return [];
+      }
 
-          var sect = getSectionById(sectionId);
-          if (!sect) {
-            N.logger.warn('Forum sections collection contains a reference to non-existent section %s', sectionId);
-            return null;
-          }
+      let sect = getSectionById(sectionId);
 
-          var section_settings = getSettingsBySectionId(sectionId);
-          if (!section_settings) {
-            N.logger.warn('`section_moderator` store for forum section %s does not exist.', sectionId);
-            return null;
-          }
+      if (!sect) {
+        N.logger.warn(`Forum sections collection contains a reference to non-existent section ${sectionId}`);
+        return [];
+      }
 
-          var user_settings = section_settings.data[userId] || {};
+      let section_settings = getSettingsBySectionId(sectionId);
 
-          // Setting exists, and it is not inherited from another section.
+      if (!section_settings) {
+        N.logger.warn(`'section_moderator' store for forum section ${sectionId} does not exist.`);
+        return [];
+      }
+
+      if (section_settings.data) {
+        return _.uniq(_.keys(section_settings.data).concat(collectModeratorIds(sect.parent)));
+      }
+      return collectModeratorIds(sect.parent);
+    }
+
+
+    // List of sections to recompute settings and save. All by default.
+    let sectionsToUpdate = allSections;
+
+    // If we want update only a subtree of sections,
+    // collect different `sectionsToUpdate` list.
+    if (sectionId) {
+      let section = getSectionById(sectionId);
+
+      if (!section) {
+        throw `Forum sections collection contains a reference to non-existent section ${sectionId}`;
+      }
+
+      sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
+    }
+
+    yield sectionsToUpdate.map(section => {
+      let section_settings = getSettingsBySectionId(section._id);
+
+      if (!section_settings) {
+        N.logger.warn(`'section_moderator' store for forum section ${sectionId} does not exist.`);
+        return Promise.resolve();
+      }
+
+      // Collect all moderators (both own and inherited) for current section.
+      let allModeratorIds = collectModeratorIds(section._id);
+
+      // Inherit new/updated and drop deprecated settings for all moderators.
+      allModeratorIds.forEach(userId => {
+        let user_settings = section_settings.data[userId] || {};
+
+        this.keys.forEach(settingName => {
+          // Do not touch own settings. We only update inherited settings.
           if (user_settings[settingName] &&
-              user_settings[settingName].own) {
-            return user_settings[settingName];
-          }
-
-          // Recursively walk through ancestors sequence.
-          if (sect.parent) {
-            return findInheritedSetting(sect.parent, userId, settingName);
-          }
-
-          return null;
-        }
-
-
-        // Collect flat list of unique moderator ids on given section
-        // and all ancestor sections.
-        //
-        function collectModeratorIds(sectionId) {
-          if (!sectionId) {
-            return [];
-          }
-
-          var sect = getSectionById(sectionId);
-          if (!sect) {
-            N.logger.warn('Forum sections collection contains a reference to non-existent section %s', sectionId);
-            return [];
-          }
-
-          var section_settings = getSettingsBySectionId(sectionId);
-          if (!section_settings) {
-            N.logger.warn('`section_moderator` store for forum section %s does not exist.', sectionId);
-            return [];
-          }
-
-          if (section_settings.data) {
-            return _.uniq(_.keys(section_settings.data).concat(collectModeratorIds(sect.parent)));
-          }
-          return collectModeratorIds(sect.parent);
-        }
-
-
-        // List of sections to recompute settings and save. All by default.
-        var sectionsToUpdate = allSections;
-
-        // If we want update only a subtree of sections,
-        // collect different `sectionsToUpdate` list.
-        if (sectionId) {
-          var section = getSectionById(sectionId);
-          if (!section) {
-            callback(`Forum sections collection contains a reference to non-existent section ${sectionId}`);
+            user_settings[settingName].own) {
             return;
           }
 
-          sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
+          let setting = findInheritedSetting(section.parent, userId, settingName);
+
+          if (setting) {
+            // Set/update inherited setting.
+            user_settings[settingName] = {
+              value: setting.value,
+              own:   false
+            };
+          } else {
+            // Drop deprecated inherited setting.
+            delete user_settings[settingName];
+          }
+        });
+
+        if (_.isEmpty(user_settings)) {
+          // Drop empty moderator entries.
+          delete section_settings.data[userId];
+        } else {
+          section_settings.data[userId] = user_settings;
         }
 
-        async.each(sectionsToUpdate, function (section, next) {
-
-          var section_settings = getSettingsBySectionId(section._id);
-          if (!section_settings) {
-            N.logger.warn('`section_moderator` store for forum section %s does not exist.', sectionId);
-            return next();
-          }
-
-          // Collect all moderators (both own and inherited) for current section.
-          var allModeratorIds = collectModeratorIds(section._id);
-
-          // Inherit new/updated and drop deprecated settings for all moderators.
-          allModeratorIds.forEach(function (userId) {
-            var user_settings = section_settings.data[userId] || {};
-
-            self.keys.forEach(function (settingName) {
-              // Do not touch own settings. We only update inherited settings.
-              if (user_settings[settingName] &&
-                  user_settings[settingName].own) {
-                return;
-              }
-
-              var setting = findInheritedSetting(section.parent, userId, settingName);
-
-              if (setting) {
-                // Set/update inherited setting.
-                user_settings[settingName] = {
-                  value: setting.value,
-                  own:   false
-                };
-              } else {
-                // Drop deprecated inherited setting.
-                delete user_settings[settingName];
-              }
-            });
-
-            if (_.isEmpty(user_settings)) {
-              // Drop empty moderator entries.
-              delete section_settings.data[userId];
-            } else {
-              section_settings.data[userId] = user_settings;
-            }
-
-            section_settings.markModified('data');
-          });
+        section_settings.markModified('data');
+      });
 
 
-          // Select publicly visible moderators to update `moderators`
-          var visibleModeratorIds = allModeratorIds.filter(function (userId) {
-            return section_settings.data[userId] &&
-                   section_settings.data[userId].forum_mod_visible &&
-                   section_settings.data[userId].forum_mod_visible.value;
-          });
+      // Select publicly visible moderators to update `moderators`
+      let visibleModeratorIds = allModeratorIds.filter(userId =>
+                                                        section_settings.data[userId] &&
+                                                        section_settings.data[userId].forum_mod_visible &&
+                                                        section_settings.data[userId].forum_mod_visible.value);
 
-          section_settings.save(function (err) {
-            if (err) {
-              next(err);
-              return;
-            }
-
-            section.moderators    = visibleModeratorIds;
-            section.save(next);
-          });
-
-        }, callback);
+      return section_settings.save().then(() => {
+        section.moderators = visibleModeratorIds;
+        return section.save();
       });
     });
   });
@@ -452,7 +393,9 @@ module.exports = function (N) {
   SectionModeratorStore.removeModerator = co.wrap(function* removeModerator(sectionId, userId) {
     let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId });
 
-    if (!section_settings) throw `Forum section ${sectionId} does not exist.`;
+    if (!section_settings) {
+      throw `Forum section ${sectionId} does not exist.`;
+    }
 
     let user_settings = section_settings.data[userId];
 
