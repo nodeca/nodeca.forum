@@ -72,9 +72,7 @@ module.exports = function (N, apiPath) {
 
     let forum_can_view = yield env.extras.settings.fetch('forum_can_view');
 
-    if (!forum_can_view) {
-      throw N.io.FORBIDDEN;
-    }
+    if (!forum_can_view) throw N.io.FORBIDDEN;
   });
 
 

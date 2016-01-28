@@ -248,19 +248,17 @@ module.exports = function (N, apiPath) {
   // background, so it won't affect response time
   //
   N.wire.after(apiPath, function update_view_counter(env) {
-    if (!env.session_id) {
-      // First-time visitor or a bot, don't count those
-      return;
-    }
+    // First-time visitor or a bot, don't count those
+    if (!env.session_id) return;
 
     N.redis.time(function (err, time) {
-      if (err) { return; }
+      if (err) return;
 
       let score = Math.floor(time[0] * 1000 + time[1] / 1000);
       let key   = env.data.topic._id + '-' + env.session_id;
 
       N.redis.zscore('views:forum_topic:track_last', key, function (err, old_score) {
-        if (err) { return; }
+        if (err) return;
 
         // Check if user has loaded the same page in the last 10 minutes,
         // it prevents refreshes and inside-the-topic navigation from being
@@ -269,7 +267,7 @@ module.exports = function (N, apiPath) {
         if (Math.abs(score - old_score) < 10 * 60 * 1000) { return; }
 
         N.redis.zadd('views:forum_topic:track_last', score, key, function (err) {
-          if (err) { return; }
+          if (err) return;
 
           N.redis.hincrby('views:forum_topic:count', env.data.topic._id, 1, function () {});
         });
@@ -281,9 +279,7 @@ module.exports = function (N, apiPath) {
   // Mark topic as read
   //
   N.wire.after(apiPath, function mark_topic_read(env) {
-    if (env.user_info.is_guest) {
-      return;
-    }
+    if (env.user_info.is_guest) return;
 
     // Don't need wait for callback, just log error if needed
     N.models.users.Marker.mark(

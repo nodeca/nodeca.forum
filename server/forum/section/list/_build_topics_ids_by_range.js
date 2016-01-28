@@ -37,7 +37,7 @@ module.exports = function (N) {
 
     function select_visible_before() {
       let count = env.params.before;
-      if (count <= 0) { return Promise.resolve([]); }
+      if (count <= 0) return Promise.resolve([]);
 
       let sort = {};
       sort[lookup_key] = 1;
@@ -55,7 +55,7 @@ module.exports = function (N) {
 
     function select_visible_after() {
       let count = env.params.after;
-      if (count <= 0) { return Promise.resolve([]); }
+      if (count <= 0) return Promise.resolve([]);
 
       let sort = {};
       sort[lookup_key] = -1;

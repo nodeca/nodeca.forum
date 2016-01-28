@@ -155,7 +155,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.section:nav_to_offset', function navigate_to_offset(data) {
     var topic = +data.fields.topic;
-    if (!topic) { return; }
+    if (!topic) return;
 
     N.wire.emit('navigate.to', {
       apiPath: 'forum.section',
@@ -227,18 +227,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:        LOAD_TOPICS_COUNT,
       after:         0
     }).done(function (res) {
-      if (!res.topics) {
-        return;
-      }
+      if (!res.topics) return;
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
         sectionState.reached_start = true;
         $('.forum-section-root').addClass('forum-section-root__m-first-page');
       }
 
-      if (res.topics.length === 0) {
-        return;
-      }
+      if (res.topics.length === 0) return;
 
       sectionState.first_post_id = res.topics[0].cache.last_post;
 
@@ -272,17 +268,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       before:        0,
       after:         LOAD_TOPICS_COUNT
     }).done(function (res) {
-      if (!res.topics) {
-        return;
-      }
+      if (!res.topics) return;
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
         sectionState.reached_end = true;
       }
 
-      if (res.topics.length === 0) {
-        return;
-      }
+      if (res.topics.length === 0) return;
 
       sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
 
@@ -349,7 +341,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       offset = 0;
     }
 
-    if (offset === sectionState.current_offset) { return; }
+    if (offset === sectionState.current_offset) return;
 
     sectionState.current_offset = offset;
 
@@ -397,7 +389,7 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
-  if (!scrollHandler) { return; }
+  if (!scrollHandler) return;
   scrollHandler.cancel();
   $(window).off('scroll', scrollHandler);
   scrollHandler = null;

@@ -11,9 +11,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function* rebuild_post(post_id) {
     let post = yield N.models.forum.Post.findById(post_id);
 
-    if (!post) {
-      return;
-    }
+    if (!post) return;
 
     let params = yield N.models.core.MessageParams.getParams(post.params_ref);
     let result = yield N.parse({

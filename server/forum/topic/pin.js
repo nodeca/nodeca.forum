@@ -49,9 +49,7 @@ module.exports = function (N, apiPath) {
 
     let forum_mod_can_pin_topic = yield env.extras.settings.fetch('forum_mod_can_pin_topic');
 
-    if (!forum_mod_can_pin_topic) {
-      throw N.io.FORBIDDEN;
-    }
+    if (!forum_mod_can_pin_topic) throw N.io.FORBIDDEN;
   });
 
 

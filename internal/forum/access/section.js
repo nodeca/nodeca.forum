@@ -30,9 +30,7 @@ module.exports = function (N, apiPath) {
       return match.meta.methods.get === 'forum.section' ? match : acc;
     }, null);
 
-    if (!match) {
-      return;
-    }
+    if (!match) return;
 
     let access_env_sub = { params: { sections: match.params.hid, user_info: access_env.params.user_info } };
 
@@ -111,9 +109,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
       locals.data.sections.forEach((hid, i) => {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
+        if (locals.data.access_read[i] === false) return; // continue
 
         locals.data.sections[i] = _.find(result, { hid });
 
@@ -134,9 +130,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
       locals.data.sections.forEach((id, i) => {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
+        if (locals.data.access_read[i] === false) return; // continue
 
         locals.data.sections[i] = _.find(result, { _id: String(id) });
 

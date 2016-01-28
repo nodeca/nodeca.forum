@@ -17,9 +17,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_topic(env) {
     let topic = yield N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
 
-    if (!topic) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!topic) throw N.io.NOT_FOUND;
 
     env.data.topic = topic;
   });

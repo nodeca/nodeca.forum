@@ -30,9 +30,7 @@ module.exports = function (N, apiPath) {
     let topic = yield N.models.forum.Topic
                           .findOne({ hid: env.params.topic_hid })
                           .lean(true);
-    if (!topic) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!topic) throw N.io.NOT_FOUND;
 
     env.data.topic = topic;
   });
@@ -44,9 +42,7 @@ module.exports = function (N, apiPath) {
     let section = yield N.models.forum.Section
                             .findOne({ _id: env.data.topic.section })
                             .lean(true);
-    if (!section) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });
@@ -59,9 +55,7 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
-    if (!access_env.data.access_read) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 

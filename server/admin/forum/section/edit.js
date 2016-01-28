@@ -17,9 +17,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* section_edit_fetch_current(env) {
     let currentSection = yield N.models.forum.Section.findById(env.params._id).lean(true);
 
-    if (!currentSection) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!currentSection) throw N.io.NOT_FOUND;
 
     env.res.current_section = currentSection;
   });

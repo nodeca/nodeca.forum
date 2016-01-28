@@ -371,9 +371,7 @@ module.exports = function (N) {
   SectionUsergroupStore.removePermissions = co.wrap(function* removePermissions(sectionId, usergroupId) {
     let section_settings = yield N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId });
 
-    if (!section_settings) {
-      return;
-    }
+    if (!section_settings) return;
 
     delete section_settings.data[usergroupId];
     section_settings.markModified('data');
@@ -391,9 +389,7 @@ module.exports = function (N) {
     sections.map(section_settings => {
       let usergroup_settings = section_settings.data[usergroupId];
 
-      if (!usergroup_settings) {
-        return Promise.resolve();
-      }
+      if (!usergroup_settings) return Promise.resolve();
 
       delete section_settings.data[usergroupId];
       section_settings.markModified('data');

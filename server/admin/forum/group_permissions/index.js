@@ -11,7 +11,7 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  N.wire.before(apiPath, function* section_usergroup_store_check() {
+  N.wire.before(apiPath, function section_usergroup_store_check() {
     if (!N.settings.getStore('section_usergroup')) {
       throw {
         code:    N.io.APP_ERROR,

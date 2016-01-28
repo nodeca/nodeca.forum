@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function check_type(env) {
     if (_.values(N.models.users.Subscription.types).indexOf(env.params.type) === -1) {
-      return N.io.BAD_REQUEST;
+      throw N.io.BAD_REQUEST;
     }
   });
 
@@ -26,9 +26,7 @@ module.exports = function (N, apiPath) {
   // Check auth
   //
   N.wire.before(apiPath, function check_auth(env) {
-    if (env.user_info.is_guest) {
-      return N.io.FORBIDDEN;
-    }
+    if (env.user_info.is_guest) throw N.io.FORBIDDEN;
   });
 
 

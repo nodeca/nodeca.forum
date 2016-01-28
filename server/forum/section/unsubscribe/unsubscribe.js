@@ -28,9 +28,7 @@ module.exports = function (N, apiPath) {
     let section = yield N.models.forum.Section
                             .findOne({ hid: env.params.section_hid })
                             .lean(true);
-    if (!section) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });
@@ -43,9 +41,7 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:forum.access.section', access_env);
 
-    if (!access_env.data.access_read) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 

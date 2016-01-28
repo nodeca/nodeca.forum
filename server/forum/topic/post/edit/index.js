@@ -16,9 +16,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_post(env) {
     let post = yield N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
 
-    if (!post) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!post) throw N.io.NOT_FOUND;
 
     env.data.post = post;
   });
@@ -36,9 +34,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_topic(env) {
     let topic = yield N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
 
-    if (!topic) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!topic) throw N.io.NOT_FOUND;
 
     env.data.topic = topic;
   });
@@ -51,9 +47,7 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:forum.access.post', access_env);
 
-    if (!access_env.data.access_read) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 

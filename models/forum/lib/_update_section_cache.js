@@ -28,9 +28,7 @@ module.exports = function (N) {
       let result = { cache: {}, cache_hb: {} };
       let children = yield Section.getChildren(sectionID, 1);
 
-      if (!children.length) {
-        return result;
-      }
+      if (!children.length) return result;
 
       let sections = yield Section.find({ _id: { $in: _.map(children, '_id') } });
 
@@ -62,10 +60,8 @@ module.exports = function (N) {
       let topic = yield Topic.findOne({ section: sectionID, st: { $in: visible_st_hb } })
         .sort('-cache_hb.last_post');
 
-      if (!topic) {
-        // all topics in this section are deleted
-        return result;
-      }
+      // all topics in this section are deleted
+      if (!topic) return result;
 
       // Last post in this section is considered hellbanned if
       //  (whole topic has HB status) OR (last post has HB status)
@@ -95,10 +91,8 @@ module.exports = function (N) {
       topic = yield Topic.findOne({ section: sectionID, st: { $in: Topic.statuses.LIST_VISIBLE } })
         .sort('-cache.last_post');
 
-      if (!topic) {
-        // all visible topics in this section are deleted
-        return result;
-      }
+      // all visible topics in this section are deleted
+      if (!topic) return result;
 
       result.cache_hb = {
         last_topic:       topic._id,
@@ -166,10 +160,8 @@ module.exports = function (N) {
       .findOne({ section: sectionID, st: { $in: visible_st_hb } })
       .sort('-cache_hb.last_post');
 
-    if (!topic) {
-      // all topics in this section are deleted
-      return;
-    }
+    // all topics in this section are deleted
+    if (!topic) return;
 
     // Last post in this section is considered hellbanned if
     //  (whole topic has HB status) OR (last post has HB status)

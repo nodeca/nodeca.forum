@@ -32,9 +32,7 @@ module.exports = function (N, apiPath) {
       (acc, match) => match.meta.methods.get === 'forum.topic' && (match.params.post_hid ? match : acc),
       null);
 
-    if (!match) {
-      return;
-    }
+    if (!match) return;
 
     let access_env_sub = {
       params: {
@@ -175,9 +173,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
       locals.data.posts.forEach((id, i) => {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
+        if (locals.data.access_read[i] === false) return; // continue
 
         locals.data.posts[i] = _.find(result, { _id: String(id) });
 
@@ -202,9 +198,7 @@ module.exports = function (N, apiPath) {
     let can_see_hellbanned = yield N.settings.get('can_see_hellbanned', params, {});
 
     locals.data.posts.forEach((post, i) => {
-      if (locals.data.access_read[i] === false) {
-        return; // continue
-      }
+      if (locals.data.access_read[i] === false) return; // continue
 
       let allow_access = (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
 

@@ -12,9 +12,7 @@ module.exports = function (N, apiPath) {
   // Check auth
   //
   N.wire.before(apiPath, function check_auth(env) {
-    if (env.user_info.is_guest) {
-      return N.io.FORBIDDEN;
-    }
+    if (env.user_info.is_guest) throw N.io.FORBIDDEN;
   });
 
 
@@ -94,9 +92,7 @@ module.exports = function (N, apiPath) {
 
     let can_vote = yield env.extras.settings.fetch('can_vote');
 
-    if (!can_vote) {
-      throw N.io.FORBIDDEN;
-    }
+    if (!can_vote) throw N.io.FORBIDDEN;
   });
 
 

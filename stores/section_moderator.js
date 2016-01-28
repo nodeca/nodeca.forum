@@ -452,15 +452,11 @@ module.exports = function (N) {
   SectionModeratorStore.removeModerator = co.wrap(function* removeModerator(sectionId, userId) {
     let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId });
 
-    if (!section_settings) {
-      throw `Forum section ${sectionId} does not exist.`;
-    }
+    if (!section_settings) throw `Forum section ${sectionId} does not exist.`;
 
     let user_settings = section_settings.data[userId];
 
-    if (!user_settings) {
-      return;
-    }
+    if (!user_settings) return;
 
     delete section_settings.data[userId];
     section_settings.markModified('data');

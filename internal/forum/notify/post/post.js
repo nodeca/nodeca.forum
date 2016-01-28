@@ -9,9 +9,7 @@ const user_info = require('nodeca.users/lib/user_info');
 
 module.exports = function (N) {
   N.wire.on('internal:users.notify.deliver', function* notify_deliver_froum_post(local_env) {
-    if (local_env.type !== 'FORUM_NEW_POST') {
-      return;
-    }
+    if (local_env.type !== 'FORUM_NEW_POST') return;
 
     // Fetch post
     //
@@ -21,7 +19,7 @@ module.exports = function (N) {
                         .lean(true);
 
     // If post not exists - terminate
-    if (!post) { return; }
+    if (!post) return;
 
     // Fetch topic
     //
@@ -31,7 +29,7 @@ module.exports = function (N) {
                           .lean(true);
 
     // If topic not exists - terminate
-    if (!topic) { return; }
+    if (!topic) return;
 
     // Fetch section
     //
@@ -41,7 +39,7 @@ module.exports = function (N) {
                             .lean(true);
 
     // If section not exists - terminate
-    if (!section) { return; }
+    if (!section) return;
 
     // Fetch user info
     let users_info = yield user_info(N, local_env.to);

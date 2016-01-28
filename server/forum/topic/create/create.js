@@ -29,9 +29,7 @@ module.exports = function (N, apiPath) {
   // Check auth
   //
   N.wire.before(apiPath, function check_user_auth(env) {
-    if (env.user_info.is_guest) {
-      return N.io.FORBIDDEN;
-    }
+    if (env.user_info.is_guest) throw N.io.FORBIDDEN;
   });
 
 
@@ -54,9 +52,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_section_info(env) {
     let section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
-    if (!section) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });
@@ -69,9 +65,7 @@ module.exports = function (N, apiPath) {
 
     let canStartTopics = yield env.extras.settings.fetch('forum_can_start_topics');
 
-    if (!canStartTopics) {
-      throw N.io.FORBIDDEN;
-    }
+    if (!canStartTopics) throw N.io.FORBIDDEN;
   });
 
 
@@ -138,9 +132,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_images_count(env) {
     let max_images = yield env.extras.settings.fetch('forum_post_text_max_images');
 
-    if (max_images <= 0) {
-      return;
-    }
+    if (max_images <= 0) return;
 
     let ast         = cheequery(env.data.parse_result.html);
     let images      = ast.find('.image').length;
@@ -161,9 +153,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_emoji_count(env) {
     let max_emojis = yield env.extras.settings.fetch('forum_post_text_max_emojis');
 
-    if (max_emojis < 0) {
-      return;
-    }
+    if (max_emojis < 0) return;
 
     if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
       throw {
@@ -283,9 +273,7 @@ module.exports = function (N, apiPath) {
       .where('type').equals(N.models.users.Subscription.types.WATCHING)
       .lean(true);
 
-    if (!subscriptions.length) {
-      return;
-    }
+    if (!subscriptions.length) return;
 
     yield N.wire.emit('internal:users.notify', {
       src: env.data.new_topic._id,

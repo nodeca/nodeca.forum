@@ -40,17 +40,13 @@ module.exports = function (N, apiPath) {
     let section = yield N.models.forum.Section
                             .findById(env.params.section_id)
                             .lean(true);
-    if (!section) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!section) throw N.io.NOT_FOUND;
 
       // Fetch usergroup just to ensure it exists.
     let user = yield N.models.users.User
                           .findById(env.params.user_id)
                           .lean(true);
-    if (!user) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!user) throw N.io.NOT_FOUND;
 
     yield SectionModeratorStore.set(
       env.params.settings,

@@ -90,9 +90,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
       locals.data.topics.forEach((hid, i) => {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
+        if (locals.data.access_read[i] === false) return; // continue
 
         locals.data.topics[i] = _.find(result, { hid });
 
@@ -113,9 +111,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
       locals.data.topics.forEach(function (id, i) {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
+        if (locals.data.access_read[i] === false) return; // continue
 
         locals.data.topics[i] = _.find(result, { _id: String(id) });
 

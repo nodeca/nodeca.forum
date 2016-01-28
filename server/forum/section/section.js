@@ -86,7 +86,7 @@ module.exports = function (N, apiPath) {
     if (env.params.page > page_max) {
 
       // Requested page is BIGGER than maximum - redirect to the last one
-      return {
+      throw {
         code: N.io.REDIRECT,
         head: {
           Location: N.router.linkTo('forum.section', {
@@ -126,9 +126,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function* fill_topic_breadcrumbs(env) {
 
-    if (!env.data.section) {
-      return;
-    }
+    if (!env.data.section) return;
 
     let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
 
@@ -157,15 +155,11 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* fill_parent_hid(env) {
     let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
 
-    if (!parents.length) {
-      return;
-    }
+    if (!parents.length) return;
 
     let section = yield fetchSection(parents[parents.length - 1]);
 
-    if (!section) {
-      return;
-    }
+    if (!section) return;
 
     env.res.section_level = parents.length;
     env.res.parent_hid = section.hid;

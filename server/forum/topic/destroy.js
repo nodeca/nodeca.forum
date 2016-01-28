@@ -21,9 +21,7 @@ module.exports = function (N, apiPath) {
     let statuses = N.models.forum.Topic.statuses;
     let topic = yield N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
 
-    if (!topic) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!topic) throw N.io.NOT_FOUND;
 
     if (topic.st === statuses.DELETED || topic.st === statuses.DELETED_HARD) {
       throw N.io.NOT_FOUND;
@@ -38,9 +36,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_post(env) {
     let post = yield N.models.forum.Post.findOne({ _id: env.data.topic.cache.first_post }).lean(true);
 
-    if (!post) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!post) throw N.io.NOT_FOUND;
 
     env.data.post = post;
   });
@@ -53,9 +49,7 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
-    if (!access_env.data.access_read) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
@@ -88,9 +82,7 @@ module.exports = function (N, apiPath) {
     // Check user permissions
 
     // User can't hard delete topics
-    if (env.params.method === 'hard') {
-      throw N.io.FORBIDDEN;
-    }
+    if (env.params.method === 'hard') throw N.io.FORBIDDEN;
 
     // User can't delete topic with answers
     if (topic.cache.post_count !== 1 || topic.cache_hb.post_count !== 1) {

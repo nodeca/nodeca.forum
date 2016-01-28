@@ -57,7 +57,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   if (topicState.post_hid > 1) {
     var posts = $('.forum-post');
     var i = _.sortedIndexBy(posts, null, function (post) {
-      if (!post) { return topicState.post_hid; }
+      if (!post) return topicState.post_hid;
       return $(post).data('post-hid');
     });
 
@@ -484,19 +484,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     var hid = $('.forum-post:first').data('post-hid');
 
-    if (!hid) {
-      // No posts on the page
-      return;
-    }
+    // No posts on the page
+    if (!hid) return;
 
-    if (hid <= 1) {
-      // If the first post on the page is hid=1, it's a first page,
-      // so we don't need to load anything
-      //
-      // This is sufficient because post with hid=1 always exists.
-      //
-      return;
-    }
+    // If the first post on the page is hid=1, it's a first page,
+    // so we don't need to load anything
+    //
+    // This is sufficient because post with hid=1 always exists.
+    //
+    if (hid <= 1) return;
 
     N.io.rpc('forum.topic.list.by_range', {
       topic_hid: topicState.topic_hid,
@@ -514,9 +510,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         });
       }
 
-      if (!res.posts || !res.posts.length) {
-        return;
-      }
+      if (!res.posts || !res.posts.length) return;
 
       var old_height = $('.forum-postlist').height();
 
@@ -563,16 +557,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     var hid = $('.forum-post:last').data('post-hid');
 
-    if (!hid) {
-      // No posts on the page
-      return;
-    }
+    // No posts on the page
+    if (!hid) return;
 
-    if (hid >= topicState.max_post) {
-      // If the last post on the page is visible, no need to scroll further.
-      //
-      return;
-    }
+    // If the last post on the page is visible, no need to scroll further.
+    //
+    if (hid >= topicState.max_post) return;
 
     N.io.rpc('forum.topic.list.by_range', {
       topic_hid: topicState.topic_hid,
@@ -590,9 +580,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         });
       }
 
-      if (!res.posts || !res.posts.length) {
-        return;
-      }
+      if (!res.posts || !res.posts.length) return;
 
       res.pagination = {
         // used in paginator
@@ -655,14 +643,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     // Get offset of the first post in the viewport
     //
     currentIdx = _.sortedIndexBy(posts, null, function (post) {
-      if (!post) { return viewportStart; }
+      if (!post) return viewportStart;
       return $(post).offset().top + $(post).height();
     });
 
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
 
     newHid = $(posts[currentIdx]).data('post-hid');
-    if (newHid === topicState.post_hid) { return; }
+    if (newHid === topicState.post_hid) return;
 
     topicState.post_hid = newHid;
 
@@ -686,7 +674,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on('forum.topic:nav_to_post', function navigate_to_post(data) {
     var post = +data.fields.post;
-    if (!post) { return; }
+    if (!post) return;
 
     N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
@@ -823,7 +811,7 @@ var topicParams;
 //
 function set_quote_modifiers(selector) {
   // if topicParams is not set, it means we aren't on a topic page
-  if (!topicParams) { return; }
+  if (!topicParams) return;
 
   selector.find('.quote').addBack('.quote').each(function () {
     var $tag = $(this);
@@ -834,11 +822,11 @@ function set_quote_modifiers(selector) {
 
     var cite = $tag.attr('cite');
 
-    if (!cite) { return; }
+    if (!cite) return;
 
     var match = N.router.match(cite);
 
-    if (!match) { return; }
+    if (!match) return;
 
     if (match &&
         match.meta.methods.get === 'forum.topic' &&
@@ -898,9 +886,7 @@ var uploadScrollPositions = _.debounce(function () {
 //
 N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init() {
   // Skip for guests
-  if (N.runtime.is_guest) {
-    return;
-  }
+  if (N.runtime.is_guest) return;
 
   var lastPos = -1;
   var lastRead = -1;
@@ -912,7 +898,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     var $posts = $('.forum-post');
 
     var currentIdx = _.sortedIndexBy($posts, null, function (post) {
-      if (!post) { return viewportStart; }
+      if (!post) return viewportStart;
       return $(post).offset().top + $(post).height();
     });
 
@@ -930,10 +916,8 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       }
     }
 
-    if (lastVisibleIdx < 0) {
-      // No posts on the page
-      return;
-    }
+    // No posts on the page
+    if (lastVisibleIdx < 0) return;
 
     // Last completely visible post on page to mark it as read
     var read = $($posts[lastVisibleIdx]).data('post-hid');
@@ -950,9 +934,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       pos = $post.data('post-hid');
     }
 
-    if (lastPos === pos && lastRead === read) {
-      return;
-    }
+    if (lastPos === pos && lastRead === read) return;
 
     lastPos = pos;
     lastRead = read;

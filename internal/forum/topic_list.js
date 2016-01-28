@@ -45,7 +45,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_section(env) {
     let section = yield Section.findOne({ hid: env.data.section_hid }).lean(true);
 
-    if (!section) { throw N.io.NOT_FOUND; }
+    if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });
@@ -63,9 +63,7 @@ module.exports = function (N, apiPath) {
   // Check section access permission
   //
   N.wire.before(apiPath, function check_access_permissions(env) {
-    if (!env.data.settings.forum_can_view) {
-      return N.io.FORBIDDEN;
-    }
+    if (!env.data.settings.forum_can_view) throw N.io.FORBIDDEN;
   });
 
 

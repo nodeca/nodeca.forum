@@ -45,7 +45,7 @@ module.exports = function (N) {
 
     function select_visible_before() {
       let posts_count = env.params.before;
-      if (posts_count <= 0) { return Promise.resolve([]); }
+      if (posts_count <= 0) return Promise.resolve([]);
 
       return Post.find()
         .where('topic').equals(env.data.topic._id)
@@ -70,7 +70,7 @@ module.exports = function (N) {
 
     function select_visible_after() {
       let posts_count = env.params.after;
-      if (posts_count <= 0) { return Promise.resolve(); }
+      if (posts_count <= 0) return Promise.resolve();
 
       return Post.find()
         .where('topic').equals(env.data.topic._id)

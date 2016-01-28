@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_topic(env) {
     let topic = yield Topic.findOne({ hid: env.data.topic_hid }).lean(true);
 
-    if (!topic) { throw N.io.NOT_FOUND; }
+    if (!topic) throw N.io.NOT_FOUND;
 
     env.data.topic = topic;
   });
@@ -60,7 +60,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_section(env) {
     let section = yield Section.findOne({ _id: env.data.topic.section }).lean(true);
 
-    if (!section) { throw N.io.NOT_FOUND; }
+    if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });
@@ -82,7 +82,7 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
-    if (!access_env.data.access_read) { throw N.io.NOT_FOUND; }
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 

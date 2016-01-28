@@ -29,9 +29,7 @@ module.exports = function (N, apiPath) {
   // Check user permission
   //
   N.wire.before(apiPath, function check_permissions(env) {
-    if (env.user_info.is_guest) {
-      return N.io.NOT_FOUND;
-    }
+    if (env.user_info.is_guest) throw N.io.NOT_FOUND;
   });
 
 
@@ -40,9 +38,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_section_info(env) {
     let section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
-    if (!section) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });
@@ -55,9 +51,7 @@ module.exports = function (N, apiPath) {
 
     let forum_can_reply = yield env.extras.settings.fetch('forum_can_reply');
 
-    if (!forum_can_reply) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!forum_can_reply) throw N.io.NOT_FOUND;
   });
 
 
@@ -73,9 +67,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* fetch_topic(env) {
     let topic = yield N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
 
-    if (!topic) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!topic) throw N.io.NOT_FOUND;
 
     env.data.topic = topic;
   });
@@ -88,18 +80,14 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
-    if (!access_env.data.access_read) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
   // Fetch parent post
   //
   N.wire.before(apiPath, function* fetch_parent_post(env) {
-    if (!env.params.parent_post_id) {
-      return;
-    }
+    if (!env.params.parent_post_id) return;
 
     let post = yield N.models.forum.Post.findOne({ _id: env.params.parent_post_id }).lean(true);
 
@@ -181,9 +169,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_images_count(env) {
     let max_images = yield env.extras.settings.fetch('forum_post_text_max_images');
 
-    if (max_images <= 0) {
-      return;
-    }
+    if (max_images <= 0) return;
 
     let ast         = cheequery(env.data.parse_result.html);
     let images      = ast.find('.image').length;
@@ -204,9 +190,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_emoji_count(env) {
     let max_emojis = yield env.extras.settings.fetch('forum_post_text_max_emojis');
 
-    if (max_emojis < 0) {
-      return;
-    }
+    if (max_emojis < 0) return;
 
     if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
       throw {
@@ -331,9 +315,7 @@ module.exports = function (N, apiPath) {
   // Add reply notification for parent post owner
   //
   N.wire.after(apiPath, function* add_reply_notification(env) {
-    if (!env.data.new_post.to) {
-      return;
-    }
+    if (!env.data.new_post.to) return;
 
     yield N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
@@ -351,9 +333,7 @@ module.exports = function (N, apiPath) {
       .where('type').equals(N.models.users.Subscription.types.WATCHING)
       .lean(true);
 
-    if (!subscriptions.length) {
-      return;
-    }
+    if (!subscriptions.length) return;
 
     yield N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,

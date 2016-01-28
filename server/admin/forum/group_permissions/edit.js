@@ -11,7 +11,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function* setting_stores_check() {
+  N.wire.before(apiPath, function setting_stores_check() {
     if (!N.settings.getStore('section_usergroup')) {
       throw {
         code:    N.io.APP_ERROR,
@@ -33,9 +33,7 @@ module.exports = function (N, apiPath) {
                                 .findById(env.params.section_id)
                                 .lean(true);
 
-    if (!env.data.section) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!env.data.section) throw N.io.NOT_FOUND;
   });
 
 
@@ -43,9 +41,7 @@ module.exports = function (N, apiPath) {
     env.data.usergroup = yield N.models.users.UserGroup
                                   .findById(env.params.usergroup_id)
                                   .lean(true);
-    if (!env.data.usergroup) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!env.data.usergroup) throw N.io.NOT_FOUND;
   });
 
 

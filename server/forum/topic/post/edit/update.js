@@ -94,9 +94,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_images_count(env) {
     let max_images = yield env.extras.settings.fetch('forum_post_text_max_images');
 
-    if (max_images <= 0) {
-      return;
-    }
+    if (max_images <= 0) return;
 
     let ast         = cheequery(env.data.parse_result.html);
     let images      = ast.find('.image').length;
@@ -117,9 +115,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_emoji_count(env) {
     let max_emojis = yield env.extras.settings.fetch('forum_post_text_max_emojis');
 
-    if (max_emojis < 0) {
-      return;
-    }
+    if (max_emojis < 0) return;
 
     if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
       throw {
@@ -137,9 +133,7 @@ module.exports = function (N, apiPath) {
         .findOne({ _id: env.data.post._id })
         .lean(false);
 
-    if (!post) {
-      throw N.io.NOT_FOUND;
-    }
+    if (!post) throw N.io.NOT_FOUND;
 
     post.tail         = env.data.parse_result.tail;
     post.attach       = env.params.attach;
