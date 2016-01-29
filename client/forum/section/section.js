@@ -114,7 +114,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var params = { subscription: data.$this.data('section-subscription') };
 
     N.wire.emit('forum.section.subscription', params, function () {
-      N.io.rpc('forum.section.subscribe', { section_hid: hid, type: params.subscription }).done(function () {
+      N.io.rpc('forum.section.subscribe', { section_hid: hid, type: params.subscription }).then(function () {
         var pageParams = {};
 
         N.wire.emit('navigate.get_page_raw', pageParams, function () {
@@ -143,7 +143,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Click mark all read
   //
   N.wire.on('forum.section:mark_read', function reply(data) {
-    N.io.rpc('forum.section.mark_read', { hid: data.$this.data('section-hid') }).done(function () {
+    N.io.rpc('forum.section.mark_read', { hid: data.$this.data('section-hid') }).then(function () {
       $('.forum-topicline.forum-topicline__m-new, .forum-topicline.forum-topicline__m-unread')
         .removeClass('forum-topicline__m-new')
         .removeClass('forum-topicline__m-unread');
@@ -226,7 +226,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       last_post_id:  sectionState.first_post_id,
       before:        LOAD_TOPICS_COUNT,
       after:         0
-    }).done(function (res) {
+    }).then(function (res) {
       if (!res.topics) return;
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
@@ -267,7 +267,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       last_post_id:  sectionState.last_post_id,
       before:        0,
       after:         LOAD_TOPICS_COUNT
-    }).done(function (res) {
+    }).then(function (res) {
       if (!res.topics) return;
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {

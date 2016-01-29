@@ -119,7 +119,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       }
     });
 
-    N.io.rpc('admin.forum.group_permissions.update', request).done(function () {
+    N.io.rpc('admin.forum.group_permissions.update', request).then(function () {
       view.settings.forEach(function (setting) { setting.markClean(); });
 
       N.wire.emit('notify', { type: 'info', message: t('message_saved') });

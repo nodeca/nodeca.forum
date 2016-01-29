@@ -113,7 +113,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       request[key] = field();
     });
 
-    N.io.rpc('admin.forum.section.create', request).done(function () {
+    N.io.rpc('admin.forum.section.create', request).then(function () {
       _.forEach(currentSection, function (field) {
         field.markClean();
       });
@@ -131,7 +131,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       request[key] = field();
     });
 
-    N.io.rpc('admin.forum.section.update', request).done(function () {
+    N.io.rpc('admin.forum.section.update', request).then(function () {
       _.forEach(currentSection, function (field) {
         field.markClean();
       });

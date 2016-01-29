@@ -26,7 +26,7 @@ N.wire.once('forum.topic.ip_info_dlg', function init_handlers() {
 //
 N.wire.on('forum.topic.ip_info_dlg', function show_ip_info_dlg(options, callback) {
 
-  N.io.rpc('forum.topic.post.ip_info', { post_id: options.postId }).done(function (res) {
+  N.io.rpc('forum.topic.post.ip_info', { post_id: options.postId }).then(function (res) {
     $dialog = $(N.runtime.render('forum.topic.ip_info_dlg', res));
 
     $('body').append($dialog);

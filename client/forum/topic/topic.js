@@ -190,7 +190,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var postId = data.$this.data('post-id');
 
     N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
-        .done(function (res) {
+        .then(function (res) {
 
       var $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
 
@@ -207,7 +207,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var topicHid = data.$this.data('topic-hid');
     var unpin = data.$this.data('unpin') || false;
 
-    N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin }).done(function (res) {
+    N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin }).then(function (res) {
       var params = {};
 
       N.wire.emit('navigate.get_page_raw', params, function () {
@@ -237,7 +237,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       as_moderator: data.$this.data('as-moderator') || false
     };
 
-    N.io.rpc('forum.topic.close', params).done(function (res) {
+    N.io.rpc('forum.topic.close', params).then(function (res) {
       var pageParams = {};
 
       N.wire.emit('navigate.get_page_raw', pageParams, function () {
@@ -284,7 +284,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           as_moderator: data.$this.data('as-moderator') || false,
           topic_hid: data.$this.data('topic-hid'),
           title: value
-        }).done(function () {
+        }).then(function () {
           $title.text(value);
 
           // update title in navbar
@@ -304,7 +304,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic.topic_undelete', function topic_undelete(data, callback) {
     var topicHid = data.$this.data('topic-hid');
 
-    N.io.rpc('forum.topic.undelete', { topic_hid: topicHid }).done(function (res) {
+    N.io.rpc('forum.topic.undelete', { topic_hid: topicHid }).then(function (res) {
       var params = {};
 
       N.wire.emit('navigate.get_page_raw', params, function () {
@@ -328,10 +328,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var $post = $('#post' + postId);
     var topicHid = topicState.topic_hid;
 
-    N.io.rpc('forum.topic.post.vote', { post_id: postId, value }).done(function () {
+    N.io.rpc('forum.topic.post.vote', { post_id: postId, value }).then(function () {
 
       // Update whole post to correctly update votes counters and modifiers
-      N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).done(function (res) {
+      N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).then(function (res) {
         var $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
         N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
@@ -348,7 +348,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on('forum.topic.post_undelete', function post_undelete(data, callback) {
     var postId = data.$this.data('post-id');
 
-    N.io.rpc('forum.topic.post.undelete', { post_id: postId }).done(function () {
+    N.io.rpc('forum.topic.post.undelete', { post_id: postId }).then(function () {
       $('#post' + postId)
         .removeClass('forum-post__m-deleted')
         .removeClass('forum-post__m-deleted-hard');
@@ -365,7 +365,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var params = { subscription: data.$this.data('topic-subscription') };
 
     N.wire.emit('forum.topic.topic_subscription', params, function () {
-      N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }).done(function () {
+      N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }).then(function () {
         var pageParams = {};
 
         N.wire.emit('navigate.get_page_raw', pageParams, function () {
@@ -408,7 +408,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     N.wire.emit('forum.topic.post_delete_dlg', params, function () {
       N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
-          .done(function (res) {
+          .then(function (res) {
 
         if (res.posts.length === 0) {
           $post.fadeOut(function () {
@@ -437,7 +437,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     var remove = data.$this.data('remove') || false;
     var $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove }).done(function (res) {
+    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove }).then(function (res) {
       if (remove) {
         $post.removeClass('forum-post__m-bookmarked');
       } else {
@@ -499,7 +499,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       post_hid:  hid - 1,
       before:    LOAD_POSTS_COUNT,
       after:     0
-    }).done(function (res) {
+    }).then(function (res) {
       topicState.post_count = res.topic.cache.post_count;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
@@ -535,7 +535,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       topicState.prev_loading_start = 0;
 
-    }).fail(N.io.NOT_FOUND, function () {
+    }).catch(err => {
+      if (err.code !== N.io.NOT_FOUND) {
+        throw err;
+      }
+
       // Topic moved or deleted, refreshing the page so user could
       // see the error
       //
@@ -569,7 +573,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       post_hid:  hid + 1,
       before:    0,
       after:     LOAD_POSTS_COUNT
-    }).done(function (res) {
+    }).then(function (res) {
       topicState.post_count = res.topic.cache.post_count;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
@@ -600,7 +604,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       topicState.next_loading_start = 0;
 
-    }).fail(N.io.NOT_FOUND, function () {
+    }).catch(err => {
+      if (err.code !== N.io.NOT_FOUND) {
+        throw err;
+      }
+
       // Topic moved or deleted, refreshing the page so user could
       // see the error
       //
@@ -741,7 +749,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     N.io.rpc('forum.topic.offset', {
       section_hid: topicState.section_hid,
       topic_hid: data.$this.data('topic-hid')
-    }).done(function (res) {
+    }).then(function (res) {
       var page = Math.floor(res.topic_offset / res.topics_per_page) + 1;
 
       N.wire.emit('navigate.to', {

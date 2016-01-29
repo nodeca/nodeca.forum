@@ -13,7 +13,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       usergroup_id: data.$this.data('usergroupId')
     };
 
-    N.io.rpc('admin.forum.group_permissions.destroy', request).done(function () {
+    N.io.rpc('admin.forum.group_permissions.destroy', request).then(function () {
       // Refresh page to show result of the reset.
       window.location.reload();
     });

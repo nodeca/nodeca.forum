@@ -40,9 +40,9 @@ N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
 //
 N.wire.before(module.apiPath + ':begin', function fetch_options(data, callback) {
   N.io.rpc('forum.topic.post.edit.index', { post_id: data.post_id, as_moderator: data.as_moderator })
-      .done(function (response) {
+      .then(function (response) {
 
-    N.io.rpc('forum.topic.post.options').done(function (opt) {
+    N.io.rpc('forum.topic.post.options').then(function (opt) {
       options = {
         parse_options: opt.parse_options,
         user_settings: {
@@ -99,7 +99,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         option_no_quote_collapse: options.user_settings.no_quote_collapse
       };
 
-      N.io.rpc('forum.topic.post.edit.update', params).done(function (res) {
+      N.io.rpc('forum.topic.post.edit.update', params).then(function (res) {
         var $post = $('#post' + data.post_id);
 
         N.MDEdit.hide();

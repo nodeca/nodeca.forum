@@ -30,7 +30,7 @@ N.wire.once('forum.topic.post_delete_dlg', function init_handlers() {
       data.reason = form.fields.reason;
     }
 
-    N.io.rpc('forum.topic.post.destroy', data).done(function () {
+    N.io.rpc('forum.topic.post.destroy', data).then(function () {
       params.method = data.method;
 
       let done = doneCallback;

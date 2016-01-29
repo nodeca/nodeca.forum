@@ -51,12 +51,12 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(data) {
   var $container = data.$this.closest('.aforum-index__slist-item');
 
   N.io.rpc('admin.forum.section.destroy', { _id: data.$this.data('id') })
-    .done(function () {
+    .then(function () {
       // Remove all destroyed elements from DOM.
       $container.prev('._placeholder').remove();
       $container.remove();
     })
-    .fail(function (err) {
+    .catch(function (err) {
       N.wire.emit('notify', { type: 'error', message: err.message });
     });
 });
@@ -79,8 +79,8 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
         // Reroute request to rpc
         transport(req, onSuccess, onError) {
           N.io.rpc('admin.core.user_lookup', { nick: req.url, strict: false })
-            .done(onSuccess)
-            .fail(onError);
+            .then(onSuccess)
+            .catch(onError);
         }
       },
       datumTokenizer(d) {
@@ -122,7 +122,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
 N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(data) {
   var nick = data.fields.nick;
 
-  N.io.rpc('admin.core.user_lookup', { nick, strict: true }).done(function (res) {
+  N.io.rpc('admin.core.user_lookup', { nick, strict: true }).then(function (res) {
     if (_.isEmpty(res)) {
       N.wire.emit('notify', t('error_no_user_with_such_nick', { nick }));
       return;

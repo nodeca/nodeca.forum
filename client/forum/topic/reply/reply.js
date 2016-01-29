@@ -42,7 +42,7 @@ N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
 // Fetch options
 //
 N.wire.before(module.apiPath + ':begin', function fetch_options(__, callback) {
-  N.io.rpc('forum.topic.post.options').done(function (opt) {
+  N.io.rpc('forum.topic.post.options').then(function (opt) {
     options = {
       parse_options: opt.parse_options,
       user_settings: {
@@ -74,7 +74,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
       media_ids: _.map(draft.attachments, 'media_id')
     };
 
-    N.io.rpc('forum.topic.attachments_check', params).done(function (res) {
+    N.io.rpc('forum.topic.attachments_check', params).then(function (res) {
       draft.attachments = draft.attachments.filter(function (attach) {
         return res.media_ids.indexOf(attach.media_id) !== -1;
       });
@@ -135,7 +135,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         params.parent_post_id = data.post_id;
       }
 
-      N.io.rpc('forum.topic.post.reply', params).done(function (response) {
+      N.io.rpc('forum.topic.post.reply', params).then(function (response) {
         bag.remove(draftKey, function () {
           N.MDEdit.hide();
           N.wire.emit('navigate.to', response.redirect_url);
