@@ -24,8 +24,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post data and check permissions
   //
-  N.wire.before(apiPath, function fetch_post_data(env, callback) {
-    N.wire.emit('server:forum.topic.post.edit.index', env, callback);
+  N.wire.before(apiPath, function fetch_post_data(env) {
+    return N.wire.emit('server:forum.topic.post.edit.index', env);
   });
 
 

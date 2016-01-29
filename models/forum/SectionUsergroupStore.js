@@ -31,8 +31,8 @@ module.exports = function (N, collectionName) {
   //////////////////////////////////////////////////////////////////////////////
 
 
-  N.wire.on('init:models', function emit_init_SectionUsergroupStore(__, callback) {
-    N.wire.emit('init:models.' + collectionName, SectionUsergroupStore, callback);
+  N.wire.on('init:models', function emit_init_SectionUsergroupStore() {
+    return N.wire.emit('init:models.' + collectionName, SectionUsergroupStore);
   });
 
 

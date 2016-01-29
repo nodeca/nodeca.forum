@@ -21,8 +21,8 @@ module.exports = function (N, collectionName) {
   PostBookmark.index({ user_id: 1, post_id: 1 });
 
 
-  N.wire.on('init:models', function emit_init_PostBookmark(__, callback) {
-    N.wire.emit('init:models.' + collectionName, PostBookmark, callback);
+  N.wire.on('init:models', function emit_init_PostBookmark() {
+    return N.wire.emit('init:models.' + collectionName, PostBookmark);
   });
 
   N.wire.on('init:models.' + collectionName, function init_model_PostBookmark(schema) {

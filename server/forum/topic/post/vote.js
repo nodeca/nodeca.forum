@@ -18,68 +18,34 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function fetch_post(env, callback) {
-    N.models.forum.Post.findOne({ _id: env.params.post_id })
-        .lean(true)
-        .exec(function (err, post) {
+  N.wire.before(apiPath, function* fetch_post(env) {
+    env.data.post = yield N.models.forum.Post
+                              .findOne({ _id: env.params.post_id })
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!post) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.post = post;
-      callback();
-    });
+    if (!env.data.post) throw N.io.NOT_FOUND;
   });
 
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ _id: env.data.post.topic })
-        .lean(true)
-        .exec(function (err, topic) {
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    env.data.topic = yield N.models.forum.Topic
+                              .findOne({ _id: env.data.post.topic })
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    if (!env.data.topic) throw N.io.NOT_FOUND;
   });
 
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
+  N.wire.before(apiPath, function* check_access(env) {
     var access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.post', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.post', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
@@ -122,43 +88,33 @@ module.exports = function (N, apiPath) {
 
   // Remove previous vote if exists
   //
-  N.wire.before(apiPath, function remove_votes(env, callback) {
-    N.models.users.Vote.remove(
-      { 'for': env.params.post_id, from: env.user_info.user_id },
-      callback
-    );
+  N.wire.before(apiPath, function* remove_votes(env) {
+    yield N.models.users.Vote.remove(
+      { 'for': env.params.post_id, from: env.user_info.user_id });
   });
 
 
   // Add vote
   //
-  N.wire.on(apiPath, function add_vote(env, callback) {
-    if (env.params.value === 0) {
-      callback();
-      return;
-    }
+  N.wire.on(apiPath, function* add_vote(env) {
+    if (env.params.value === 0) return;
 
-    N.models.users.Vote.update(
-      {
-        'for': env.params.post_id,
-        from: env.user_info.user_id
-      },
+    yield N.models.users.Vote.update(
+      { 'for': env.params.post_id, from: env.user_info.user_id },
       {
         to: env.data.post.user,
         type: N.models.users.Vote.types.FORUM_POST,
         value: env.params.value === 1 ? 1 : -1,
         hb: env.user_info.hb
       },
-      { upsert: true },
-      callback
-    );
+      { upsert: true });
   });
 
 
   // Update post
   //
-  N.wire.after(apiPath, function update_post(env, callback) {
-    N.models.users.Vote.aggregate([
+  N.wire.after(apiPath, function* update_post(env) {
+    let result = yield N.models.users.Vote.aggregate([
       { $match: { 'for': env.data.post._id } },
       {
         $group: {
@@ -167,21 +123,9 @@ module.exports = function (N, apiPath) {
           votes_hb: { $sum: '$value' }
         }
       },
-      {
-        $project: {
-          _id: false,
-          votes: true,
-          votes_hb: true
-        }
-      }
-    ], function (err, result) {
+      { $project: { _id: false, votes: true, votes_hb: true } }
+    ]).exec();
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      N.models.forum.Post.update({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 }, callback);
-    });
+    yield N.models.forum.Post.update({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 });
   });
 };

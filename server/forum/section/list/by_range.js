@@ -34,10 +34,10 @@ module.exports = function (N, apiPath) {
 
   // Subcall forum.topic_list
   //
-  N.wire.on(apiPath, function subcall_topic_list(env, callback) {
+  N.wire.on(apiPath, function subcall_topic_list(env) {
     env.data.section_hid = env.params.section_hid;
     env.data.build_topics_ids = buildTopicIds;
 
-    N.wire.emit('internal:forum.topic_list', env, callback);
+    return N.wire.emit('internal:forum.topic_list', env);
   });
 };

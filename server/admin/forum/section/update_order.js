@@ -6,8 +6,7 @@
 'use strict';
 
 
-var _ = require('lodash');
-var async = require('async');
+const _ = require('lodash');
 
 
 module.exports = function (N, apiPath) {
@@ -19,51 +18,35 @@ module.exports = function (N, apiPath) {
 
   // set parent and display order to sections
   //
-  N.wire.on(apiPath, function section_update(env, callback) {
+  N.wire.on(apiPath, function* section_update(env) {
 
-    N.models.forum.Section
-      .findById(env.params._id)
-      .select('parent display_order')
-      .exec(function (err, section) {
+    let section = yield N.models.forum.Section
+                            .findById(env.params._id)
+                            .select('parent display_order');
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      section.parent = env.params.parent;
-      section.save(callback);
-    });
+    section.parent = env.params.parent;
+    yield section.save();
   });
+
 
   // set display order to sibling sections
   //
-  N.wire.after(apiPath, function update_display_orders(env, callback) {
+  N.wire.after(apiPath, function* update_display_orders(env) {
 
     var _ids = env.params.sibling_order;
 
     // create hash table for _ids, where array index means display order
     var siblingOrder = {};
-    _.forEach(_ids, function (value, index) {
-      siblingOrder[value] = index;
-    });
 
-    N.models.forum.Section
-      .find({ _id: { $in: _ids } })
-      .select('display_order')
-      .exec(function (err, sections) {
+    _.forEach(_ids, (value, index) => { siblingOrder[value] = index; });
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    let sections = yield N.models.forum.Section
+                            .find({ _id: { $in: _ids } })
+                            .select('display_order');
 
-      // for each sibling find proper section and set `display_order` to it
-      async.each(sections, function (section, cb) {
-        section.display_order = siblingOrder[section._id];
-        section.save(cb);
+    // for each sibling find proper section and set `display_order` to it
+    sections.forEach(section => { section.display_order = siblingOrder[section._id]; });
 
-      }, callback);
-    });
+    yield sections.map(section => section.save());
   });
 };

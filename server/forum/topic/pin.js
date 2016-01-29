@@ -11,7 +11,7 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
+  N.wire.before(apiPath, function* fetch_topic(env) {
     var statuses = N.models.forum.Topic.statuses;
     var query = { hid: env.params.topic_hid };
 
@@ -21,24 +21,11 @@ module.exports = function (N, apiPath) {
       query.st = { $in: statuses.LIST_VISIBLE };
     }
 
-    N.models.forum.Topic
-        .findOne(query)
-        .lean(true)
-        .exec(function (err, topic) {
+    env.data.topic = yield N.models.forum.Topic
+                              .findOne(query)
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    if (!env.data.topic) throw N.io.NOT_FOUND;
   });
 
 
@@ -55,34 +42,28 @@ module.exports = function (N, apiPath) {
 
   // Pin/unpin topic
   //
-  N.wire.on(apiPath, function pin_topic(env, callback) {
+  N.wire.on(apiPath, function* pin_topic(env) {
     var statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
 
+    // Pin topic
     if (!env.params.unpin) {
-
-      // Fill response
-      env.res.topic = { st: statuses.PINNED, ste: topic.st };
-
-      // Pin topic
-      N.models.forum.Topic.update(
+      yield N.models.forum.Topic.update(
         { _id: topic._id },
-        { st: statuses.PINNED, ste: topic.st },
-        callback
+        { st: statuses.PINNED, ste: topic.st }
       );
 
+      env.res.topic = { st: statuses.PINNED, ste: topic.st };
       return;
     }
 
-    // Fill response
-    env.res.topic = { st: topic.ste };
-
     // Unpin topic
-    N.models.forum.Topic.update(
+    yield N.models.forum.Topic.update(
       { _id: topic._id },
-      { st: topic.ste, $unset: { ste: 1 } },
-      callback
+      { st: topic.ste, $unset: { ste: 1 } }
     );
+
+    env.res.topic = { st: topic.ste };
   });
 
   // TODO: log moderator actions

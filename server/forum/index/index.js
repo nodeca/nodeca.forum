@@ -12,14 +12,14 @@ module.exports = function (N, apiPath) {
 
   // Request handler
   //
-  N.wire.on(apiPath, function forum_index(env, callback) {
-    N.wire.emit('internal:forum.subsections_fill', env, callback);
+  N.wire.on(apiPath, function forum_index(env) {
+    return N.wire.emit('internal:forum.subsections_fill', env);
   });
 
   // Fill breadcrumbs info
   //
-  N.wire.after(apiPath, function fill_topic_breadcrumbs(env, callback) {
-    N.wire.emit('internal:forum.breadcrumbs_fill', { env }, callback);
+  N.wire.after(apiPath, function fill_topic_breadcrumbs(env) {
+    return N.wire.emit('internal:forum.breadcrumbs_fill', { env });
   });
 
   // Fill head meta

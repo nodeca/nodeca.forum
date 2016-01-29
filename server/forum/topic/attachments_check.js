@@ -22,24 +22,16 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.on(apiPath, function attachments_check(env, callback) {
-    N.models.users.MediaInfo
-        .find({
-          media_id: { $in: env.params.media_ids },
-          user_id: env.user_info.user_id,
-          type: { $in: N.models.users.MediaInfo.types.LIST_VISIBLE }
-        })
-        .lean(true)
-        .select('media_id')
-        .exec(function (err, res) {
+  N.wire.on(apiPath, function* attachments_check(env) {
+    let res = yield N.models.users.MediaInfo
+                        .find({
+                          media_id: { $in: env.params.media_ids },
+                          user_id: env.user_info.user_id,
+                          type: { $in: N.models.users.MediaInfo.types.LIST_VISIBLE }
+                        })
+                        .lean(true)
+                        .select('media_id');
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      env.res.media_ids = _.map(res, 'media_id');
-      callback();
-    });
+    env.res.media_ids = _.map(res, 'media_id');
   });
 };

@@ -175,8 +175,8 @@ module.exports = function (N, collectionName) {
   });
 
 
-  N.wire.on('init:models', function emit_init_Topic(__, callback) {
-    N.wire.emit('init:models.' + collectionName, Topic, callback);
+  N.wire.on('init:models', function emit_init_Topic() {
+    return N.wire.emit('init:models.' + collectionName, Topic);
   });
 
   N.wire.on('init:models.' + collectionName, function init_model_Topic(schema) {

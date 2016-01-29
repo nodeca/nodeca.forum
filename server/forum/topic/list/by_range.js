@@ -19,11 +19,11 @@ module.exports = function (N, apiPath) {
 
   // Fetch posts subcall
   //
-  N.wire.on(apiPath, function fetch_posts_list(env, callback) {
+  N.wire.on(apiPath, function fetch_posts_list(env) {
     env.data.topic_hid = env.params.topic_hid;
     env.data.build_posts_ids = buildPostHids;
 
-    N.wire.emit('internal:forum.post_list', env, callback);
+    return N.wire.emit('internal:forum.post_list', env);
   });
 
 

@@ -3,8 +3,8 @@
 'use strict';
 
 
-var dns   = require('dns');
-var whois = require('whois');
+var dns   = require('mz/dns');
+var whois = require('thenify')(require('whois').lookup);
 
 
 module.exports = function (N, apiPath) {
@@ -25,72 +25,51 @@ module.exports = function (N, apiPath) {
 
   // Fetch post IP
   //
-  N.wire.on(apiPath, function fetch_post_ip(env, callback) {
-    N.models.forum.Post
-        .findOne({ _id: env.params.post_id })
-        .select('ip')
-        .lean(true)
-        .exec(function (err, post) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.on(apiPath, function* fetch_post_ip(env) {
+    let post = yield N.models.forum.Post
+                        .findOne({ _id: env.params.post_id })
+                        .select('ip')
+                        .lean(true);
 
-      if (!post) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+    if (!post) throw N.io.NOT_FOUND;
 
-      if (!post.ip) {
-        callback({
-          code: N.io.CLIENT_ERROR,
-          message: env.t('err_no_ip')
-        });
-        return;
-      }
+    if (!post.ip) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_no_ip')
+      };
+    }
 
-      env.res.ip = env.data.ip = post.ip;
-      callback();
-    });
+    env.res.ip = env.data.ip = post.ip;
   });
 
 
   // Fetch whois info
   //
-  N.wire.after(apiPath, function fetch_whois(env, callback) {
-    whois.lookup(env.data.ip, function (err, data) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.after(apiPath, function* fetch_whois(env) {
+    let data = yield whois(env.data.ip);
 
-      env.res.whois = data.replace(/\r?\n/g, '\n')
-                          .replace(/^[#%].*/mg, '')     // comments
-                          .replace(/^\s+/g, '')         // empty head
-                          .replace(/\s+$/g, '')         // empty tail
-                          .replace(/[ ]+$/mg, '')       // line tailing spaces
-                          .replace(/\n{2,}/g, '\n\n');  // doble empty lines
-      callback();
-    });
+    env.res.whois = data.replace(/\r?\n/g, '\n')
+                        .replace(/^[#%].*/mg, '')     // comments
+                        .replace(/^\s+/g, '')         // empty head
+                        .replace(/\s+$/g, '')         // empty tail
+                        .replace(/[ ]+$/mg, '')       // line tailing spaces
+                        .replace(/\n{2,}/g, '\n\n');  // doble empty lines
   });
 
 
   // Reverse resolve hostname
   //
-  N.wire.after(apiPath, function reverse_resolve(env, callback) {
+  N.wire.after(apiPath, function* reverse_resolve(env) {
 
-    dns.reverse(env.data.ip, function (err, hosts) {
-      if (err) {
-        callback(); // this error is not fatal
-        return;
-      }
+    try {
+      // this error is not fatal
+      let hosts = yield dns.reverse(env.data.ip);
 
       if (hosts.length) {
         env.res.hostname = hosts[0];
       }
-
-      callback();
-    });
+    } catch (__) {}
   });
 
 };

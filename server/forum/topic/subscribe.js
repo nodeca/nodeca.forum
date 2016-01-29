@@ -32,59 +32,35 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true).exec(function (err, topic) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    env.data.topic = yield N.models.forum.Topic
+                              .findOne({ hid: env.params.topic_hid })
+                              .lean(true);
 
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    if (!env.data.topic) throw N.io.NOT_FOUND;
   });
 
   // Subcall forum.access.topic
   //
-  N.wire.before(apiPath, function subcall_topic(env, callback) {
+  N.wire.before(apiPath, function* subcall_topic(env) {
     var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
   // Add/remove subscription
   //
-  N.wire.on(apiPath, function subscription_add_remove(env, callback) {
+  N.wire.on(apiPath, function* subscription_add_remove(env) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
-    N.models.users.Subscription.update(
-      {
-        user_id: env.user_info.user_id,
-        to: env.data.topic._id
-      },
+    yield N.models.users.Subscription.update(
+      { user_id: env.user_info.user_id, to: env.data.topic._id },
       {
         type: env.params.type,
         to_type: N.models.users.Subscription.to_types.FORUM_TOPIC
       },
-      { upsert: true },
-      callback
-    );
+      { upsert: true });
   });
 };

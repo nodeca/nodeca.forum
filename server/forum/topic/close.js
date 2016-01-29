@@ -14,44 +14,23 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    N.models.forum.Topic.findOne({ hid: env.params.topic_hid })
-        .lean(true).exec(function (err, topic) {
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    env.data.topic = yield N.models.forum.Topic
+                              .findOne({ hid: env.params.topic_hid })
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    if (!env.data.topic) throw N.io.NOT_FOUND;
   });
 
 
   // Check if user has an access to this topic
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
+  N.wire.before(apiPath, function* check_access(env) {
     var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
@@ -76,11 +55,11 @@ module.exports = function (N, apiPath) {
 
   // Update topic status
   //
-  N.wire.on(apiPath, function update_topic(env, callback) {
-    var statuses = N.models.forum.Topic.statuses;
-    var topic = env.data.topic;
-    var update;
-    var newStatus = env.params.reopen ? statuses.OPEN : statuses.CLOSED;
+  N.wire.on(apiPath, function* update_topic(env) {
+    let statuses = N.models.forum.Topic.statuses;
+    let topic = env.data.topic;
+    let update;
+    let newStatus = env.params.reopen ? statuses.OPEN : statuses.CLOSED;
 
     if (topic.st === statuses.PINNED || topic.st === statuses.HB) {
       update = { ste: newStatus };
@@ -88,7 +67,7 @@ module.exports = function (N, apiPath) {
       update = { st: newStatus };
     }
 
-    var res = { st: update.st || topic.st, ste: update.ste || topic.ste };
+    let res = { st: update.st || topic.st, ste: update.ste || topic.ste };
 
     // Show `ste` instead `st` for hellbanned users in hellbanned topic
     if (env.user_info.hb && res.st === statuses.HB && !env.data.can_see_hellbanned) {
@@ -98,13 +77,8 @@ module.exports = function (N, apiPath) {
 
     env.res.topic = res;
 
-    N.models.forum.Topic.update(
-      { _id: topic._id },
-      update,
-      callback
-    );
+    yield N.models.forum.Topic.update({ _id: topic._id }, update);
   });
-
 
   // TODO: log moderator actions
 };

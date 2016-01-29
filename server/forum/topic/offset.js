@@ -14,54 +14,25 @@ module.exports = function (N, apiPath) {
     topic_hid:   { type: 'integer', required: true }
   });
 
-  // Shortcuts
-  var Section = N.models.forum.Section;
-  var Topic = N.models.forum.Topic;
-
-
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    Topic.findOne({ hid: env.params.topic_hid })
-        .lean(true)
-        .exec(function (err, topic) {
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    env.data.topic = yield N.models.forum.Topic
+                              .findOne({ hid: env.params.topic_hid })
+                              .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    if (!env.data.topic) throw N.io.NOT_FOUND;
   });
 
 
   // Fetch section
   //
-  N.wire.before(apiPath, function fetch_section(env, callback) {
-    Section.findById(env.data.topic.section)
-        .lean(true)
-        .exec(function (err, section) {
+  N.wire.before(apiPath, function* fetch_section(env) {
+    env.data.section = yield N.models.forum.Section
+                                .findById(env.data.topic.section)
+                                .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+    if (!env.data.section) throw N.io.NOT_FOUND;
   });
 
 
@@ -79,7 +50,7 @@ module.exports = function (N, apiPath) {
   // Define visible topic statuses
   //
   N.wire.before(apiPath, function* define_visible_statuses(env) {
-    let statuses = Topic.statuses;
+    let statuses = N.models.forum.Topic.statuses;
 
     env.extras.settings.params.section_id = env.data.section._id;
 
@@ -117,11 +88,14 @@ module.exports = function (N, apiPath) {
     env.res.topics_per_page = topics_per_page;
     env.data.topics_ids = [];
 
+    let st_pinned = N.models.forum.Topic.statuses.PINNED;
+
     // Move to the first page (i.e. return zero offset) if:
     //  - topic was moved to a different section
     //  - topic is pinned, so it's always in the first page
     //
-    if (env.params.section_hid !== env.data.section.hid || env.data.topic.st === Topic.statuses.PINNED) {
+    if (env.params.section_hid !== env.data.section.hid ||
+        env.data.topic.st === st_pinned) {
       return;
     }
 
@@ -129,10 +103,10 @@ module.exports = function (N, apiPath) {
 
     sort[cache_key + '.last_post'] = -1;
 
-    env.res.topic_offset = yield Topic.find()
+    env.res.topic_offset = yield N.models.forum.Topic.find()
       .where('section').equals(env.data.section._id)
       .where(cache_key + '.last_post').gt(env.data.topic[cache_key].last_post)
-      .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+      .where('st').in(_.without(env.data.topics_visible_statuses, st_pinned))
       .count();
   });
 };

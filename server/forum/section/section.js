@@ -3,9 +3,9 @@
 'use strict';
 
 
-var memoizee  = require('memoizee');
-var _         = require('lodash');
-var thenify   = require('thenify');
+const memoizee  = require('memoizee');
+const _         = require('lodash');
+const thenify   = require('thenify');
 
 
 module.exports = function (N, apiPath) {
@@ -16,10 +16,10 @@ module.exports = function (N, apiPath) {
     page: { type: 'integer', required: true, minimum: 1 }
   });
 
-  var buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);
+  let buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);
 
 
-  var fetchSection = thenify(memoizee(
+  let fetchSection = thenify(memoizee(
     function (id, callback) {
       N.models.forum.Section.findById(id)
         .lean(true)
@@ -35,11 +35,11 @@ module.exports = function (N, apiPath) {
 
   // Subcall forum.topic_list
   //
-  N.wire.on(apiPath, function subcall_topic_list(env, callback) {
+  N.wire.on(apiPath, function subcall_topic_list(env) {
     env.data.section_hid = env.params.hid;
     env.data.build_topics_ids = buildTopicsIds;
 
-    N.wire.emit('internal:forum.topic_list', env, callback);
+    return N.wire.emit('internal:forum.topic_list', env);
   });
 
 
@@ -81,11 +81,10 @@ module.exports = function (N, apiPath) {
   // Redirect to last page, if requested > available
   //
   N.wire.after(apiPath, function redirect_to_last_page(env) {
-    var page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+    let page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
 
+    // Requested page is BIGGER than maximum - redirect to the last one
     if (env.params.page > page_max) {
-
-      // Requested page is BIGGER than maximum - redirect to the last one
       throw {
         code: N.io.REDIRECT,
         head: {
@@ -101,8 +100,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch visible sub-sections
   //
-  N.wire.after(apiPath, function fetch_visible_subsections(env, callback) {
-    N.wire.emit('internal:forum.subsections_fill', env, callback);
+  N.wire.after(apiPath, function fetch_visible_subsections(env) {
+    return N.wire.emit('internal:forum.subsections_fill', env);
   });
 
 
@@ -137,7 +136,7 @@ module.exports = function (N, apiPath) {
   // Fill head meta
   //
   N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
-    var section = env.data.section;
+    let section = env.data.section;
 
     env.res.head = env.res.head || {};
 
@@ -169,8 +168,8 @@ module.exports = function (N, apiPath) {
   // Fill head meta
   //
   N.wire.after(apiPath, function fill_meta(env) {
-    var current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
-    var max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+    let current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
+    let max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
 
     env.res.head = env.res.head || {};
 

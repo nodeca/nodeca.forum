@@ -20,21 +20,12 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function fetch_section(env, callback) {
-    N.models.forum.Section.findOne({ hid: env.params.hid }).lean(true).exec(function (err, section) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.before(apiPath, function* fetch_section(env) {
+    env.data.section = yield N.models.forum.Section
+                                .findOne({ hid: env.params.hid })
+                                .lean(true);
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+    if (!env.data.section) throw N.io.NOT_FOUND;
   });
 
 

@@ -129,8 +129,8 @@ module.exports = function (N, collectionName) {
   };
 
 
-  N.wire.on('init:models', function emit_init_PostCountCache(__, callback) {
-    N.wire.emit('init:models.' + collectionName, PostCountCache, callback);
+  N.wire.on('init:models', function emit_init_PostCountCache() {
+    return N.wire.emit('init:models.' + collectionName, PostCountCache);
   });
 
 

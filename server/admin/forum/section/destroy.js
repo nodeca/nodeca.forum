@@ -9,49 +9,29 @@ module.exports = function (N, apiPath) {
     _id: { format: 'mongo', required: true }
   });
 
-  N.wire.on(apiPath, function section_destroy(env, callback) {
-    N.models.forum.Section.findById(env.params._id, function (err, section) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.on(apiPath, function* section_destroy(env) {
+    let section = yield N.models.forum.Section.findById(env.params._id);
 
-      // If section is already deleted or not exists - OK.
-      if (!section) {
-        callback();
-        return;
-      }
+    // If section is already deleted or not exists - OK.
+    if (!section) return;
 
-      // Count children of ection to destroy.
-      N.models.forum.Section.count({ parent: section._id }, function (err, childrenCount) {
-        if (err) {
-          callback(err);
-          return;
-        }
+    // Count children of ection to destroy.
+    let childrenCount = yield N.models.forum.Section.count({ parent: section._id });
 
-        // Fail if there are any child sections.
-        if (childrenCount !== 0) {
-          callback({ code: N.io.CLIENT_ERROR, message: env.t('error_section_has_children') });
-          return;
-        }
+    // Fail if there are any child sections.
+    if (childrenCount !== 0) {
+      throw { code: N.io.CLIENT_ERROR, message: env.t('error_section_has_children') };
+    }
 
-        // Count user posts of section to destroy.
-        N.models.forum.Post.count({ section: section._id }, function (err, postsCount) {
-          if (err) {
-            callback(err);
-            return;
-          }
+    // Count user posts of section to destroy.
+    let postsCount = yield N.models.forum.Post.count({ section: section._id });
 
-          // Fail if some sections contain user posts.
-          if (postsCount !== 0) {
-            callback({ code: N.io.CLIENT_ERROR, message: env.t('error_section_contains_posts') });
-            return;
-          }
+    // Fail if some sections contain user posts.
+    if (postsCount !== 0) {
+      throw { code: N.io.CLIENT_ERROR, message: env.t('error_section_contains_posts') };
+    }
 
-          // All ok. Destroy section.
-          section.remove(callback);
-        });
-      });
-    });
+    // All ok. Destroy section.
+    yield section.remove();
   });
 };

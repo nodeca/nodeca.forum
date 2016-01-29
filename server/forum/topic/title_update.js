@@ -28,54 +28,32 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function fetch_topic(env, callback) {
-    var statuses = N.models.forum.Topic.statuses;
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    let statuses = N.models.forum.Topic.statuses;
 
-    N.models.forum.Topic
-        .findOne({ hid: env.params.topic_hid })
-        .lean(true)
-        .exec(function (err, topic) {
+    let topic = yield N.models.forum.Topic
+                          .findOne({ hid: env.params.topic_hid })
+                          .lean(true);
 
-      if (err) {
-        callback(err);
-        return;
-      }
+    if (!topic) throw N.io.NOT_FOUND;
 
-      if (!topic) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
+    // Can edit titles only in opened topics
+    if (topic.st !== statuses.OPEN && topic.ste !== statuses.OPEN) {
+      throw N.io.NOT_FOUND;
+    }
 
-      // Can edit titles only in opened topics
-      if (topic.st !== statuses.OPEN && topic.ste !== statuses.OPEN) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.topic = topic;
-      callback();
-    });
+    env.data.topic = topic;
   });
 
 
   // Check if user can view this topic
   //
-  N.wire.before(apiPath, function check_access(env, callback) {
+  N.wire.before(apiPath, function* check_access(env) {
     var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.topic', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
@@ -87,9 +65,7 @@ module.exports = function (N, apiPath) {
     let forum_mod_can_edit_titles = yield env.extras.settings.fetch('forum_mod_can_edit_titles');
 
     // Permit as moderator
-    if (forum_mod_can_edit_titles && env.params.as_moderator) {
-      return;
-    }
+    if (forum_mod_can_edit_titles && env.params.as_moderator) return;
 
     // Check is user topic owner
     if (env.user_info.user_id !== String(env.data.topic.cache.first_user)) {
@@ -107,12 +83,10 @@ module.exports = function (N, apiPath) {
 
   // Update topic title
   //
-  N.wire.on(apiPath, function update_topic(env, callback) {
-    N.models.forum.Topic.update(
+  N.wire.on(apiPath, function* update_topic(env) {
+    yield N.models.forum.Topic.update(
       { _id: env.data.topic._id },
-      { title: env.params.title.trim() },
-      callback
-    );
+      { title: env.params.title.trim() });
   });
 
 

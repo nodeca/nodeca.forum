@@ -11,7 +11,7 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  N.wire.before(apiPath, function* section_moderator_store_check() {
+  N.wire.before(apiPath, function section_moderator_store_check() {
     if (!N.settings.getStore('section_moderator')) {
       throw {
         code:    N.io.APP_ERROR,

@@ -139,8 +139,8 @@ module.exports = function (N, collectionName) {
   });
 
 
-  N.wire.on('init:models', function emit_init_Section(__, callback) {
-    N.wire.emit('init:models.' + collectionName, Section, callback);
+  N.wire.on('init:models', function emit_init_Section() {
+    return N.wire.emit('init:models.' + collectionName, Section);
   });
 
   N.wire.on('init:models.' + collectionName, function init_model_Section(schema) {

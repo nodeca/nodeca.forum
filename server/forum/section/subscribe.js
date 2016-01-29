@@ -32,60 +32,33 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function fetch_section(env, callback) {
-    N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true).exec(function (err, section) {
-      if (err) {
-        callback(err);
-        return;
-      }
+  N.wire.before(apiPath, function* fetch_section(env) {
+    env.data.section = yield N.models.forum.Section
+                                .findOne({ hid: env.params.section_hid })
+                                .lean(true);
 
-      if (!section) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      env.data.section = section;
-      callback();
-    });
+    if (!env.data.section) throw N.io.NOT_FOUND;
   });
 
 
   // Subcall forum.access.section
   //
-  N.wire.before(apiPath, function subcall_section(env, callback) {
+  N.wire.before(apiPath, function* subcall_section(env) {
     var access_env = { params: { sections: env.data.section, user_info: env.user_info } };
 
-    N.wire.emit('internal:forum.access.section', access_env, function (err) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    yield N.wire.emit('internal:forum.access.section', access_env);
 
-      if (!access_env.data.access_read) {
-        callback(N.io.NOT_FOUND);
-        return;
-      }
-
-      callback();
-    });
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
   // Add/remove subscription
   //
-  N.wire.on(apiPath, function subscription_add_remove(env, callback) {
+  N.wire.on(apiPath, function* subscription_add_remove(env) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
-    N.models.users.Subscription.update(
-      {
-        user_id: env.user_info.user_id,
-        to: env.data.section._id
-      },
-      {
-        type: env.params.type,
-        to_type: N.models.users.Subscription.to_types.FORUM_SECTION
-      },
-      { upsert: true },
-      callback
-    );
+    yield N.models.users.Subscription.update(
+      { user_id: env.user_info.user_id, to: env.data.section._id },
+      { type: env.params.type, to_type: N.models.users.Subscription.to_types.FORUM_SECTION },
+      { upsert: true });
   });
 };

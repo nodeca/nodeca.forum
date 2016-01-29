@@ -178,8 +178,8 @@ module.exports = function (N, collectionName) {
   Post.statics.statuses = statuses;
 
 
-  N.wire.on('init:models', function emit_init_Post(__, callback) {
-    N.wire.emit('init:models.' + collectionName, Post, callback);
+  N.wire.on('init:models', function emit_init_Post() {
+    return N.wire.emit('init:models.' + collectionName, Post);
   });
 
   N.wire.on('init:models.' + collectionName, function init_model_Post(schema) {
