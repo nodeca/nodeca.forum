@@ -233,10 +233,10 @@ module.exports = function (N, apiPath) {
 
   // Schedule image size fetch
   //
-  N.wire.after(apiPath, function fill_image_info(env) {
-    N.queue.worker('forum_post_images_fetch').postpone({
+  N.wire.after(apiPath, function* fill_image_info(env) {
+    yield N.queue.worker('forum_post_images_fetch').postpone({
       post_id: env.data.new_post._id
-    }, function () {});
+    });
   });
 
 
