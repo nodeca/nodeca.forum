@@ -1,13 +1,13 @@
 'use strict';
 
 
-var _  = require('lodash');
-var ko = require('knockout');
+const _  = require('lodash');
+const ko = require('knockout');
 
 
 function Setting(name, schema, value, overriden) {
-  var tName = '@admin.core.setting_names.' + name,
-      tHelp = '@admin.core.setting_names.' + name + '_help';
+  let tName = '@admin.core.setting_names.' + name;
+  let tHelp = '@admin.core.setting_names.' + name + '_help';
 
   this.elementId = 'setting_' + name; // HTML id attribute.
   this.localizedName = t(tName);
@@ -69,7 +69,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   view = {};
 
   view.settings = _.map(N.runtime.page_data.setting_schemas, function (schema, name) {
-    var value, overriden;
+    let value;
+    let overriden;
 
     overriden = N.runtime.page_data.settings &&
                 N.runtime.page_data.settings[name] &&
@@ -99,18 +100,12 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   });
 
   // Show "Remove permissions" button only is moderator has saved overriden settings.
-  view.showRemoveButton = ko.observable(view.settings.some(function (setting) {
-    return setting.overriden();
-  }));
+  view.showRemoveButton = ko.observable(view.settings.some(setting => setting.overriden()));
 
-  view.isDirty = ko.computed(function () {
-    return view.settings.some(function (setting) {
-      return setting.isDirty();
-    });
-  });
+  view.isDirty = ko.computed(() => view.settings.some(setting => setting.isDirty()));
 
   view.save = function save() {
-    var request = {
+    let request = {
       section_id: data.params.section_id,
       user_id:    data.params.user_id,
       settings:   {}
@@ -124,31 +119,32 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       }
     });
 
-    N.io.rpc('admin.forum.moderator.update', request).then(function () {
-      view.settings.forEach(function (setting) { setting.markClean(); });
+    Promise.resolve()
+      .then(() => N.io.rpc('admin.forum.moderator.update', request))
+      .then(() => {
+        view.settings.forEach(setting => setting.markClean());
 
-      // Show "Delete" button if there are some overriden settings after save.
-      view.showRemoveButton(view.settings.some(function (setting) {
-        return setting.overriden();
-      }));
-
-      N.wire.emit('notify', { type: 'info', message: t('message_saved') });
-    });
+        // Show "Delete" button if there are some overriden settings after save.
+        view.showRemoveButton(view.settings.some(setting => setting.overriden()));
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('message_saved') }));
+    // TODO: .catch(/*...*/)
   };
 
   view.destroy = function destroy() {
-    N.wire.emit('admin.core.blocks.confirm', t('confirm_remove'), function () {
+    Promise.resolve()
+      .then(() => N.wire.emit('admin.core.blocks.confirm', t('confirm_remove')))
+      .then(() => {
+        let request = {
+          section_id: data.params.section_id,
+          user_id:    data.params.user_id
+        };
 
-      var request = {
-        section_id: data.params.section_id,
-        user_id:    data.params.user_id
-      };
-
-      N.io.rpc('admin.forum.moderator.destroy', request).then(function () {
-        N.wire.emit('notify', { type: 'info', message: t('message_deleted') });
-        N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' });
-      });
-    });
+        return N.io.rpc('admin.forum.moderator.destroy', request);
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('message_deleted') }))
+      .then(() => N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' }));
+    // TODO: .catch(/*...*/)
   };
 
   ko.applyBindings(view, $('#content')[0]);
