@@ -253,8 +253,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // update scroll so it would point at the same spot as before
       $(window).scrollTop($(window).scrollTop() + $('.forum-topiclist').height() - old_height);
 
-    }).finish(function () {
       sectionState.prev_page_loading = false;
+    }).catch(err => {
+      sectionState.prev_page_loading = false;
+      throw  err;
     });
   }
 
@@ -288,8 +290,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       var $result = $(N.runtime.render('forum.blocks.topics_list', res));
       $('.forum-topiclist > :last').after($result);
 
-    }).finish(function () {
       sectionState.next_page_loading = false;
+    }).catch(err => {
+      sectionState.next_page_loading = false;
+      throw  err;
     });
   }
 
