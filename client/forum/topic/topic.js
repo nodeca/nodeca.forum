@@ -155,7 +155,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   function updateTopicState(callback) {
     var params = {};
 
-    N.wire.emit('navigate.get_page_raw', params, function () {
+    return N.wire.emit('navigate.get_page_raw', params, function () {
 
       // Need to re-render reply button and dropdown here
       $('.forum-topic__toolbar-controls')
@@ -179,7 +179,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         }
       });
 
-      callback();
+      if (callback) {
+        callback();
+      }
     });
   }
 
@@ -360,21 +362,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Subscription topic handler
   //
-  N.wire.on('forum.topic:subscription', function topic_subscription(data, callback) {
-    var hid = data.$this.data('topic-hid');
-    var params = { subscription: data.$this.data('topic-subscription') };
+  N.wire.on('forum.topic:subscription', function topic_subscription(data) {
+    let hid = data.$this.data('topic-hid');
+    let params = { subscription: data.$this.data('topic-subscription') };
+    let pageParams = {};
 
-    N.wire.emit('forum.topic.topic_subscription', params, function () {
-      N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }).then(function () {
-        var pageParams = {};
-
-        N.wire.emit('navigate.get_page_raw', pageParams, function () {
-          pageParams.data.subscription = params.subscription;
-
-          updateTopicState(callback);
-        });
-      });
-    });
+    return Promise.resolve()
+      .then(() => N.wire.emit('forum.topic.topic_subscription', params))
+      .then(() => N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }))
+      .then(() => N.wire.emit('navigate.get_page_raw', pageParams))
+      .then(() => {
+        pageParams.data.subscription = params.subscription;
+      })
+      .then(updateTopicState);
   });
 
 
