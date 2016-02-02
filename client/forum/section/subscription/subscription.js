@@ -4,17 +4,15 @@
 //
 // - subscription (will be updated after OK click)
 //
-
-
 'use strict';
 
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 
-var $dialog;
-var params;
-var doneCallback;
+let $dialog;
+let params;
+let result;
 
 
 N.wire.once(module.apiPath, function init_handlers() {
@@ -22,13 +20,8 @@ N.wire.once(module.apiPath, function init_handlers() {
   // Submit button handler
   //
   N.wire.on(module.apiPath + ':submit', function submit_subscription_dlg(form) {
-    params.subscription = +form.fields.type;
-
-    let done = doneCallback;
-
-    $dialog
-      .on('hidden.bs.modal', () => done())
-      .modal('hide');
+    params.subscription = result = +form.fields.type;
+    $dialog.modal('hide');
   });
 
 
@@ -44,24 +37,27 @@ N.wire.once(module.apiPath, function init_handlers() {
 
 // Init dialog
 //
-N.wire.on(module.apiPath, function show_subscription_dlg(options, callback) {
+N.wire.on(module.apiPath, function show_subscription_dlg(options) {
   params = options;
-  doneCallback = callback;
-
   $dialog = $(N.runtime.render(module.apiPath, _.assign({ submit_action: module.apiPath + ':submit' }, params)));
-
   $('body').append($dialog);
 
-  // When dialog closes - remove it from body and free resources
-  $dialog
-    .on('shown.bs.modal', function () {
-      $dialog.find('.btn-default').focus();
-    })
-    .on('hidden.bs.modal', function () {
-      $dialog.remove();
-      $dialog = null;
-      doneCallback = null;
-      params = null;
-    })
-    .modal('show');
+  return new Promise((resolve, reject) => {
+    $dialog
+      .on('shown.bs.modal', function () {
+        $dialog.find('.btn-default').focus();
+      })
+      .on('hidden.bs.modal', function () {
+        // When dialog closes - remove it from body and free resources.
+        $dialog.remove();
+        $dialog = null;
+        params = null;
+
+        if (result) resolve(result);
+        else reject('CANCELED');
+
+        result = null;
+      })
+      .modal('show');
+  });
 });

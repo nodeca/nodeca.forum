@@ -61,5 +61,3 @@ N.wire.on(module.apiPath, function show_subscription_dlg(options) {
       .modal('show');
   });
 });
-
-
