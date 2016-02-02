@@ -1,11 +1,12 @@
 'use strict';
 
 
-var _          = require('lodash');
-var Bloodhound = require('typeahead.js/dist/bloodhound.js');
+const _          = require('lodash');
+const Bloodhound = require('typeahead.js/dist/bloodhound.js');
 
-var $moderatorSelectDialog;
-var bloodhound;
+
+let $moderatorSelectDialog;
+let bloodhound;
 
 
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
@@ -23,7 +24,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
     expandOnHover: 700,
     stop(event, ui) {
 
-      var request = {
+      let request = {
         _id:           ui.item.data('id'),
         parent:        ui.item.parents('._sortable_tree_item').data('id') || null,
         sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function (child) {
@@ -32,38 +33,35 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
         })
       };
 
-      N.io.rpc('admin.forum.section.update_order', request);
+      N.io.rpc('admin.forum.section.update_order', request).catch(err => N.wire.emit('error', err));
     }
   });
 });
 
 
-N.wire.before('admin.forum.section.destroy', function confirm_section_destroy(data, callback) {
-  N.wire.emit(
+N.wire.before('admin.forum.section.destroy', function confirm_section_destroy(data) {
+  return N.wire.emit(
     'admin.core.blocks.confirm',
-    t('message_confim_section_delete', { title: data.$this.data('title') }),
-    callback
+    t('message_confim_section_delete', { title: data.$this.data('title') })
   );
 });
 
 
 N.wire.on('admin.forum.section.destroy', function section_destroy(data) {
-  var $container = data.$this.closest('.aforum-index__slist-item');
+  let $container = data.$this.closest('.aforum-index__slist-item');
 
-  N.io.rpc('admin.forum.section.destroy', { _id: data.$this.data('id') })
-    .then(function () {
+  return N.io.rpc('admin.forum.section.destroy', { _id: data.$this.data('id') })
+    .then(() => {
       // Remove all destroyed elements from DOM.
       $container.prev('._placeholder').remove();
       $container.remove();
     })
-    .catch(function (err) {
-      N.wire.emit('notify', { type: 'error', message: err.message });
-    });
+    .catch(err => N.wire.emit('notify', { type: 'error', message: err.message }));
 });
 
 
 N.wire.on('admin.forum.section.select_moderator_nick', function section_select_moderator(data) {
-  var sectionId = data.$this.data('section_id');
+  let sectionId = data.$this.data('section_id');
 
   // Render dialog window.
   $moderatorSelectDialog = $(N.runtime.render('admin.forum.section.blocks.moderator_select_dialog', {
@@ -120,15 +118,15 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
 
 
 N.wire.on('admin.forum.section.create_moderator', function section_add_moderator(data) {
-  var nick = data.fields.nick;
+  let nick = data.fields.nick;
 
-  N.io.rpc('admin.core.user_lookup', { nick, strict: true }).then(function (res) {
+  return N.io.rpc('admin.core.user_lookup', { nick, strict: true }).then(res => {
     if (_.isEmpty(res)) {
       N.wire.emit('notify', t('error_no_user_with_such_nick', { nick }));
       return;
     }
 
-    $moderatorSelectDialog.on('hidden.bs.modal', function () {
+    $moderatorSelectDialog.on('hidden.bs.modal', () => {
       N.wire.emit('navigate.to', {
         apiPath: 'admin.forum.moderator.edit',
         params: {

@@ -1,12 +1,12 @@
 'use strict';
 
 
-var _  = require('lodash');
-var ko = require('knockout');
+const _  = require('lodash');
+const ko = require('knockout');
 
 
 function Setting(name, schema, value, overriden) {
-  var tName = '@admin.core.setting_names.' + name,
+  let tName = '@admin.core.setting_names.' + name,
       tHelp = '@admin.core.setting_names.' + name + '_help';
 
   this.elementId = 'setting_' + name; // HTML id attribute.
@@ -49,10 +49,8 @@ function Setting(name, schema, value, overriden) {
     owner: this
   });
 
-  this.isDirty = ko.computed(function () {
-    return (this.overriden.isDirty()) ||
-           (this.overriden() && this._value.isDirty());
-  }, this);
+  this.isDirty = ko.computed(() => (this.overriden.isDirty()) ||
+                                   (this.overriden() && this._value.isDirty()));
 }
 
 Setting.prototype.markClean = function markClean() {
@@ -62,14 +60,14 @@ Setting.prototype.markClean = function markClean() {
 
 
 // Knockout bindings root object.
-var view = null;
+let view = null;
 
 
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   view = {};
 
-  view.settings = _.map(N.runtime.page_data.setting_schemas, function (schema, name) {
-    var value, overriden;
+  view.settings = _.map(N.runtime.page_data.setting_schemas, (schema, name) => {
+    let value, overriden;
 
     overriden = N.runtime.page_data.settings &&
                 N.runtime.page_data.settings[name] &&
@@ -98,20 +96,16 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     return new Setting(name, schema, value, overriden);
   });
 
-  view.isDirty = ko.computed(function () {
-    return view.settings.some(function (setting) {
-      return setting.isDirty();
-    });
-  });
+  view.isDirty = ko.computed(() => view.settings.some(setting => setting.isDirty()));
 
   view.save = function save() {
-    var request = {
+    let request = {
       section_id:   data.params.section_id,
       usergroup_id: data.params.usergroup_id,
       settings:     {}
     };
 
-    view.settings.forEach(function (setting) {
+    view.settings.forEach(setting => {
       if (setting.overriden()) {
         request.settings[setting.name] = { value: setting.value() };
       } else {
@@ -119,11 +113,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       }
     });
 
-    N.io.rpc('admin.forum.group_permissions.update', request).then(function () {
-      view.settings.forEach(function (setting) { setting.markClean(); });
+    N.io.rpc('admin.forum.group_permissions.update', request).then(() => {
+      view.settings.forEach(setting => setting.markClean());
 
-      N.wire.emit('notify', { type: 'info', message: t('message_saved') });
-    });
+      return N.wire.emit('notify', { type: 'info', message: t('message_saved') });
+    }).catch(err => N.wire.emit('error', err));
   };
 
   ko.applyBindings(view, $('#content')[0]);
