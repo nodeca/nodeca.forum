@@ -1,13 +1,12 @@
 // Forum Topic page logic
 //
-
 'use strict';
 
-var _        = require('lodash');
-var punycode = require('punycode');
-var Bag      = require('bag.js');
 
-var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
+const _             = require('lodash');
+const punycode      = require('punycode');
+const Bag           = require('bag.js');
+const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
 
 // Topic state
@@ -23,9 +22,9 @@ var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - prev_loading_start: time when current xhr request for the previous page is started
 // - next_loading_start: time when current xhr request for the next page is started
 //
-var topicState = {};
-var scrollHandler = null;
-var navbarHeight = $('.navbar').height();
+let topicState = {};
+let scrollHandler = null;
+let navbarHeight = $('.navbar').height();
 
 
 /////////////////////////////////////////////////////////////////////
@@ -55,8 +54,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   // Scroll to a post linked in params (if any)
   //
   if (topicState.post_hid > 1) {
-    var posts = $('.forum-post');
-    var i = _.sortedIndexBy(posts, null, function (post) {
+    let posts = $('.forum-post');
+    let i = _.sortedIndexBy(posts, null, post => {
       if (!post) return topicState.post_hid;
       return $(post).data('post-hid');
     });
@@ -85,7 +84,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 //
 N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
   scrollHandler = _.debounce(function update_location_on_scroll() {
-    var viewportStart = $(window).scrollTop() + navbarHeight;
+    let viewportStart = $(window).scrollTop() + navbarHeight;
 
     // If we scroll below top border of the first post,
     // show the secondary navbar
@@ -116,52 +115,49 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Click on post reply link or toolbar reply button
   //
-  N.wire.on('forum.topic:reply', function reply(data, callback) {
-    N.wire.emit('forum.topic.reply:begin', {
+  N.wire.on(module.apiPath + ':reply', function reply(data) {
+    return N.wire.emit('forum.topic.reply:begin', {
       topic_hid: topicState.topic_hid,
       topic_title: N.runtime.page_data.topic.title,
       section_hid: topicState.section_hid,
       post_id: data.$this.data('post-id'),
       post_hid: data.$this.data('post-hid')
-    }, callback);
+    });
   });
 
 
   // Click on post edit
   //
-  N.wire.on('forum.topic:post_edit', function reply(data, callback) {
-    N.wire.emit('forum.topic.post.edit:begin', {
+  N.wire.on(module.apiPath + ':post_edit', function reply(data) {
+    return N.wire.emit('forum.topic.post.edit:begin', {
       topic_hid: topicState.topic_hid,
       topic_title: N.runtime.page_data.topic.title,
       section_hid: topicState.section_hid,
       post_id: data.$this.data('post-id'),
       post_hid: data.$this.data('post-hid'),
       as_moderator: data.$this.data('as-moderator') || false
-    }, callback);
+    });
   });
 
 
   // Show post IP
   //
-  N.wire.on('forum.topic.post_show_ip', function post_show_ip(data) {
-    var postId = data.$this.data('post-id');
-
-    N.wire.emit('forum.topic.ip_info_dlg', { postId });
+  N.wire.on(module.apiPath + '.post_show_ip', function post_show_ip(data) {
+    return N.wire.emit('forum.topic.ip_info_dlg', { postId: data.$this.data('post-id') });
   });
 
 
   // Update topic menu and modifiers by page data
   //
-  function updateTopicState(callback) {
-    var params = {};
+  function updateTopicState() {
+    let params = {};
 
-    return N.wire.emit('navigate.get_page_raw', params, function () {
-
+    return N.wire.emit('navigate.get_page_raw', params).then(() => {
       // Need to re-render reply button and dropdown here
       $('.forum-topic__toolbar-controls')
         .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', params.data));
 
-      var modifiers = {
+      let modifiers = {
         'forum-topic-root__m-open': topicStatuses.OPEN,
         'forum-topic-root__m-closed': topicStatuses.CLOSED,
         'forum-topic-root__m-deleted': topicStatuses.DELETED,
@@ -169,200 +165,174 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         'forum-topic-root__m-pinned': topicStatuses.PINNED
       };
 
-      var $topicRoot = $('.forum-topic-root');
+      let $topicRoot = $('.forum-topic-root');
 
-      _.forEach(modifiers, function (state, modifier) {
+      _.forEach(modifiers, (state, modifier) => {
         if (params.data.topic.st === state || params.data.topic.ste === state) {
           $topicRoot.addClass(modifier);
         } else {
           $topicRoot.removeClass(modifier);
         }
       });
-
-      if (callback) {
-        callback();
-      }
     });
   }
 
 
   // Expand deleted or hellbanned post
   //
-  N.wire.on('forum.topic.post_expand', function post_expand(data) {
-    var postId = data.$this.data('post-id');
+  N.wire.on(module.apiPath + '.post_expand', function post_expand(data) {
+    let postId = data.$this.data('post-id');
 
-    N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
-        .then(function (res) {
+    return Promise.resolve()
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(res => {
+        let $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
 
-      var $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
-
-      N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
-        $('#post' + postId).replaceWith($result);
+        return N.wire.emit('navigate.update', { $: $result, locals: res })
+          .then(() => $('#post' + postId).replaceWith($result));
       });
-    });
   });
 
 
   // Pin/unpin topic
   //
-  N.wire.on('forum.topic.pin', function topic_pin(data, callback) {
-    var topicHid = data.$this.data('topic-hid');
-    var unpin = data.$this.data('unpin') || false;
+  N.wire.on(module.apiPath + '.pin', function topic_pin(data) {
+    let topicHid = data.$this.data('topic-hid');
+    let unpin = data.$this.data('unpin') || false;
+    let params = {};
 
-    N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin }).then(function (res) {
-      var params = {};
-
-      N.wire.emit('navigate.get_page_raw', params, function () {
+    return Promise.resolve()
+      .then(() => N.wire.emit('navigate.get_page_raw', params))
+      .then(() => N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin }))
+      .then(res => {
         params.data.topic.st = res.topic.st;
         params.data.topic.ste = res.topic.ste;
-
-        updateTopicState(function () {
-          if (unpin) {
-            N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
-          } else {
-            N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
-          }
-
-          callback();
-        });
+      })
+      .then(updateTopicState)
+      .then(() => {
+        if (unpin) return N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
+        return N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
       });
-    });
   });
 
 
   // Close/open topic handler
   //
-  N.wire.on('forum.topic.close', function topic_close(data, callback) {
-    var params = {
+  N.wire.on(module.apiPath + '.close', function topic_close(data) {
+    let params = {
       topic_hid: data.$this.data('topic-hid'),
       reopen: data.$this.data('reopen') || false,
       as_moderator: data.$this.data('as-moderator') || false
     };
+    let pageParams = {};
 
-    N.io.rpc('forum.topic.close', params).then(function (res) {
-      var pageParams = {};
-
-      N.wire.emit('navigate.get_page_raw', pageParams, function () {
+    return Promise.resolve()
+      .then(() => N.wire.emit('navigate.get_page_raw', pageParams))
+      .then(() => N.io.rpc('forum.topic.close', params))
+      .then(res => {
         pageParams.data.topic.st = res.topic.st;
         pageParams.data.topic.ste = res.topic.ste;
-
-        updateTopicState(function () {
-          if (params.reopen) {
-            N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
-          } else {
-            N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
-          }
-
-          callback();
-        });
+      })
+      .then(updateTopicState)
+      .then(() => {
+        if (params.reopen) return N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
+        return N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
       });
-    });
   });
 
 
   // Edit title handler
   //
-  N.wire.on('forum.topic.edit_title', function title_edit(data, callback) {
-    var $title = $('.forum-topic-title__text');
-
-    var params = {
+  N.wire.on(module.apiPath + '.edit_title', function title_edit(data) {
+    let forum_topic_title_min_length = N.runtime.page_data.settings.forum_topic_title_min_length;
+    let $title = $('.forum-topic-title__text');
+    let params = {
       selector: '.forum-topic-title',
       value: $title.text(),
-      update(value, callback) {
+      update(value) {
         value = value.trim();
 
-        if (punycode.ucs2.decode(value).length < N.runtime.page_data.settings.forum_topic_title_min_length) {
-          callback(t('err_title_too_short', N.runtime.page_data.settings.forum_topic_title_min_length));
-          return;
+        if (punycode.ucs2.decode(value).length < forum_topic_title_min_length) {
+          return Promise.reject(t('err_title_too_short', forum_topic_title_min_length));
         }
 
         // If value is equals to old value - close `microedit` without request
         if (value === $title.text()) {
-          callback();
-          return;
+          return Promise.resolve();
         }
 
-        N.io.rpc('forum.topic.title_update', {
+        return N.io.rpc('forum.topic.title_update', {
           as_moderator: data.$this.data('as-moderator') || false,
           topic_hid: data.$this.data('topic-hid'),
           title: value
-        }).then(function () {
+        }).then(() => {
           $title.text(value);
 
           // update title in navbar
           $('.navbar-alt__title').text(value);
-
-          callback();
         });
       }
     };
 
-    N.wire.emit('common.blocks.microedit', params, callback);
+    return N.wire.emit('common.blocks.microedit', params);
   });
 
 
   // Undelete topic handler
   //
-  N.wire.on('forum.topic.topic_undelete', function topic_undelete(data, callback) {
-    var topicHid = data.$this.data('topic-hid');
+  N.wire.on(module.apiPath + '.topic_undelete', function topic_undelete(data) {
+    let topicHid = data.$this.data('topic-hid');
+    let params = {};
 
-    N.io.rpc('forum.topic.undelete', { topic_hid: topicHid }).then(function (res) {
-      var params = {};
-
-      N.wire.emit('navigate.get_page_raw', params, function () {
+    return Promise.resolve()
+      .then(() => N.wire.emit('navigate.get_page_raw', params))
+      .then(() => N.io.rpc('forum.topic.undelete', { topic_hid: topicHid }))
+      .then(res => {
         params.data.topic.st = res.topic.st;
         params.data.topic.ste = res.topic.ste;
-
-        updateTopicState(function () {
-          N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') });
-          callback();
-        });
-      });
-    });
+      })
+      .then(updateTopicState)
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') }));
   });
 
 
   // Vote post
   //
-  N.wire.on('forum.topic.post_vote', function post_vote(data, callback) {
-    var postId = data.$this.data('post-id');
-    var value = +data.$this.data('value');
-    var $post = $('#post' + postId);
-    var topicHid = topicState.topic_hid;
+  N.wire.on(module.apiPath + '.post_vote', function post_vote(data) {
+    let postId = data.$this.data('post-id');
+    let value = +data.$this.data('value');
+    let $post = $('#post' + postId);
+    let topicHid = topicState.topic_hid;
+    let $result;
 
-    N.io.rpc('forum.topic.post.vote', { post_id: postId, value }).then(function () {
+    return Promise.resolve()
+      .then(() => N.io.rpc('forum.topic.post.vote', { post_id: postId, value }))
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }))
+      .then(res => {
+        $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-      // Update whole post to correctly update votes counters and modifiers
-      N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }).then(function (res) {
-        var $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-        N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
-          $post.replaceWith($result);
-          callback();
-        });
-      });
-    });
+        return N.wire.emit('navigate.update', { $: $result, locals: res });
+      })
+      .then(() => $post.replaceWith($result));
   });
 
 
   // Undelete post handler
   //
-  N.wire.on('forum.topic.post_undelete', function post_undelete(data, callback) {
-    var postId = data.$this.data('post-id');
+  N.wire.on(module.apiPath + '.post_undelete', function post_undelete(data) {
+    let postId = data.$this.data('post-id');
 
-    N.io.rpc('forum.topic.post.undelete', { post_id: postId }).then(function () {
+    return N.io.rpc('forum.topic.post.undelete', { post_id: postId }).then(() => {
       $('#post' + postId)
         .removeClass('forum-post__m-deleted')
         .removeClass('forum-post__m-deleted-hard');
-
-      callback();
     });
   });
 
 
   // Subscription topic handler
   //
-  N.wire.on('forum.topic:subscription', function topic_subscription(data) {
+  N.wire.on(module.apiPath + ':subscription', function topic_subscription(data) {
     let hid = data.$this.data('topic-hid');
     let params = { subscription: data.$this.data('topic-subscription') };
     let pageParams = {};
@@ -380,71 +350,80 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Delete topic handler
   //
-  N.wire.on('forum.topic.topic_delete', function topic_delete(data) {
-    var params = {
-      topicHid: data.$this.data('topic-hid'),
-      asModerator: data.$this.data('as-moderator') || false,
-      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
+  N.wire.on(module.apiPath + '.topic_delete', function topic_delete(data) {
+    let request = {
+      topic_hid: data.$this.data('topic-hid'),
+      as_moderator: data.$this.data('as-moderator') || false
+    };
+    let params = {
+      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
+      asModerator: request.as_moderator
     };
 
-    N.wire.emit('forum.topic.topic_delete_dlg', params, function () {
-      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } });
-    });
+    return Promise.resolve()
+      .then(() => N.wire.emit('forum.topic.topic_delete_dlg', params))
+      .then(() => {
+        request.method = params.method;
+        if (params.reason) request.reason = params.reason;
+        return N.io.rpc('forum.topic.destroy', request);
+      })
+      .then(() =>
+        N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } })
+      );
   });
 
 
   // Delete post handler
   //
-  N.wire.on('forum.topic.post_delete', function post_delete(data, callback) {
-    var postId = data.$this.data('post-id');
-    var $post = $('#post' + postId);
-
-    var params = {
-      postId,
-      asModerator: data.$this.data('as-moderator') || false,
-      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
-      method: null
+  N.wire.on(module.apiPath + '.post_delete', function post_delete(data) {
+    let postId = data.$this.data('post-id');
+    let $post = $('#post' + postId);
+    let request = {
+      post_id: postId,
+      as_moderator: data.$this.data('as-moderator') || false
+    };
+    let params = {
+      asModerator: request.as_moderator,
+      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
     };
 
-    N.wire.emit('forum.topic.post_delete_dlg', params, function () {
-      N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] })
-          .then(function (res) {
-
+    return Promise.resolve()
+      .then(() => N.wire.emit('forum.topic.post_delete_dlg', params))
+      .then(() => {
+        request.method = params.method;
+        if (params.reason) request.reason = params.reason;
+        return N.io.rpc('forum.topic.post.destroy', request);
+      })
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(res => {
         if (res.posts.length === 0) {
           $post.fadeOut(function () {
             $post.remove();
           });
-
-          callback();
           return;
         }
 
-        var $result = $(N.runtime.render('forum.blocks.posts_list', res));
+        let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
-          $post.replaceWith($result);
-          callback();
-        });
+        return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => $post.replaceWith($result));
       });
-    });
   });
 
 
   // Add/remove bookmark
   //
-  N.wire.on('forum.topic.post_bookmark', function post_bookmark(data, callback) {
-    var postId = data.$this.data('post-id');
-    var remove = data.$this.data('remove') || false;
-    var $post = $('#post' + postId);
+  N.wire.on(module.apiPath + '.post_bookmark', function post_bookmark(data) {
+    let postId = data.$this.data('post-id');
+    let remove = data.$this.data('remove') || false;
+    let $post = $('#post' + postId);
 
-    N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove }).then(function (res) {
+    return N.io.rpc('forum.topic.post.bookmark', { post_id: postId, remove }).then(res => {
       if (remove) {
         $post.removeClass('forum-post__m-bookmarked');
       } else {
         $post.addClass('forum-post__m-bookmarked');
       }
 
-      callback();
       $post.find('.forum-post__bookmarks-count').attr('data-bm-count', res.count);
     });
   });
@@ -456,7 +435,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
 
   // an amount of posts we try to load when user scrolls to the end of the page
-  var LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
+  let LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
 
   // an amount of time between successful xhr requests and failed xhr requests respectively
   //
@@ -464,14 +443,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // subsequent request will be sent each 500 ms. If server goes down, the
   // interval between request initiations goes up to 2000 ms.
   //
-  var LOAD_INTERVAL = 500;
-  var LOAD_AFTER_ERROR = 2000;
+  let LOAD_INTERVAL = 500;
+  let LOAD_AFTER_ERROR = 2000;
 
   // an amount of posts from top/bottom that triggers prefetch in that direction
-  var LOAD_BORDER_SIZE = 3;
+  let LOAD_BORDER_SIZE = 3;
 
   function _load_prev_page() {
-    var now = Date.now();
+    let now = Date.now();
 
     // `prev_loading_start` is the last request start time, which is reset to 0 on success
     //
@@ -482,7 +461,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     topicState.prev_loading_start = now;
 
-    var hid = $('.forum-post:first').data('post-hid');
+    let hid = $('.forum-post:first').data('post-hid');
 
     // No posts on the page
     if (!hid) return;
@@ -512,7 +491,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       if (!res.posts || !res.posts.length) return;
 
-      var old_height = $('.forum-postlist').height();
+      let old_height = $('.forum-postlist').height();
 
       topicState.first_post_offset -= res.posts.length;
 
@@ -524,7 +503,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       };
 
       // render & inject posts list
-      var $result = $(N.runtime.render('forum.blocks.posts_list', res));
+      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
       N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
         $('.forum-postlist > :first').before($result);
@@ -537,7 +516,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     }).catch(err => {
       if (err.code !== N.io.NOT_FOUND) {
-        throw err;
+        N.wire.emit('error', err);
+        return;
       }
 
       // Topic moved or deleted, refreshing the page so user could
@@ -548,7 +528,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   }
 
   function _load_next_page() {
-    var now = Date.now();
+    let now = Date.now();
 
     // `next_loading_start` is the last request start time, which is reset to 0 on success
     //
@@ -559,7 +539,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     topicState.next_loading_start = now;
 
-    var hid = $('.forum-post:last').data('post-hid');
+    let hid = $('.forum-post:last').data('post-hid');
 
     // No posts on the page
     if (!hid) return;
@@ -596,7 +576,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       topicState.last_post_offset += res.posts.length;
 
       // render & inject posts list
-      var $result = $(N.runtime.render('forum.blocks.posts_list', res));
+      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
       N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
         $('.forum-postlist > :last').after($result);
@@ -606,7 +586,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     }).catch(err => {
       if (err.code !== N.io.NOT_FOUND) {
-        throw err;
+        N.wire.emit('error', err);
+        return;
       }
 
       // Topic moved or deleted, refreshing the page so user could
@@ -616,8 +597,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     });
   }
 
-  var load_prev_page = _.debounce(_load_prev_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
-  var load_next_page = _.debounce(_load_next_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
+  let load_prev_page = _.debounce(_load_prev_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
+  let load_next_page = _.debounce(_load_next_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
 
   // If we're browsing one of the first/last 3 posts, load more pages from
   // the server in that direction.
@@ -625,8 +606,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // This method is synchronous, so rpc requests won't delay progress bar
   // updates.
   //
-  N.wire.on('forum.topic:scroll', function check_load_more_pages() {
-    var posts         = $('.forum-post'),
+  N.wire.on(module.apiPath + ':scroll', function check_load_more_pages() {
+    let posts         = $('.forum-post'),
         viewportStart = $(window).scrollTop() + navbarHeight,
         viewportEnd   = $(window).scrollTop() + $(window).height();
 
@@ -642,15 +623,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Update location and progress bar
   //
-  N.wire.on('forum.topic:scroll', function update_progress() {
-    var posts         = $('.forum-post'),
+  N.wire.on(module.apiPath + ':scroll', function update_progress() {
+    let posts         = $('.forum-post'),
         viewportStart = $(window).scrollTop() + navbarHeight,
         newHid,
         currentIdx;
 
     // Get offset of the first post in the viewport
     //
-    currentIdx = _.sortedIndexBy(posts, null, function (post) {
+    currentIdx = _.sortedIndexBy(posts, null, post => {
       if (!post) return viewportStart;
       return $(post).offset().top + $(post).height();
     });
@@ -662,29 +643,28 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     topicState.post_hid = newHid;
 
-    N.wire.emit('navigate.replace', {
+    return N.wire.emit('navigate.replace', {
       href: N.router.linkTo('forum.topic', {
         section_hid:  topicState.section_hid,
         topic_hid:    topicState.topic_hid,
         post_hid:     topicState.post_hid
       })
-    });
-
-    N.wire.emit('forum.topic.blocks.page_progress:update', {
-      current:     topicState.post_hid,
-      max:         topicState.max_post
-    });
+    }).then(() => N.wire.emit('forum.topic.blocks.page_progress:update', {
+      current: topicState.post_hid,
+      max:     topicState.max_post
+    }));
   });
 
 
   // User clicks submits dropdown menu form and is moved to
   // a corresponding post
   //
-  N.wire.on('forum.topic:nav_to_post', function navigate_to_post(data) {
-    var post = +data.fields.post;
+  N.wire.on(module.apiPath + ':nav_to_post', function navigate_to_post(data) {
+    let post = +data.fields.post;
+
     if (!post) return;
 
-    N.wire.emit('navigate.to', {
+    return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
         section_hid:  topicState.section_hid,
@@ -697,8 +677,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // User presses "home" button
   //
-  N.wire.on('forum.topic:nav_to_start', function navigate_to_start() {
-    var hid = $('.forum-post:first').data('post-hid');
+  N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
+    let hid = $('.forum-post:first').data('post-hid');
 
     // if the first post is already loaded, scroll to the top
     if (hid <= 1) {
@@ -706,7 +686,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       return;
     }
 
-    N.wire.emit('navigate.to', {
+    return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
         section_hid:  topicState.section_hid,
@@ -719,8 +699,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // User presses "end" button
   //
-  N.wire.on('forum.topic:nav_to_end', function navigate_to_end() {
-    var hid = $('.forum-post:last').data('post-hid');
+  N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
+    let hid = $('.forum-post:last').data('post-hid');
 
     // if the last post is already loaded, scroll to the bottom
     if (hid >= topicState.max_post) {
@@ -731,7 +711,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     // Note: this will scroll to the last post, not to the real bottom like
     // browsers do. There is a difference if footer is large enough.
     //
-    N.wire.emit('navigate.to', {
+    return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
         section_hid:  topicState.section_hid,
@@ -745,22 +725,20 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // User clicks to "move back to section" button, and she is moved
   // to a section page where this topic is centered and highlighted
   //
-  N.wire.on('forum.topic:level_up', function level_up(data) {
-    N.io.rpc('forum.topic.offset', {
-      section_hid: topicState.section_hid,
-      topic_hid: data.$this.data('topic-hid')
-    }).then(function (res) {
-      var page = Math.floor(res.topic_offset / res.topics_per_page) + 1;
+  N.wire.on(module.apiPath + ':level_up', function level_up(data) {
+    N.io.rpc('forum.topic.offset', { section_hid: topicState.section_hid, topic_hid: data.$this.data('topic-hid') })
+      .then(res => {
+        let page = Math.floor(res.topic_offset / res.topics_per_page) + 1;
 
-      N.wire.emit('navigate.to', {
-        apiPath: 'forum.section',
-        params: {
-          hid: topicState.section_hid,
-          page
-        },
-        anchor: 'topic' + data.$this.data('topic-hid')
+        return N.wire.emit('navigate.to', {
+          apiPath: 'forum.section',
+          params: {
+            hid: topicState.section_hid,
+            page
+          },
+          anchor: 'topic' + data.$this.data('topic-hid')
+        });
       });
-    });
   });
 });
 
@@ -786,7 +764,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
       }
     }));
 
-  var viewportStart = $(window).scrollTop() + navbarHeight;
+  let viewportStart = $(window).scrollTop() + navbarHeight;
 
   // If we scroll below top border of the first post,
   // show the secondary navbar
@@ -797,7 +775,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
     $('.navbar').removeClass('navbar__m-secondary');
   }
 
-  N.wire.emit('forum.topic:scroll');
+  return N.wire.emit('forum.topic:scroll');
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
@@ -811,7 +789,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
 //
 
 // current topic params if we're on the topic page, null otherwise;
-var topicParams;
+let topicParams;
 
 
 // Set `quote__m-local` or `quote__m-outer` class on every quote
@@ -822,17 +800,17 @@ function set_quote_modifiers(selector) {
   if (!topicParams) return;
 
   selector.find('.quote').addBack('.quote').each(function () {
-    var $tag = $(this);
+    let $tag = $(this);
 
     if ($tag.hasClass('quote__m-local') || $tag.hasClass('quote__m-outer')) {
       return;
     }
 
-    var cite = $tag.attr('cite');
+    let cite = $tag.attr('cite');
 
     if (!cite) return;
 
-    var match = N.router.match(cite);
+    let match = N.router.match(cite);
 
     if (!match) return;
 
@@ -868,11 +846,11 @@ N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardo
 ///////////////////////////////////////////////////////////////////////////////
 // Save scroll position
 //
-var bag = new Bag({ prefix: 'nodeca' });
-var scrollPositionTracker = null;
+const bag = new Bag({ prefix: 'nodeca' });
+let scrollPositionTracker = null;
 
 
-var uploadScrollPositions = _.debounce(function () {
+const uploadScrollPositions = _.debounce(function () {
   bag.get('topics_scroll', function (__, positions) {
     if (positions) {
       _.forEach(positions, function (data, id) {
@@ -896,16 +874,16 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
   // Skip for guests
   if (N.runtime.is_guest) return;
 
-  var lastPos = -1;
-  var lastRead = -1;
+  let lastPos = -1;
+  let lastRead = -1;
 
   scrollPositionTracker = _.debounce(function () {
-    var $window = $(window);
-    var viewportStart = $window.scrollTop() + navbarHeight;
-    var viewportEnd = $window.scrollTop() + $window.height();
-    var $posts = $('.forum-post');
+    let $window = $(window);
+    let viewportStart = $window.scrollTop() + navbarHeight;
+    let viewportEnd = $window.scrollTop() + $window.height();
+    let $posts = $('.forum-post');
 
-    var currentIdx = _.sortedIndexBy($posts, null, function (post) {
+    let currentIdx = _.sortedIndexBy($posts, null, post => {
       if (!post) return viewportStart;
       return $(post).offset().top + $(post).height();
     });
@@ -914,10 +892,10 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       currentIdx = $posts.length - 1;
     }
 
-    var lastVisibleIdx = $posts.length - 1;
+    let lastVisibleIdx = $posts.length - 1;
 
     // Search last completely visible post
-    for (var i = currentIdx + 1; i < $posts.length; i++) {
+    for (let i = currentIdx + 1; i < $posts.length; i++) {
       if ($($posts[i]).offset().top + $($posts[i]).height() > viewportEnd) {
         lastVisibleIdx = i - 1;
         break;
@@ -928,11 +906,11 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     if (lastVisibleIdx < 0) return;
 
     // Last completely visible post on page to mark it as read
-    var read = $($posts[lastVisibleIdx]).data('post-hid');
+    let read = $($posts[lastVisibleIdx]).data('post-hid');
     // Current scroll (topic hid) position
-    var pos;
+    let pos;
 
-    var $post = $($posts[currentIdx]);
+    let $post = $($posts[currentIdx]);
 
     // If first post in viewport hidden more than half height and second post is
     // completely visible - set `pos` to second post hid

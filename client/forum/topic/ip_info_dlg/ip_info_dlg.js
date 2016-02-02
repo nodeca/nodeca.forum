@@ -3,11 +3,10 @@
 // options:
 // - postId
 //
-
-
 'use strict';
 
-var $dialog;
+
+let $dialog;
 
 
 N.wire.once('forum.topic.ip_info_dlg', function init_handlers() {
@@ -24,9 +23,8 @@ N.wire.once('forum.topic.ip_info_dlg', function init_handlers() {
 
 // Init dialog
 //
-N.wire.on('forum.topic.ip_info_dlg', function show_ip_info_dlg(options, callback) {
-
-  N.io.rpc('forum.topic.post.ip_info', { post_id: options.postId }).then(function (res) {
+N.wire.on('forum.topic.ip_info_dlg', function show_ip_info_dlg(options) {
+  return N.io.rpc('forum.topic.post.ip_info', { post_id: options.postId }).then(res => {
     $dialog = $(N.runtime.render('forum.topic.ip_info_dlg', res));
 
     $('body').append($dialog);
@@ -38,7 +36,5 @@ N.wire.on('forum.topic.ip_info_dlg', function show_ip_info_dlg(options, callback
         $dialog = null;
       })
       .modal('show');
-
-    callback();
   });
 });

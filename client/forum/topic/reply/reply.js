@@ -11,15 +11,14 @@
 'use strict';
 
 
-var _    = require('lodash');
-var Bag  = require('bag.js');
-var bag  = new Bag({ prefix: 'nodeca_drafts' });
+const _    = require('lodash');
+const Bag  = require('bag.js');
+const bag  = new Bag({ prefix: 'nodeca_drafts' });
 
 
-var draftKey;
-var options;
-var draft;
-
+let draftKey;
+let options;
+let draft;
 
 
 function updateOptions() {
@@ -41,8 +40,8 @@ N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
 
 // Fetch options
 //
-N.wire.before(module.apiPath + ':begin', function fetch_options(__, callback) {
-  N.io.rpc('forum.topic.post.options').then(function (opt) {
+N.wire.before(module.apiPath + ':begin', function fetch_options() {
+  return N.io.rpc('forum.topic.post.options').then(opt => {
     options = {
       parse_options: opt.parse_options,
       user_settings: {
@@ -51,8 +50,6 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(__, callback) {
         no_quote_collapse: false
       }
     };
-
-    callback();
   });
 });
 
@@ -64,23 +61,24 @@ N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
 
   bag.get(draftKey, function (__, data) {
     draft = data || {};
+    callback();
+  });
+});
 
-    if (!draft.attachments || draft.attachments.length === 0) {
-      callback();
-      return;
-    }
 
-    var params = {
-      media_ids: _.map(draft.attachments, 'media_id')
-    };
+// Check draft attachments
+//
+N.wire.before(module.apiPath + ':begin', function check_draft_attachments() {
+  if (!draft.attachments || draft.attachments.length === 0) {
+    return;
+  }
 
-    N.io.rpc('forum.topic.attachments_check', params).then(function (res) {
-      draft.attachments = draft.attachments.filter(function (attach) {
-        return res.media_ids.indexOf(attach.media_id) !== -1;
-      });
+  let params = {
+    media_ids: _.map(draft.attachments, 'media_id')
+  };
 
-      callback();
-    });
+  return N.io.rpc('forum.topic.attachments_check', params).then(res => {
+    draft.attachments = draft.attachments.filter(attach => res.media_ids.indexOf(attach.media_id) !== -1);
   });
 });
 
@@ -88,7 +86,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
 // Show editor and add handlers for editor events
 //
 N.wire.on(module.apiPath + ':begin', function show_editor(data) {
-  var $editor = N.MDEdit.show({
+  let $editor = N.MDEdit.show({
     text: draft.text,
     attachments: draft.attachments
   });
@@ -96,8 +94,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
   updateOptions();
 
   $editor
-    .on('show.nd.mdedit', function () {
-      var title = t(data.post_hid ? 'reply_post' : 'reply_topic', {
+    .on('show.nd.mdedit', () => {
+      let title = t(data.post_hid ? 'reply_post' : 'reply_topic', {
         topic_url: N.router.linkTo('forum.topic', {
           section_hid: data.section_hid,
           topic_hid: data.topic_hid
@@ -114,14 +112,14 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-header__caption').html(title);
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
-    .on('change.nd.mdedit', function () {
+    .on('change.nd.mdedit', () => {
       bag.set(draftKey, {
         text: N.MDEdit.text(),
         attachments: N.MDEdit.attachments()
       });
     })
-    .on('submit.nd.mdedit', function () {
-      var params = {
+    .on('submit.nd.mdedit', () => {
+      let params = {
         section_hid:              data.section_hid,
         topic_hid:                data.topic_hid,
         txt:                      N.MDEdit.text(),
@@ -135,12 +133,14 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         params.parent_post_id = data.post_id;
       }
 
-      N.io.rpc('forum.topic.post.reply', params).then(function (response) {
-        bag.remove(draftKey, function () {
-          N.MDEdit.hide();
-          N.wire.emit('navigate.to', response.redirect_url);
-        });
-      });
+      N.io.rpc('forum.topic.post.reply', params)
+        .then(response => {
+          bag.remove(draftKey, function () {
+            N.MDEdit.hide();
+            N.wire.emit('navigate.to', response.redirect_url);
+          });
+        })
+        .catch(err => N.wire.emit('error', err));
 
       return false;
     });
@@ -150,7 +150,5 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
 // Open options dialog
 //
 N.wire.on(module.apiPath + ':options', function show_options_dlg() {
-  N.wire.emit('common.blocks.editor_options_dlg', options.user_settings, function () {
-    updateOptions();
-  });
+  return N.wire.emit('common.blocks.editor_options_dlg', options.user_settings).then(updateOptions);
 });

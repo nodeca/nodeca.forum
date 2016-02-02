@@ -127,8 +127,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
         // Show "Delete" button if there are some overriden settings after save.
         view.showRemoveButton(view.settings.some(setting => setting.overriden()));
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('message_saved') }));
-    // TODO: .catch(/*...*/)
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('message_saved') }))
+      .catch(err => N.wire.emit('error', err));
   };
 
   view.destroy = function destroy() {
@@ -143,8 +143,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
         return N.io.rpc('admin.forum.moderator.destroy', request);
       })
       .then(() => N.wire.emit('notify', { type: 'info', message: t('message_deleted') }))
-      .then(() => N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' }));
-    // TODO: .catch(/*...*/)
+      .then(() => N.wire.emit('navigate.to', { apiPath: 'admin.forum.moderator.index' }))
+      .catch(err => N.wire.emit('error', err));
   };
 
   ko.applyBindings(view, $('#content')[0]);

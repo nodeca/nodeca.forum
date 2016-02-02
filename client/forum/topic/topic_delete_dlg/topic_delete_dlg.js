@@ -1,44 +1,32 @@
 // Popup dialog to delete topic
 //
 // options:
-// - topicId
+//
 // - asModerator
 // - canDeleteHard
 // - method - out. 'hard' or 'soft'
+// - reason - out
 //
-
-
 'use strict';
 
-var $dialog;
-var params;
-var doneCallback;
+
+let $dialog;
+let params;
+let result;
 
 
-N.wire.once('forum.topic.topic_delete_dlg', function init_handlers() {
+N.wire.once(module.apiPath, function init_handlers() {
 
   // Submit button handler
   //
-  N.wire.on('forum.topic.topic_delete_dlg:submit', function submit_topic_delete_dlg(form) {
-    var data = {
-      topic_hid: params.topicHid,
-      method: form.fields.method || 'soft',
-      as_moderator: params.asModerator
-    };
-
+  N.wire.on(module.apiPath + ':submit', function submit_topic_delete_dlg(form) {
+    params.method = form.fields.method || 'soft';
     if ($.trim(form.fields.reason) !== '') {
-      data.reason = form.fields.reason;
+      params.reason = form.fields.reason;
     }
 
-    N.io.rpc('forum.topic.destroy', data).then(function () {
-      params.method = data.method;
-
-      let done = doneCallback;
-
-      $dialog
-        .on('hidden.bs.modal', () => done())
-        .modal('hide');
-    });
+    result = params;
+    $dialog.modal('hide');
   });
 
 
@@ -54,24 +42,28 @@ N.wire.once('forum.topic.topic_delete_dlg', function init_handlers() {
 
 // Init dialog
 //
-N.wire.on('forum.topic.topic_delete_dlg', function show_topic_delete_dlg(options, callback) {
+N.wire.on(module.apiPath, function show_topic_delete_dlg(options) {
   params = options;
-  doneCallback = callback;
-
-  $dialog = $(N.runtime.render('forum.topic.topic_delete_dlg', params));
+  $dialog = $(N.runtime.render(module.apiPath, params));
 
   $('body').append($dialog);
 
-  // When dialog closes - remove it from body and free resources
-  $dialog
-    .on('shown.bs.modal', function () {
-      $dialog.find('.btn-default').focus();
-    })
-    .on('hidden.bs.modal', function () {
-      $dialog.remove();
-      $dialog = null;
-      doneCallback = null;
-      params = null;
-    })
-    .modal('show');
+  return new Promise((resolve, reject) => {
+    $dialog
+      .on('shown.bs.modal', () => {
+        $dialog.find('.btn-default').focus();
+      })
+      .on('hidden.bs.modal', () => {
+        // When dialog closes - remove it from body and free resources
+        $dialog.remove();
+        $dialog = null;
+        params = null;
+
+        if (result) resolve(result);
+        else reject('CANCELED');
+
+        result = null;
+      })
+      .modal('show');
+  });
 });

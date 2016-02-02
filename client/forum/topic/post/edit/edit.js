@@ -12,11 +12,11 @@
 'use strict';
 
 
-var _    = require('lodash');
+const _ = require('lodash');
 
 
-var options;
-var post;
+let options;
+let post;
 
 
 function updateOptions() {
@@ -38,35 +38,38 @@ N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
 
 // Fetch post and options
 //
-N.wire.before(module.apiPath + ':begin', function fetch_options(data, callback) {
-  N.io.rpc('forum.topic.post.edit.index', { post_id: data.post_id, as_moderator: data.as_moderator })
-      .then(function (response) {
+N.wire.before(module.apiPath + ':begin', function fetch_options(data) {
+  let postData;
 
-    N.io.rpc('forum.topic.post.options').then(function (opt) {
+  return Promise.resolve()
+    .then(() => N.io.rpc('forum.topic.post.edit.index', { post_id: data.post_id, as_moderator: data.as_moderator }))
+    .then(response => {
+      postData = response;
+
+      return N.io.rpc('forum.topic.post.options');
+    })
+    .then(opt => {
       options = {
         parse_options: opt.parse_options,
         user_settings: {
-          no_mlinks:         !response.params.link_to_title && !response.params.link_to_snippet,
-          no_emojis:         !response.params.emoji,
-          no_quote_collapse: !response.params.quote_collapse
+          no_mlinks:         !postData.params.link_to_title && !postData.params.link_to_snippet,
+          no_emojis:         !postData.params.emoji,
+          no_quote_collapse: !postData.params.quote_collapse
         }
       };
 
       post = {
-        md: response.md,
-        attachments: response.attachments
+        md:          postData.md,
+        attachments: postData.attachments
       };
-
-      callback();
     });
-  });
 });
 
 
 // Show editor and add handlers for editor events
 //
 N.wire.on(module.apiPath + ':begin', function show_editor(data) {
-  var $editor = N.MDEdit.show({
+  let $editor = N.MDEdit.show({
     text: post.md,
     attachments: post.attachments
   });
@@ -74,8 +77,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
   updateOptions();
 
   $editor
-    .on('show.nd.mdedit', function () {
-      var title = t('edit_post', {
+    .on('show.nd.mdedit', () => {
+      let title = t('edit_post', {
         topic_title: _.escape(data.topic_title),
         post_url: N.router.linkTo('forum.topic', {
           section_hid: data.section_hid,
@@ -88,8 +91,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-header__caption').html(title);
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
-    .on('submit.nd.mdedit', function () {
-      var params = {
+    .on('submit.nd.mdedit', () => {
+      let params = {
         as_moderator:             data.as_moderator,
         post_id:                  data.post_id,
         txt:                      N.MDEdit.text(),
@@ -99,22 +102,20 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         option_no_quote_collapse: options.user_settings.no_quote_collapse
       };
 
-      N.io.rpc('forum.topic.post.edit.update', params).then(function (res) {
-        var $post = $('#post' + data.post_id);
+      N.io.rpc('forum.topic.post.edit.update', params)
+        .then(res => {
+          let $post = $('#post' + data.post_id);
+          let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        N.MDEdit.hide();
+          N.MDEdit.hide();
 
-        var $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-        N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
-          $post.replaceWith($result);
-
-          $post.removeClass('forum-post__m-flash');
-          setTimeout(function () {
-            $post.addClass('forum-post__m-flash');
-          }, 0);
-        });
-      });
+          N.wire.emit('navigate.update', { $: $result, locals: res }, () => {
+            $post.replaceWith($result);
+            $post.removeClass('forum-post__m-flash');
+            setTimeout(() => $post.addClass('forum-post__m-flash'), 0);
+          });
+        })
+        .catch(err => N.wire.emit('error', err));
 
       return false;
     });
