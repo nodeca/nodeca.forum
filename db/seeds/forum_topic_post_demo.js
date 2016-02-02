@@ -347,12 +347,10 @@ const addModerators = co.wrap(function* () {
     for (let j = charlatan.Helpers.rand(MAX_MODERATOR_COUNT); j > 0; j--) {
       let user = users[charlatan.Helpers.rand(USER_COUNT)];
 
-      /* eslint-disable no-loop-func */
-      yield thenify(callback => SectionModeratorStore.set(
+      yield SectionModeratorStore.set(
         { forum_mod_visible: { value: true } },
-        { section_id: section._id, user_id: user._id },
-        callback
-      ));
+        { section_id: section._id, user_id: user._id }
+      );
     }
   }
 });
