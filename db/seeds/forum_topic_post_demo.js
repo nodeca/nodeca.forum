@@ -365,7 +365,7 @@ module.exports = co.wrap(function* (N) {
   UserGroup = N.models.users.UserGroup;
   Vote      = N.models.users.Vote;
   settings  = N.settings;
-  parser    = thenify(N.parse);
+  parser    = N.parse;
 
   yield createUsers();
   yield createSections();
