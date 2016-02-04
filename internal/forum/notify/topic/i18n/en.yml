@@ -1,12 +1,3 @@
 en-US:
   subject: '#{project_name}: new topic in "#{section_title}"'
-  text: |
-    #{post_html}
-
-    Follow this link to read answer:
-
-    #{link}
-
-    Follow this link to unsubscribe:
-
-    #{unsubscribe}
+  reply: Reply

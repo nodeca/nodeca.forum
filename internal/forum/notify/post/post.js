@@ -4,6 +4,7 @@
 
 
 const _         = require('lodash');
+const render    = require('nodeca.core/lib/system/render/common');
 const user_info = require('nodeca.users/lib/user_info');
 
 
@@ -66,8 +67,10 @@ module.exports = function (N) {
                                 .where('type').equals(Subscription.types.WATCHING)
                                 .lean(true);
 
-    // Filter if subscriptions does not contain record with user_id
-    local_env.to = local_env.to.filter(user_id => !_.find(subscriptions, { user_id }));
+    let watching = subscriptions.map(subscription => String(subscription.user_id));
+
+    // Only if `user_id` in both arrays
+    local_env.to = _.intersection(local_env.to, watching);
 
     // Filter users by access
     //
@@ -79,7 +82,6 @@ module.exports = function (N) {
           if (!access_env.data.access_read) {
             local_env.to = _.without(local_env.to, user_id);
           }
-          return;
         });
     });
 
@@ -89,6 +91,10 @@ module.exports = function (N) {
 
     local_env.to.forEach(user_id => {
       let locale = users_info[user_id].locale || N.config.locales[0];
+      let helpers = {};
+
+      helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
+      helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
 
       let subject = N.i18n.t(locale, 'forum.notify.post.subject', {
         project_name: general_project_name,
@@ -106,11 +112,7 @@ module.exports = function (N) {
         topic_hid: topic.hid
       });
 
-      let text = N.i18n.t(locale, 'forum.notify.post.text', {
-        post_html: post.html,
-        link: url,
-        unsubscribe
-      });
+      let text = render(N, 'forum.notify.post', { post_html: post.html, link: url }, helpers);
 
       local_env.messages[user_id] = { subject, text, url, unsubscribe };
     });

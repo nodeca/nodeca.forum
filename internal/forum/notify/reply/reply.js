@@ -3,8 +3,9 @@
 'use strict';
 
 
-var _         = require('lodash');
-var user_info = require('nodeca.users/lib/user_info');
+const _         = require('lodash');
+const render    = require('nodeca.core/lib/system/render/common');
+const user_info = require('nodeca.users/lib/user_info');
 
 
 module.exports = function (N) {
@@ -33,10 +34,10 @@ module.exports = function (N) {
 
     // Fetch section
     //
-    let section = N.models.forum.Section
-                      .findOne()
-                      .where('_id').equals(topic.section)
-                      .lean(true);
+    let section = yield N.models.forum.Section
+                            .findOne()
+                            .where('_id').equals(topic.section)
+                            .lean(true);
 
     // If section not exists - terminate async here
     if (!section) return;
@@ -68,10 +69,10 @@ module.exports = function (N) {
                                 .where('type').equals(Subscription.types.MUTED)
                                 .lean(true);
 
-    // TODO: replace like in post notify?
-    subscriptions.forEach(subscription => {
-      local_env.to = _.without(local_env.to, String(subscription.user_id));
-    });
+    let muted = subscriptions.map(subscription => String(subscription.user_id));
+
+    // If `user_id` only in `local_env.to`
+    local_env.to = _.difference(local_env.to, muted);
 
     // Filter users by access
     //
@@ -90,8 +91,12 @@ module.exports = function (N) {
     //
     let general_project_name = yield N.settings.get('general_project_name');
 
-    local_env.to.forEach(function (user_id) {
+    local_env.to.forEach(user_id => {
       let locale = users_info[user_id].locale || N.config.locales[0];
+      let helpers = {};
+
+      helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
+      helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
 
       let subject = N.i18n.t(locale, 'forum.notify.reply.subject', {
         project_name: general_project_name,
@@ -109,11 +114,7 @@ module.exports = function (N) {
         topic_hid: topic.hid
       });
 
-      let text = N.i18n.t(locale, 'forum.notify.reply.text', {
-        post_html: post.html,
-        link: url,
-        unsubscribe
-      });
+      let text = render(N, 'forum.notify.reply', { post_html: post.html, link: url }, helpers);
 
       local_env.messages[user_id] = { subject, text, url, unsubscribe };
     });

@@ -1,13 +1,4 @@
 en-US:
   someone: Someone
   subject: '#{project_name}: #{user_name} replied to your post'
-  text: |
-    #{post_html}
-
-    Follow this link to read answer:
-
-    #{link}
-
-    Follow this link to unsubscribe:
-
-    #{unsubscribe}
+  reply: Reply
