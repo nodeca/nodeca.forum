@@ -1,4 +1,4 @@
-// Deliver `FORUM_NEW_TOPIC` notification
+// Deliver `FORUM_NEW_POST` notification
 //
 'use strict';
 
@@ -10,27 +10,27 @@ const user_info = require('nodeca.users/lib/user_info');
 
 module.exports = function (N) {
   N.wire.on('internal:users.notify.deliver', function* notify_deliver_froum_post(local_env) {
-    if (local_env.type !== 'FORUM_NEW_TOPIC') return;
-
-    // Fetch topic
-    //
-    let topic = yield N.models.forum.Topic
-                          .findOne()
-                          .where('_id').equals(local_env.src)
-                          .lean(true);
-
-    // If topic not exists - terminate async here
-    if (!topic) return;
+    if (local_env.type !== 'FORUM_NEW_POST') return;
 
     // Fetch post
     //
     let post = yield N.models.forum.Post
                         .findOne()
-                        .where('_id').equals(topic.cache.first_post)
+                        .where('_id').equals(local_env.src)
                         .lean(true);
 
-    // If post not exists - terminate async here
+    // If post not exists - terminate
     if (!post) return;
+
+    // Fetch topic
+    //
+    let topic = yield N.models.forum.Topic
+                          .findOne()
+                          .where('_id').equals(post.topic)
+                          .lean(true);
+
+    // If topic not exists - terminate
+    if (!topic) return;
 
     // Fetch section
     //
@@ -39,25 +39,31 @@ module.exports = function (N) {
                             .where('_id').equals(topic.section)
                             .lean(true);
 
-    // If section not exists - terminate async here
+    // If section not exists - terminate
     if (!section) return;
 
     // Fetch user info
-    //
     let users_info = yield user_info(N, local_env.to);
 
-    // Filter topic owner (don't send notification to user who create this topic)
+    // Filter post owner (don't send notification to user who create this post)
     //
     local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.user));
 
-    // Filter users who not watching this section
+    // If `post.to_user` is set, don't send him this notification because reply
+    // notification already sent
+    //
+    if (post.to_user) {
+      local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.to_user));
+    }
+
+    // Filter users who not watching this topic
     //
     let Subscription = N.models.users.Subscription;
 
     let subscriptions = yield Subscription
                                 .find()
                                 .where('user_id').in(local_env.to)
-                                .where('to').equals(section._id)
+                                .where('to').equals(topic._id)
                                 .where('type').equals(Subscription.types.WATCHING)
                                 .lean(true);
 
@@ -90,9 +96,9 @@ module.exports = function (N) {
       helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
       helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
 
-      let subject = N.i18n.t(locale, 'forum.notify.topic.subject', {
+      let subject = N.i18n.t(locale, 'forum.notify.forum_new_post.subject', {
         project_name: general_project_name,
-        section_title: section.title
+        topic_title: topic.title
       });
 
       let url = N.router.linkTo('forum.topic', {
@@ -101,11 +107,12 @@ module.exports = function (N) {
         post_hid: post.hid
       });
 
-      let unsubscribe = N.router.linkTo('forum.section.unsubscribe', {
-        section_hid: section.hid
+      let unsubscribe = N.router.linkTo('forum.topic.unsubscribe', {
+        section_hid: section.hid,
+        topic_hid: topic.hid
       });
 
-      let text = render(N, 'forum.notify.topic', { post_html: post.html, link: url }, helpers);
+      let text = render(N, 'forum.notify.forum_new_post', { post_html: post.html, link: url }, helpers);
 
       local_env.messages[user_id] = { subject, text, url, unsubscribe };
     });
