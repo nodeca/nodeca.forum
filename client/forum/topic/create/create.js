@@ -9,8 +9,7 @@
 
 
 const _   = require('lodash');
-const Bag = require('bag.js');
-const bag = new Bag({ prefix: 'nodeca_drafts' });
+const bag = require('bagjs')({ prefix: 'nodeca_drafts' });
 
 
 let draftKey;

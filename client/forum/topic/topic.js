@@ -5,7 +5,6 @@
 
 const _             = require('lodash');
 const punycode      = require('punycode');
-const Bag           = require('bag.js');
 const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
 
@@ -846,7 +845,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardo
 ///////////////////////////////////////////////////////////////////////////////
 // Save scroll position
 //
-const bag = new Bag({ prefix: 'nodeca' });
+const bag = require('bagjs')({ prefix: 'nodeca' });
 let scrollPositionTracker = null;
 
 
