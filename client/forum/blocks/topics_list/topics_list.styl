@@ -142,34 +142,32 @@ a.forum-topicline__lpost-user-link
 .forum-topicline__closed-marker
 .forum-topicline__deleted-marker
 .forum-topicline__bookmarked-marker
+.forum-topicline__new-marker
   display none
 
 
-.forum-topicline__unread-marker
+.forum-topicline__new-marker
   position absolute
-  left 5px
-  top 50%
+  left 7px
   line-height 0
-  width 1px
-  height 20px
-  margin-top -10px
+  width 6px
+  height 6px
+  border-radius 10px
+  margin-top -3px
+  top 50%
   background-color grayLighter
 
+
 .forum-topicline__m-new
-  .forum-topicline__title
-    font-weight bold
-
-.forum-topicline__m-unread
   .forum-topicline__summary
-    padding-left 15px
-  .forum-topicline__title
-    font-weight bold
-
-  .forum-topicline__unread-marker
+    padding-left 20px
+  .forum-topicline__new-marker
     display block
     background-color colorUnread
-    width 2px
 
+.forum-topicline__m-unread
+  .forum-topicline__title
+    font-weight bold
 
 .forum-topicline__m-pinned
   .forum-topicline__pinned-marker

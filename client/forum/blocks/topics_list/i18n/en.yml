@@ -5,6 +5,7 @@ en-US:
   stat: "#{count} ((reply|replies)) · Last #{last}, by #{name}"
   del_reason: "(#{text})"
   del_by: "Deleted by:"
+  new: New topic
   pinned: Pinned topic
   closed: Closed topic
   deleted: Deleted topic
