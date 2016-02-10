@@ -8,7 +8,7 @@ ul.forum-sections
     - var last_user = self.users[section.cache.last_user]
     - var last_ts = section.cache.last_ts
     li.forum-section(id='cat' + section.hid
-      class=self.subsections_marks[section._id] < section.cache.last_ts ? 'unread' : ''
+      class=self.subsections_marks[section._id] < +new Date(last_ts || 0) ? 'unread' : ''
     )
 
       //- Add 'unread' class & #id below, for new data
