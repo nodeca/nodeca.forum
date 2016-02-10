@@ -35,8 +35,11 @@ module.exports = function (N, apiPath) {
   // Subcall forum.topic_list
   //
   N.wire.on(apiPath, function subcall_topic_list(env) {
-    env.data.section_hid = env.params.section_hid;
-    env.data.build_topics_ids = buildTopicIds;
+    env.data.section_hid         = env.params.section_hid;
+    env.data.select_posts_start  = env.params.last_post_id;
+    env.data.select_posts_before = env.params.before;
+    env.data.select_posts_after  = env.params.after;
+    env.data.build_topics_ids    = buildTopicIds;
 
     return N.wire.emit('internal:forum.topic_list', env);
   });

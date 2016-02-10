@@ -2,7 +2,7 @@
   header.page-head
     h1.page-head__title(itemprop='name')= self.t('title')
 
-  - var url = self.link_to('forum.section', { hid: self.section.hid });
+  - var url = self.link_to('forum.section', { section_hid: self.section.hid });
   - var link = '<a href="' + jade.escape(url) + '">' + jade.escape(self.section.title) + '</a>';
   != self.partial('button')
   = ' '

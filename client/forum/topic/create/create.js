@@ -92,7 +92,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
   $editor
     .on('show.nd.mdedit', () => {
       let title = t('create_topic', {
-        section_url: N.router.linkTo('forum.section', { hid: data.section_hid }),
+        section_url: N.router.linkTo('forum.section', { section_hid: data.section_hid }),
         section_title: _.escape(data.section_title)
       });
 

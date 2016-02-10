@@ -372,7 +372,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         return N.io.rpc('forum.topic.destroy', request);
       })
       .then(() =>
-        N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { hid: topicState.section_hid, page: 1 } })
+        N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: topicState.section_hid } })
       );
   });
 
@@ -739,26 +739,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         post_hid:     topicState.max_post
       }
     });
-  });
-
-
-  // User clicks to "move back to section" button, and she is moved
-  // to a section page where this topic is centered and highlighted
-  //
-  N.wire.on(module.apiPath + ':level_up', function level_up(data) {
-    N.io.rpc('forum.topic.offset', { section_hid: topicState.section_hid, topic_hid: data.$this.data('topic-hid') })
-      .then(res => {
-        let page = Math.floor(res.topic_offset / res.topics_per_page) + 1;
-
-        return N.wire.emit('navigate.to', {
-          apiPath: 'forum.section',
-          params: {
-            hid: topicState.section_hid,
-            page
-          },
-          anchor: 'topic' + data.$this.data('topic-hid')
-        });
-      });
   });
 });
 

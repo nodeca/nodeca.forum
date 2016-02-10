@@ -72,7 +72,7 @@ module.exports = function (N, apiPath) {
           return {
             text: section_info.title,
             route: 'forum.section',
-            params: { hid: section_info.hid }
+            params: { section_hid: section_info.hid }
           };
         })
       );

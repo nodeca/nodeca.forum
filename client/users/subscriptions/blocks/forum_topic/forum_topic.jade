@@ -7,7 +7,7 @@ li.user-subscriptions-item
       h2.user-subscriptions-item__title
         a.user-subscriptions-item__title-link(href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid }))=topic.title
       .user-subscriptions-item__desc
-        a.user-subscriptions-item__desc-link(href=self.link_to('forum.section', { hid: section.hid }))=section.title
+        a.user-subscriptions-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
     .col-sm-3
       a(href='#'
         title=self.t('delete_subscription')

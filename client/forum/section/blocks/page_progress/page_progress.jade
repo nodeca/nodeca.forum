@@ -1,27 +1,4 @@
 
-//- create dropdown menu
-mixin _page_progress_dropdown_menu()
-  form.dropdown-menu.page-progress__menu(
-    data-on-submit='forum.section:nav_to_offset'
-  )
-    - var pgmpid = 'pgmid' + ~~(Math.random()*100000000);
-
-    label.input(for=pgmpid)= self.t('jump_to')
-
-    .input-group
-      input.page-progress__jump-input.form-control(
-        id=pgmpid
-        name='topic'
-        type='number'
-        min=1
-        max=self.max
-        value=self.current
-        placeholder=self.t('placeholder')
-      )
-      span.input-group-btn
-        button.btn.btn-default(type='submit')= self.t('go')
-
-
 - var current  = self.current;
 - var total    = self.max;
 - var page_max = Math.ceil(total / self.per_page) || 1;
@@ -32,7 +9,7 @@ mixin _page_progress_dropdown_menu()
 ul.page-progress(data-current=current, data-total=total, data-section=self.section.hid)
   li.page-progress__item
     a.page-progress__button-first.icon.icon-to-top(
-      href= self.link_to('forum.section', { hid: self.section.hid, page: 1 })
+      href= self.link_to('forum.section', { section_hid: self.section.hid })
     )
 
   li.page-progress__item.dropdown
@@ -43,10 +20,3 @@ ul.page-progress(data-current=current, data-total=total, data-section=self.secti
       .page-progress__label= self.t('label', { current: current, total: total })
       .page-progress__bar
         .page-progress__bar-fill(style="width: " + (current / total * 100).toFixed(2) + "%")
-
-    +_page_progress_dropdown_menu()
-
-  li.page-progress__item
-    a.page-progress__button-last.icon.icon-to-bottom(
-      href= self.link_to('forum.section', { hid: self.section.hid, page: page_max })
-    )

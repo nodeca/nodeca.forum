@@ -32,7 +32,7 @@ module.exports = function (N, apiPath) {
 
     if (!match) return;
 
-    let access_env_sub = { params: { sections: match.params.hid, user_info: access_env.params.user_info } };
+    let access_env_sub = { params: { sections: match.params.section_hid, user_info: access_env.params.user_info } };
 
     yield N.wire.emit('internal:forum.access.section', access_env_sub);
 

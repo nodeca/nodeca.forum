@@ -11,12 +11,11 @@ const thenify   = require('thenify');
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    // section hid
-    hid:  { type: 'integer', required: true },
-    page: { type: 'integer', required: true, minimum: 1 }
+    section_hid: { type: 'integer', required: true },
+    topic_hid:   { type: 'integer', required: false }
   });
 
-  let buildTopicsIds = require('./list/_build_topics_ids_by_page.js')(N);
+  let buildTopicsIds = require('./list/_build_topics_ids_by_range.js')(N);
 
 
   let fetchSection = thenify(memoizee(
@@ -32,12 +31,32 @@ module.exports = function (N, apiPath) {
     }
   ));
 
+  function buildTopicsIdsAndGetOffset(env) {
+    return env.extras.settings.fetch('topics_per_page').then(topics_per_page => {
+      env.data.select_posts_start  = null;
+      env.data.select_posts_before = topics_per_page;
+      env.data.select_posts_after  = topics_per_page;
+
+      if (env.params.topic_hid) {
+        return N.models.forum.Topic.findOne({
+          section: env.data.section._id,
+          hid:     env.params.topic_hid,
+          st:      { $in: env.data.topics_visible_statuses }
+        }).then(topic => {
+
+          if (topic) {
+            env.data.select_posts_start = topic[env.user_info.hb ? 'cache_hb' : 'cache'].last_post;
+          }
+        });
+      }
+    }).then(() => buildTopicsIds(env));
+  }
 
   // Subcall forum.topic_list
   //
   N.wire.on(apiPath, function subcall_topic_list(env) {
-    env.data.section_hid = env.params.hid;
-    env.data.build_topics_ids = buildTopicsIds;
+    env.data.section_hid         = env.params.section_hid;
+    env.data.build_topics_ids    = buildTopicsIdsAndGetOffset;
 
     return N.wire.emit('internal:forum.topic_list', env);
   });
@@ -46,12 +65,16 @@ module.exports = function (N, apiPath) {
   // Fetch pagination
   //
   N.wire.after(apiPath, function* fetch_pagination(env) {
-
     let topics_per_page = yield env.extras.settings.fetch('topics_per_page');
 
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
-    let counters_by_status = yield statuses.map(
+    let counters_by_status;
+
+    //
+    // Count total amount of visible topics in the section
+    //
+    counters_by_status = yield statuses.map(
       st => N.models.forum.Topic
                 .where('section').equals(env.data.section._id)
                 .where('st').equals(st)
@@ -60,13 +83,30 @@ module.exports = function (N, apiPath) {
 
     let topic_count = _.sum(counters_by_status);
 
-    // Page numbers starts from 1, not from 0
-    let page_current = parseInt(env.params.page, 10);
+    //
+    // Count an amount of visible topics before the first one
+    //
+    let topic_offset = 0;
+
+    if (env.data.topics.length) {
+      let cache        = env.user_info.hb ? 'cache_hb' : 'cache';
+      let last_post_id = env.data.topics[0][cache].last_post;
+
+      let counters_by_status = yield statuses.map(
+        st => N.models.forum.Topic
+                  .where(cache + '.last_post').gt(last_post_id)
+                  .where('section').equals(env.data.section._id)
+                  .where('st').equals(st)
+                  .count()
+      );
+
+      topic_offset = _.sum(counters_by_status);
+    }
 
     env.data.pagination = {
-      total: topic_count,
-      per_page: topics_per_page,
-      chunk_offset: topics_per_page * (page_current - 1)
+      total:        topic_count,
+      per_page:     topics_per_page,
+      chunk_offset: topic_offset
     };
   });
 
@@ -75,26 +115,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function fill_page(env) {
     env.res.pagination = env.data.pagination;
-  });
-
-
-  // Redirect to last page, if requested > available
-  //
-  N.wire.after(apiPath, function redirect_to_last_page(env) {
-    let page_max = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
-
-    // Requested page is BIGGER than maximum - redirect to the last one
-    if (env.params.page > page_max) {
-      throw {
-        code: N.io.REDIRECT,
-        head: {
-          Location: N.router.linkTo('forum.section', {
-            hid:  env.params.hid,
-            page: page_max
-          })
-        }
-      };
-    }
   });
 
 
@@ -133,22 +153,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill head meta
-  //
-  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
-    let section = env.data.section;
-
-    env.res.head = env.res.head || {};
-
-    // Prepare page title
-    if (env.params.page === 1) {
-      env.res.head.title = section.title;
-    } else {
-      env.res.head.title = env.t('title_with_page', { title: section.title, page: env.params.page });
-    }
-  });
-
-
   // Get parent section
   //
   N.wire.after(apiPath, function* fill_parent_hid(env) {
@@ -167,29 +171,70 @@ module.exports = function (N, apiPath) {
 
   // Fill head meta
   //
-  N.wire.after(apiPath, function fill_meta(env) {
-    let current = Math.floor(env.data.pagination.chunk_offset / env.data.pagination.per_page) + 1;
-    let max     = Math.ceil(env.data.pagination.total / env.data.pagination.per_page) || 1;
+  N.wire.after(apiPath, function fill_head_and_breadcrumbs(env) {
+    env.res.head = env.res.head || {};
+    env.res.head.title = env.data.section.title;
 
+    if (env.params.topic_hid) {
+      env.res.head.robots = 'noindex,follow';
+    }
+  });
+
+
+  // Fill 'prev' and 'next' links and meta tags
+  //
+  N.wire.after(apiPath, function* fill_prev_next(env) {
     env.res.head = env.res.head || {};
 
-    env.res.head.canonical = N.router.linkTo('forum.section', {
-      hid: env.params.hid,
-      page: current
-    });
+    let cache    = env.user_info.hb ? 'cache_hb' : 'cache';
+    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
-    if (current > 1) {
-      env.res.head.prev = N.router.linkTo('forum.section', {
-        hid: env.params.hid,
-        page: current - 1
-      });
+    //
+    // Fetch topic after last one, turn it into a link to the next page
+    //
+    if (env.data.topics.length > 0) {
+      let last_post_id = env.data.topics[env.data.topics.length - 1][cache].last_post;
+
+      let topic_data = yield N.models.forum.Topic.findOne()
+                                 .where(cache + '.last_post').lt(last_post_id)
+                                 .where('section').equals(env.data.section._id)
+                                 .where('st').in(statuses)
+                                 .select('hid -_id')
+                                 .sort({ [cache + '.last_post']: -1 })
+                                 .lean(true);
+
+      if (topic_data) {
+        env.res.head.next = N.router.linkTo('forum.section', {
+          section_hid: env.params.section_hid,
+          topic_hid:   topic_data.hid
+        });
+
+        env.res.next_topic_hid = topic_data.hid;
+      }
     }
 
-    if (current < max) {
-      env.res.head.next = N.router.linkTo('forum.section', {
-        hid: env.params.hid,
-        page: current + 1
-      });
+    //
+    // Fetch topic before first one, turn it into a link to the previous page
+    //
+    if (env.data.topics.length > 0 && env.data.pagination.chunk_offset > 0) {
+      let last_post_id = env.data.topics[0][cache].last_post;
+
+      let topic_data = yield N.models.forum.Topic.findOne()
+                                 .where(cache + '.last_post').gt(last_post_id)
+                                 .where('section').equals(env.data.section._id)
+                                 .where('st').in(statuses)
+                                 .select('hid')
+                                 .sort({ [cache + '.last_post']: 1 })
+                                 .lean(true);
+
+      if (topic_data) {
+        env.res.head.prev = N.router.linkTo('forum.section', {
+          section_hid: env.params.section_hid,
+          topic_hid:   topic_data.hid
+        });
+
+        env.res.prev_topic_hid = topic_data.hid;
+      }
     }
   });
 };

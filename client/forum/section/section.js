@@ -52,7 +52,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   let pagination   = N.runtime.page_data.pagination,
       current_page = Math.floor(pagination.chunk_offset / pagination.per_page) + 1;
 
-  sectionState.hid               = data.params.hid;
+  sectionState.hid               = data.params.section_hid;
   sectionState.current_offset    = pagination.chunk_offset;
   sectionState.max_page          = Math.ceil(pagination.total / pagination.per_page) || 1;
   sectionState.topics_per_page   = pagination.per_page;
@@ -82,8 +82,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       return;
     }
 
-  } else if (anchor.match(/^#topic\d+$/)) {
-    el = $(anchor);
+  } else if (data.params.topic_hid) {
+    el = $('#topic' + data.params.topic_hid);
 
     if (el.length) {
       scrollIntoView(el, 0.3);
@@ -149,24 +149,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Called when user submits dropdown menu form
-  //
-  N.wire.on(module.apiPath + ':nav_to_offset', function navigate_to_offset(data) {
-    let topic = +data.fields.topic;
-    if (!topic) return;
-
-    return N.wire.emit('navigate.to', {
-      apiPath: 'forum.section',
-      params: {
-        hid:   sectionState.hid,
-        page:  Math.floor(topic / sectionState.topics_per_page) + 1
-      },
-      anchor: 'topic' + String(topic),
-      force: true // post might be on the same page
-    });
-  });
-
-
   // User presses "home" button
   //
   N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
@@ -179,26 +161,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.section',
       params: {
-        hid:   sectionState.hid,
-        page:  1
-      }
-    });
-  });
-
-
-  // User presses "end" button
-  //
-  N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
-    if (sectionState.reached_end) {
-      $(window).scrollTop($(document).height());
-      return;
-    }
-
-    return N.wire.emit('navigate.to', {
-      apiPath: 'forum.section',
-      params: {
-        hid:   sectionState.hid,
-        page:  sectionState.max_page
+        section_hid: sectionState.hid
       }
     });
   });
@@ -325,8 +288,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     let topics        = $('.forum-topicline'),
         viewportStart = $(window).scrollTop() + navbarHeight,
         offset,
-        currentIdx,
-        page;
+        currentIdx;
 
     // Get offset of the first topic in the viewport
     //
@@ -347,19 +309,17 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     sectionState.current_offset = offset;
 
-    page = Math.max(Math.floor(offset / sectionState.topics_per_page) + 1, 1);
-
     return N.wire.emit('navigate.replace', {
-        href: N.router.linkTo('forum.section', {
-          hid: sectionState.hid,
-          page
-        })
+      href: N.router.linkTo('forum.section', {
+        section_hid: sectionState.hid,
+        topic_hid:   $(topics[currentIdx]).data('topic-hid')
       })
-      .then(() => N.wire.emit('forum.section.blocks.page_progress:update', {
-        current: offset,
-        max: N.runtime.page_data.pagination.total,
-        per_page: N.runtime.page_data.pagination.per_page
-      }));
+    })
+    .then(() => N.wire.emit('forum.section.blocks.page_progress:update', {
+      current: offset,
+      max: N.runtime.page_data.pagination.total,
+      per_page: N.runtime.page_data.pagination.per_page
+    }));
   });
 });
 

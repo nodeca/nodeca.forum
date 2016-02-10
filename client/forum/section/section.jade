@@ -3,14 +3,11 @@
 - self.add_raw_data('subscription', self.subscription)
 - self.add_raw_data('pagination',   self.pagination)
 
-- var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
-
 article#content.forum-section-root(
   data-keymap= {
-    'home':   'forum.section:nav_to_start',
-    'end':    'forum.section:nav_to_end'
+    'home': 'forum.section:nav_to_start'
   }
-  class=(page_current === 1 ? 'forum-section-root__m-first-page' : '')
+  class=(self.pagination.chunk_offset > 0 ? '' : 'forum-section-root__m-first-page')
   data-first-post-id= self.topics.length ? self.topics[0].cache.last_post : null
   data-last-post-id=  self.topics.length ? self.topics[self.topics.length-1].cache.last_post : null
   data-section-level= self.section_level
@@ -36,10 +33,10 @@ article#content.forum-section-root(
 
       nav.forum-section__page-links
         .pager
-          - var link = self.link_to(self.apiPath, { hid: self.section.hid, page: page_current - 1 });
+          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.prev_topic_hid });
           li: a(href=link)= self.t('prev_page')
 
-          - var link = self.link_to(self.apiPath, { hid: self.section.hid, page: page_current + 1 });
+          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.next_topic_hid });
           li: a(href=link)= self.t('next_page')
     else
       p.forum-section__notopics

@@ -4,7 +4,7 @@ li.user-subscriptions-item
   .row
     .col-sm-9
       h2.user-subscriptions-item__title
-        a.user-subscriptions-item__title-link(href=self.link_to('forum.section', { hid: section.hid }))=section.title
+        a.user-subscriptions-item__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
     .col-sm-3
       a(href='#'
         title=self.t('delete_subscription')

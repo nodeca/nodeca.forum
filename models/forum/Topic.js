@@ -85,18 +85,20 @@ module.exports = function (N, collectionName) {
   // Indexes
   ////////////////////////////////////////////////////////////////////////////////
 
-  // Topics list, ordered by last post
+  // 1. count an amount of topics before the current one
+  // 2. select topics before/after current one
+  // 3. select previous/next page
+  // 4. fetch all pinned topics
   //
   // We use separate indices for normal and hellbanned users.
   //
-  Topic.index({ section: 1, 'cache.last_post':    -1, st: 1, _id: 1 });
-  Topic.index({ section: 1, 'cache_hb.last_post': -1, st: 1, _id: 1 });
+  // _id and hid are added only to avoid full document scan
+  //
+  Topic.index({ section: 1, st: 1, 'cache.last_post':    -1, _id: 1 });
+  Topic.index({ section: 1, st: 1, 'cache_hb.last_post': -1, _id: 1 });
 
   // lookup _id by hid (for routing)
   Topic.index({ hid: 1 });
-
-  // Pinned topics fetch (good cardinality, don't add timestamp to index)
-  Topic.index({ section: 1, st: 1 });
 
 
   ////////////////////////////////////////////////////////////////////////////////

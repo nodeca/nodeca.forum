@@ -7,9 +7,9 @@
 //
 // - env.user_info.hb
 // - env.data.section
-// - env.params.last_post_id
-// - env.params.before
-// - env.params.after
+// - env.data.select_posts_before
+// - env.data.select_posts_after
+// - env.data.select_posts_start
 // - env.data.topics_visible_statuses - list of statuses, allowed to view
 //
 // Out:
@@ -36,39 +36,59 @@ module.exports = function (N) {
     let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
 
     function select_visible_before() {
-      let count = env.params.before;
+      let count = env.data.select_posts_before;
       if (count <= 0) return Promise.resolve([]);
+
+      // first page, don't need to fetch anything
+      if (!env.data.select_posts_start) return Promise.resolve([]);
 
       let sort = {};
       sort[lookup_key] = 1;
 
-      return Topic.find()
-                  .where('section').equals(env.data.section._id)
-                  .where(lookup_key).gt(env.params.last_post_id)
-                  .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-                  .select('_id')
-                  .sort(sort)
-                  .limit(count)
-                  .lean(true)
-                  .then(topics => _.map(topics, '_id').reverse());
+      let query = Topic.find();
+
+      if (env.data.select_posts_start) {
+        query = query.where(lookup_key).gt(env.data.select_posts_start);
+      }
+
+      return query
+               .where('section').equals(env.data.section._id)
+               .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+               .select('_id')
+               .sort(sort)
+               .limit(count)
+               .lean(true)
+               .then(topics => _.map(topics, '_id').reverse());
     }
 
     function select_visible_after() {
-      let count = env.params.after;
+      let count = env.data.select_posts_after;
       if (count <= 0) return Promise.resolve([]);
 
       let sort = {};
       sort[lookup_key] = -1;
 
-      return Topic.find()
-                  .where('section').equals(env.data.section._id)
-                  .where(lookup_key).lt(env.params.last_post_id)
-                  .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-                  .select('_id')
-                  .sort(sort)
-                  .limit(count)
-                  .lean(true)
-                  .then(topics => _.map(topics, '_id'));
+      let query = Topic.find();
+
+      if (env.data.select_posts_start) {
+        if (env.data.select_posts_after > 0 && env.data.select_posts_before > 0) {
+          // if we're selecting both `after` and `before`, include current post
+          // in the result, otherwise don't
+          query = query.where(lookup_key).lte(env.data.select_posts_start);
+          count++;
+        } else {
+          query = query.where(lookup_key).lt(env.data.select_posts_start);
+        }
+      }
+
+      return query
+               .where('section').equals(env.data.section._id)
+               .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+               .select('_id')
+               .sort(sort)
+               .limit(count)
+               .lean(true)
+               .then(topics => _.map(topics, '_id'));
     }
 
 
@@ -83,7 +103,7 @@ module.exports = function (N) {
     // Start is determined by the amount of topics we get from the database:
     // if there are less topics in the result than requested, we're there.
     //
-    if (results[0].length < env.params.before &&
+    if (results[0].length < env.data.select_posts_before &&
         env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) !== -1) {
 
       let sort = {};

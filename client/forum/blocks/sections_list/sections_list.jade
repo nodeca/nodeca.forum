@@ -18,7 +18,7 @@ ul.forum-sections
           .forum-section__summary
 
             h3.forum-section__title
-              a.forum-section__title-link(href=self.link_to('forum.section', section))= section.title
+              a.forum-section__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))= section.title
 
             if section.child_list && section.child_list.length > 0
               ul.forum-section__subforums.hidden-xs
