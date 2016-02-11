@@ -52,7 +52,7 @@ module.exports = function (N) {
                .where('section').equals(env.data.section._id)
                .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
                .select('_id')
-               .sort(`+${lookup_key}`)
+               .sort(`${lookup_key}`)
                .limit(count)
                .lean(true)
                .then(topics => _.map(topics, '_id').reverse());

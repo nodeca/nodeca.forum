@@ -94,7 +94,7 @@ module.exports = function (N, apiPath) {
 
       let counters_by_status = yield statuses.map(
         st => N.models.forum.Topic
-                  .where(cache + '.last_post').gt(last_post_id)
+                  .where(`${cache}.last_post`).gt(last_post_id)
                   .where('section').equals(env.data.section._id)
                   .where('st').equals(st)
                   .count()
@@ -224,7 +224,7 @@ module.exports = function (N, apiPath) {
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
                                  .select('hid')
-                                 .sort(`+${cache}.last_post`)
+                                 .sort(`${cache}.last_post`)
                                  .lean(true);
 
       if (topic_data) {
@@ -245,7 +245,7 @@ module.exports = function (N, apiPath) {
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
                                  .select('hid')
-                                 .sort(`+${cache}.last_post`)
+                                 .sort(`${cache}.last_post`)
                                  .lean(true);
 
       if (topic_data) {
