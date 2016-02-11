@@ -1005,9 +1005,8 @@ function key_up(event) {
 // Handle shift keydown event
 //
 function key_down(event) {
-  if (event.shiftKey && !shift_key_pressed) {
+  if (event.shiftKey) {
     shift_key_pressed = true;
-    $multi_select_start = null;
   }
 }
 
@@ -1059,9 +1058,9 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
     if (data.$this.is(':checked') && topicState.selected_posts.indexOf(postId) === -1) {
       // Select
       //
-      if (shift_key_pressed && $multi_select_start) {
+      if ($multi_select_start) {
 
-        // If multi select already started and shift key pressed
+        // If multi select started
         //
         let $post = data.$this.closest('.forum-post');
         let $start = $multi_select_start;
@@ -1101,6 +1100,8 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         $multi_select_start = $post;
         $post.addClass('forum-post__m-selected');
         topicState.selected_posts.push(postId);
+
+        N.wire.emit('notify', { type: 'info', message: t('msg_multiselect') });
 
 
       } else {
