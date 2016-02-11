@@ -42,9 +42,6 @@ module.exports = function (N) {
       // first page, don't need to fetch anything
       if (!env.data.select_posts_start) return Promise.resolve([]);
 
-      let sort = {};
-      sort[lookup_key] = 1;
-
       let query = Topic.find();
 
       if (env.data.select_posts_start) {
@@ -55,7 +52,7 @@ module.exports = function (N) {
                .where('section').equals(env.data.section._id)
                .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
                .select('_id')
-               .sort(sort)
+               .sort(`+${lookup_key}`)
                .limit(count)
                .lean(true)
                .then(topics => _.map(topics, '_id').reverse());
@@ -64,9 +61,6 @@ module.exports = function (N) {
     function select_visible_after() {
       let count = env.data.select_posts_after;
       if (count <= 0) return Promise.resolve([]);
-
-      let sort = {};
-      sort[lookup_key] = -1;
 
       let query = Topic.find();
 
@@ -85,7 +79,7 @@ module.exports = function (N) {
                .where('section').equals(env.data.section._id)
                .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
                .select('_id')
-               .sort(sort)
+               .sort(`-${lookup_key}`)
                .limit(count)
                .lean(true)
                .then(topics => _.map(topics, '_id'));
@@ -106,14 +100,11 @@ module.exports = function (N) {
     if (results[0].length < env.data.select_posts_before &&
         env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) !== -1) {
 
-      let sort = {};
-      sort[lookup_key] = -1;
-
       let topics = yield Topic.find()
                               .where('section').equals(env.data.section._id)
                               .where('st').equals(Topic.statuses.PINNED)
                               .select('_id')
-                              .sort(sort)
+                              .sort(`-${lookup_key}`)
                               .lean(true);
 
       // Put pinned topics IDs to start of `env.data.topics_ids`

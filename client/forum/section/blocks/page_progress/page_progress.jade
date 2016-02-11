@@ -20,3 +20,8 @@ ul.page-progress(data-current=current, data-total=total, data-section=self.secti
       .page-progress__label= self.t('label', { current: current, total: total })
       .page-progress__bar
         .page-progress__bar-fill(style="width: " + (current / total * 100).toFixed(2) + "%")
+
+  li.page-progress__item
+    a.page-progress__button-last.icon.icon-to-bottom(
+      href= self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.last_topic_hid })
+    )

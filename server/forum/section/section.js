@@ -196,11 +196,11 @@ module.exports = function (N, apiPath) {
       let last_post_id = env.data.topics[env.data.topics.length - 1][cache].last_post;
 
       let topic_data = yield N.models.forum.Topic.findOne()
-                                 .where(cache + '.last_post').lt(last_post_id)
+                                 .where(`${cache}.last_post`).lt(last_post_id)
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
                                  .select('hid -_id')
-                                 .sort({ [cache + '.last_post']: -1 })
+                                 .sort(`-${cache}.last_post`)
                                  .lean(true);
 
       if (topic_data) {
@@ -220,11 +220,11 @@ module.exports = function (N, apiPath) {
       let last_post_id = env.data.topics[0][cache].last_post;
 
       let topic_data = yield N.models.forum.Topic.findOne()
-                                 .where(cache + '.last_post').gt(last_post_id)
+                                 .where(`${cache}.last_post`).gt(last_post_id)
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
                                  .select('hid')
-                                 .sort({ [cache + '.last_post']: 1 })
+                                 .sort(`+${cache}.last_post`)
                                  .lean(true);
 
       if (topic_data) {
@@ -234,6 +234,22 @@ module.exports = function (N, apiPath) {
         });
 
         env.res.prev_topic_hid = topic_data.hid;
+      }
+    }
+
+    //
+    // Fetch last topic for the "move to bottom" button
+    //
+    if (env.data.topics.length > 0) {
+      let topic_data = yield N.models.forum.Topic.findOne()
+                                 .where('section').equals(env.data.section._id)
+                                 .where('st').in(statuses)
+                                 .select('hid')
+                                 .sort(`+${cache}.last_post`)
+                                 .lean(true);
+
+      if (topic_data) {
+        env.res.last_topic_hid = topic_data.hid;
       }
     }
   });
