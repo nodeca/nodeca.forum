@@ -54,6 +54,12 @@ if items.length > 0 && items[items.length - 1] === 'divider'
 if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
   - items.push('mod_history')
 
+if (self.selected_cnt !== 0)
+  if items.length > 0
+    - items.push('divider')
+  - items.push('multi_header')
+  - items.push('multi_unselect')
+
 .page-actions.forum-topic__toolbar-controls
   - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 
@@ -176,3 +182,11 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
                 data-topic-hid=self.topic.hid
                 data-unpin='true'
               )=self.t('unpin')
+
+            when 'multi_header'
+              li.dropdown-header=self.t('multi_header', { count: self.selected_cnt })
+
+            when 'multi_unselect'
+              li: a(href='#'
+                data-on-click='forum.topic:posts_unselect'
+              )=self.t('multi_unselect')

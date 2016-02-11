@@ -30,6 +30,7 @@ each post, post_idx in self.posts
       class=(self.own_votes[post._id] === -1) ? 'forum-post__m-voted-down' : ''
       class=(self.own_votes[post._id] === +1) ? 'forum-post__m-voted-up' : ''
       data-post-hid=post.hid
+      data-post-id=post._id
       data-user-hid=user ? user.hid : ''
       itemscope
       itemtype='http://schema.org/WebPageElement'
@@ -56,7 +57,7 @@ each post, post_idx in self.posts
           != self.timetag(post.ts, 'relative')
           - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid });
           a.forum-post__link.icon.icon-link(href=_post_anchor)
-          input.forum-post__check(type='checkbox')
+          input.forum-post__check(type='checkbox' data-post-id=post._id data-on-change='forum.topic:post_check')
         .forum-post__meta-blk
           if user
             a.forum-post__author._ucard-popover(

@@ -20,6 +20,7 @@ const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
 // - prev_loading_start: time when current xhr request for the previous page is started
 // - next_loading_start: time when current xhr request for the next page is started
+// - selected_posts:     array of selected posts in current topic
 //
 let topicState = {};
 let scrollHandler = null;
@@ -40,6 +41,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
   topicState.prev_loading_start = 0;
   topicState.next_loading_start = 0;
+  topicState.selected_posts     = [];
 
 
   // If user moves to a page (e.g. from a search engine),
@@ -108,6 +110,40 @@ N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() 
 
 
 /////////////////////////////////////////////////////////////////////
+// Update topic menu and modifiers by page data
+//
+function updateTopicState() {
+  let params = {};
+
+  return N.wire.emit('navigate.get_page_raw', params).then(() => {
+    let data = _.assign({}, params.data, { selected_cnt: topicState.selected_posts.length });
+
+    // Need to re-render reply button and dropdown here
+    $('.forum-topic__toolbar-controls')
+      .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', data));
+
+    let modifiers = {
+      'forum-topic-root__m-open': topicStatuses.OPEN,
+      'forum-topic-root__m-closed': topicStatuses.CLOSED,
+      'forum-topic-root__m-deleted': topicStatuses.DELETED,
+      'forum-topic-root__m-deleted-hard': topicStatuses.DELETED_HARD,
+      'forum-topic-root__m-pinned': topicStatuses.PINNED
+    };
+
+    let $topicRoot = $('.forum-topic-root');
+
+    _.forEach(modifiers, (state, modifier) => {
+      if (params.data.topic.st === state || params.data.topic.ste === state) {
+        $topicRoot.addClass(modifier);
+      } else {
+        $topicRoot.removeClass(modifier);
+      }
+    });
+  });
+}
+
+
+/////////////////////////////////////////////////////////////////////
 // setup 'forum.topic.*' handlers
 //
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
@@ -144,37 +180,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + '.post_show_ip', function post_show_ip(data) {
     return N.wire.emit('forum.topic.ip_info_dlg', { postId: data.$this.data('post-id') });
   });
-
-
-  // Update topic menu and modifiers by page data
-  //
-  function updateTopicState() {
-    let params = {};
-
-    return N.wire.emit('navigate.get_page_raw', params).then(() => {
-      // Need to re-render reply button and dropdown here
-      $('.forum-topic__toolbar-controls')
-        .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', params.data));
-
-      let modifiers = {
-        'forum-topic-root__m-open': topicStatuses.OPEN,
-        'forum-topic-root__m-closed': topicStatuses.CLOSED,
-        'forum-topic-root__m-deleted': topicStatuses.DELETED,
-        'forum-topic-root__m-deleted-hard': topicStatuses.DELETED_HARD,
-        'forum-topic-root__m-pinned': topicStatuses.PINNED
-      };
-
-      let $topicRoot = $('.forum-topic-root');
-
-      _.forEach(modifiers, (state, modifier) => {
-        if (params.data.topic.st === state || params.data.topic.ste === state) {
-          $topicRoot.addClass(modifier);
-        } else {
-          $topicRoot.removeClass(modifier);
-        }
-      });
-    });
-  }
 
 
   // Expand deleted or hellbanned post
@@ -477,7 +482,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       post_hid:  hid - 1,
       before:    LOAD_POSTS_COUNT,
       after:     0
-    }).then(function (res) {
+    }).then(res => {
       topicState.post_count = res.topic.cache.post_count;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
@@ -504,14 +509,22 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-      N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
         $('.forum-postlist > :first').before($result);
 
         // update scroll so it would point at the same spot as before
         $(window).scrollTop($(window).scrollTop() + $('.forum-postlist').height() - old_height);
-      });
 
-      topicState.prev_loading_start = 0;
+        // Update selection state
+        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
+          $(`#post${postId}`)
+            .addClass('forum-post__m-selected')
+            .find('.forum-post__check')
+            .prop('checked', true);
+        });
+
+        topicState.prev_loading_start = 0;
+      });
 
     }).catch(err => {
       if (err.code !== N.io.NOT_FOUND) {
@@ -552,7 +565,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       post_hid:  hid + 1,
       before:    0,
       after:     LOAD_POSTS_COUNT
-    }).then(function (res) {
+    }).then(res => {
       topicState.post_count = res.topic.cache.post_count;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
@@ -577,11 +590,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-      N.wire.emit('navigate.update', { $: $result, locals: res }, function () {
+      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
         $('.forum-postlist > :last').after($result);
-      });
 
-      topicState.next_loading_start = 0;
+        // Update selection state
+        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
+          $(`#post${postId}`)
+            .addClass('forum-post__m-selected')
+            .find('.forum-post__check')
+            .prop('checked', true);
+        });
+
+        topicState.next_loading_start = 0;
+      });
 
     }).catch(err => {
       if (err.code !== N.io.NOT_FOUND) {
@@ -957,4 +978,173 @@ N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teard
 
   $(window).off('scroll', scrollPositionTracker);
   scrollPositionTracker = null;
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Multi posts selection
+//
+
+
+// Flag shift key pressed
+let shift_key_pressed = false;
+// DOM element of first selected post (for multi check)
+let $multi_select_start;
+
+
+// Handle shift keyup event
+//
+function key_up(event) {
+  // If shift still pressed
+  if (event.shiftKey) return;
+
+  shift_key_pressed = false;
+}
+
+
+// Handle shift keydown event
+//
+function key_down(event) {
+  if (event.shiftKey && !shift_key_pressed) {
+    shift_key_pressed = true;
+    $multi_select_start = null;
+  }
+}
+
+
+// Save selected posts debounced
+//
+const save_selected_posts = _.debounce(() => {
+  let key = 'topic_selected_posts_' + topicState.topic_hid;
+
+  if (topicState.selected_posts.length) {
+    // Expire after 1 day
+    bag.set(key, topicState.selected_posts, 60 * 60 * 24);
+  } else {
+    bag.remove(key);
+  }
+}, 500);
+
+
+// Load previously selected posts
+//
+N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_selected_posts() {
+  $(document)
+    .on('keyup', key_up)
+    .on('keydown', key_down);
+
+  return bag.get('topic_selected_posts_' + topicState.topic_hid)
+    .then(ids => {
+      topicState.selected_posts = ids || [];
+      topicState.selected_posts.forEach(postId => {
+        $(`#post${postId}`)
+          .addClass('forum-post__m-selected')
+          .find('.forum-post__check')
+          .prop('checked', true);
+      });
+    })
+    .then(updateTopicState);
+});
+
+
+// Init handlers
+//
+N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_init() {
+
+  // Update array of selected posts on selection change
+  //
+  N.wire.on('forum.topic:post_check', function topic_post_select(data) {
+    let postId = data.$this.data('post-id');
+
+    if (data.$this.is(':checked') && topicState.selected_posts.indexOf(postId) === -1) {
+      // Select
+      //
+      if (shift_key_pressed && $multi_select_start) {
+
+        // If multi select already started and shift key pressed
+        //
+        let $post = data.$this.closest('.forum-post');
+        let $start = $multi_select_start;
+        let postsBetween;
+
+        $multi_select_start = null;
+
+        // If current after `$multi_select_start`
+        if ($start.index() < $post.index()) {
+          // Get posts between start and current
+          postsBetween = $start.nextUntil($post, '.forum-post');
+        } else {
+          // Between current and start (in reverse order)
+          postsBetween = $post.nextUntil($start, '.forum-post');
+        }
+
+        postsBetween.each(function () {
+          let id = $(this).data('post-id');
+
+          if (topicState.selected_posts.indexOf(id) === -1) {
+            topicState.selected_posts.push(id);
+          }
+
+          $(this).find('.forum-post__check').prop('checked', true);
+          $(this).addClass('forum-post__m-selected');
+        });
+
+        topicState.selected_posts.push(postId);
+        $post.addClass('forum-post__m-selected');
+
+
+      } else if (shift_key_pressed) {
+        // If multi select not started and shift key pressed
+        //
+        let $post = data.$this.closest('.forum-post');
+
+        $multi_select_start = $post;
+        $post.addClass('forum-post__m-selected');
+        topicState.selected_posts.push(postId);
+
+
+      } else {
+        // No multi select
+        //
+        data.$this.closest('.forum-post').addClass('forum-post__m-selected');
+        topicState.selected_posts.push(postId);
+      }
+
+
+    } else if (!data.$this.is(':checked') && topicState.selected_posts.indexOf(postId) !== -1) {
+      // Unselect
+      //
+      data.$this.closest('.forum-post').removeClass('forum-post__m-selected');
+      topicState.selected_posts = _.without(topicState.selected_posts, postId);
+    }
+
+    save_selected_posts();
+    return updateTopicState();
+  });
+
+
+  // Unselect all posts
+  //
+  N.wire.on('forum.topic:posts_unselect', function topic_posts_unselect() {
+    topicState.selected_posts = [];
+
+    $('.forum-post__check:checked').each(function () {
+      $(this)
+        .prop('checked', false)
+        .closest('.forum-post')
+        .removeClass('forum-post__m-selected');
+    });
+
+    save_selected_posts();
+    return updateTopicState();
+  });
+});
+
+
+// Teardown multi post selection
+//
+N.wire.on('navigate.exit:' + module.apiPath, function topic_post_selection_teardown() {
+  $(document)
+    .off('keyup', key_up)
+    .off('keydown', key_down);
 });
