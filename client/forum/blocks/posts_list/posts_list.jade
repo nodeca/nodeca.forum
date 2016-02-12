@@ -7,6 +7,9 @@
 //- same as `d % n`, but works with negative numbers correctly
 - function mod(d, n) { return (d % n + n) % n; }
 
+//- show bulk operations checkbox
+- var bulk_operations_permitted = self.settings.forum_mod_can_delete_topics;
+
 each post, post_idx in self.posts
   - var user = self.users[post.user];
   - var visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
@@ -80,11 +83,12 @@ each post, post_idx in self.posts
               a.forum-post__link(href=_post_anchor)
                 != self.timetag(post.ts, 'relative')
 
-        label.forum-post__select(title=self.t('multiselect_hint'))
-          input.forum-post__select-cb(
-            type='checkbox'
-            data-post-id=post._id
-            data-on-change='forum.topic:post_check')
+        if bulk_operations_permitted
+          label.forum-post__select(title=self.t('multiselect_hint'))
+            input.forum-post__select-cb(
+              type='checkbox'
+              data-post-id=post._id
+              data-on-change='forum.topic:post_check')
       .forum-post__aside
         if user
           a.forum-post__userpic(href=self.link_to('users.member', { user_hid: user.hid }))
