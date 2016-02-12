@@ -176,20 +176,10 @@ module.exports = function (N, apiPath) {
 
   // Add last post number, used for navigation and progress bar display
   //
-  N.wire.on(apiPath, function* attach_last_post_hid(env) {
+  N.wire.on(apiPath, function attach_last_post_hid(env) {
     let cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
 
-    let post = yield N.models.forum.Post.findById(cache.last_post)
-                                        .select('hid')
-                                        .lean(true);
-
-    if (!post) {
-      // cache is invalid?
-      env.res.max_post = env.data.topic.last_post_hid;
-      return;
-    }
-
-    env.res.max_post = post.hid;
+    env.res.max_post = cache.last_post_hid;
   });
 
 

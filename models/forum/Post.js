@@ -119,7 +119,7 @@ module.exports = function (N, collectionName) {
 
     N.models.forum.Topic.findByIdAndUpdate(
         self.topic,
-        { $inc: { last_post_hid: 1 } },
+        { $inc: { last_post_counter: 1 } },
         { 'new': true },
         function (err, topic) {
 
@@ -128,7 +128,7 @@ module.exports = function (N, collectionName) {
         return;
       }
 
-      self.hid = topic.last_post_hid;
+      self.hid = topic.last_post_counter;
 
       callback();
     });

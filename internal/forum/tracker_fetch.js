@@ -45,7 +45,7 @@ module.exports = function (N) {
     let data = topics.map(topic => ({
       categoryId: topic.section,
       contentId: topic._id,
-      lastPostNumber: topic.last_post_hid,
+      lastPostNumber: topic.last_post_counter,
       lastPostTs: topic.cache.last_ts
     }));
 

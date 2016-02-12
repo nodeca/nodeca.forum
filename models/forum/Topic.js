@@ -70,7 +70,7 @@ module.exports = function (N, collectionName) {
 
     // Last assigned hid to the posts in this topic,
     // used to determine hid of a new post
-    last_post_hid:  { type: Number, 'default': 0 },
+    last_post_counter: { type: Number, 'default': 0 },
 
     // Cache
     cache,
