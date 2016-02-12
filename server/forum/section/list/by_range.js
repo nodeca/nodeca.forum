@@ -59,7 +59,7 @@ module.exports = function (N, apiPath) {
     //
     // Fetch topic after last one, turn it into a link to the next page
     //
-    if (env.params.after > 0) {
+    if (env.params.after > 0 && env.data.topics.length > 0) {
       let last_post_id = env.data.topics[env.data.topics.length - 1][cache].last_post;
 
       let topic_data = yield N.models.forum.Topic.findOne()
@@ -81,9 +81,12 @@ module.exports = function (N, apiPath) {
     }
 
     //
-    // Fetch topic before first one, turn it into a link to the previous page
+    // Fetch topic before first one, turn it into a link to the previous page;
+    // (there is no previous page if the first topic is pinned)
     //
-    if (env.params.before > 0) {
+    if (env.params.before > 0 && env.data.topics.length > 0 &&
+        env.data.topics[0].st !== N.models.forum.Topic.statuses.PINNED) {
+
       let last_post_id = env.data.topics[0][cache].last_post;
 
       let topic_data = yield N.models.forum.Topic.findOne()

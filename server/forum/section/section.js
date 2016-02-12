@@ -88,7 +88,8 @@ module.exports = function (N, apiPath) {
     //
     let topic_offset = 0;
 
-    if (env.data.topics.length) {
+    // if first topic is pinned, it's a first page and topic_offset is zero
+    if (env.data.topics.length && env.data.topics[0].st !== N.models.forum.Topic.statuses.PINNED) {
       let cache        = env.user_info.hb ? 'cache_hb' : 'cache';
       let last_post_id = env.data.topics[0][cache].last_post;
 
@@ -214,9 +215,12 @@ module.exports = function (N, apiPath) {
     }
 
     //
-    // Fetch topic before first one, turn it into a link to the previous page
+    // Fetch topic before first one, turn it into a link to the previous page;
+    // (there is no previous page if the first topic is pinned)
     //
-    if (env.data.topics.length > 0 && env.data.pagination.chunk_offset > 0) {
+    if (env.data.topics.length > 0 &&
+        env.data.topics[0].st !== N.models.forum.Topic.statuses.PINNED) {
+
       let last_post_id = env.data.topics[0][cache].last_post;
 
       let topic_data = yield N.models.forum.Topic.findOne()
