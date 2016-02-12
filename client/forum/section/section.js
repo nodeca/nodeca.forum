@@ -49,8 +49,8 @@ function scrollIntoView(el, coef) {
 // init on page load
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  let pagination   = N.runtime.page_data.pagination,
-      current_page = Math.floor(pagination.chunk_offset / pagination.per_page) + 1;
+  let pagination     = N.runtime.page_data.pagination,
+      last_topic_hid = $('.forum-section-root').data('last-topic-hid');
 
   sectionState.hid               = data.params.section_hid;
   sectionState.current_offset    = pagination.chunk_offset;
@@ -60,8 +60,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   sectionState.next_page_loading = false;
   sectionState.first_post_id     = $('.forum-section-root').data('first-post-id');
   sectionState.last_post_id      = $('.forum-section-root').data('last-post-id');
-  sectionState.reached_start     = (current_page === 1) || !sectionState.first_post_id;
-  sectionState.reached_end       = (current_page === sectionState.max_page) || !sectionState.last_post_id;
+  sectionState.reached_start     = (sectionState.current_offset === 0) || !sectionState.first_post_id;
+  sectionState.reached_end       = (last_topic_hid === $('.forum-topicline:last').data('topic-hid')) ||
+                                   !sectionState.last_post_id;
 
   // disable automatic scroll to an anchor in the navigator
   data.no_scroll = true;
@@ -96,7 +97,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   // If we're on the first page, scroll to the top;
   // otherwise, scroll to the first topic on that page
   //
-  if (current_page > 1 && $('.forum-topiclist').length) {
+  if (pagination.chunk_offset > 1 && $('.forum-topiclist').length) {
     $(window).scrollTop($('.forum-topiclist').offset().top - navbarHeight);
 
   } else {
@@ -167,6 +168,24 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // User presses "end" button
+  //
+  N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
+    if (sectionState.reached_end) {
+      $(window).scrollTop($(document).height());
+      return;
+    }
+
+    return N.wire.emit('navigate.to', {
+      apiPath: 'forum.section',
+      params: {
+        section_hid: sectionState.hid,
+        topic_hid:   $('.forum-section-root').data('last-topic-hid')
+      }
+    });
+  });
+
+
   ///////////////////////////////////////////////////////////////////////////
   // Whenever we are close to beginning/end of topic list, check if we can
   // load more pages from the server
@@ -214,6 +233,16 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // update scroll so it would point at the same spot as before
       $(window).scrollTop($(window).scrollTop() + $('.forum-topiclist').height() - old_height);
 
+      // update prev/next metadata
+      $('link[rel="prev"]').remove();
+
+      if (res.head.prev) {
+        let link = $('<link rel="prev">');
+
+        link.attr('href', res.head.prev);
+        $('head').append(link);
+      }
+
       sectionState.prev_page_loading = false;
     }).catch(err => {
       sectionState.prev_page_loading = false;
@@ -250,6 +279,16 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // render & inject topics list
       let $result = $(N.runtime.render('forum.blocks.topics_list', res));
       $('.forum-topiclist > :last').after($result);
+
+      // update next/next metadata
+      $('link[rel="next"]').remove();
+
+      if (res.head.next) {
+        let link = $('<link rel="next">');
+
+        link.attr('href', res.head.next);
+        $('head').append(link);
+      }
 
       sectionState.next_page_loading = false;
     }).catch(err => {
@@ -294,13 +333,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     //
     currentIdx = _.sortedIndexBy(topics, null, topic => {
       if (!topic) { return viewportStart; }
-      return $(topic).offset().top + $(topic).height();
+      return $(topic).offset().top;
     });
 
-    if (currentIdx >= topics.length) { currentIdx = topics.length - 1; }
+    currentIdx--;
 
-    if (topics.length) {
-      offset = $(topics[currentIdx]).data('offset');
+    if (currentIdx >= 0 && topics.length) {
+      offset = $(topics[currentIdx]).data('offset') + 1;
     } else {
       offset = 0;
     }
@@ -309,10 +348,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     sectionState.current_offset = offset;
 
+    if (currentIdx >= 0) {
+      if ($('meta[name="robots"]').length === 0) {
+        $('head').append($('<meta name="robots" content="noindex,follow">'));
+      }
+    } else {
+      $('meta[name="robots"]').remove();
+    }
+
+    /* eslint-disable no-undefined */
     return N.wire.emit('navigate.replace', {
       href: N.router.linkTo('forum.section', {
         section_hid: sectionState.hid,
-        topic_hid:   $(topics[currentIdx]).data('topic-hid')
+        topic_hid:   currentIdx >= 0 ? $(topics[currentIdx]).data('topic-hid') : undefined
       })
     })
     .then(() => N.wire.emit('forum.section.blocks.page_progress:update', {

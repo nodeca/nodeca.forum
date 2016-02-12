@@ -2,8 +2,11 @@
 //
 'use strict';
 
+const _ = require('lodash');
+
+
 // Max topics to fetch before and after
-var LIMIT = 50;
+const LIMIT = 50;
 
 module.exports = function (N, apiPath) {
 
@@ -42,5 +45,63 @@ module.exports = function (N, apiPath) {
     env.data.build_topics_ids    = buildTopicIds;
 
     return N.wire.emit('internal:forum.topic_list', env);
+  });
+
+
+  // Fill 'prev' and 'next' links and meta tags
+  //
+  N.wire.after(apiPath, function* fill_prev_next(env) {
+    env.res.head = env.res.head || {};
+
+    let cache    = env.user_info.hb ? 'cache_hb' : 'cache';
+    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+
+    //
+    // Fetch topic after last one, turn it into a link to the next page
+    //
+    if (env.params.after > 0) {
+      let last_post_id = env.data.topics[env.data.topics.length - 1][cache].last_post;
+
+      let topic_data = yield N.models.forum.Topic.findOne()
+                                 .where(`${cache}.last_post`).lt(last_post_id)
+                                 .where('section').equals(env.data.section._id)
+                                 .where('st').in(statuses)
+                                 .select('hid -_id')
+                                 .sort(`-${cache}.last_post`)
+                                 .lean(true);
+
+      if (topic_data) {
+        env.res.head.next = N.router.linkTo('forum.section', {
+          section_hid: env.params.section_hid,
+          topic_hid:   topic_data.hid
+        });
+
+        env.res.next_topic_hid = topic_data.hid;
+      }
+    }
+
+    //
+    // Fetch topic before first one, turn it into a link to the previous page
+    //
+    if (env.params.before > 0) {
+      let last_post_id = env.data.topics[0][cache].last_post;
+
+      let topic_data = yield N.models.forum.Topic.findOne()
+                                 .where(`${cache}.last_post`).gt(last_post_id)
+                                 .where('section').equals(env.data.section._id)
+                                 .where('st').in(statuses)
+                                 .select('hid')
+                                 .sort(`${cache}.last_post`)
+                                 .lean(true);
+
+      if (topic_data) {
+        env.res.head.prev = N.router.linkTo('forum.section', {
+          section_hid: env.params.section_hid,
+          topic_hid:   topic_data.hid
+        });
+
+        env.res.prev_topic_hid = topic_data.hid;
+      }
+    }
   });
 };

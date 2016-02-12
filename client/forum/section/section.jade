@@ -5,7 +5,8 @@
 
 article#content.forum-section-root(
   data-keymap= {
-    'home': 'forum.section:nav_to_start'
+    'home': 'forum.section:nav_to_start',
+    'end':  'forum.section:nav_to_end'
   }
   class=(self.pagination.chunk_offset > 0 ? '' : 'forum-section-root__m-first-page')
   data-first-post-id=  self.topics.length ? self.topics[0].cache.last_post : null
