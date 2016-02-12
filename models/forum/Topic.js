@@ -31,17 +31,18 @@ module.exports = function (N, collectionName) {
 
 
   let cache = {
-    post_count:   { type: Number, 'default': 0 },
-    attach_count: { type: Number, 'default': 0 },
+    post_count:    { type: Number, 'default': 0 },
+    attach_count:  { type: Number, 'default': 0 },
 
     // First post
-    first_post:   Schema.ObjectId,
-    first_user:   Schema.ObjectId,
-    first_ts:     Date,
+    first_post:    Schema.ObjectId,
+    first_user:    Schema.ObjectId,
+    first_ts:      Date,
     // Last post
-    last_post:    Schema.ObjectId,
-    last_user:    Schema.ObjectId,
-    last_ts:      Date
+    last_post:     Schema.ObjectId,
+    last_post_hid: Number,
+    last_user:     Schema.ObjectId,
+    last_ts:       Date
   };
 
   let Topic = new Schema({
@@ -146,18 +147,21 @@ module.exports = function (N, collectionName) {
 
     let post = yield N.models.forum.Post
       .findOne({ topic: topicID, $or: [ { st: Post.statuses.VISIBLE }, { st: Post.statuses.HB } ] })
-      .sort('-_id')
-      .select('_id user ts st');
+      .sort('-_id');
+
+    if (!post) return;
 
     if (post.st === Post.statuses.VISIBLE) {
-      updateData['cache.last_post'] = post._id;
-      updateData['cache.last_user'] = post.user;
-      updateData['cache.last_ts'] = post.ts;
+      updateData['cache.last_post']     = post._id;
+      updateData['cache.last_post_hid'] = post.hid;
+      updateData['cache.last_user']     = post.user;
+      updateData['cache.last_ts']       = post.ts;
     }
 
-    updateData['cache_hb.last_post'] = post._id;
-    updateData['cache_hb.last_user'] = post.user;
-    updateData['cache_hb.last_ts'] = post.ts;
+    updateData['cache_hb.last_post']     = post._id;
+    updateData['cache_hb.last_post_hid'] = post.hid;
+    updateData['cache_hb.last_user']     = post.user;
+    updateData['cache_hb.last_ts']       = post.ts;
 
     if (!full || post.st === Post.statuses.VISIBLE) {
       yield N.models.forum.Topic.update({ _id: topicID }, updateData);
@@ -166,12 +170,14 @@ module.exports = function (N, collectionName) {
 
     post = yield N.models.forum.Post
       .findOne({ topic: topicID, st: Post.statuses.VISIBLE })
-      .sort('-_id')
-      .select('_id user ts');
+      .sort('-_id');
 
-    updateData['cache.last_post'] = post._id;
-    updateData['cache.last_user'] = post.user;
-    updateData['cache.last_ts'] = post.ts;
+    if (!post) return;
+
+    updateData['cache.last_post']     = post._id;
+    updateData['cache.last_post_hid'] = post.hid;
+    updateData['cache.last_user']     = post.user;
+    updateData['cache.last_ts']       = post.ts;
 
     yield N.models.forum.Topic.update({ _id: topicID }, updateData);
   });

@@ -161,15 +161,16 @@ const createTopic = co.wrap(function* (section, post_count) {
     yield addVotes(post);
   }
 
-  topic.cache.post_count = post_count;
+  topic.cache.post_count    = post_count;
 
-  topic.cache.first_post = first_post._id;
-  topic.cache.first_ts = first_post.ts;
-  topic.cache.first_user = first_post.user;
+  topic.cache.first_post    = first_post._id;
+  topic.cache.first_ts      = first_post.ts;
+  topic.cache.first_user    = first_post.user;
 
-  topic.cache.last_post = last_post._id;
-  topic.cache.last_ts = last_post.ts;
-  topic.cache.last_user = last_post.user;
+  topic.cache.last_post     = last_post._id;
+  topic.cache.last_post_hid = last_post.hid;
+  topic.cache.last_ts       = last_post.ts;
+  topic.cache.last_user     = last_post.user;
 
   _.assign(topic.cache_hb, topic.cache);
 

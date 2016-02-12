@@ -84,7 +84,9 @@ each topic, idx in self.topics
 
       ul.forum-topicline__lpost.col-sm-3.hidden-xs
         li.forum-topicline__lpost-time
-          a.forum-topicline__lpost-time-link(href='#')
+          a.forum-topicline__lpost-time-link(
+            href= self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
+          )
             != self.timetag(lp_ts, 'relative')
         if lp_user
           li.forum-topicline__lpost-user
