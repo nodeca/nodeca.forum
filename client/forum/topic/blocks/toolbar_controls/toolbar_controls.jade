@@ -59,7 +59,8 @@ if (self.selected_cnt !== 0)
     - items.push('divider')
   - items.push('multi_header')
   - items.push('multi_unselect')
-  - items.push('multi_delete')
+  if self.settings.forum_mod_can_delete_topics
+    - items.push('multi_delete')
   - items.push('multi_undelete')
 
 .page-actions.forum-topic__toolbar-controls
@@ -194,7 +195,9 @@ if (self.selected_cnt !== 0)
               )=self.t('multi_unselect')
 
             when 'multi_delete'
-              li.disabled: a(href='#')= self.t('delete')
+              li: a(href='#'
+                data-on-click='forum.topic:multi_delete'
+              )= self.t('delete')
 
             when 'multi_undelete'
               li.disabled: a(href='#')= self.t('undelete')

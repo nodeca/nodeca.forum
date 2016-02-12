@@ -146,6 +146,33 @@ function updateTopicState() {
 /////////////////////////////////////////////////////////////////////
 // setup 'forum.topic.*' handlers
 //
+
+
+// Delete topic
+//
+function delete_topic(as_moderator) {
+  let request = {
+    topic_hid: topicState.topic_hid,
+    as_moderator: as_moderator || false
+  };
+  let params = {
+    canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
+    asModerator: request.as_moderator
+  };
+
+  return Promise.resolve()
+    .then(() => N.wire.emit('forum.topic.topic_delete_dlg', params))
+    .then(() => {
+      request.method = params.method;
+      if (params.reason) request.reason = params.reason;
+      return N.io.rpc('forum.topic.destroy', request);
+    })
+    .then(() =>
+      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: topicState.section_hid } })
+    );
+}
+
+
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Click on post reply link or toolbar reply button
@@ -355,25 +382,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Delete topic handler
   //
   N.wire.on(module.apiPath + '.topic_delete', function topic_delete(data) {
-    let request = {
-      topic_hid: data.$this.data('topic-hid'),
-      as_moderator: data.$this.data('as-moderator') || false
-    };
-    let params = {
-      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics,
-      asModerator: request.as_moderator
-    };
-
-    return Promise.resolve()
-      .then(() => N.wire.emit('forum.topic.topic_delete_dlg', params))
-      .then(() => {
-        request.method = params.method;
-        if (params.reason) request.reason = params.reason;
-        return N.io.rpc('forum.topic.destroy', request);
-      })
-      .then(() =>
-        N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: topicState.section_hid } })
-      );
+    return delete_topic(data.$this.data('as-moderator'));
   });
 
 
@@ -991,9 +1000,9 @@ function key_down(event) {
 }
 
 
-// Save selected posts debounced
+// Save selected posts + debounced
 //
-const save_selected_posts = _.debounce(() => {
+function save_selected_posts() {
   let key = 'topic_selected_posts_' + topicState.topic_hid;
 
   if (topicState.selected_posts.length) {
@@ -1002,7 +1011,8 @@ const save_selected_posts = _.debounce(() => {
   } else {
     bag.remove(key);
   }
-}, 500);
+}
+const save_selected_posts_debounced = _.debounce(save_selected_posts, 500);
 
 
 // Load previously selected posts
@@ -1099,7 +1109,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
       topicState.selected_posts = _.without(topicState.selected_posts, postId);
     }
 
-    save_selected_posts();
+    save_selected_posts_debounced();
     return updateTopicState();
   });
 
@@ -1116,8 +1126,55 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         .removeClass('forum-post__m-selected');
     });
 
-    save_selected_posts();
+    save_selected_posts_debounced();
     return updateTopicState();
+  });
+
+
+  // Multi delete
+  //
+  N.wire.on('forum.topic:multi_delete', function topic_posts_multi_delete() {
+    let pageParams = {};
+
+    return N.wire.emit('navigate.get_page_raw', pageParams).then(() => {
+      if (topicState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
+        // If first post selected - delete topic
+        return Promise.resolve()
+          .then(() => N.wire.emit('common.blocks.confirm', t('multi_delete_as_topic')))
+          .then(() => delete_topic(true))
+          .then(() => {
+            topicState.selected_posts = [];
+            save_selected_posts_debounced();
+            // Don't need update topic state, because section page will be opened after `delete_topic()`
+          });
+      }
+
+      let postsIds = topicState.selected_posts;
+      let params = {
+        canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
+      };
+
+      return Promise.resolve()
+        .then(() => N.wire.emit('forum.topic.posts_delete_multi_dlg', params))
+        .then(() => {
+          let request = {
+            topic_hid: topicState.topic_hid,
+            posts_ids: postsIds,
+            method: params.method
+          };
+
+          if (params.reason) request.reason = params.reason;
+
+          return N.io.rpc('forum.topic.post.destroy_multi', request);
+        })
+        .then(() => {
+          topicState.selected_posts = [];
+          save_selected_posts();
+
+          return N.wire.emit('notify', { type: 'info', message: t('multi_posts_deleted') });
+        })
+        .then(() => N.wire.emit('navigate.reload'));
+    });
   });
 });
 

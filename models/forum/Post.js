@@ -16,6 +16,9 @@ module.exports = function (N, collectionName) {
   };
 
 
+  statuses.LIST_DELETABLE = [ statuses.VISIBLE, statuses.HB, statuses.PENDING ];
+
+
   var Post = new Schema({
     topic           : Schema.ObjectId,
     hid             : Number,
