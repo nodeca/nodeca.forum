@@ -5,7 +5,7 @@
 
 
 module.exports = function (N) {
-  N.wire.after('server:admin.core.rebuild', { priority: 20 }, function* rebuild_forum_topics_widget(env) {
+  N.wire.after('server:admin.core.rebuild', { priority: 40 }, function* rebuild_forum_topics_widget(env) {
     let data = yield N.queue.worker('forum_topics_rebuild').status();
 
     let task_info = {};
