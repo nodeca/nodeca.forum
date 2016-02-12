@@ -55,13 +55,13 @@ N.wire.before(module.apiPath + ':begin', function fetch_options() {
 
 // Fetch draft data
 //
-N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
+N.wire.before(module.apiPath + ':begin', function fetch_draft(data) {
   draftKey = [ 'post_reply', N.runtime.user_hid, data.topic_hid, data.post_hid || '' ].join('_');
+  draft = {};
 
-  bag.get(draftKey, function (__, data) {
-    draft = data || {};
-    callback();
-  });
+  return bag.get(draftKey)
+    .then(data => { draft = data || {}; })
+    .catch(() => {}); // Suppress storage errors
 });
 
 
@@ -134,10 +134,12 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
 
       N.io.rpc('forum.topic.post.reply', params)
         .then(response => {
-          bag.remove(draftKey, function () {
-            N.MDEdit.hide();
-            N.wire.emit('navigate.to', response.redirect_url);
-          });
+          bag.remove(draftKey)
+            .catch(() => {}) // Suppress storage errors
+            .then(() => {
+              N.MDEdit.hide();
+              N.wire.emit('navigate.to', response.redirect_url);
+            });
         })
         .catch(err => N.wire.emit('error', err));
 

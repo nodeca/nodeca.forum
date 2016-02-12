@@ -860,7 +860,7 @@ let scrollPositionTracker = null;
 
 
 const uploadScrollPositions = _.debounce(function () {
-  bag.get('topics_scroll', function (__, positions) {
+  bag.get('topics_scroll').then(positions => {
     if (positions) {
       _.forEach(positions, function (data, id) {
         N.live.emit('private.forum.marker_set_pos', {
@@ -871,7 +871,7 @@ const uploadScrollPositions = _.debounce(function () {
         });
       });
 
-      bag.remove('topics_scroll');
+      return bag.remove('topics_scroll');
     }
   });
 }, 2000);
@@ -935,7 +935,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     lastRead = read;
 
     // Save current position locally and request upload
-    bag.get('topics_scroll', function (__, positions) {
+    bag.get('topics_scroll').then(positions => {
       positions = positions || {};
       positions[N.runtime.page_data.topic._id] = {
         pos,
@@ -943,9 +943,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
         category_id: N.runtime.page_data.topic.section
       };
 
-      bag.set('topics_scroll', positions, function () {
-        uploadScrollPositions();
-      });
+      return bag.set('topics_scroll').then(() => { uploadScrollPositions(); });
     });
   }, 300, { maxWait: 300 });
 
@@ -1032,7 +1030,8 @@ N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_sele
           .prop('checked', true);
       });
     })
-    .then(updateTopicState);
+    .then(updateTopicState)
+    .catch(() => {}); // Suppress storage errors
 });
 
 

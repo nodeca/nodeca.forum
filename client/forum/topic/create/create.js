@@ -52,13 +52,13 @@ N.wire.before(module.apiPath + ':begin', function fetch_options() {
 
 // Fetch draft data
 //
-N.wire.before(module.apiPath + ':begin', function fetch_draft(data, callback) {
+N.wire.before(module.apiPath + ':begin', function fetch_draft(data) {
   draftKey = [ 'topic_create', N.runtime.user_hid, data.section_hid ].join('_');
+  draft = {};
 
-  bag.get(draftKey, function (__, data) {
-    draft = data || {};
-    callback();
-  });
+  return bag.get(draftKey)
+    .then(data => { draft = data || {}; })
+    .catch(() => {}); // SUppress storage errors
 });
 
 
@@ -121,17 +121,19 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       };
 
       N.io.rpc('forum.topic.create', params).then(response => {
-        bag.remove(draftKey, () => {
-          N.MDEdit.hide();
-          N.wire.emit('navigate.to', {
-            apiPath: 'forum.topic',
-            params: {
-              section_hid: data.section_hid,
-              topic_hid:   response.topic_hid,
-              post_hid:    response.post_hid
-            }
+        bag.remove(draftKey)
+          .catch(() => {}) // Suppress storage erors
+          .then(() => {
+            N.MDEdit.hide();
+            N.wire.emit('navigate.to', {
+              apiPath: 'forum.topic',
+              params: {
+                section_hid: data.section_hid,
+                topic_hid:   response.topic_hid,
+                post_hid:    response.post_hid
+              }
+            });
           });
-        });
       }).catch(err => N.wire.emit('error', err));
 
       return false;
