@@ -73,4 +73,4 @@ ul.forum-sections
                   != self.timetag(last_ts, 'relative')
 
       //- cover all space with link for small screens
-      a.forum-section__overlay.visible-xs-block(href=self.link_to('forum.section', section))
+      a.forum-section__overlay.visible-xs-block(href=self.link_to('forum.section', { section_hid: section.hid }))
