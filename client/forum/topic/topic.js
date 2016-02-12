@@ -519,7 +519,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
           $(`#post${postId}`)
             .addClass('forum-post__m-selected')
-            .find('.forum-post__check')
+            .find('.forum-post__select-cb')
             .prop('checked', true);
         });
 
@@ -597,7 +597,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
           $(`#post${postId}`)
             .addClass('forum-post__m-selected')
-            .find('.forum-post__check')
+            .find('.forum-post__select-cb')
             .prop('checked', true);
         });
 
@@ -1018,7 +1018,7 @@ N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_sele
       topicState.selected_posts.forEach(postId => {
         $(`#post${postId}`)
           .addClass('forum-post__m-selected')
-          .find('.forum-post__check')
+          .find('.forum-post__select-cb')
           .prop('checked', true);
       });
     })
@@ -1064,7 +1064,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
             topicState.selected_posts.push(id);
           }
 
-          $(this).find('.forum-post__check').prop('checked', true);
+          $(this).find('.forum-post__select-cb').prop('checked', true);
           $(this).addClass('forum-post__m-selected');
         });
 
@@ -1109,7 +1109,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
   N.wire.on('forum.topic:posts_unselect', function topic_posts_unselect() {
     topicState.selected_posts = [];
 
-    $('.forum-post__check:checked').each(function () {
+    $('.forum-post__select-cb:checked').each(function () {
       $(this)
         .prop('checked', false)
         .closest('.forum-post')

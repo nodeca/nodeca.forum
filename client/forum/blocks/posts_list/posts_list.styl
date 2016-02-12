@@ -34,14 +34,13 @@
   border 1px solid grayLightest
   border-radius 2px
   box-shadow 0 0 2px #f8f8f8
-  padding 5px 15px
+  height 34px
+  line-height 34px
   margin-bottom 10px
 
 .forum-post__meta-blk
-  font-size 11px
   color gray
-  height 20px
-  line-height 20px
+  margin-left 15px
   shortable()
 
 .forum-post__author
@@ -58,14 +57,16 @@
   border-radius 2px
 
 .forum-post__link
-  margin-left 1em
-  font-size 14px
-  &:before
-    margin 0
-    font-size 100%
+  font-size 12px
+  color inherit
+  margin-right 15px
 
-.forum-post__check
-  margin 0 0 0 1em !important
+.forum-post__select
+  width 30px
+  text-align center
+  margin-left -15px
+.forum-post__select-cb
+  margin-top 3px !important
   vertical-align text-top
 
 //
@@ -117,7 +118,7 @@ asideSizeSm = 50px
     margin-right: 0
 
 .forum-post__action
-  background-color white
+  background-color transparent
   color gray
 
   &:hover
