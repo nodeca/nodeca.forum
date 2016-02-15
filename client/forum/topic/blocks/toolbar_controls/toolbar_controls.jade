@@ -57,11 +57,11 @@ if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
 if (self.selected_cnt !== 0)
   if items.length > 0
     - items.push('divider')
-  - items.push('multi_header')
-  - items.push('multi_unselect')
+  - items.push('bulk_header')
+  - items.push('bulk_unselect')
   if self.settings.forum_mod_can_delete_topics
-    - items.push('multi_delete')
-  - items.push('multi_undelete')
+    - items.push('bulk_delete')
+  - items.push('bulk_undelete')
 
 .page-actions.forum-topic__toolbar-controls
   - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
@@ -186,18 +186,18 @@ if (self.selected_cnt !== 0)
                 data-unpin='true'
               )=self.t('unpin')
 
-            when 'multi_header'
-              li.dropdown-header=self.t('multi_header', { count: self.selected_cnt })
+            when 'bulk_header'
+              li.dropdown-header=self.t('bulk_header', { count: self.selected_cnt })
 
-            when 'multi_unselect'
+            when 'bulk_unselect'
               li: a(href='#'
                 data-on-click='forum.topic:posts_unselect'
-              )=self.t('multi_unselect')
+              )=self.t('bulk_unselect')
 
-            when 'multi_delete'
+            when 'bulk_delete'
               li: a(href='#'
-                data-on-click='forum.topic:multi_delete'
-              )= self.t('delete')
+                data-on-click='forum.topic:bulk_delete'
+              )= self.t('bulk_delete')
 
-            when 'multi_undelete'
-              li.disabled: a(href='#')= self.t('undelete')
+            when 'bulk_undelete'
+              li.disabled: a(href='#')= self.t('bulk_undelete')

@@ -13,5 +13,7 @@ en-US:
   subs_normal: Normal. You will be notified if someone mentions your @name or replies to your message.
   subs_tracking: Tracking. You will see topic updates in your subscriptions list.
   subs_watching: Watching. You will be notified immediately on every new message.
-  multi_header: "With #{count} ((post|posts)):"
-  multi_unselect: Clear selection
+  bulk_header: "With #{count} ((post|posts)):"
+  bulk_unselect: Clear selection
+  bulk_delete: Delete
+  bulk_undelete: Undelete
