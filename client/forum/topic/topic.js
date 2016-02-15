@@ -26,6 +26,9 @@ let topicState = {};
 let scrollHandler = null;
 let navbarHeight = $('.navbar').height();
 
+// height of a space between text content of a post and the next post header
+let toolbarHeight = 50;
+
 
 /////////////////////////////////////////////////////////////////////
 // init on page load and destroy editor on window unload
@@ -54,7 +57,20 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
   // Scroll to a post linked in params (if any)
   //
-  if (topicState.post_hid > 1) {
+  if (data.state && typeof data.state.hid !== 'undefined' && typeof data.state.offset !== 'undefined') {
+    let posts = $('.forum-post');
+    let i = _.sortedIndexBy(posts, null, post => {
+      if (!post) return data.state.hid;
+      return $(post).data('post-hid');
+    });
+
+    // `i` is the index of a post with given hid if it exists,
+    // otherwise it's a position of the first post with hid more than that
+    //
+    if (i >= posts.length) { i = posts.length - 1; }
+    $(window).scrollTop($(posts[i]).offset().top - navbarHeight - toolbarHeight + data.state.offset);
+
+  } else if (topicState.post_hid > 1) {
     let posts = $('.forum-post');
     let i = _.sortedIndexBy(posts, null, post => {
       if (!post) return topicState.post_hid;
@@ -65,7 +81,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     // otherwise it's a position of the first post with hid more than that
     //
     if (i >= posts.length) { i = posts.length - 1; }
-    $(window).scrollTop($(posts[i]).offset().top - navbarHeight);
+    $(window).scrollTop($(posts[i]).offset().top - navbarHeight - toolbarHeight);
 
   } else {
     // If user clicks on a link to the first post of the topic,
@@ -96,7 +112,9 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
       $('.navbar').removeClass('navbar__m-secondary');
     }
 
-    N.wire.emit('forum.topic:scroll');
+    N.wire.emit('forum.topic:scroll').catch(err => {
+      N.wire.emit('error', err);
+    });
   }, 100, { maxWait: 100 });
 
   $(window).on('scroll', scrollHandler);
@@ -654,7 +672,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':scroll', function update_progress() {
     let posts         = $('.forum-post'),
-        viewportStart = $(window).scrollTop() + navbarHeight,
+        viewportStart = $(window).scrollTop() + navbarHeight + toolbarHeight,
         newHid,
         currentIdx;
 
@@ -668,16 +686,28 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
 
     newHid = $(posts[currentIdx]).data('post-hid');
-    if (newHid === topicState.post_hid) return;
 
-    topicState.post_hid = newHid;
+    let href = null;
+    let state = {
+      hid:    newHid,
+      offset: viewportStart - $(posts[currentIdx]).offset().top
+    };
 
-    return N.wire.emit('navigate.replace', {
-      href: N.router.linkTo('forum.topic', {
+    // save current hid to topicState, and only update url if hid is different,
+    // it protects url like /f1/topic23/page4 from being overwritten instantly
+    if (topicState.post_hid !== newHid) {
+      topicState.post_hid = newHid;
+
+      href = N.router.linkTo('forum.topic', {
         section_hid:  topicState.section_hid,
         topic_hid:    topicState.topic_hid,
         post_hid:     topicState.post_hid
-      })
+      });
+    }
+
+    return N.wire.emit('navigate.replace', {
+      href,
+      state
     }).then(() => N.wire.emit('forum.topic.blocks.page_progress:update', {
       current: topicState.post_hid,
       max:     topicState.max_post
@@ -947,6 +977,9 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     });
   }, 300, { maxWait: 300 });
 
+  // TODO: this handler may emit ':scroll' event immediately after page load
+  //       because of $(window).scrollTop() in the handler above,
+  //       maybe wrap it with setTimeout(..., 1) to avoid it
   $(window).on('scroll', scrollPositionTracker);
 });
 

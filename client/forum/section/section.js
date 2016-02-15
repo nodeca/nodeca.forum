@@ -25,11 +25,12 @@ let navbarHeight = $('.navbar').height();
 
 // Scroll to the element, so it would be positioned in the viewport
 //
-//  - el    - Element to scroll
-//  - ratio - 0...1 offset (1..100%) of element center from viewport top
-//            e.g. 0.5 means it should position element to the middle of the screen
+//  - el     - Element to scroll
+//  - ratio  - 0...1 offset (1..100%) of element center from viewport top
+//             e.g. 0.5 means it should position element to the middle of the screen
+//  - offset - Unconditionally apply this offset after calculating position
 //
-function scrollIntoView(el, coef) {
+function scrollIntoView(el, coef, offset) {
   // 1. The top line of the element should always be lower than navbar
   // 2. The middle line of the element should be located at coef*viewport_height (if possible)
   //
@@ -41,7 +42,7 @@ function scrollIntoView(el, coef) {
   $(window).scrollTop(Math.min(
     el_top - nav_h,
     (el_top + el_h / 2) - nav_h - (win_h - nav_h) * coef
-  ));
+  ) + (offset || 0));
 }
 
 
@@ -80,6 +81,14 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     if (el.length && el.hasClass('forum-section')) {
       scrollIntoView(el, 0.3);
       el.addClass('forum-section__m-highlight');
+      return;
+    }
+
+  } else if (data.state && typeof data.state.hid !== 'undefined' && typeof data.state.offset !== 'undefined') {
+    el = $('#topic' + data.state.hid);
+
+    if (el.length) {
+      scrollIntoView(el, 0.3, data.state.offset);
       return;
     }
 
@@ -324,29 +333,45 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Update location and progress bar
   //
   N.wire.on(module.apiPath + ':scroll', function update_progress() {
-    let topics        = $('.forum-topicline'),
-        viewportStart = $(window).scrollTop() + navbarHeight,
+    let topics         = $('.forum-topicline'),
+        topicThreshold = $(window).scrollTop() + navbarHeight + ($(window).height() - navbarHeight) * 0.3,
         offset,
         currentIdx;
 
     // Get offset of the first topic in the viewport
     //
     currentIdx = _.sortedIndexBy(topics, null, topic => {
-      if (!topic) { return viewportStart; }
+      if (!topic) { return topicThreshold; }
       return $(topic).offset().top;
     });
 
     currentIdx--;
 
+    let href = null;
+    let state = null;
+
     if (currentIdx >= 0 && topics.length) {
       offset = $(topics[currentIdx]).data('offset') + 1;
+
+      state = {
+        hid:    $(topics[currentIdx]).data('topic-hid'),
+        offset: topicThreshold - $(topics[currentIdx]).offset().top - $(topics[currentIdx]).height() / 2
+      };
     } else {
       offset = 0;
     }
 
-    if (offset === sectionState.current_offset) return;
+    // save current offset, and only update url if offset is different,
+    // it protects url like /f1/topic23/page4 from being overwritten instantly
+    if (sectionState.current_offset !== offset) {
+      sectionState.current_offset = offset;
 
-    sectionState.current_offset = offset;
+      /* eslint-disable no-undefined */
+      href = N.router.linkTo('forum.section', {
+        section_hid: sectionState.hid,
+        topic_hid:   currentIdx >= 0 ? $(topics[currentIdx]).data('topic-hid') : undefined
+      });
+    }
 
     if (currentIdx >= 0) {
       if ($('meta[name="robots"]').length === 0) {
@@ -358,12 +383,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     /* eslint-disable no-undefined */
     return N.wire.emit('navigate.replace', {
-      href: N.router.linkTo('forum.section', {
-        section_hid: sectionState.hid,
-        topic_hid:   currentIdx >= 0 ? $(topics[currentIdx]).data('topic-hid') : undefined
-      })
-    })
-    .then(() => N.wire.emit('forum.section.blocks.page_progress:update', {
+      href,
+      state
+    }).then(() => N.wire.emit('forum.section.blocks.page_progress:update', {
       current: offset,
       max: N.runtime.page_data.pagination.total,
       per_page: N.runtime.page_data.pagination.per_page
@@ -391,9 +413,14 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
       $('.navbar').removeClass('navbar__m-secondary');
     }
 
-    N.wire.emit('forum.section:scroll');
+    N.wire.emit('forum.section:scroll').catch(err => {
+      N.wire.emit('error', err);
+    });
   }, 100, { maxWait: 100 });
 
+  // TODO: this handler may emit ':scroll' event immediately after page load
+  //       because of $(window).scrollTop() in the handler above,
+  //       maybe wrap it with setTimeout(..., 1) to avoid it
   $(window).on('scroll', scrollHandler);
 });
 
@@ -437,7 +464,10 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
     $('.navbar').removeClass('navbar__m-secondary');
   }
 
-  N.wire.emit('forum.section:scroll');
+  // emit initial 'scroll' event, otherwise progress bar won't get updated
+  N.wire.emit('forum.section:scroll').catch(err => {
+    N.wire.emit('error', err);
+  });
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
