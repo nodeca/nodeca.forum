@@ -10,3 +10,4 @@ en-US:
   closed: Closed topic
   deleted: Deleted topic
   bookmarked: You bookmarked this topic
+  multiselect_hint: "Click with shift to start range selection"
