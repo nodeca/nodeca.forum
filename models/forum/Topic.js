@@ -137,46 +137,54 @@ module.exports = function (N, collectionName) {
 
   // Update cache last_post, last_user, last_ts
   //
-  // - topicID  - id of topic to update
-  // - full     - update 'cache' even if last post is hellbanned
+  // - topicID - id of topic to update
   //
-  Topic.statics.updateCache = co.wrap(function* (topicID, full) {
-    let Post = N.models.forum.Post;
+  Topic.statics.updateCache = co.wrap(function* (topicID) {
+    let statuses = N.models.forum.Post.statuses;
     let updateData = {};
 
-    let post = yield N.models.forum.Post
-      .findOne({ topic: topicID, $or: [ { st: Post.statuses.VISIBLE }, { st: Post.statuses.HB } ] })
-      .sort('-_id');
-
-    if (!post) return;
-
-    if (post.st === Post.statuses.VISIBLE) {
-      updateData['cache.last_post']     = post._id;
-      updateData['cache.last_post_hid'] = post.hid;
-      updateData['cache.last_user']     = post.user;
-      updateData['cache.last_ts']       = post.ts;
-    }
+    // Find last post
+    let post = yield N.models.forum.Post.findOne()
+                        .where('topic').equals(topicID)
+                        .or([ { st: statuses.VISIBLE }, { st: statuses.HB } ])
+                        .sort('-hid')
+                        .lean(true);
 
     updateData['cache_hb.last_post']     = post._id;
     updateData['cache_hb.last_post_hid'] = post.hid;
     updateData['cache_hb.last_user']     = post.user;
     updateData['cache_hb.last_ts']       = post.ts;
 
-    if (!full || post.st === Post.statuses.VISIBLE) {
-      yield N.models.forum.Topic.update({ _id: topicID }, updateData);
-      return;
-    }
-
-    post = yield N.models.forum.Post
-      .findOne({ topic: topicID, st: Post.statuses.VISIBLE })
-      .sort('-_id');
-
-    if (!post) return;
-
     updateData['cache.last_post']     = post._id;
     updateData['cache.last_post_hid'] = post.hid;
     updateData['cache.last_user']     = post.user;
     updateData['cache.last_ts']       = post.ts;
+
+    // If last post hellbanned - find visible one
+    if (post.st === statuses.HB) {
+      // Find last visible post
+      let post_visible = yield N.models.forum.Post.findOne()
+                                  .where('topic').equals(topicID)
+                                  .where('st').equals(statuses.VISIBLE)
+                                  .sort('-hid')
+                                  .lean(true);
+
+      updateData['cache.last_post']     = post_visible._id;
+      updateData['cache.last_post_hid'] = post_visible.hid;
+      updateData['cache.last_user']     = post_visible.user;
+      updateData['cache.last_ts']       = post_visible.ts;
+    }
+
+    let count = yield [ statuses.VISIBLE, statuses.HB ].map(st => N.models.forum.Post
+                                                                      .where('topic').equals(topicID)
+                                                                      .where('st').equals(st)
+                                                                      .count());
+
+    // Visible post count
+    updateData['cache.post_count'] = count[0];
+
+    // Hellbanned post count
+    updateData['cache_hb.post_count'] = count[0] + count[1];
 
     yield N.models.forum.Topic.update({ _id: topicID }, updateData);
   });

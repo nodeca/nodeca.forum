@@ -111,25 +111,7 @@ module.exports = function (N, apiPath) {
   // Update topic counters
   //
   N.wire.after(apiPath, function* update_topic(env) {
-    let statuses = N.models.forum.Post.statuses;
-    let incData = {};
-    let visiblePosts = env.data.posts.filter(post => post.st === statuses.VISIBLE);
-    let hbPosts = env.data.posts.filter(post => post.st === statuses.HB);
-
-    if (visiblePosts.length) {
-      incData['cache.post_count'] = -visiblePosts.length;
-    }
-
-    if (hbPosts.length) {
-      incData['cache_hb.post_count'] = -hbPosts.length;
-    }
-
-    yield N.models.forum.Topic.update(
-      { _id: env.data.topic._id },
-      { $inc: incData }
-    );
-
-    yield N.models.forum.Topic.updateCache(env.data.topic._id, true);
+    yield N.models.forum.Topic.updateCache(env.data.topic._id);
   });
 
 
