@@ -88,11 +88,9 @@ module.exports = function (N, apiPath) {
 
     if (env.data.post.prev_st.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
-      incData['cache.attach_count'] = env.data.post.attach.length;
     }
 
     incData['cache_hb.post_count'] = 1;
-    incData['cache_hb.attach_count'] = env.data.post.attach.length;
 
 
     yield N.models.forum.Topic.update(

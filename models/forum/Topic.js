@@ -32,7 +32,6 @@ module.exports = function (N, collectionName) {
 
   let cache = {
     post_count:    { type: Number, 'default': 0 },
-    attach_count:  { type: Number, 'default': 0 },
 
     // First post
     first_post:    Schema.ObjectId,

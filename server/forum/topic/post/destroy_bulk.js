@@ -118,12 +118,10 @@ module.exports = function (N, apiPath) {
 
     if (visiblePosts.length) {
       incData['cache.post_count'] = -visiblePosts.length;
-      incData['cache.attach_count'] = -_.sumBy(visiblePosts, post => post.attach.length);
     }
 
     if (hbPosts.length) {
       incData['cache_hb.post_count'] = -hbPosts.length;
-      incData['cache_hb.attach_count'] = -_.sumBy(hbPosts, post => post.attach.length);
     }
 
     yield N.models.forum.Topic.update(

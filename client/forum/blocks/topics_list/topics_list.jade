@@ -46,7 +46,6 @@ each topic, idx in self.topics
           - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid });
 
         a.forum-topicline__title-link(href=href)= topic.title
-      //-a.mark-i-attach._tip(href="#")=topic.attach_count
 
       if topic.del_by
         - var delUser = self.users[topic.del_by] || {}

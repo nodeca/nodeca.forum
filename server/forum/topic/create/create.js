@@ -216,8 +216,6 @@ module.exports = function (N, apiPath) {
     topic.cache.last_ts = post.ts;
     topic.cache.last_user = post.user;
 
-    topic.cache.attach_count = post.attach.length;
-
     _.assign(topic.cache_hb, topic.cache);
 
     yield topic.save();

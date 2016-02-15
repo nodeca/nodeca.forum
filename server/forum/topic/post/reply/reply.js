@@ -257,11 +257,9 @@ module.exports = function (N, apiPath) {
 
     if (post.st === statuses.VISIBLE) {
       incData['cache.post_count'] = 1;
-      incData['cache.attach_count'] = post.attach.length;
     }
 
     incData['cache_hb.post_count'] = 1;
-    incData['cache_hb.attach_count'] = post.attach.length;
 
     yield N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: incData });
     yield N.models.forum.Topic.updateCache(env.data.topic._id, false);
