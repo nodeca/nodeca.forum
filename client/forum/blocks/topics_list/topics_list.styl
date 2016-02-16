@@ -193,9 +193,12 @@ a.forum-topicline__lpost-user-link
     display inline-block
   .forum-topicline__meta
   .forum-topicline__microstat
+    display none !important
   .forum-topicline__lpost
   .forum-topicline__counters
-    display none !important
+    // Should not use display:none - table layout will be broken,
+    // if deleted topic appears at first line.
+    visibility hidden
 
 .forum-topicline__m-bookmarked
   .forum-topicline__bookmarked-marker
