@@ -16,6 +16,7 @@ const _ = require('lodash');
 // - reached_end:        true iff no more pages exist below last loaded one
 // - first_post_id       id of the last post in the first loaded topic
 // - last_post_id        id of the last post in the last loaded topic
+// - selected_topics:    array of selected topics in current topic
 //
 let sectionState = {};
 
@@ -64,6 +65,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   sectionState.reached_start     = (sectionState.current_offset === 0) || !sectionState.first_post_id;
   sectionState.reached_end       = (last_topic_hid === $('.forum-topicline:last').data('topic-hid')) ||
                                    !sectionState.last_post_id;
+  sectionState.selected_topics   = [];
 
   // disable automatic scroll to an anchor in the navigator
   data.no_scroll = true;
@@ -115,6 +117,22 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 });
 
 
+/////////////////////////////////////////////////////////////////////
+// Update section state
+//
+function updateSectionState() {
+  let params = {};
+
+  return N.wire.emit('navigate.get_page_raw', params).then(() => {
+    let data = _.assign({}, params.data, { selected_cnt: sectionState.selected_topics.length });
+
+    // Need to re-render reply button and dropdown here
+    $('.forum-section__toolbar-controls')
+      .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', data));
+  });
+}
+
+
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Subscription section handler
@@ -130,10 +148,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(() => N.io.rpc('forum.section.subscribe', { section_hid: hid, type: params.subscription }))
       .then(() => {
         pageParams.data.subscription = params.subscription;
-
-        $('.forum-section__toolbar-controls')
-          .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', pageParams.data));
-      });
+      })
+      .then(updateSectionState);
   });
 
 
@@ -242,6 +258,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // update scroll so it would point at the same spot as before
       $(window).scrollTop($(window).scrollTop() + $('.forum-topiclist').height() - old_height);
 
+      // Update selection state
+      _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
+        $(`#topic${topicHid}`)
+          .addClass('forum-topicline__m-selected')
+          .find('.forum-topicline__select-cb')
+          .prop('checked', true);
+      });
+
       // update prev/next metadata
       $('link[rel="prev"]').remove();
 
@@ -288,6 +312,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // render & inject topics list
       let $result = $(N.runtime.render('forum.blocks.topics_list', res));
       $('.forum-topiclist > :last').after($result);
+
+      // Update selection state
+      _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
+        $(`#topic${topicHid}`)
+          .addClass('forum-topicline__m-selected')
+          .find('.forum-topicline__select-cb')
+          .prop('checked', true);
+      });
 
       // update next/next metadata
       $('link[rel="next"]').remove();
@@ -473,4 +505,178 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
   $('.navbar-alt').empty();
   $('.navbar').removeClass('navbar__m-secondary');
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Many topics selection
+//
+
+
+const bag = require('bagjs')({ prefix: 'nodeca' });
+// Flag shift key pressed
+let shift_key_pressed = false;
+// DOM element of first selected post (for many check)
+let $many_select_start;
+
+
+// Handle shift keyup event
+//
+function key_up(event) {
+  // If shift still pressed
+  if (event.shiftKey) return;
+
+  shift_key_pressed = false;
+}
+
+
+// Handle shift keydown event
+//
+function key_down(event) {
+  if (event.shiftKey) {
+    shift_key_pressed = true;
+  }
+}
+
+
+// Save selected topics + debounced
+//
+function save_selected_topics_immediate() {
+  let key = 'section_selected_topics_' + sectionState.hid;
+
+  if (sectionState.selected_topics.length) {
+    // Expire after 1 day
+    bag.set(key, sectionState.selected_topics, 60 * 60 * 24);
+  } else {
+    bag.remove(key);
+  }
+}
+const save_selected_topics = _.debounce(save_selected_topics_immediate, 500);
+
+
+// Load previously selected topics
+//
+N.wire.on('navigate.done:' + module.apiPath, function section_load_previously_selected_topics() {
+  $(document)
+    .on('keyup', key_up)
+    .on('keydown', key_down);
+
+  return bag.get('section_selected_topics_' + sectionState.hid)
+    .then(hids => {
+      sectionState.selected_topics = hids || [];
+      sectionState.selected_topics.forEach(topicHid => {
+        $(`#topic${topicHid}`)
+          .addClass('forum-topicline__m-selected')
+          .find('.forum-topicline__select-cb')
+          .prop('checked', true);
+      });
+    })
+    .then(updateSectionState)
+    .catch(() => {}); // Suppress storage errors
+});
+
+
+// Init handlers
+//
+N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection_init() {
+
+  // Update array of selected topics on selection change
+  //
+  N.wire.on(module.apiPath + ':topic_check', function section_topic_select(data) {
+    let topicHid = data.$this.data('topic-hid');
+
+    if (data.$this.is(':checked') && sectionState.selected_topics.indexOf(topicHid) === -1) {
+      // Select
+      //
+      if ($many_select_start) {
+
+        // If many select started
+        //
+        let $topic = data.$this.closest('.forum-topicline');
+        let $start = $many_select_start;
+        let topicsBetween;
+
+        $many_select_start = null;
+
+        // If current after `$many_select_start`
+        if ($start.index() < $topic.index()) {
+          // Get topics between start and current
+          topicsBetween = $start.nextUntil($topic, '.forum-topicline');
+        } else {
+          // Between current and start (in reverse order)
+          topicsBetween = $topic.nextUntil($start, '.forum-topicline');
+        }
+
+        topicsBetween.each(function () {
+          let hid = $(this).data('topic-hid');
+
+          if (sectionState.selected_topics.indexOf(hid) === -1) {
+            sectionState.selected_topics.push(hid);
+          }
+
+          $(this)
+            .addClass('forum-topicline__m-selected')
+            .find('.forum-topicline__select-cb').prop('checked', true);
+        });
+
+        sectionState.selected_topics.push(topicHid);
+        $topic.addClass('forum-topicline__m-selected');
+
+
+      } else if (shift_key_pressed) {
+        // If many select not started and shift key pressed
+        //
+        let $topic = data.$this.closest('.forum-topicline');
+
+        $many_select_start = $topic;
+        $topic.addClass('forum-topicline__m-selected');
+        sectionState.selected_topics.push(topicHid);
+
+        N.wire.emit('notify', { type: 'info', message: t('msg_multiselect') });
+
+
+      } else {
+        // No many select
+        //
+        data.$this.closest('.forum-topicline').addClass('forum-topicline__m-selected');
+        sectionState.selected_topics.push(topicHid);
+      }
+
+
+    } else if (!data.$this.is(':checked') && sectionState.selected_topics.indexOf(topicHid) !== -1) {
+      // Unselect
+      //
+      data.$this.closest('.forum-topicline').removeClass('forum-topicline__m-selected');
+      sectionState.selected_topics = _.without(sectionState.selected_topics, topicHid);
+    }
+
+    save_selected_topics();
+    return updateSectionState();
+  });
+
+
+  // Unselect all topics
+  //
+  N.wire.on(module.apiPath + ':topics_unselect', function section_topic_unselect() {
+    sectionState.selected_topics = [];
+
+    $('.forum-topicline__select-cb:checked').each(function () {
+      $(this)
+        .prop('checked', false)
+        .closest('.forum-topicline')
+        .removeClass('forum-topicline__m-selected');
+    });
+
+    save_selected_topics();
+    return updateSectionState();
+  });
+});
+
+
+// Teardown many topics selection
+//
+N.wire.on('navigate.exit:' + module.apiPath, function section_topic_selection_teardown() {
+  $(document)
+    .off('keyup', key_up)
+    .off('keydown', key_down);
 });

@@ -13,8 +13,17 @@ if items.length > 0
 - items.push('mod_header')
 - items.push('mod_announce')
 - items.push('mod_add_moderator')
-- items.push('mod_mass_move')
-- items.push('mod_mass_prune')
+  
+if self.selected_cnt !== 0
+  if items.length > 0
+    - items.push('divider')
+  - items.push('many_header')
+  - items.push('many_unselect')
+  if self.settings.forum_mod_can_delete_topics
+    - items.push('many_delete')
+    - items.push('many_undelete')
+  - items.push('many_move')
+  - items.push('many_prune')
 
 //- If last item is header - remove it
 if items.length > 0 && items[items.length - 1] === 'header'
@@ -101,8 +110,22 @@ if items.length > 0 && items[items.length - 1] === 'header'
             when 'mod_add_moderator'
               li.disabled: a(href='#')= self.t('add_moderator')
 
-            when 'mod_mass_move'
-              li.disabled: a(href='#')= self.t('mass_move')
+            when 'many_header'
+              li.dropdown-header=self.t('many_header', { count: self.selected_cnt })
 
-            when 'mod_mass_prune'
-              li.disabled: a(href='#')= self.t('mass_prune')
+            when 'many_unselect'
+              li: a(href='#'
+                data-on-click='forum.section:topics_unselect'
+              )=self.t('many_unselect')
+
+            when 'many_delete'
+              li.disabled: a(href='#')= self.t('many_delete')
+
+            when 'many_undelete'
+              li.disabled: a(href='#')= self.t('many_undelete')
+
+            when 'many_move'
+              li.disabled: a(href='#')= self.t('many_move')
+
+            when 'many_prune'
+              li.disabled: a(href='#')= self.t('many_prune')
