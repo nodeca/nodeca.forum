@@ -76,27 +76,25 @@ each topic, idx in self.topics
       a.forum-topicline__overlay.visible-xs-block(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))
         .forum-topicline__enter.icon.icon-right-open
 
-    .forum-topicline__cell.hidden-xs
-      ul.forum-topicline__counters
-        li.forum-topicline__counter-item
-          = self.t('replies', replies)
+    ul.forum-topicline__cell.forum-topicline__counters.hidden-xs
+      li.forum-topicline__counter-item
+        = self.t('replies', replies)
 
-        li.forum-topicline__counter-item
-          = self.t('views', views)
+      li.forum-topicline__counter-item
+        = self.t('views', views)
 
-    .forum-topicline__cell.hidden-xs
-      ul.forum-topicline__lpost
-        li.forum-topicline__lpost-time
-          a.forum-topicline__lpost-time-link(
-            href= self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
-          )
-            != self.timetag(lp_ts, 'relative')
-        if lp_user
-          li.forum-topicline__lpost-user
-            a.forum-topicline__lpost-user-link._ucard-popover(
-              href=self.link_to('users.member', { user_hid: lp_user.hid })
-              data-user-id=lp_user._id
-            )= lp_user.name
+    ul.forum-topicline__cell.forum-topicline__lpost.hidden-xs
+      li.forum-topicline__lpost-time
+        a.forum-topicline__lpost-time-link(
+          href= self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
+        )
+          != self.timetag(lp_ts, 'relative')
+      if lp_user
+        li.forum-topicline__lpost-user
+          a.forum-topicline__lpost-user-link._ucard-popover(
+            href=self.link_to('users.member', { user_hid: lp_user.hid })
+            data-user-id=lp_user._id
+          )= lp_user.name
 
     label.forum-topicline__select.forum-topicline__cell(title=self.t('multiselect_hint'))
       input.forum-topicline__select-cb(
