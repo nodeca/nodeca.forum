@@ -969,14 +969,14 @@ N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teard
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Bulk posts selection
+// Many posts selection
 //
 
 
 // Flag shift key pressed
 let shift_key_pressed = false;
-// DOM element of first selected post (for bulk check)
-let $bulk_select_start;
+// DOM element of first selected post (for many check)
+let $many_select_start;
 
 
 // Handle shift keyup event
@@ -1047,17 +1047,17 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
     if (data.$this.is(':checked') && topicState.selected_posts.indexOf(postId) === -1) {
       // Select
       //
-      if ($bulk_select_start) {
+      if ($many_select_start) {
 
-        // If bulk select started
+        // If many select started
         //
         let $post = data.$this.closest('.forum-post');
-        let $start = $bulk_select_start;
+        let $start = $many_select_start;
         let postsBetween;
 
-        $bulk_select_start = null;
+        $many_select_start = null;
 
-        // If current after `$bulk_select_start`
+        // If current after `$many_select_start`
         if ($start.index() < $post.index()) {
           // Get posts between start and current
           postsBetween = $start.nextUntil($post, '.forum-post');
@@ -1082,11 +1082,11 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 
 
       } else if (shift_key_pressed) {
-        // If bulk select not started and shift key pressed
+        // If many select not started and shift key pressed
         //
         let $post = data.$this.closest('.forum-post');
 
-        $bulk_select_start = $post;
+        $many_select_start = $post;
         $post.addClass('forum-post__m-selected');
         topicState.selected_posts.push(postId);
 
@@ -1094,7 +1094,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 
 
       } else {
-        // No bulk select
+        // No many select
         //
         data.$this.closest('.forum-post').addClass('forum-post__m-selected');
         topicState.selected_posts.push(postId);
@@ -1132,14 +1132,14 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 
   // Bulk delete
   //
-  N.wire.on('forum.topic:bulk_delete', function topic_posts_bulk_delete() {
+  N.wire.on('forum.topic:many_delete', function topic_posts_many_delete() {
     let pageParams = {};
 
     return N.wire.emit('navigate.get_page_raw', pageParams).then(() => {
       if (topicState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
         // If first post selected - delete topic
         return Promise.resolve()
-          .then(() => N.wire.emit('common.blocks.confirm', t('bulk_delete_as_topic')))
+          .then(() => N.wire.emit('common.blocks.confirm', t('many_delete_as_topic')))
           .then(() => delete_topic(true))
           .then(() => {
             topicState.selected_posts = [];
@@ -1154,7 +1154,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
       };
 
       return Promise.resolve()
-        .then(() => N.wire.emit('forum.topic.posts_delete_bulk_dlg', params))
+        .then(() => N.wire.emit('forum.topic.posts_delete_many_dlg', params))
         .then(() => {
           let request = {
             topic_hid: topicState.topic_hid,
@@ -1164,13 +1164,13 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 
           if (params.reason) request.reason = params.reason;
 
-          return N.io.rpc('forum.topic.post.destroy_bulk', request);
+          return N.io.rpc('forum.topic.post.destroy_many', request);
         })
         .then(() => {
           topicState.selected_posts = [];
           save_selected_posts_immediate();
 
-          return N.wire.emit('notify', { type: 'info', message: t('bulk_posts_deleted') });
+          return N.wire.emit('notify', { type: 'info', message: t('many_posts_deleted') });
         })
         .then(() => N.wire.emit('navigate.reload'));
     });
@@ -1178,7 +1178,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 });
 
 
-// Teardown bulk post selection
+// Teardown many post selection
 //
 N.wire.on('navigate.exit:' + module.apiPath, function topic_post_selection_teardown() {
   $(document)

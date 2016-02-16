@@ -1,4 +1,4 @@
-// Popup dialog to delete зщые
+// Popup dialog to delete many posts
 //
 // options:
 //

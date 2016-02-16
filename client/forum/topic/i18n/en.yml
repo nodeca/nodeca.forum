@@ -21,5 +21,5 @@ en-US:
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
 
   msg_multiselect: Multiselect on
-  bulk_delete_as_topic: First post selected, delete whole topic?
-  bulk_posts_deleted: Deleted selected posts
+  many_delete_as_topic: First post selected, delete whole topic?
+  many_posts_deleted: Deleted selected posts

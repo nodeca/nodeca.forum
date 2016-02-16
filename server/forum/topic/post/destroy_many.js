@@ -1,4 +1,4 @@
-// Bulk remove posts by id
+// Many remove posts by id
 //
 'use strict';
 
