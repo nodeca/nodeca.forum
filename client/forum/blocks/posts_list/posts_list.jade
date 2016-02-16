@@ -7,8 +7,8 @@
 //- same as `d % n`, but works with negative numbers correctly
 - function mod(d, n) { return (d % n + n) % n; }
 
-//- show bulk operations checkbox
-- var bulk_operations_permitted = self.settings.forum_mod_can_delete_topics;
+//- show many operations checkbox
+- var many_ops_permitted = self.settings.forum_mod_can_delete_topics;
 
 each post, post_idx in self.posts
   - var user = self.users[post.user];
@@ -83,7 +83,7 @@ each post, post_idx in self.posts
               a.forum-post__link(href=_post_anchor)
                 != self.timetag(post.ts, 'relative')
 
-        if bulk_operations_permitted
+        if many_ops_permitted
           label.forum-post__select(title=self.t('multiselect_hint'))
             input.forum-post__select-cb(
               type='checkbox'
