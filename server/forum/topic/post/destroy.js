@@ -148,25 +148,7 @@ module.exports = function (N, apiPath) {
   // Update section counters
   //
   N.wire.after(apiPath, function* update_section(env) {
-    let statuses = N.models.forum.Post.statuses;
-    let topic = env.data.topic;
-    let incData = {};
-
-    if (env.data.post.st === statuses.VISIBLE) {
-      incData['cache.post_count'] = -1;
-    }
-
-    incData['cache_hb.post_count'] = -1;
-
-    let parents = yield N.models.forum.Section.getParentList(topic.section);
-
-    yield N.models.forum.Section.update(
-      { _id: { $in: parents.concat([ topic.section ]) } },
-      { $inc: incData },
-      { multi: true }
-    );
-
-    yield N.models.forum.Section.updateCache(env.data.topic.section, true);
+    yield N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
   // TODO: log moderator actions

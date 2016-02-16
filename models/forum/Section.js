@@ -275,31 +275,8 @@ module.exports = function (N, collectionName) {
   Section.statics.getChildren.clear = () => getSectionsTreeClear();
 
 
-  // Update `last_post`, `last_topic`, `last_user`, `last_ts` fields
-  // in the section cache.
+  // Update `last_post`, `last_topic`, `last_user`, `last_ts`, `post_count`,
+  // `topic_count` fields in the section cache.
   //
-  // This function has two modes of operation:
-  //
-  //  1. If `full` is *true*, then it gets
-  //
-  //     This mode is guaranteed to write the right result to both `cache` and
-  //     `cache_hb` fields, but it is slow, doing up to 4 database queries
-  //     per section level.
-  //
-  //     It is used when user removes or restores an old post, or if you
-  //     need to re-create the cache (e.g. in seeds).
-  //
-  //  2. If `full` is *false*, then the last topic in the section is retrieved,
-  //     and stored to the section cache and all the parent sections.
-  //
-  //     This is done with 2 database queries total (1 read + 1 update), so
-  //     it is very fast compared to the first one.
-  //
-  //     If last post is HB, only `cache_hb` is updated, `cache` stays as is.
-  //
-  //  `full=false` mode should **only** be used when you're creating a new post
-  //
-  let updateCache = require('./lib/_update_section_cache')(N);
-
-  Section.statics.updateCache = (sectionID, full) => updateCache[full ? 'full' : 'simple'](sectionID);
+  Section.statics.updateCache = require('./lib/_update_section_cache')(N);
 };

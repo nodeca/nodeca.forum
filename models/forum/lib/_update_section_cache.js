@@ -9,15 +9,20 @@ const co = require('co');
 
 module.exports = function (N) {
 
-  let updateCache = {};
-
   // Re-calculate section cache for the specified section and its parents
   // from scratch.
   //
   // Used when the section cache is no longer relevant (e.g. when post
   // is deleted).
   //
-  updateCache.full = co.wrap(function* (sectionID) {
+  // TODO: probably should update last post in postponed mode
+  //
+  let updateCache = co.wrap(function* (sectionID, parent) {
+    if (!parent) {
+      // Postpone topic and post count update
+      N.queue.worker('forum_section_post_count_update').postpone({ section_id: sectionID });
+    }
+
     let Section = N.models.forum.Section;
     let Topic = N.models.forum.Topic;
 
@@ -134,69 +139,8 @@ module.exports = function (N) {
     let list = yield Section.getParentList(sectionID);
 
     if (list.length) {
-      yield updateCache.full(list.pop());
+      yield updateCache(list.pop(), true);
     }
-  });
-
-
-  // Set section cache to the last topic in this section and all the parent
-  // sections.
-  //
-  // Used when a new post in the section is created.
-  //
-  updateCache.simple = co.wrap(function* (sectionID) {
-    let Section = N.models.forum.Section;
-    let Topic = N.models.forum.Topic;
-    let updateData = {};
-
-    let visible_st_hb = [
-      Topic.statuses.OPEN,
-      Topic.statuses.CLOSED,
-      Topic.statuses.PINNED,
-      Topic.statuses.HB
-    ];
-
-    let topic = yield Topic
-      .findOne({ section: sectionID, st: { $in: visible_st_hb } })
-      .sort('-cache_hb.last_post');
-
-    // all topics in this section are deleted
-    if (!topic) return;
-
-    // Last post in this section is considered hellbanned if
-    //  (whole topic has HB status) OR (last post has HB status)
-    //
-    // Last post in the topic is hellbanned iff topic.cache differs from topic.cache_hb
-    //
-    let last_post_hb = (topic.st === Topic.statuses.HB) ||
-      (String(topic.cache.last_post) !== String(topic.cache_hb.last_post));
-
-    if (!last_post_hb) {
-      // If the last post in this section is not hellbanned, it is seen as
-      // such for both hb and non-hb users. Thus, cache is the same for both.
-      //
-      updateData['cache.last_topic']       = topic._id;
-      updateData['cache.last_topic_hid']   = topic.hid;
-      updateData['cache.last_topic_title'] = topic.title;
-      updateData['cache.last_post']        = topic.cache_hb.last_post;
-      updateData['cache.last_user']        = topic.cache_hb.last_user;
-      updateData['cache.last_ts']          = topic.cache_hb.last_ts;
-    }
-
-    updateData['cache_hb.last_topic']       = topic._id;
-    updateData['cache_hb.last_topic_hid']   = topic.hid;
-    updateData['cache_hb.last_topic_title'] = topic.title;
-    updateData['cache_hb.last_post']        = topic.cache_hb.last_post;
-    updateData['cache_hb.last_user']        = topic.cache_hb.last_user;
-    updateData['cache_hb.last_ts']          = topic.cache_hb.last_ts;
-
-    let parents = yield Section.getParentList(sectionID);
-
-    yield Section.update(
-      { _id: { $in: parents.concat([ sectionID ]) } },
-      { $set: updateData },
-      { multi: true }
-    );
   });
 
   return updateCache;

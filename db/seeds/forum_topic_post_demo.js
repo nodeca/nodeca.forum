@@ -262,7 +262,7 @@ const updateSectionStat = co.wrap(function* (section) {
   //
   Section.getChildren.clear();
 
-  yield Section.updateCache(section._id, true);
+  yield Section.updateCache(section._id);
 
   let sections = yield Section.getChildren(section._id, -1);
 

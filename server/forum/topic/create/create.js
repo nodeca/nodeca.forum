@@ -241,25 +241,7 @@ module.exports = function (N, apiPath) {
   // Update section counters
   //
   N.wire.after(apiPath, function* update_section(env) {
-    let topic = env.data.new_topic;
-    let incData = {};
-
-    if (!env.user_info.hb) {
-      incData['cache.post_count'] = 1;
-      incData['cache.topic_count'] = 1;
-    }
-
-    incData['cache_hb.post_count'] = 1;
-    incData['cache_hb.topic_count'] = 1;
-
-    let parents = yield N.models.forum.Section.getParentList(topic.section);
-
-    yield N.models.forum.Section.update(
-      { _id: { $in: parents.concat([ topic.section ]) } },
-      { $inc: incData },
-      { multi: true });
-
-    yield N.models.forum.Section.updateCache(topic.section, false);
+    yield N.models.forum.Section.updateCache(env.data.new_topic.section);
   });
 
 

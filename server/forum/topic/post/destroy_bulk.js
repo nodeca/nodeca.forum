@@ -78,6 +78,7 @@ module.exports = function (N, apiPath) {
                               .where('_id').in(env.params.posts_ids)
                               .where('topic').equals(env.data.topic._id)
                               .where('st').in(statuses.LIST_DELETABLE)
+                              .select('_id st ste')
                               .lean(true);
 
     if (!env.data.posts.length) throw N.io.NOT_FOUND;
@@ -137,28 +138,7 @@ module.exports = function (N, apiPath) {
   // Update section counters
   //
   N.wire.after(apiPath, function* update_section(env) {
-    let topic = env.data.topic;
-    let incData = {};
-    let visiblePosts = env.data.posts.filter(post => post.st === statuses.VISIBLE);
-    let hbPosts = env.data.posts.filter(post => post.st === statuses.HB);
-
-    if (visiblePosts.length) {
-      incData['cache.post_count'] = -visiblePosts.length;
-    }
-
-    if (hbPosts.length) {
-      incData['cache_hb.post_count'] = -hbPosts.length;
-    }
-
-    let parents = yield N.models.forum.Section.getParentList(topic.section);
-
-    yield N.models.forum.Section.update(
-      { _id: { $in: parents.concat([ topic.section ]) } },
-      { $inc: incData },
-      { multi: true }
-    );
-
-    yield N.models.forum.Section.updateCache(env.data.topic.section, true);
+    yield N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
   // TODO: log moderator actions

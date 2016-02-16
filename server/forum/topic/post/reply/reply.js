@@ -258,33 +258,7 @@ module.exports = function (N, apiPath) {
   // Update section counters
   //
   N.wire.after(apiPath, function* update_section(env) {
-    let post_statuses = N.models.forum.Post.statuses;
-    let topic_statuses = N.models.forum.Topic.statuses;
-    let topic = env.data.topic;
-    let post = env.data.new_post;
-    let incData = {};
-
-    // Increment normal cache if both topic and post are visible
-    //
-    if (post.st === post_statuses.VISIBLE && topic_statuses.LIST_VISIBLE.indexOf(topic.st) !== -1) {
-      incData['cache.post_count'] = 1;
-    }
-
-    // Increment hb cache for any post if topic is visible or hb (but not deleted)
-    //
-    if (topic_statuses.LIST_VISIBLE.concat([ topic_statuses.HB ]).indexOf(topic.st) !== -1) {
-      incData['cache_hb.post_count'] = 1;
-    }
-
-    let parents = yield N.models.forum.Section.getParentList(topic.section);
-
-    yield N.models.forum.Section.update(
-      { _id: { $in: parents.concat([ topic.section ]) } },
-      { $inc: incData },
-      { multi: true }
-    );
-
-    yield N.models.forum.Section.updateCache(topic.section, false);
+    yield N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
 
