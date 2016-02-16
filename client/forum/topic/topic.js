@@ -238,7 +238,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         let $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
 
         return N.wire.emit('navigate.update', { $: $result, locals: res })
-          .then(() => $('#post' + postId).replaceWith($result));
+          .then(() => {
+            $('#post' + postId).replaceWith($result);
+
+            if (topicState.selected_posts.indexOf(postId) !== -1) {
+              $result
+                .addClass('forum-post__m-selected')
+                .find('.forum-post__select-cb').prop('checked', true);
+            }
+          });
       });
   });
 
@@ -1163,14 +1171,15 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
   });
 
 
-  // Bulk delete
+  // Delete many
   //
-  N.wire.on('forum.topic:many_delete', function topic_posts_many_delete() {
+  N.wire.on('forum.topic:delete_many', function topic_posts_delete_many() {
     let pageParams = {};
 
     return N.wire.emit('navigate.get_page_raw', pageParams).then(() => {
+
+      // If first post selected - delete topic
       if (topicState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
-        // If first post selected - delete topic
         return Promise.resolve()
           .then(() => N.wire.emit('common.blocks.confirm', t('many_delete_as_topic')))
           .then(() => delete_topic(true))
@@ -1205,6 +1214,42 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 
           return N.wire.emit('notify', { type: 'info', message: t('many_posts_deleted') });
         })
+        .then(() => N.wire.emit('navigate.reload'));
+    });
+  });
+
+
+  // Undelete many
+  //
+  N.wire.on('forum.topic:undelete_many', function topic_posts_undelete_many() {
+    let pageParams = {};
+
+    return N.wire.emit('navigate.get_page_raw', pageParams).then(() => {
+
+      // If first post selected - undelete topic
+      if (topicState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
+        return Promise.resolve()
+          .then(() => N.wire.emit('common.blocks.confirm', t('many_undelete_as_topic')))
+          .then(() => N.io.rpc('forum.topic.undelete', { topic_hid: topicState.topic_hid }))
+          .then(() => {
+            topicState.selected_posts = [];
+            save_selected_posts_immediate();
+            return N.wire.emit('navigate.reload');
+          });
+      }
+
+      let request = {
+        topic_hid: topicState.topic_hid,
+        posts_ids: topicState.selected_posts
+      };
+
+      return Promise.resolve()
+        .then(() => N.io.rpc('forum.topic.post.undelete_many', request))
+        .then(() => {
+          topicState.selected_posts = [];
+          save_selected_posts_immediate();
+        })
+        .then(() => N.wire.emit('notify', { type: 'info', message: t('many_posts_undeleted') }))
         .then(() => N.wire.emit('navigate.reload'));
     });
   });

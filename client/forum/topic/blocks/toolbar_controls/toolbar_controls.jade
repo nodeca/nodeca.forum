@@ -196,8 +196,10 @@ if (self.selected_cnt !== 0)
 
             when 'many_delete'
               li: a(href='#'
-                data-on-click='forum.topic:many_delete'
+                data-on-click='forum.topic:delete_many'
               )= self.t('many_delete')
 
             when 'many_undelete'
-              li.disabled: a(href='#')= self.t('many_undelete')
+              li: a(href='#'
+                data-on-click='forum.topic:undelete_many'
+              )= self.t('many_undelete')

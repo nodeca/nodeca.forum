@@ -254,6 +254,7 @@ each post, post_idx in self.posts
       class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
       class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
       class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
+      data-post-id=post._id
       data-post-hid=post.hid
       data-user-hid=user ? user.hid : ''
       itemscope
@@ -261,6 +262,12 @@ each post, post_idx in self.posts
     )
 
       footer.forum-post__meta.clearfix
+        if many_ops_permitted
+          label.forum-post__select.pull-right(title=self.t('multiselect_hint'))
+            input.forum-post__select-cb(
+            type='checkbox'
+            data-post-id=post._id
+            data-on-change='forum.topic:post_check')
         .forum-post__meta-blk.pull-right
           != self.timetag(post.ts, 'relative')
         .forum-post__meta-blk

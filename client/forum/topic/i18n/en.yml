@@ -23,3 +23,5 @@ en-US:
   msg_multiselect: Multiselect on
   many_delete_as_topic: First post selected, delete whole topic?
   many_posts_deleted: Deleted selected posts
+  many_undelete_as_topic: First post selected, undelete whole topic?
+  many_posts_undeleted: Undeleted selected posts
