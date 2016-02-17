@@ -700,6 +700,26 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       })
       .then(() => N.wire.emit('navigate.reload'));
   });
+
+
+  // Undelete topics
+  //
+  N.wire.on(module.apiPath + ':undelete_many', function section_topic_undelete_many() {
+    let request = {
+      section_hid: sectionState.hid,
+      topics_hids: sectionState.selected_topics
+    };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('common.blocks.confirm', t('many_undelete_confirm')))
+      .then(() => N.io.rpc('forum.section.topic.undelete_many', request))
+      .then(() => {
+        sectionState.selected_topics = [];
+        save_selected_topics_immediate();
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_undeleted') }))
+      .then(() => N.wire.emit('navigate.reload'));
+  });
 });
 
 

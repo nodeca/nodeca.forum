@@ -8,3 +8,5 @@ en-US:
 
   msg_multiselect: Multiselect on
   many_topics_deleted: Deleted selected topics
+  many_undelete_confirm: Are you sure want undelete selected topics?
+  many_topics_undeleted: Undeleted selected topics
