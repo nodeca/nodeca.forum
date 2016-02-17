@@ -670,6 +670,36 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
     save_selected_topics();
     return updateSectionState();
   });
+
+
+  // Delete topics
+  //
+  N.wire.on(module.apiPath + ':delete_many', function section_topic_delete_many() {
+    let params = {
+      canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
+    };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('forum.section.topic_delete_many_dlg', params))
+      .then(() => {
+        let request = {
+          section_hid: sectionState.hid,
+          topics_hids: sectionState.selected_topics,
+          method: params.method
+        };
+
+        if (params.reason) request.reason = params.reason;
+
+        return N.io.rpc('forum.section.topic.destroy_many', request);
+      })
+      .then(() => {
+        sectionState.selected_topics = [];
+        save_selected_topics_immediate();
+
+        return N.wire.emit('notify', { type: 'info', message: t('many_topics_deleted') });
+      })
+      .then(() => N.wire.emit('navigate.reload'));
+  });
 });
 
 

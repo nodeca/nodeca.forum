@@ -119,7 +119,9 @@ if items.length > 0 && items[items.length - 1] === 'header'
               )=self.t('many_unselect')
 
             when 'many_delete'
-              li.disabled: a(href='#')= self.t('many_delete')
+              li: a(href='#'
+                data-on-click='forum.section:delete_many'
+              )= self.t('many_delete')
 
             when 'many_undelete'
               li.disabled: a(href='#')= self.t('many_undelete')

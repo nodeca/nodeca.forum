@@ -27,7 +27,11 @@ module.exports = function (N, collectionName) {
 
   // List of `st` values with which the topic is considered publicly visible
   //
-  statuses.LIST_VISIBLE = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ];
+  statuses.LIST_VISIBLE   = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED ];
+
+  // List of `st` values with which the topic is can be deleted
+  //
+  statuses.LIST_DELETABLE = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED, statuses.PENDING, statuses.HB ];
 
 
   let cache = {
