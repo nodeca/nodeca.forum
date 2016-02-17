@@ -1,0 +1,6 @@
+en-US:
+  title: Move many topics
+  confirmation_text: Are you sure you want to delete topics?
+  section_input_name: 'Move to:'
+  ok: OK
+  cancel: Cancel

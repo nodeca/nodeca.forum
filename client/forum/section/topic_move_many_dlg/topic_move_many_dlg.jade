@@ -1,0 +1,28 @@
+mixin sections_tree(sections, deepness)
+  each section in sections
+
+    - var prefix = '| ' + Array(deepness).join('-') + ' ';
+
+    option(
+      value=section.hid
+      selected=(self.section_hid_from === section.hid)
+    )=prefix + section.title
+
+    if section.children && section.children.length
+      mixin sections_tree(section.children, deepness + 1)
+
+.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+  .modal-dialog
+    .modal-content
+      form(data-on-submit='forum.section.topic_move_many_dlg:submit')
+        .modal-header
+          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+          h4.modal-title=self.t('title')
+        .modal-body
+          p.text-danger=self.t('confirmation_text')
+          label= self.t('section_input_name')
+          select.form-control(name='section_hid' tabindex='1')
+            mixin sections_tree(self.sections, 1)
+        .modal-footer
+          button.btn.btn-default(type='button' tabindex='4' data-dismiss='modal')=self.t('cancel')
+          button.btn.btn-danger(type='submit' tabindex='5')=self.t('ok')

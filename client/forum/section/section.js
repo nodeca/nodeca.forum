@@ -800,6 +800,33 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_opend') }))
       .then(() => N.wire.emit('navigate.reload'));
   });
+
+
+  // Move topics
+  //
+  N.wire.on(module.apiPath + ':move_many', function section_topic_move_many() {
+    let params = {
+      section_hid_from: sectionState.hid
+    };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('forum.section.topic_move_many_dlg', params))
+      .then(() => {
+        let request = {
+          section_hid_from: params.section_hid_from,
+          section_hid_to: params.section_hid_to,
+          topics_hids: sectionState.selected_topics
+        };
+
+        return N.io.rpc('forum.section.topic.move_many', request);
+      })
+      .then(() => {
+        sectionState.selected_topics = [];
+        save_selected_topics_immediate();
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_moved') }))
+      .then(() => N.wire.emit('navigate.reload'));
+  });
 });
 
 

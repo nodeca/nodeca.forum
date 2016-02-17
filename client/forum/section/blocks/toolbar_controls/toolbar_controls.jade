@@ -28,7 +28,8 @@ if self.selected_cnt !== 0
   if self.settings.forum_mod_can_close_topic
     - items.push('many_open')
     - items.push('many_close')
-  - items.push('many_move')
+  if self.settings.forum_mod_can_delete_topics
+    - items.push('many_move')
 
 //- If last item is header - remove it
 if items.length > 0 && items[items.length - 1] === 'header'
@@ -154,5 +155,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
               )= self.t('many_open')
 
             when 'many_move'
-              li.disabled: a(href='#')= self.t('many_move')
+              li: a(href='#'
+                data-on-click='forum.section:move_many'
+              )= self.t('many_move')
 
