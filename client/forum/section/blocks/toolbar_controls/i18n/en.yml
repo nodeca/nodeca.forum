@@ -15,5 +15,6 @@ en-US:
   many_undelete: Undelete
   many_pin: Pin
   many_unpin: Unpin
+  many_close: Close
+  many_open: Open
   many_move: Move
-  many_prune: Prune

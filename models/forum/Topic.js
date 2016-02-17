@@ -33,6 +33,10 @@ module.exports = function (N, collectionName) {
   //
   statuses.LIST_DELETABLE = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED, statuses.PENDING, statuses.HB ];
 
+  // List of `st` values with which the topic is can be closed
+  //
+  statuses.LIST_CLOSEBLE  = [ statuses.OPEN, statuses.PINNED, statuses.HB ];
+
 
   let cache = {
     post_count:    { type: Number, 'default': 0 },

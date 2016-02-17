@@ -6,7 +6,7 @@
 //- - appending next page posts via autoload or "more" button
 
 //- show many operations checkbox
-- var many_ops_permitted = self.settings.forum_mod_can_delete_topics || self.settings.forum_mod_can_pin_topic;
+- var many_ops_permitted = self.settings.forum_mod_can_delete_topics || self.settings.forum_mod_can_pin_topic || self.settings.forum_mod_can_close_topic;
 
 each topic, idx in self.topics
   - var fp_user = self.users[topic.cache.first_user] || {}

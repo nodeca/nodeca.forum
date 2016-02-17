@@ -12,5 +12,9 @@ en-US:
   many_topics_undeleted: Undeleted selected topics
   many_pin_confirm: Are you sure want pin selected topics?
   many_unpin_confirm: Are you sure want unpin selected topics?
+  many_close_confirm: Are you sure want close selected topics?
+  many_open_confirm: Are you sure want open selected topics?
   many_topics_pinned: Pinned selected topics
   many_topics_unpinned: Unpinned selected topics
+  many_topics_closed: Closed selected topics
+  many_topics_opend: Opend selected topics

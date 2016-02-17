@@ -760,6 +760,46 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_unpinned') }))
       .then(() => N.wire.emit('navigate.reload'));
   });
+
+
+  // Close topics
+  //
+  N.wire.on(module.apiPath + ':close_many', function section_topic_close_many() {
+    let request = {
+      section_hid: sectionState.hid,
+      topics_hids: sectionState.selected_topics
+    };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('common.blocks.confirm', t('many_close_confirm')))
+      .then(() => N.io.rpc('forum.section.topic.close_many', request))
+      .then(() => {
+        sectionState.selected_topics = [];
+        save_selected_topics_immediate();
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_closed') }))
+      .then(() => N.wire.emit('navigate.reload'));
+  });
+
+
+  // Open topics
+  //
+  N.wire.on(module.apiPath + ':open_many', function section_topic_open_many() {
+    let request = {
+      section_hid: sectionState.hid,
+      topics_hids: sectionState.selected_topics
+    };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('common.blocks.confirm', t('many_open_confirm')))
+      .then(() => N.io.rpc('forum.section.topic.open_many', request))
+      .then(() => {
+        sectionState.selected_topics = [];
+        save_selected_topics_immediate();
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_opend') }))
+      .then(() => N.wire.emit('navigate.reload'));
+  });
 });
 
 
