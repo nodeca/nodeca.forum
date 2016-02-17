@@ -81,7 +81,7 @@ module.exports = function (N, apiPath) {
                               .select('_id st ste')
                               .lean(true);
 
-    if (!env.data.posts.length) throw N.io.NOT_FOUND;
+    if (!env.data.posts.length) throw { code: N.io.CLIENT_ERROR, message: env.t('err_no_posts') };
   });
 
 

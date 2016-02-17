@@ -5,3 +5,7 @@ en-US:
     err_perm_expired: You can not vote for this post anymore
   ip_info:
     err_no_ip: IP address for this post not specified
+  destroy_many:
+    err_no_posts: None of selected posts can be deleted
+  undelete_many:
+    err_no_posts: None of selected posts can be undeleted
