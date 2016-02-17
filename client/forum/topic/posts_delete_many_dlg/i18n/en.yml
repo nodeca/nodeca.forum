@@ -1,6 +1,6 @@
 en-US:
-  title: Delete multi posts
-  confirmation_text: Are you sure you want to delete post?
+  title: Delete many posts
+  confirmation_text: Are you sure you want to delete posts?
   reason_input_help: Deletion reason
   ok: OK
   cancel: Cancel
