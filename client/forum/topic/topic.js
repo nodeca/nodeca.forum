@@ -1244,6 +1244,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
       };
 
       return Promise.resolve()
+        .then(() => N.wire.emit('common.blocks.confirm', t('many_undelete_confirm')))
         .then(() => N.io.rpc('forum.topic.post.undelete_many', request))
         .then(() => {
           topicState.selected_posts = [];
