@@ -13,5 +13,7 @@ en-US:
   many_unselect: Clear selection
   many_delete: Delete
   many_undelete: Undelete
+  many_pin: Pin
+  many_unpin: Unpin
   many_move: Move
   many_prune: Prune

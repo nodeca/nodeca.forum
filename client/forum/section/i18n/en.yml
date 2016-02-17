@@ -10,3 +10,7 @@ en-US:
   many_topics_deleted: Deleted selected topics
   many_undelete_confirm: Are you sure want undelete selected topics?
   many_topics_undeleted: Undeleted selected topics
+  many_pin_confirm: Are you sure want pin selected topics?
+  many_unpin_confirm: Are you sure want unpin selected topics?
+  many_topics_pinned: Pinned selected topics
+  many_topics_unpinned: Unpinned selected topics
