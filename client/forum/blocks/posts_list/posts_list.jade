@@ -136,7 +136,10 @@ each post, post_idx in self.posts
                     span.icon.icon-vote-down
 
             li.forum-post__control-item.forum-post__report
-              button.btn.forum-post__action(title=self.t('report'))
+              button.btn.forum-post__action(title=self.t('report')
+                data-post-id=post._id
+                data-on-click='forum.topic:report'
+              )
                 span.icon.icon-report
 
             if self.runtime.is_member

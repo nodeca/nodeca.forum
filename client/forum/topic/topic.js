@@ -206,6 +206,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Click report button
+  //
+  N.wire.on(module.apiPath + ':report', function report() {
+    let params = { messages: t('@forum.abuse_report.messages') };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('common.blocks.abuse_report_dlg', params));
+  });
+
   // Click on post edit
   //
   N.wire.on(module.apiPath + ':post_edit', function reply(data) {
