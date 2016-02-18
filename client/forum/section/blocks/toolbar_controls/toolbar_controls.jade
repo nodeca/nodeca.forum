@@ -22,9 +22,6 @@ if self.selected_cnt !== 0
   if self.settings.forum_mod_can_delete_topics
     - items.push('many_delete')
     - items.push('many_undelete')
-  if self.settings.forum_mod_can_pin_topic
-    - items.push('many_pin')
-    - items.push('many_unpin')
   if self.settings.forum_mod_can_close_topic
     - items.push('many_open')
     - items.push('many_close')
@@ -133,16 +130,6 @@ if items.length > 0 && items[items.length - 1] === 'header'
               li: a(href='#'
                 data-on-click='forum.section:undelete_many'
               )= self.t('many_undelete')
-
-            when 'many_pin'
-              li: a(href='#'
-                data-on-click='forum.section:pin_many'
-              )= self.t('many_pin')
-
-            when 'many_unpin'
-              li: a(href='#'
-                data-on-click='forum.section:unpin_many'
-              )= self.t('many_unpin')
 
             when 'many_close'
               li: a(href='#'

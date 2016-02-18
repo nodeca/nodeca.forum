@@ -722,46 +722,6 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
   });
 
 
-  // Pin topics
-  //
-  N.wire.on(module.apiPath + ':pin_many', function section_topic_pin_many() {
-    let request = {
-      section_hid: sectionState.hid,
-      topics_hids: sectionState.selected_topics
-    };
-
-    return Promise.resolve()
-      .then(() => N.wire.emit('common.blocks.confirm', t('many_pin_confirm')))
-      .then(() => N.io.rpc('forum.section.topic.pin_many', request))
-      .then(() => {
-        sectionState.selected_topics = [];
-        save_selected_topics_immediate();
-      })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_pinned') }))
-      .then(() => N.wire.emit('navigate.reload'));
-  });
-
-
-  // Unpin topics
-  //
-  N.wire.on(module.apiPath + ':unpin_many', function section_topic_unpin_many() {
-    let request = {
-      section_hid: sectionState.hid,
-      topics_hids: sectionState.selected_topics
-    };
-
-    return Promise.resolve()
-      .then(() => N.wire.emit('common.blocks.confirm', t('many_unpin_confirm')))
-      .then(() => N.io.rpc('forum.section.topic.unpin_many', request))
-      .then(() => {
-        sectionState.selected_topics = [];
-        save_selected_topics_immediate();
-      })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_unpinned') }))
-      .then(() => N.wire.emit('navigate.reload'));
-  });
-
-
   // Close topics
   //
   N.wire.on(module.apiPath + ':close_many', function section_topic_close_many() {
