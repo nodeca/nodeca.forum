@@ -7,6 +7,14 @@ setting_groups:
 
 setting_schemas:
   global:
+    general_abuse_report_section:
+      priority: 10
+      group_key: abuse_reports
+      category_key: forum
+      type: dropdown
+      values: forum_sections
+      default: ~
+
     forum_topic_title_min_length:
       type: number
       group_key: forum_editor
