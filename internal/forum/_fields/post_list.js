@@ -3,6 +3,7 @@
 module.exports = {
   settings: [
     'can_see_ip',
+    'can_report_abuse',
     'can_see_hellbanned',
     'forum_can_view',
     'forum_topic_title_min_length',

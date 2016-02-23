@@ -18,6 +18,15 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check permissions
+  //
+  N.wire.before(apiPath, function* check_permissions(env) {
+    let can_report_abuse = yield env.extras.settings.fetch('can_report_abuse');
+
+    if (!can_report_abuse) throw N.io.FORBIDDEN;
+  });
+
+
   // Fetch post
   //
   N.wire.before(apiPath, function* fetch_post(env) {
