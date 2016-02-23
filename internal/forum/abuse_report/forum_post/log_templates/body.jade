@@ -1,0 +1,23 @@
+if self.author
+  - var profile_name = self.author.user_name;
+  - var profile_url = self.link_to('users.member', { user_hid: self.author.user_hid });
+  =self.t('header', { url: '[' + profile_name + '](' + profile_url + ')' })
+else
+  =self.t('header_auto')
+| 
+| `````````quote
+| #{self.report_text}
+| `````````
+| 
+=self.t('to', { url: self.src_url })
+| 
+| `````````quote
+| #{self.src_text}
+| `````````
+| 
+if self.recipients && self.recipients.length
+  =self.t('message_sent_to')
+  each recipient, index in self.recipients
+   | [#{recipient.user_name}](#{self.link_to('users.member', { user_hid: recipient.user_hid })})
+   if index !== self.recipients.length - 1
+     | , 

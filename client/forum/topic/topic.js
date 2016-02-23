@@ -208,12 +208,16 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Click report button
   //
-  N.wire.on(module.apiPath + ':report', function report() {
+  N.wire.on(module.apiPath + ':report', function report(data) {
     let params = { messages: t('@forum.abuse_report.messages') };
+    let postId = data.$this.data('post-id');
 
     return Promise.resolve()
-      .then(() => N.wire.emit('common.blocks.abuse_report_dlg', params));
+      .then(() => N.wire.emit('common.blocks.abuse_report_dlg', params))
+      .then(() => N.io.rpc('forum.topic.post.abuse_report', { post_id: postId, message: params.message }))
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('abuse_reported') }));
   });
+
 
   // Click on post edit
   //
