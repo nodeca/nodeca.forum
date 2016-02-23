@@ -23,28 +23,8 @@ let sectionState = {};
 let scrollHandler = null;
 let navbarHeight = $('.navbar').height();
 
-
-// Scroll to the element, so it would be positioned in the viewport
-//
-//  - el     - Element to scroll
-//  - ratio  - 0...1 offset (1..100%) of element center from viewport top
-//             e.g. 0.5 means it should position element to the middle of the screen
-//  - offset - Unconditionally apply this offset after calculating position
-//
-function scrollIntoView(el, coef, offset) {
-  // 1. The top line of the element should always be lower than navbar
-  // 2. The middle line of the element should be located at coef*viewport_height (if possible)
-  //
-  let el_top = el.offset().top;
-  let el_h   = el.height();
-  let win_h  = $(window).height();
-  let nav_h  = $('.navbar').height();
-
-  $(window).scrollTop(Math.min(
-    el_top - nav_h,
-    (el_top + el_h / 2) - nav_h - (win_h - nav_h) * coef
-  ) + (offset || 0));
-}
+// offset between navbar and the first topic
+const TOP_OFFSET = 32;
 
 
 /////////////////////////////////////////////////////////////////////
@@ -81,7 +61,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     el = $(anchor);
 
     if (el.length && el.hasClass('forum-section')) {
-      scrollIntoView(el, 0.3);
+      $(window).scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET);
       el.addClass('forum-section__m-highlight');
       return;
     }
@@ -90,7 +70,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     el = $('#topic' + data.state.hid);
 
     if (el.length) {
-      scrollIntoView(el, 0.3, data.state.offset);
+      $(window).scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET + data.state.offset);
       return;
     }
 
@@ -98,7 +78,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     el = $('#topic' + data.params.topic_hid);
 
     if (el.length) {
-      scrollIntoView(el, 0.3);
+      $(window).scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET);
       el.addClass('forum-topicline__m-highlight');
       return;
     }
@@ -366,7 +346,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':scroll', function update_progress() {
     let topics         = $('.forum-topicline'),
-        topicThreshold = $(window).scrollTop() + navbarHeight + ($(window).height() - navbarHeight) * 0.3,
+        topicThreshold = $(window).scrollTop() + navbarHeight + TOP_OFFSET,
         offset,
         currentIdx;
 
@@ -387,7 +367,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       state = {
         hid:    $(topics[currentIdx]).data('topic-hid'),
-        offset: topicThreshold - $(topics[currentIdx]).offset().top - $(topics[currentIdx]).height() / 2
+        offset: topicThreshold - $(topics[currentIdx]).offset().top
       };
     } else {
       offset = 0;
