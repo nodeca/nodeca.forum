@@ -33,6 +33,8 @@ module.exports = function (N, apiPath) {
 
   function buildTopicsIdsAndGetOffset(env) {
     return env.extras.settings.fetch('topics_per_page').then(topics_per_page => {
+      let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+
       env.data.select_posts_start  = null;
       env.data.select_posts_before = topics_per_page;
       env.data.select_posts_after  = topics_per_page;
@@ -41,7 +43,7 @@ module.exports = function (N, apiPath) {
         return N.models.forum.Topic.findOne({
           section: env.data.section._id,
           hid:     env.params.topic_hid,
-          st:      { $in: env.data.topics_visible_statuses }
+          st:      { $in: statuses }
         }).then(topic => {
 
           if (topic) {
