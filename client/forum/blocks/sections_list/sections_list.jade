@@ -24,7 +24,7 @@ ul.forum-sections
               ul.forum-section__subforums.hidden-xs
                 each sub_section in section.child_list
                   li.forum-section__subforum-item
-                    a.forum-section__subforum-link(href=self.link_to('forum.section', sub_section))= sub_section.title
+                    a.forum-section__subforum-link(href=self.link_to('forum.section', { section_hid: sub_section.hid }))= sub_section.title
 
             - var moderators = section.moderators.filter(function(id) { return self.users[id] });
             if moderators && moderators.length > 0
