@@ -23,11 +23,13 @@ const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - selected_posts:     array of selected posts in current topic
 //
 let topicState = {};
-let scrollHandler = null;
+
+let $window = $(window);
+
 let navbarHeight = $('.navbar').height();
 
 // height of a space between text content of a post and the next post header
-let toolbarHeight = 50;
+const TOP_OFFSET = 50;
 
 
 /////////////////////////////////////////////////////////////////////
@@ -45,6 +47,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.prev_loading_start = 0;
   topicState.next_loading_start = 0;
   topicState.selected_posts     = [];
+
+  // disable automatic scroll to an anchor in the navigator
+  data.no_scroll = true;
 
 
   // If user moves to a page (e.g. from a search engine),
@@ -68,7 +73,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     // otherwise it's a position of the first post with hid more than that
     //
     if (i >= posts.length) { i = posts.length - 1; }
-    $(window).scrollTop($(posts[i]).offset().top - navbarHeight - toolbarHeight + data.state.offset);
+    $window.scrollTop($(posts[i]).offset().top - navbarHeight - TOP_OFFSET + data.state.offset);
 
   } else if (topicState.post_hid > 1) {
     let posts = $('.forum-post');
@@ -81,27 +86,249 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     // otherwise it's a position of the first post with hid more than that
     //
     if (i >= posts.length) { i = posts.length - 1; }
-    $(window).scrollTop($(posts[i]).offset().top - navbarHeight - toolbarHeight);
+    $window.scrollTop($(posts[i]).offset().top - navbarHeight - TOP_OFFSET);
 
   } else {
     // If user clicks on a link to the first post of the topic,
     // we should scroll to the top.
     //
-    $(window).scrollTop(0);
+    $window.scrollTop(0);
+  }
+});
+
+
+///////////////////////////////////////////////////////////////////////////
+// Whenever we are close to beginning/end of post list, check if we can
+// load more pages from the server
+//
+let prefetchScrollHandler = null;
+
+N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
+  // an amount of posts we try to load when user scrolls to the end of the page
+  const LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
+
+  // an amount of time between successful xhr requests and failed xhr requests respectively
+  //
+  // For example, suppose user continuously scrolls. If server is up, each
+  // subsequent request will be sent each 500 ms. If server goes down, the
+  // interval between request initiations goes up to 2000 ms.
+  //
+  const LOAD_INTERVAL = 100;
+  const LOAD_AFTER_ERROR = 2000;
+
+  // an amount of posts from top/bottom that triggers prefetch in that direction
+  const LOAD_BORDER_SIZE = 3;
+
+  function load_prev_page() {
+    let now = Date.now();
+
+    // `prev_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(topicState.prev_loading_start - now) < LOAD_AFTER_ERROR) return;
+
+    topicState.prev_loading_start = now;
+
+    let hid = $('.forum-post:first').data('post-hid');
+
+    // No posts on the page
+    if (!hid) return;
+
+    // If the first post on the page is hid=1, it's a first page,
+    // so we don't need to load anything
+    //
+    // This is sufficient because post with hid=1 always exists.
+    //
+    if (hid <= 1) return;
+
+    N.io.rpc('forum.topic.list.by_range', {
+      topic_hid: topicState.topic_hid,
+      post_hid:  hid - 1,
+      before:    LOAD_POSTS_COUNT,
+      after:     0
+    }).then(res => {
+      topicState.post_count = res.topic.cache.post_count;
+
+      if (res.max_post && res.max_post !== topicState.max_post) {
+        topicState.max_post = res.max_post;
+
+        N.wire.emit('forum.topic.blocks.page_progress:update', {
+          max: topicState.max_post
+        });
+      }
+
+      if (!res.posts || !res.posts.length) return;
+
+      let old_height = $('.forum-postlist').height();
+
+      topicState.first_post_offset -= res.posts.length;
+
+      res.pagination = {
+        // used in paginator
+        total:        topicState.post_count,
+        per_page:     N.runtime.page_data.pagination.per_page,
+        chunk_offset: topicState.first_post_offset
+      };
+
+      // render & inject posts list
+      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
+
+      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
+        $('.forum-postlist > :first').before($result);
+
+        // update scroll so it would point at the same spot as before
+        $window.scrollTop($window.scrollTop() + $('.forum-postlist').height() - old_height);
+
+        // Update selection state
+        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
+          $(`#post${postId}`)
+            .addClass('forum-post__m-selected')
+            .find('.forum-post__select-cb')
+            .prop('checked', true);
+        });
+
+        topicState.prev_loading_start = 0;
+      });
+
+    }).catch(err => {
+      if (err.code !== N.io.NOT_FOUND) {
+        N.wire.emit('error', err);
+        return;
+      }
+
+      // Topic moved or deleted, refreshing the page so user could
+      // see the error
+      //
+      N.wire.emit('navigate.reload');
+    });
   }
 
-  // disable automatic scroll to an anchor in the navigator
-  data.no_scroll = true;
+  function load_next_page() {
+    let now = Date.now();
+
+    // `next_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(topicState.next_loading_start - now) < LOAD_AFTER_ERROR) return;
+
+    topicState.next_loading_start = now;
+
+    let hid = $('.forum-post:last').data('post-hid');
+
+    // No posts on the page
+    if (!hid) return;
+
+    // If the last post on the page is visible, no need to scroll further.
+    //
+    if (hid >= topicState.max_post) return;
+
+    N.io.rpc('forum.topic.list.by_range', {
+      topic_hid: topicState.topic_hid,
+      post_hid:  hid + 1,
+      before:    0,
+      after:     LOAD_POSTS_COUNT
+    }).then(res => {
+      topicState.post_count = res.topic.cache.post_count;
+
+      if (res.max_post && res.max_post !== topicState.max_post) {
+        topicState.max_post = res.max_post;
+
+        N.wire.emit('forum.topic.blocks.page_progress:update', {
+          max: topicState.max_post
+        });
+      }
+
+      if (!res.posts || !res.posts.length) return;
+
+      res.pagination = {
+        // used in paginator
+        total:        topicState.post_count,
+        per_page:     N.runtime.page_data.pagination.per_page,
+        chunk_offset: topicState.last_post_offset + 1
+      };
+
+      topicState.last_post_offset += res.posts.length;
+
+      // render & inject posts list
+      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
+
+      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
+        $('.forum-postlist > :last').after($result);
+
+        // Update selection state
+        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
+          $(`#post${postId}`)
+            .addClass('forum-post__m-selected')
+            .find('.forum-post__select-cb')
+            .prop('checked', true);
+        });
+
+        topicState.next_loading_start = 0;
+      });
+
+    }).catch(err => {
+      if (err.code !== N.io.NOT_FOUND) {
+        N.wire.emit('error', err);
+        return;
+      }
+
+      // Topic moved or deleted, refreshing the page so user could
+      // see the error
+      //
+      N.wire.emit('navigate.reload');
+    });
+  }
+
+  // If we're browsing one of the first/last 3 posts, load more pages from
+  // the server in that direction.
+  //
+  // This method is synchronous, so rpc requests won't delay progress bar
+  // updates.
+  //
+  prefetchScrollHandler = _.debounce(function prefetch_on_scroll() {
+    let posts         = document.getElementsByClassName('forum-post'),
+        viewportStart = $window.scrollTop() + navbarHeight,
+        viewportEnd   = $window.scrollTop() + $window.height();
+
+    if (posts.length <= LOAD_BORDER_SIZE || posts[posts.length - LOAD_BORDER_SIZE].offsetTop < viewportEnd) {
+      load_next_page();
+    }
+
+    if (posts.length <= LOAD_BORDER_SIZE || posts[LOAD_BORDER_SIZE].offsetTop > viewportStart) {
+      load_prev_page();
+    }
+  }, LOAD_INTERVAL, { maxWait: LOAD_INTERVAL });
+
+
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', prefetchScrollHandler);
+  }, 1);
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function prefetcher_teardown() {
+  if (!prefetchScrollHandler) return;
+  prefetchScrollHandler.cancel();
+  $window.off('scroll', prefetchScrollHandler);
+  prefetchScrollHandler = null;
 });
 
 
 /////////////////////////////////////////////////////////////////////
-// Show/hide navbar when user scrolls the page,
-// and generate debounced "scroll" event
+// When user scrolls the page:
 //
-N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
-  scrollHandler = _.debounce(function update_location_on_scroll() {
-    let viewportStart = $(window).scrollTop() + navbarHeight;
+//  1. update progress bar
+//  2. show/hide navbar
+//
+let progressScrollHandler = null;
+
+N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
+  progressScrollHandler = _.debounce(function update_progress_on_scroll() {
+    let viewportStart = $window.scrollTop() + navbarHeight;
 
     // If we scroll below top border of the first post,
     // show the secondary navbar
@@ -112,18 +339,109 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
       $('.navbar').removeClass('navbar__m-secondary');
     }
 
-    N.wire.emit('forum.topic:scroll').catch(err => {
+    //
+    // Update location and progress bar
+    //
+    let posts         = document.getElementsByClassName('forum-post'),
+        postThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        currentIdx;
+
+    // Get offset of the first post in the viewport
+    //
+    currentIdx = _.sortedIndexBy(posts, null, post => {
+      if (!post) return postThreshold;
+      return post.offsetTop + $(post).height();
+    });
+
+    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
+
+    N.wire.emit('forum.topic.blocks.page_progress:update', {
+      current: $(posts[currentIdx]).data('post-hid'),
+      max:     topicState.max_post
+    }).catch(err => {
       N.wire.emit('error', err);
     });
   }, 100, { maxWait: 100 });
 
-  $(window).on('scroll', scrollHandler);
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', progressScrollHandler);
+  }, 1);
+
+
+  // execute it once on page load
+  progressScrollHandler();
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
-  scrollHandler.cancel();
-  $(window).off('scroll', scrollHandler);
-  scrollHandler = null;
+  progressScrollHandler.cancel();
+  $window.off('scroll', progressScrollHandler);
+  progressScrollHandler = null;
+});
+
+
+/////////////////////////////////////////////////////////////////////
+// Change URL when user scrolls the page
+//
+// Use a separate debouncer that only fires when user stops scrolling,
+// so it's executed a lot less frequently.
+//
+// The reason is that `history.replaceState` is very slow in FF
+// on large pages: https://bugzilla.mozilla.org/show_bug.cgi?id=1250972
+//
+let locationScrollHandler = null;
+
+N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
+  locationScrollHandler = _.debounce(function update_location_on_scroll() {
+    let posts         = document.getElementsByClassName('forum-post'),
+        postThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        newHid,
+        currentIdx;
+
+    // Get offset of the first post in the viewport
+    //
+    currentIdx = _.sortedIndexBy(posts, null, post => {
+      if (!post) return postThreshold;
+      return post.offsetTop + $(post).height();
+    });
+
+    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
+
+    newHid = $(posts[currentIdx]).data('post-hid');
+
+    let href = null;
+    let state = {
+      hid:    newHid,
+      offset: postThreshold - posts[currentIdx].offsetTop
+    };
+
+    // save current hid to topicState, and only update url if hid is different,
+    // it protects url like /f1/topic23/page4 from being overwritten instantly
+    if (topicState.post_hid !== newHid) {
+      topicState.post_hid = newHid;
+
+      href = N.router.linkTo('forum.topic', {
+        section_hid:  topicState.section_hid,
+        topic_hid:    topicState.topic_hid,
+        post_hid:     topicState.post_hid
+      });
+    }
+
+    N.wire.emit('navigate.replace', { href, state })
+          .catch(err => N.wire.emit('error', err));
+
+  }, 500);
+
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', locationScrollHandler);
+  }, 1);
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
+  locationScrollHandler.cancel();
+  $window.off('scroll', locationScrollHandler);
+  locationScrollHandler = null;
 });
 
 
@@ -503,258 +821,25 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Whenever we are close to beginning/end of post list, check if we can
-  // load more pages from the server
+  // User presses "home" button
   //
-
-  // an amount of posts we try to load when user scrolls to the end of the page
-  let LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
-
-  // an amount of time between successful xhr requests and failed xhr requests respectively
-  //
-  // For example, suppose user continuously scrolls. If server is up, each
-  // subsequent request will be sent each 500 ms. If server goes down, the
-  // interval between request initiations goes up to 2000 ms.
-  //
-  let LOAD_INTERVAL = 500;
-  let LOAD_AFTER_ERROR = 2000;
-
-  // an amount of posts from top/bottom that triggers prefetch in that direction
-  let LOAD_BORDER_SIZE = 3;
-
-  function _load_prev_page() {
-    let now = Date.now();
-
-    // `prev_loading_start` is the last request start time, which is reset to 0 on success
-    //
-    // Thus, successful requests can restart immediately, but failed ones
-    // will have to wait `LOAD_AFTER_ERROR` ms.
-    //
-    if (Math.abs(topicState.prev_loading_start - now) < LOAD_AFTER_ERROR) { return; }
-
-    topicState.prev_loading_start = now;
-
+  N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
     let hid = $('.forum-post:first').data('post-hid');
 
-    // No posts on the page
-    if (!hid) return;
-
-    // If the first post on the page is hid=1, it's a first page,
-    // so we don't need to load anything
-    //
-    // This is sufficient because post with hid=1 always exists.
-    //
-    if (hid <= 1) return;
-
-    N.io.rpc('forum.topic.list.by_range', {
-      topic_hid: topicState.topic_hid,
-      post_hid:  hid - 1,
-      before:    LOAD_POSTS_COUNT,
-      after:     0
-    }).then(res => {
-      topicState.post_count = res.topic.cache.post_count;
-
-      if (res.max_post && res.max_post !== topicState.max_post) {
-        topicState.max_post = res.max_post;
-
-        N.wire.emit('forum.topic.blocks.page_progress:update', {
-          max: topicState.max_post
-        });
-      }
-
-      if (!res.posts || !res.posts.length) return;
-
-      let old_height = $('.forum-postlist').height();
-
-      topicState.first_post_offset -= res.posts.length;
-
-      res.pagination = {
-        // used in paginator
-        total:        topicState.post_count,
-        per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: topicState.first_post_offset
-      };
-
-      // render & inject posts list
-      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
-        $('.forum-postlist > :first').before($result);
-
-        // update scroll so it would point at the same spot as before
-        $(window).scrollTop($(window).scrollTop() + $('.forum-postlist').height() - old_height);
-
-        // Update selection state
-        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
-          $(`#post${postId}`)
-            .addClass('forum-post__m-selected')
-            .find('.forum-post__select-cb')
-            .prop('checked', true);
-        });
-
-        topicState.prev_loading_start = 0;
-      });
-
-    }).catch(err => {
-      if (err.code !== N.io.NOT_FOUND) {
-        N.wire.emit('error', err);
-        return;
-      }
-
-      // Topic moved or deleted, refreshing the page so user could
-      // see the error
-      //
-      N.wire.emit('navigate.reload');
-    });
-  }
-
-  function _load_next_page() {
-    let now = Date.now();
-
-    // `next_loading_start` is the last request start time, which is reset to 0 on success
-    //
-    // Thus, successful requests can restart immediately, but failed ones
-    // will have to wait `LOAD_AFTER_ERROR` ms.
-    //
-    if (Math.abs(topicState.next_loading_start - now) < LOAD_AFTER_ERROR) { return; }
-
-    topicState.next_loading_start = now;
-
-    let hid = $('.forum-post:last').data('post-hid');
-
-    // No posts on the page
-    if (!hid) return;
-
-    // If the last post on the page is visible, no need to scroll further.
-    //
-    if (hid >= topicState.max_post) return;
-
-    N.io.rpc('forum.topic.list.by_range', {
-      topic_hid: topicState.topic_hid,
-      post_hid:  hid + 1,
-      before:    0,
-      after:     LOAD_POSTS_COUNT
-    }).then(res => {
-      topicState.post_count = res.topic.cache.post_count;
-
-      if (res.max_post && res.max_post !== topicState.max_post) {
-        topicState.max_post = res.max_post;
-
-        N.wire.emit('forum.topic.blocks.page_progress:update', {
-          max: topicState.max_post
-        });
-      }
-
-      if (!res.posts || !res.posts.length) return;
-
-      res.pagination = {
-        // used in paginator
-        total:        topicState.post_count,
-        per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: topicState.last_post_offset + 1
-      };
-
-      topicState.last_post_offset += res.posts.length;
-
-      // render & inject posts list
-      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
-        $('.forum-postlist > :last').after($result);
-
-        // Update selection state
-        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
-          $(`#post${postId}`)
-            .addClass('forum-post__m-selected')
-            .find('.forum-post__select-cb')
-            .prop('checked', true);
-        });
-
-        topicState.next_loading_start = 0;
-      });
-
-    }).catch(err => {
-      if (err.code !== N.io.NOT_FOUND) {
-        N.wire.emit('error', err);
-        return;
-      }
-
-      // Topic moved or deleted, refreshing the page so user could
-      // see the error
-      //
-      N.wire.emit('navigate.reload');
-    });
-  }
-
-  let load_prev_page = _.debounce(_load_prev_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
-  let load_next_page = _.debounce(_load_next_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
-
-  // If we're browsing one of the first/last 3 posts, load more pages from
-  // the server in that direction.
-  //
-  // This method is synchronous, so rpc requests won't delay progress bar
-  // updates.
-  //
-  N.wire.on(module.apiPath + ':scroll', function check_load_more_pages() {
-    let posts         = $('.forum-post'),
-        viewportStart = $(window).scrollTop() + navbarHeight,
-        viewportEnd   = $(window).scrollTop() + $(window).height();
-
-    if (posts.length <= LOAD_BORDER_SIZE || $(posts[posts.length - LOAD_BORDER_SIZE]).offset().top < viewportEnd) {
-      load_next_page();
+    // if the first post is already loaded, scroll to the top
+    if (hid <= 1) {
+      $window.scrollTop(0);
+      return;
     }
 
-    if (posts.length <= LOAD_BORDER_SIZE || $(posts[LOAD_BORDER_SIZE]).offset().top > viewportStart) {
-      load_prev_page();
-    }
-  });
-
-
-  // Update location and progress bar
-  //
-  N.wire.on(module.apiPath + ':scroll', function update_progress() {
-    let posts         = $('.forum-post'),
-        viewportStart = $(window).scrollTop() + navbarHeight + toolbarHeight,
-        newHid,
-        currentIdx;
-
-    // Get offset of the first post in the viewport
-    //
-    currentIdx = _.sortedIndexBy(posts, null, post => {
-      if (!post) return viewportStart;
-      return $(post).offset().top + $(post).height();
-    });
-
-    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
-
-    newHid = $(posts[currentIdx]).data('post-hid');
-
-    let href = null;
-    let state = {
-      hid:    newHid,
-      offset: viewportStart - $(posts[currentIdx]).offset().top
-    };
-
-    // save current hid to topicState, and only update url if hid is different,
-    // it protects url like /f1/topic23/page4 from being overwritten instantly
-    if (topicState.post_hid !== newHid) {
-      topicState.post_hid = newHid;
-
-      href = N.router.linkTo('forum.topic', {
+    return N.wire.emit('navigate.to', {
+      apiPath: 'forum.topic',
+      params: {
         section_hid:  topicState.section_hid,
         topic_hid:    topicState.topic_hid,
-        post_hid:     topicState.post_hid
-      });
-    }
-
-    return N.wire.emit('navigate.replace', {
-      href,
-      state
-    }).then(() => N.wire.emit('forum.topic.blocks.page_progress:update', {
-      current: topicState.post_hid,
-      max:     topicState.max_post
-    }));
+        post_hid:     1
+      }
+    });
   });
 
 
@@ -777,28 +862,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // User presses "home" button
-  //
-  N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
-    let hid = $('.forum-post:first').data('post-hid');
-
-    // if the first post is already loaded, scroll to the top
-    if (hid <= 1) {
-      $(window).scrollTop(0);
-      return;
-    }
-
-    return N.wire.emit('navigate.to', {
-      apiPath: 'forum.topic',
-      params: {
-        section_hid:  topicState.section_hid,
-        topic_hid:    topicState.topic_hid,
-        post_hid:     1
-      }
-    });
-  });
-
-
   // User presses "end" button
   //
   N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
@@ -806,7 +869,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     // if the last post is already loaded, scroll to the bottom
     if (hid >= topicState.max_post) {
-      $(window).scrollTop($('.forum-post:last').offset().top - navbarHeight);
+      $window.scrollTop($('.forum-post:last').offset().top - navbarHeight);
       return;
     }
 
@@ -846,7 +909,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
       }
     }));
 
-  let viewportStart = $(window).scrollTop() + navbarHeight;
+  let viewportStart = $window.scrollTop() + navbarHeight;
 
   // If we scroll below top border of the first post,
   // show the secondary navbar
@@ -960,7 +1023,6 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
   let lastRead = -1;
 
   scrollPositionTracker = _.debounce(function () {
-    let $window = $(window);
     let viewportStart = $window.scrollTop() + navbarHeight;
     let viewportEnd = $window.scrollTop() + $window.height();
     let $posts = $('.forum-post');
@@ -1020,10 +1082,10 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     });
   }, 300, { maxWait: 300 });
 
-  // TODO: this handler may emit ':scroll' event immediately after page load
-  //       because of $(window).scrollTop() in the handler above,
-  //       maybe wrap it with setTimeout(..., 1) to avoid it
-  $(window).on('scroll', scrollPositionTracker);
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', scrollPositionTracker);
+  }, 1);
 });
 
 
@@ -1039,7 +1101,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teard
     scrollPositionTracker.cancel();
   }
 
-  $(window).off('scroll', scrollPositionTracker);
+  $window.off('scroll', scrollPositionTracker);
   scrollPositionTracker = null;
 });
 
