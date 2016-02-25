@@ -6,6 +6,7 @@ en-US:
   undelete_topic_done: Topic undeleted
   pin_topic_done: Topic pinned
   unpin_topic_done: Topic unpinned
+  move_topic_done: Topic moved
   open_topic_done: Topic opened
   close_topic_done: Topic closed
 

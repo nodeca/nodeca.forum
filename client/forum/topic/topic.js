@@ -286,6 +286,28 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Move topic
+  //
+  N.wire.on(module.apiPath + ':move', function topic_move(data) {
+    let topicHid = data.$this.data('topic-hid');
+    let params = { section_hid_from: topicState.section_hid };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('forum.topic.topic_move_dlg', params))
+      .then(() => {
+        let request = {
+          section_hid_from: params.section_hid_from,
+          section_hid_to: params.section_hid_to,
+          topic_hid: topicHid
+        };
+
+        return N.io.rpc('forum.topic.move', request);
+      })
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('move_topic_done') }))
+      .then(() => N.wire.emit('navigate.reload'));
+  });
+
+
   // Close/open topic handler
   //
   N.wire.on(module.apiPath + '.close', function topic_close(data) {

@@ -1,4 +1,4 @@
-// Popup dialog to move many topics
+// Popup dialog to move topics
 //
 // options:
 //
@@ -20,7 +20,7 @@ N.wire.once(module.apiPath, function init_handlers() {
 
   // Submit button handler
   //
-  N.wire.on(module.apiPath + ':submit', function submit_topic_move_many_dlg(form) {
+  N.wire.on(module.apiPath + ':submit', function submit_topic_move_dlg(form) {
     params.section_hid_to = +form.fields.section_hid;
     result = params;
     $dialog.modal('hide');
@@ -39,10 +39,10 @@ N.wire.once(module.apiPath, function init_handlers() {
 
 // Init dialog
 //
-N.wire.on(module.apiPath, function show_topic_move_many_dlg(options) {
+N.wire.on(module.apiPath, function show_topic_move_dlg(options) {
   params = options;
 
-  return N.io.rpc('forum.section.topic.move_many.sections', { section_hid: params.section_hid_from }).then(res => {
+  return N.io.rpc('forum.topic.move.sections', { section_hid: params.section_hid_from }).then(res => {
     $dialog = $(N.runtime.render(module.apiPath, _.assign({ apiPath: module.apiPath }, params, res)));
 
     $('body').append($dialog);

@@ -3,8 +3,8 @@ mixin sections_tree(sections, deepness)
 
     - var prefix = Array(deepness).join('\u2003\u2003');
 
-    option.topic-move-many__section(
-      class=self.section_hid_from === section.hid ? 'topic-move-many-section__m-current' : ''
+    option.topic-move__section(
+      class=self.section_hid_from === section.hid ? 'topic-move-section__m-current' : ''
       disabled=section.is_category
       value=section.hid
       selected=(self.section_hid_from === section.hid)

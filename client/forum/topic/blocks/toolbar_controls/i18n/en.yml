@@ -4,6 +4,7 @@ en-US:
   open: Open
   pin: Pin
   unpin: Unpin
+  move: Move
   history: History
   delete: Delete
   undelete: Undelete

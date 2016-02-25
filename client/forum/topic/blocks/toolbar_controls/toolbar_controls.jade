@@ -43,6 +43,9 @@ if self.settings.forum_mod_can_pin_topic
   if self.topic.st === topicStatuses.OPEN || self.topic.st === topicStatuses.CLOSED
     - items.push('mod_pin')
 
+if self.settings.forum_mod_can_delete_topics
+  - items.push('mod_move')
+
 //- If last item is header - remove it
 if items.length > 0 && items[items.length - 1] === 'header'
   - items.pop()
@@ -185,6 +188,12 @@ if (self.selected_cnt !== 0)
                 data-topic-hid=self.topic.hid
                 data-unpin='true'
               )=self.t('unpin')
+
+            when 'mod_move'
+              li: a(href='#'
+                data-on-click='forum.topic:move'
+                data-topic-hid=self.topic.hid
+              )=self.t('move')
 
             when 'many_header'
               li.dropdown-header=self.t('many_header', { count: self.selected_cnt })
