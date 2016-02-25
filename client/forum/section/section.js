@@ -7,13 +7,13 @@ const _ = require('lodash');
 // Section state
 //
 // - hid:                current section hid
-// - current_offset:     offset of the first topic in the viewport
+// - first_offset:       offset of the first topic in the DOM
+// - current_offset:     offset of the current topic (first in the viewport)
 // - max_page:           a number of the last page in this section
-// - topics_per_page:    an amount of topics on a single page
 // - reached_start:      true iff no more pages exist above first loaded one
 // - reached_end:        true iff no more pages exist below last loaded one
-// - first_post_id       id of the last post in the first loaded topic
-// - last_post_id        id of the last post in the last loaded topic
+// - first_post_id:      id of the last post in the first loaded topic
+// - last_post_id:       id of the last post in the last loaded topic
 // - prev_loading_start: time when current xhr request for the previous page is started
 // - next_loading_start: time when current xhr request for the next page is started
 // - selected_topics:    array of selected topics in current topic
@@ -36,12 +36,12 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
       last_topic_hid = $('.forum-section-root').data('last-topic-hid');
 
   sectionState.hid                = data.params.section_hid;
-  sectionState.current_offset     = pagination.chunk_offset;
-  sectionState.max_page           = Math.ceil(pagination.total / pagination.per_page) || 1;
-  sectionState.topics_per_page    = pagination.per_page;
+  sectionState.first_offset       = pagination.chunk_offset;
+  sectionState.current_offset     = -1;
+  sectionState.topic_count        = pagination.total;
   sectionState.first_post_id      = $('.forum-section-root').data('first-post-id');
   sectionState.last_post_id       = $('.forum-section-root').data('last-post-id');
-  sectionState.reached_start      = (sectionState.current_offset === 0) || !sectionState.first_post_id;
+  sectionState.reached_start      = (sectionState.first_offset === 0) || !sectionState.first_post_id;
   sectionState.reached_end        = (last_topic_hid === $('.forum-topicline:last').data('topic-hid')) ||
                                     !sectionState.last_post_id;
   sectionState.prev_loading_start = 0;
@@ -246,22 +246,21 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
 
       if (res.topics.length === 0) return;
 
-      sectionState.first_post_id = res.topics[0].cache.last_post;
-
-      res.pagination = {
-        total:        N.runtime.page_data.pagination.total,
-        per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: $('.forum-topiclist > :first').data('offset') - res.topics.length
-      };
+      // remove duplicate topics
+      res.topics.forEach(topic => $(`#topic${topic.hid}`).remove());
 
       let old_height = $('.forum-topiclist').height();
 
       // render & inject topics list
       let $result = $(N.runtime.render('forum.blocks.topics_list', res));
-      $('.forum-topiclist > :first').before($result);
+      $('.forum-topiclist').prepend($result);
 
       // update scroll so it would point at the same spot as before
       $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
+
+      sectionState.first_post_id = res.topics[0].cache.last_post;
+      sectionState.first_offset  = res.pagination.chunk_offset;
+      sectionState.topic_count   = res.pagination.total;
 
       // Update selection state
       _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
@@ -282,6 +281,10 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       }
 
       sectionState.prev_loading_start = 0;
+
+      return N.wire.emit('forum.section.blocks.page_progress:update', {
+        max: sectionState.topic_count
+      });
     }).catch(err => {
       N.wire.emit('error', err);
     });
@@ -315,17 +318,21 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
 
       if (res.topics.length === 0) return;
 
-      sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
+      let old_height = $('.forum-topiclist').height();
 
-      res.pagination = {
-        total:        N.runtime.page_data.pagination.total,
-        per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: $('.forum-topiclist > :last').data('offset') + 1
-      };
+      // remove duplicate topics
+      res.topics.forEach(topic => $(`#topic${topic.hid}`).remove());
+
+      // update scroll so it would point at the same spot as before
+      $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
+
+      sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
+      sectionState.first_offset = res.pagination.chunk_offset - $('.forum-topicline').length;
+      sectionState.topic_count  = res.pagination.total;
 
       // render & inject topics list
       let $result = $(N.runtime.render('forum.blocks.topics_list', res));
-      $('.forum-topiclist > :last').after($result);
+      $('.forum-topiclist').append($result);
 
       // Update selection state
       _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
@@ -346,6 +353,10 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       }
 
       sectionState.next_loading_start = 0;
+
+      return N.wire.emit('forum.section.blocks.page_progress:update', {
+        max: sectionState.topic_count
+      });
     }).catch(err => {
       N.wire.emit('error', err);
     });
@@ -424,13 +435,12 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     currentIdx--;
 
     if (currentIdx >= 0 && topics.length) {
-      offset = $(topics[currentIdx]).data('offset') + 1;
+      offset = currentIdx + sectionState.first_offset;
     }
 
     N.wire.emit('forum.section.blocks.page_progress:update', {
-      current: offset,
-      max: N.runtime.page_data.pagination.total,
-      per_page: N.runtime.page_data.pagination.per_page
+      current:  offset,
+      max:      sectionState.topic_count
     }).catch(err => {
       N.wire.emit('error', err);
     });
@@ -487,7 +497,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     let state = null;
 
     if (currentIdx >= 0 && topics.length) {
-      offset = $(topics[currentIdx]).data('offset') + 1;
+      offset = currentIdx + sectionState.first_offset;
 
       state = {
         hid:    $(topics[currentIdx]).data('topic-hid'),
@@ -545,8 +555,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
 
       page_progress: {
         current:        sectionState.current_offset,
-        max:            N.runtime.page_data.pagination.total,
-        per_page:       N.runtime.page_data.pagination.per_page,
+        max:            sectionState.topic_count,
         last_topic_hid: $('.forum-section-root').data('last-topic-hid')
       }
     }));

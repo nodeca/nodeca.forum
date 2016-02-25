@@ -23,7 +23,6 @@ each topic, idx in self.topics
     class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
     class=(self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1) ? 'forum-topicline__m-unread' : ''
     class=(self.read_marks[topic._id].isNew) ? 'forum-topicline__m-new' : ''
-    data-offset=(self.pagination.chunk_offset + idx)
     data-topic-hid=topic.hid
     id='topic' + topic.hid
   )

@@ -107,4 +107,52 @@ module.exports = function (N, apiPath) {
       }
     }
   });
+
+
+  // Fetch pagination
+  //
+  N.wire.after(apiPath, function* fetch_pagination(env) {
+    let topics_per_page = yield env.extras.settings.fetch('topics_per_page');
+
+    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+
+    //
+    // Count total amount of visible topics in the section
+    //
+    let counters_by_status = yield statuses.map(
+      st => N.models.forum.Topic
+                .where('section').equals(env.data.section._id)
+                .where('st').equals(st)
+                .count()
+    );
+
+    let topic_count = _.sum(counters_by_status);
+
+    //
+    // Count an amount of visible topics before the first one
+    //
+    let topic_offset = 0;
+
+    // if first topic is pinned, it's a first page and topic_offset is zero
+    if (env.data.topics.length && env.data.topics[0].st !== N.models.forum.Topic.statuses.PINNED) {
+      let cache        = env.user_info.hb ? 'cache_hb' : 'cache';
+      let last_post_id = env.data.topics[0][cache].last_post;
+
+      let counters_by_status = yield statuses.map(
+        st => N.models.forum.Topic
+                  .where(`${cache}.last_post`).gt(last_post_id)
+                  .where('section').equals(env.data.section._id)
+                  .where('st').equals(st)
+                  .count()
+      );
+
+      topic_offset = _.sum(counters_by_status);
+    }
+
+    env.res.pagination = {
+      total:        topic_count,
+      per_page:     topics_per_page,
+      chunk_offset: topic_offset
+    };
+  });
 };
