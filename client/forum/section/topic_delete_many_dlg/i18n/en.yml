@@ -1,5 +1,5 @@
 en-US:
-  title: Delete many topics
+  title: Delete selected topics
   confirmation_text: Are you sure you want to delete topics?
   reason_input_help: Deletion reason
   ok: OK

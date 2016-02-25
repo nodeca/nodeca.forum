@@ -1,9 +1,11 @@
 mixin sections_tree(sections, deepness)
   each section in sections
 
-    - var prefix = '| ' + Array(deepness).join('-') + ' ';
+    - var prefix = Array(deepness).join('\u2003\u2003');
 
-    option(
+    option.topic-move-many__section(
+      class=self.section_hid_from === section.hid ? 'topic-move-many-section__m-current' : ''
+      disabled=section.is_category
       value=section.hid
       selected=(self.section_hid_from === section.hid)
     )=prefix + section.title
@@ -19,7 +21,6 @@ mixin sections_tree(sections, deepness)
           button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
           h4.modal-title=self.t('title')
         .modal-body
-          p.text-danger=self.t('confirmation_text')
           label= self.t('section_input_name')
           select.form-control(name='section_hid' tabindex='1')
             mixin sections_tree(self.sections, 1)

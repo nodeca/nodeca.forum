@@ -1,5 +1,5 @@
 en-US:
-  title: Delete many posts
+  title: Delete selected posts
   confirmation_text: Are you sure you want to delete posts?
   reason_input_help: Deletion reason
   ok: OK
