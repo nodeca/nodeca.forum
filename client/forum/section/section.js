@@ -20,6 +20,8 @@ const _ = require('lodash');
 //
 let sectionState = {};
 
+let $window = $(window);
+
 let navbarHeight = $('.navbar').height();
 
 // offset between navbar and the first topic
@@ -60,7 +62,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     el = $(anchor);
 
     if (el.length && el.hasClass('forum-section')) {
-      $(window).scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET);
+      $window.scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET);
       el.addClass('forum-section__m-highlight');
       return;
     }
@@ -69,7 +71,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     el = $('#topic' + data.state.hid);
 
     if (el.length) {
-      $(window).scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET + data.state.offset);
+      $window.scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET + data.state.offset);
       return;
     }
 
@@ -77,7 +79,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     el = $('#topic' + data.params.topic_hid);
 
     if (el.length) {
-      $(window).scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET);
+      $window.scrollTop(el.offset().top - $('.navbar').height() - TOP_OFFSET);
       el.addClass('forum-topicline__m-highlight');
       return;
     }
@@ -88,10 +90,10 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   // otherwise, scroll to the first topic on that page
   //
   if (pagination.chunk_offset > 1 && $('.forum-topiclist').length) {
-    $(window).scrollTop($('.forum-topiclist').offset().top - navbarHeight);
+    $window.scrollTop($('.forum-topiclist').offset().top - navbarHeight);
 
   } else {
-    $(window).scrollTop(0);
+    $window.scrollTop(0);
   }
 });
 
@@ -159,7 +161,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
     // if the first topic is already loaded, scroll to the top
     if (sectionState.reached_start) {
-      $(window).scrollTop(0);
+      $window.scrollTop(0);
       return;
     }
 
@@ -176,7 +178,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
     if (sectionState.reached_end) {
-      $(window).scrollTop($(document).height());
+      $window.scrollTop($(document).height());
       return;
     }
 
@@ -188,12 +190,17 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       }
     });
   });
+});
 
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Whenever we are close to beginning/end of topic list, check if we can
-  // load more pages from the server
-  //
+///////////////////////////////////////////////////////////////////////////
+// Whenever we are close to beginning/end of topic list, check if we can
+// load more pages from the server
+//
+let prefetchScrollHandler = null;
+
+N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
+  if ($('.forum-topiclist').length === 0) { return; }
 
   // an amount of topics we try to load when user scrolls to the end of the page
   const LOAD_TOPICS_COUNT = N.runtime.page_data.pagination.per_page;
@@ -210,8 +217,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // an amount of topics from top/bottom that triggers prefetch in that direction
   const LOAD_BORDER_SIZE = 10;
 
+  function load_prev_page() {
+    if (sectionState.reached_start) return;
 
-  function _load_prev_page() {
     let now = Date.now();
 
     // `prev_loading_start` is the last request start time, which is reset to 0 on success
@@ -219,7 +227,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     // Thus, successful requests can restart immediately, but failed ones
     // will have to wait `LOAD_AFTER_ERROR` ms.
     //
-    if (Math.abs(sectionState.prev_loading_start - now) < LOAD_AFTER_ERROR) { return; }
+    if (Math.abs(sectionState.prev_loading_start - now) < LOAD_AFTER_ERROR) return;
 
     sectionState.prev_loading_start = now;
 
@@ -253,7 +261,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       $('.forum-topiclist > :first').before($result);
 
       // update scroll so it would point at the same spot as before
-      $(window).scrollTop($(window).scrollTop() + $('.forum-topiclist').height() - old_height);
+      $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
 
       // Update selection state
       _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
@@ -279,7 +287,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     });
   }
 
-  function _load_next_page() {
+  function load_next_page() {
+    if (sectionState.reached_end) return;
+
     let now = Date.now();
 
     // `next_loading_start` is the last request start time, which is reset to 0 on success
@@ -287,7 +297,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     // Thus, successful requests can restart immediately, but failed ones
     // will have to wait `LOAD_AFTER_ERROR` ms.
     //
-    if (Math.abs(sectionState.next_loading_start - now) < LOAD_AFTER_ERROR) { return; }
+    if (Math.abs(sectionState.next_loading_start - now) < LOAD_AFTER_ERROR) return;
 
     sectionState.next_loading_start = now;
 
@@ -341,71 +351,51 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     });
   }
 
-  let load_prev_page = _.debounce(_load_prev_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
-  let load_next_page = _.debounce(_load_next_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
-
-  // If we're browsing one of the first/last 5 topics, load more pages from
+  // If we're browsing one of the first/last 10 topics, load more pages from
   // the server in that direction.
   //
-  // This method is synchronous, so rpc requests won't delay progress bar
-  // updates.
-  //
-  N.wire.on(module.apiPath + ':scroll', function check_load_more_pages() {
-    let topics        = $('.forum-topicline'),
-        viewportStart = $(window).scrollTop() + navbarHeight,
-        viewportEnd   = $(window).scrollTop() + $(window).height();
+  prefetchScrollHandler = _.debounce(function prefetch_on_scroll() {
+    let topics        = document.getElementsByClassName('forum-topicline'),
+        viewportStart = $window.scrollTop() + navbarHeight,
+        viewportEnd   = $window.scrollTop() + $window.height();
 
-    if (topics.length <= LOAD_BORDER_SIZE || $(topics[topics.length - LOAD_BORDER_SIZE]).offset().top < viewportEnd) {
+    if (topics.length <= LOAD_BORDER_SIZE || topics[topics.length - LOAD_BORDER_SIZE].offsetTop < viewportEnd) {
       load_next_page();
     }
 
-    if (topics.length <= LOAD_BORDER_SIZE || $(topics[LOAD_BORDER_SIZE]).offset().top > viewportStart) {
+    if (topics.length <= LOAD_BORDER_SIZE || topics[LOAD_BORDER_SIZE].offsetTop > viewportStart) {
       load_prev_page();
     }
-  });
+  }, LOAD_INTERVAL, { maxWait: LOAD_INTERVAL });
 
 
-  // Update progress bar
-  //
-  N.wire.on(module.apiPath + ':scroll', function update_progress() {
-    let topics         = $('.forum-topicline'),
-        topicThreshold = $(window).scrollTop() + navbarHeight + TOP_OFFSET,
-        offset         = 0,
-        currentIdx;
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', prefetchScrollHandler);
+  }, 1);
+});
 
-    // Get offset of the first topic in the viewport
-    //
-    currentIdx = _.sortedIndexBy(topics, null, topic => {
-      if (!topic) { return topicThreshold; }
-      return $(topic).offset().top;
-    });
-
-    currentIdx--;
-
-    if (currentIdx >= 0 && topics.length) {
-      offset = $(topics[currentIdx]).data('offset') + 1;
-    }
-
-    return N.wire.emit('forum.section.blocks.page_progress:update', {
-      current: offset,
-      max: N.runtime.page_data.pagination.total,
-      per_page: N.runtime.page_data.pagination.per_page
-    });
-  });
+N.wire.on('navigate.exit:' + module.apiPath, function prefetcher_teardown() {
+  if (!prefetchScrollHandler) return;
+  prefetchScrollHandler.cancel();
+  $window.off('scroll', prefetchScrollHandler);
+  prefetchScrollHandler = null;
 });
 
 
 /////////////////////////////////////////////////////////////////////
-// Show/hide navbar when user scrolls the page,
-// and generate debounced "scroll" event
+// When user scrolls the page:
 //
-let scrollHandler = null;
+//  1. update progress bar
+//  2. show/hide navbar
+//
+let progressScrollHandler = null;
 
-N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
+N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
   if ($('.forum-topiclist').length === 0) { return; }
 
-  scrollHandler = _.debounce(function update_navbar_on_scroll() {
-    let viewportStart = $(window).scrollTop() + navbarHeight;
+  progressScrollHandler = _.debounce(function update_progress_on_scroll() {
+    let viewportStart = $window.scrollTop() + navbarHeight;
 
     // If we scroll below top border of the first topic,
     // show the secondary navbar
@@ -416,22 +406,51 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
       $('.navbar').removeClass('navbar__m-secondary');
     }
 
-    N.wire.emit('forum.section:scroll').catch(err => {
+    //
+    // Update progress bar
+    //
+    let topics         = document.getElementsByClassName('forum-topicline'),
+        topicThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        offset         = 0,
+        currentIdx;
+
+    // Get offset of the first topic in the viewport
+    //
+    currentIdx = _.sortedIndexBy(topics, null, topic => {
+      if (!topic) { return topicThreshold; }
+      return topic.offsetTop;
+    });
+
+    currentIdx--;
+
+    if (currentIdx >= 0 && topics.length) {
+      offset = $(topics[currentIdx]).data('offset') + 1;
+    }
+
+    N.wire.emit('forum.section.blocks.page_progress:update', {
+      current: offset,
+      max: N.runtime.page_data.pagination.total,
+      per_page: N.runtime.page_data.pagination.per_page
+    }).catch(err => {
       N.wire.emit('error', err);
     });
   }, 100, { maxWait: 100 });
 
-  // TODO: this handler may emit ':scroll' event immediately after page load
-  //       because of $(window).scrollTop() in the handler above,
-  //       maybe wrap it with setTimeout(..., 1) to avoid it
-  $(window).on('scroll', scrollHandler);
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', progressScrollHandler);
+  });
+
+
+  // execute it once on page load
+  progressScrollHandler();
 });
 
-N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
-  if (!scrollHandler) return;
-  scrollHandler.cancel();
-  $(window).off('scroll', scrollHandler);
-  scrollHandler = null;
+N.wire.on('navigate.exit:' + module.apiPath, function progress_updater_teardown() {
+  if (!progressScrollHandler) return;
+  progressScrollHandler.cancel();
+  $window.off('scroll', progressScrollHandler);
+  progressScrollHandler = null;
 });
 
 
@@ -450,8 +469,8 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
   if ($('.forum-topiclist').length === 0) { return; }
 
   locationScrollHandler = _.debounce(function update_location_on_scroll() {
-    let topics         = $('.forum-topicline'),
-        topicThreshold = $(window).scrollTop() + navbarHeight + TOP_OFFSET,
+    let topics         = document.getElementsByClassName('forum-topicline'),
+        topicThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
         offset         = 0,
         currentIdx;
 
@@ -459,7 +478,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     //
     currentIdx = _.sortedIndexBy(topics, null, topic => {
       if (!topic) { return topicThreshold; }
-      return $(topic).offset().top;
+      return topic.offsetTop;
     });
 
     currentIdx--;
@@ -472,40 +491,41 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
 
       state = {
         hid:    $(topics[currentIdx]).data('topic-hid'),
-        offset: topicThreshold - $(topics[currentIdx]).offset().top
+        offset: topicThreshold - topics[currentIdx].offsetTop
       };
     }
 
     // save current offset, and only update url if offset is different,
     // it protects url like /f1/topic23/page4 from being overwritten instantly
     if (sectionState.current_offset !== offset) {
-      sectionState.current_offset = offset;
-
       /* eslint-disable no-undefined */
       href = N.router.linkTo('forum.section', {
         section_hid: sectionState.hid,
         topic_hid:   currentIdx >= 0 ? $(topics[currentIdx]).data('topic-hid') : undefined
       });
-    }
 
-    if (currentIdx >= 0) {
-      if ($('meta[name="robots"]').length === 0) {
+      if (sectionState.current_offset <= 0 && offset > 0) {
         $('head').append($('<meta name="robots" content="noindex,follow">'));
+      } else if (sectionState.current_offset > 0 && offset <= 0) {
+        $('meta[name="robots"]').remove();
       }
-    } else {
-      $('meta[name="robots"]').remove();
+
+      sectionState.current_offset = offset;
     }
 
     N.wire.emit('navigate.replace', { href, state });
   }, 500);
 
-  $(window).on('scroll', locationScrollHandler);
+  // avoid executing it on first tick because of initial scrollTop()
+  setTimeout(function () {
+    $window.on('scroll', locationScrollHandler);
+  }, 1);
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function location_updater_teardown() {
   if (!locationScrollHandler) return;
   locationScrollHandler.cancel();
-  $(window).off('scroll', locationScrollHandler);
+  $window.off('scroll', locationScrollHandler);
   locationScrollHandler = null;
 });
 
@@ -530,22 +550,6 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
         last_topic_hid: $('.forum-section-root').data('last-topic-hid')
       }
     }));
-
-  let viewportStart = $(window).scrollTop() + navbarHeight;
-
-  // If we scroll below top border of the first topic,
-  // show the secondary navbar
-  //
-  if ($('.forum-topiclist').length && $('.forum-topiclist').offset().top < viewportStart) {
-    $('.navbar').addClass('navbar__m-secondary');
-  } else {
-    $('.navbar').removeClass('navbar__m-secondary');
-  }
-
-  // emit initial 'scroll' event, otherwise progress bar won't get updated
-  N.wire.emit('forum.section:scroll').catch(err => {
-    N.wire.emit('error', err);
-  });
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
