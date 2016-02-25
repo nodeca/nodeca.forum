@@ -10,17 +10,16 @@ const _ = require('lodash');
 // - current_offset:     offset of the first topic in the viewport
 // - max_page:           a number of the last page in this section
 // - topics_per_page:    an amount of topics on a single page
-// - prev_page_loading:  true iff request to auto-load previous page is in flight
-// - next_page_loading:  true iff request to auto-load next page is in flight
 // - reached_start:      true iff no more pages exist above first loaded one
 // - reached_end:        true iff no more pages exist below last loaded one
 // - first_post_id       id of the last post in the first loaded topic
 // - last_post_id        id of the last post in the last loaded topic
+// - prev_loading_start: time when current xhr request for the previous page is started
+// - next_loading_start: time when current xhr request for the next page is started
 // - selected_topics:    array of selected topics in current topic
 //
 let sectionState = {};
 
-let scrollHandler = null;
 let navbarHeight = $('.navbar').height();
 
 // offset between navbar and the first topic
@@ -34,18 +33,18 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   let pagination     = N.runtime.page_data.pagination,
       last_topic_hid = $('.forum-section-root').data('last-topic-hid');
 
-  sectionState.hid               = data.params.section_hid;
-  sectionState.current_offset    = pagination.chunk_offset;
-  sectionState.max_page          = Math.ceil(pagination.total / pagination.per_page) || 1;
-  sectionState.topics_per_page   = pagination.per_page;
-  sectionState.prev_page_loading = false;
-  sectionState.next_page_loading = false;
-  sectionState.first_post_id     = $('.forum-section-root').data('first-post-id');
-  sectionState.last_post_id      = $('.forum-section-root').data('last-post-id');
-  sectionState.reached_start     = (sectionState.current_offset === 0) || !sectionState.first_post_id;
-  sectionState.reached_end       = (last_topic_hid === $('.forum-topicline:last').data('topic-hid')) ||
-                                   !sectionState.last_post_id;
-  sectionState.selected_topics   = [];
+  sectionState.hid                = data.params.section_hid;
+  sectionState.current_offset     = pagination.chunk_offset;
+  sectionState.max_page           = Math.ceil(pagination.total / pagination.per_page) || 1;
+  sectionState.topics_per_page    = pagination.per_page;
+  sectionState.first_post_id      = $('.forum-section-root').data('first-post-id');
+  sectionState.last_post_id       = $('.forum-section-root').data('last-post-id');
+  sectionState.reached_start      = (sectionState.current_offset === 0) || !sectionState.first_post_id;
+  sectionState.reached_end        = (last_topic_hid === $('.forum-topicline:last').data('topic-hid')) ||
+                                    !sectionState.last_post_id;
+  sectionState.prev_loading_start = 0;
+  sectionState.next_loading_start = 0;
+  sectionState.selected_topics    = [];
 
   // disable automatic scroll to an anchor in the navigator
   data.no_scroll = true;
@@ -197,14 +196,32 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
 
   // an amount of topics we try to load when user scrolls to the end of the page
-  let LOAD_TOPICS_COUNT = N.runtime.page_data.pagination.per_page;
+  const LOAD_TOPICS_COUNT = N.runtime.page_data.pagination.per_page;
+
+  // an amount of time between successful xhr requests and failed xhr requests respectively
+  //
+  // For example, suppose user continuously scrolls. If server is up, each
+  // subsequent request will be sent each 100 ms. If server goes down, the
+  // interval between request initiations goes up to 2000 ms.
+  //
+  const LOAD_INTERVAL = 100;
+  const LOAD_AFTER_ERROR = 2000;
 
   // an amount of topics from top/bottom that triggers prefetch in that direction
-  let LOAD_BORDER_SIZE = 10;
+  const LOAD_BORDER_SIZE = 10;
+
 
   function _load_prev_page() {
-    if (sectionState.prev_page_loading || sectionState.reached_start) { return; }
-    sectionState.prev_page_loading = true;
+    let now = Date.now();
+
+    // `prev_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(sectionState.prev_loading_start - now) < LOAD_AFTER_ERROR) { return; }
+
+    sectionState.prev_loading_start = now;
 
     N.io.rpc('forum.section.list.by_range', {
       section_hid:   sectionState.hid,
@@ -256,16 +273,23 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $('head').append(link);
       }
 
-      sectionState.prev_page_loading = false;
+      sectionState.prev_loading_start = 0;
     }).catch(err => {
-      sectionState.prev_page_loading = false;
       N.wire.emit('error', err);
     });
   }
 
   function _load_next_page() {
-    if (sectionState.next_page_loading || sectionState.reached_end) { return; }
-    sectionState.next_page_loading = true;
+    let now = Date.now();
+
+    // `next_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(sectionState.next_loading_start - now) < LOAD_AFTER_ERROR) { return; }
+
+    sectionState.next_loading_start = now;
 
     N.io.rpc('forum.section.list.by_range', {
       section_hid:   sectionState.hid,
@@ -311,15 +335,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $('head').append(link);
       }
 
-      sectionState.next_page_loading = false;
+      sectionState.next_loading_start = 0;
     }).catch(err => {
-      sectionState.next_page_loading = false;
       N.wire.emit('error', err);
     });
   }
 
-  let load_prev_page = _.debounce(_load_prev_page, 500, { leading: true, maxWait: 500 });
-  let load_next_page = _.debounce(_load_next_page, 500, { leading: true, maxWait: 500 });
+  let load_prev_page = _.debounce(_load_prev_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
+  let load_next_page = _.debounce(_load_next_page, LOAD_INTERVAL, { leading: true, maxWait: LOAD_INTERVAL });
 
   // If we're browsing one of the first/last 5 topics, load more pages from
   // the server in that direction.
@@ -342,12 +365,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
-  // Update location and progress bar
+  // Update progress bar
   //
   N.wire.on(module.apiPath + ':scroll', function update_progress() {
     let topics         = $('.forum-topicline'),
         topicThreshold = $(window).scrollTop() + navbarHeight + TOP_OFFSET,
-        offset,
+        offset         = 0,
         currentIdx;
 
     // Get offset of the first topic in the viewport
@@ -359,49 +382,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     currentIdx--;
 
-    let href = null;
-    let state = null;
-
     if (currentIdx >= 0 && topics.length) {
       offset = $(topics[currentIdx]).data('offset') + 1;
-
-      state = {
-        hid:    $(topics[currentIdx]).data('topic-hid'),
-        offset: topicThreshold - $(topics[currentIdx]).offset().top
-      };
-    } else {
-      offset = 0;
     }
 
-    // save current offset, and only update url if offset is different,
-    // it protects url like /f1/topic23/page4 from being overwritten instantly
-    if (sectionState.current_offset !== offset) {
-      sectionState.current_offset = offset;
-
-      /* eslint-disable no-undefined */
-      href = N.router.linkTo('forum.section', {
-        section_hid: sectionState.hid,
-        topic_hid:   currentIdx >= 0 ? $(topics[currentIdx]).data('topic-hid') : undefined
-      });
-    }
-
-    if (currentIdx >= 0) {
-      if ($('meta[name="robots"]').length === 0) {
-        $('head').append($('<meta name="robots" content="noindex,follow">'));
-      }
-    } else {
-      $('meta[name="robots"]').remove();
-    }
-
-    /* eslint-disable no-undefined */
-    return N.wire.emit('navigate.replace', {
-      href,
-      state
-    }).then(() => N.wire.emit('forum.section.blocks.page_progress:update', {
+    return N.wire.emit('forum.section.blocks.page_progress:update', {
       current: offset,
       max: N.runtime.page_data.pagination.total,
       per_page: N.runtime.page_data.pagination.per_page
-    }));
+    });
   });
 });
 
@@ -410,6 +399,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 // Show/hide navbar when user scrolls the page,
 // and generate debounced "scroll" event
 //
+let scrollHandler = null;
+
 N.wire.on('navigate.done:' + module.apiPath, function scroll_tracker_init() {
   if ($('.forum-topiclist').length === 0) { return; }
 
@@ -441,6 +432,81 @@ N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() 
   scrollHandler.cancel();
   $(window).off('scroll', scrollHandler);
   scrollHandler = null;
+});
+
+
+/////////////////////////////////////////////////////////////////////
+// Change URL when user scrolls the page
+//
+// Use a separate debouncer that only fires when user stops scrolling,
+// so it's executed a lot less frequently.
+//
+// The reason is that `history.replaceState` is very slow in FF
+// on large pages: https://bugzilla.mozilla.org/show_bug.cgi?id=1250972
+//
+let locationScrollHandler = null;
+
+N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
+  if ($('.forum-topiclist').length === 0) { return; }
+
+  locationScrollHandler = _.debounce(function update_location_on_scroll() {
+    let topics         = $('.forum-topicline'),
+        topicThreshold = $(window).scrollTop() + navbarHeight + TOP_OFFSET,
+        offset         = 0,
+        currentIdx;
+
+    // Get offset of the first topic in the viewport
+    //
+    currentIdx = _.sortedIndexBy(topics, null, topic => {
+      if (!topic) { return topicThreshold; }
+      return $(topic).offset().top;
+    });
+
+    currentIdx--;
+
+    let href = null;
+    let state = null;
+
+    if (currentIdx >= 0 && topics.length) {
+      offset = $(topics[currentIdx]).data('offset') + 1;
+
+      state = {
+        hid:    $(topics[currentIdx]).data('topic-hid'),
+        offset: topicThreshold - $(topics[currentIdx]).offset().top
+      };
+    }
+
+    // save current offset, and only update url if offset is different,
+    // it protects url like /f1/topic23/page4 from being overwritten instantly
+    if (sectionState.current_offset !== offset) {
+      sectionState.current_offset = offset;
+
+      /* eslint-disable no-undefined */
+      href = N.router.linkTo('forum.section', {
+        section_hid: sectionState.hid,
+        topic_hid:   currentIdx >= 0 ? $(topics[currentIdx]).data('topic-hid') : undefined
+      });
+    }
+
+    if (currentIdx >= 0) {
+      if ($('meta[name="robots"]').length === 0) {
+        $('head').append($('<meta name="robots" content="noindex,follow">'));
+      }
+    } else {
+      $('meta[name="robots"]').remove();
+    }
+
+    N.wire.emit('navigate.replace', { href, state });
+  }, 500);
+
+  $(window).on('scroll', locationScrollHandler);
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function location_updater_teardown() {
+  if (!locationScrollHandler) return;
+  locationScrollHandler.cancel();
+  $(window).off('scroll', locationScrollHandler);
+  locationScrollHandler = null;
 });
 
 
