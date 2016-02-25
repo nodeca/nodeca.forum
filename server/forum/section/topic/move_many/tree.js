@@ -39,7 +39,7 @@ module.exports = function (N, apiPath) {
     env.data.sections = yield N.models.forum.Section
                                   .find()
                                   .sort('display_order')
-                                  .select('_id hid title parent')
+                                  .select('_id hid title parent is_category')
                                   .lean(true);
   });
 

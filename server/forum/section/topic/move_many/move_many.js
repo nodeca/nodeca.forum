@@ -25,6 +25,9 @@ module.exports = function (N, apiPath) {
 
     env.data.section_to = yield N.models.forum.Section.findOne({ hid: env.params.section_hid_to }).lean(true);
     if (!env.data.section_to) throw N.io.NOT_FOUND;
+
+    // Can not move to category. Should never happens - restricted on client
+    if (env.data.section_to.is_category) throw N.io.BAD_REQUEST;
   });
 
 

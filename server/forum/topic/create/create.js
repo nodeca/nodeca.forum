@@ -55,6 +55,9 @@ module.exports = function (N, apiPath) {
     if (!section) throw N.io.NOT_FOUND;
 
     env.data.section = section;
+
+    // Can not create topic in category. Should never happens - restricted on client
+    if (section.is_category) throw N.io.BAD_REQUEST;
   });
 
 
