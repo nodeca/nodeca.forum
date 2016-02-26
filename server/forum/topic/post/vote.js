@@ -38,6 +38,19 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check section voteable
+  //
+  N.wire.before(apiPath, function* check_section_voteable(env) {
+    let section = yield N.models.forum.Section
+                            .findOne({ _id: env.data.topic.section })
+                            .select('is_voteable')
+                            .lean(true);
+
+    if (!section) throw N.io.NOT_FOUND;
+    if (!section.is_voteable) throw N.io.FORBIDDEN;
+  });
+
+
   // Check if user can see this post
   //
   N.wire.before(apiPath, function* check_access(env) {

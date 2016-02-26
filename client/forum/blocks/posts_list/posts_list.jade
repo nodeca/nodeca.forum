@@ -116,7 +116,7 @@ each post, post_idx in self.posts
 
             if self.runtime.is_member && self.runtime.user_id !== post.user
 
-              if self.settings.can_vote && (self.settings.votes_add_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
+              if self.section.is_voteable && self.settings.can_vote && (self.settings.votes_add_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
                 li.forum-post__control-item.forum-post__vote-up
                   button.btn.forum-post__action(
                     title=self.t('vote_up')
