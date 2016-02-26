@@ -126,7 +126,14 @@ module.exports = function (N, apiPath) {
                 .count()
     );
 
-    let topic_count = _.sum(counters_by_status);
+    let pinned_count = env.data.topics_visible_statuses.indexOf(N.models.forum.Topic.statuses.PINNED) === -1 ?
+                       0 :
+                       yield N.models.forum.Topic
+                               .where('section').equals(env.data.section._id)
+                               .where('st').equals(N.models.forum.Topic.statuses.PINNED)
+                               .count();
+
+    let topic_count = _.sum(counters_by_status) + pinned_count;
 
     //
     // Count an amount of visible topics before the first one
@@ -146,7 +153,7 @@ module.exports = function (N, apiPath) {
                   .count()
       );
 
-      topic_offset = _.sum(counters_by_status);
+      topic_offset = _.sum(counters_by_status) + pinned_count;
     }
 
     env.res.pagination = {

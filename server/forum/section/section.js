@@ -71,19 +71,24 @@ module.exports = function (N, apiPath) {
 
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
-    let counters_by_status;
-
     //
     // Count total amount of visible topics in the section
     //
-    counters_by_status = yield statuses.map(
+    let counters_by_status = yield statuses.map(
       st => N.models.forum.Topic
                 .where('section').equals(env.data.section._id)
                 .where('st').equals(st)
                 .count()
     );
 
-    let topic_count = _.sum(counters_by_status);
+    let pinned_count = env.data.topics_visible_statuses.indexOf(N.models.forum.Topic.statuses.PINNED) === -1 ?
+                       0 :
+                       yield N.models.forum.Topic
+                               .where('section').equals(env.data.section._id)
+                               .where('st').equals(N.models.forum.Topic.statuses.PINNED)
+                               .count();
+
+    let topic_count = _.sum(counters_by_status) + pinned_count;
 
     //
     // Count an amount of visible topics before the first one
@@ -103,21 +108,14 @@ module.exports = function (N, apiPath) {
                   .count()
       );
 
-      topic_offset = _.sum(counters_by_status);
+      topic_offset = _.sum(counters_by_status) + pinned_count;
     }
 
-    env.data.pagination = {
+    env.res.pagination = {
       total:        topic_count,
       per_page:     topics_per_page,
       chunk_offset: topic_offset
     };
-  });
-
-
-  // Fill page info
-  //
-  N.wire.after(apiPath, function fill_page(env) {
-    env.res.pagination = env.data.pagination;
   });
 
 

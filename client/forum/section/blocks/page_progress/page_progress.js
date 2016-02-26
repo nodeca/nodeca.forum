@@ -8,11 +8,11 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
   var current     = data.current,
       total       = data.max;
 
-  if (!current) {
+  if (typeof current === 'undefined' || current === null) {
     current = $('.page-progress').data('current');
   }
 
-  if (!total) {
+  if (typeof total === 'undefined' || total === null) {
     total = $('.page-progress').data('total');
   }
 

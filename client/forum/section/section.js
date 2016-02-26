@@ -422,7 +422,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     //
     let topics         = document.getElementsByClassName('forum-topicline'),
         topicThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
-        offset         = 0,
+        offset,
         currentIdx;
 
     // Get offset of the first topic in the viewport
@@ -434,9 +434,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
 
     currentIdx--;
 
-    if (currentIdx >= 0 && topics.length) {
-      offset = currentIdx + sectionState.first_offset;
-    }
+    offset = currentIdx + sectionState.first_offset;
 
     N.wire.emit('forum.section.blocks.page_progress:update', {
       current:  offset,
@@ -496,9 +494,9 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     let href = null;
     let state = null;
 
-    if (currentIdx >= 0 && topics.length) {
-      offset = currentIdx + sectionState.first_offset;
+    offset = currentIdx + sectionState.first_offset;
 
+    if (currentIdx >= 0 && topics.length) {
       state = {
         hid:    $(topics[currentIdx]).data('topic-hid'),
         offset: topicThreshold - topics[currentIdx].offsetTop
