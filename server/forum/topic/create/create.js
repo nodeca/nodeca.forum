@@ -4,7 +4,7 @@
 
 
 const _         = require('lodash');
-const punycode  = require('punycode');
+const charcount = require('charcount');
 const cheequery = require('nodeca.core/lib/parser/cheequery');
 
 
@@ -38,7 +38,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* check_title_length(env) {
     let min_length = yield env.extras.settings.fetch('forum_topic_title_min_length');
 
-    if (punycode.ucs2.decode(env.params.title.trim()).length < min_length) {
+    if (charcount(env.params.title.trim()) < min_length) {
       throw {
         code: N.io.CLIENT_ERROR,
         message: env.t('err_title_too_short', min_length)

@@ -3,7 +3,8 @@
 
 'use strict';
 
-var punycode = require('punycode');
+const charcount = require('charcount');
+
 
 module.exports = function (N, apiPath) {
 
@@ -19,7 +20,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* check_title_length(env) {
     let min_length = yield env.extras.settings.fetch('forum_topic_title_min_length');
 
-    if (punycode.ucs2.decode(env.params.title.trim()).length < min_length) {
+    if (charcount(env.params.title.trim()) < min_length) {
       // Real check is done on the client, no need to care about details here
       throw N.io.BAD_REQUEST;
     }

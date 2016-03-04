@@ -4,7 +4,7 @@
 
 
 const _             = require('lodash');
-const punycode      = require('punycode');
+const charcount     = require('charcount');
 const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
 
@@ -662,7 +662,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       update(value) {
         value = value.trim();
 
-        if (punycode.ucs2.decode(value).length < forum_topic_title_min_length) {
+        if (charcount(value) < forum_topic_title_min_length) {
           return Promise.reject(t('err_title_too_short', forum_topic_title_min_length));
         }
 
