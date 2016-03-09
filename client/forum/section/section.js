@@ -237,6 +237,11 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       before:        LOAD_TOPICS_COUNT,
       after:         0
     }).then(function (res) {
+      // Stop debouncer to avoid progress bar jump after page load
+      if ($(window).scrollTop() <= 0) {
+        prefetchScrollHandler.cancel();
+      }
+
       if (!res.topics) return;
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
@@ -310,6 +315,14 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       before:        0,
       after:         LOAD_TOPICS_COUNT
     }).then(function (res) {
+      let scrollHeight = (document.documentElement && document.documentElement.scrollHeight) ||
+                         document.body.scrollHeight;
+
+      // Stop debouncer to avoid progress bar jump after page load
+      if ($(window).height() + $(window).scrollTop() >= scrollHeight) {
+        prefetchScrollHandler.cancel();
+      }
+
       if (!res.topics) return;
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {

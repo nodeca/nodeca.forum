@@ -149,6 +149,11 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       before:    LOAD_POSTS_COUNT,
       after:     0
     }).then(res => {
+      // Stop debouncer to avoid progress bar jump after page load
+      if ($(window).scrollTop() <= 0) {
+        prefetchScrollHandler.cancel();
+      }
+
       topicState.post_count = res.topic.cache.post_count;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
@@ -232,6 +237,14 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       before:    0,
       after:     LOAD_POSTS_COUNT
     }).then(res => {
+      let scrollHeight = (document.documentElement && document.documentElement.scrollHeight) ||
+                         document.body.scrollHeight;
+
+      // Stop debouncer to avoid progress bar jump after page load
+      if ($(window).height() + $(window).scrollTop() >= scrollHeight) {
+        prefetchScrollHandler.cancel();
+      }
+
       topicState.post_count = res.topic.cache.post_count;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
