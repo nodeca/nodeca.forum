@@ -58,6 +58,9 @@ module.exports = function (N, apiPath) {
 
     // Can not create topic in category. Should never happens - restricted on client
     if (section.is_category) throw N.io.BAD_REQUEST;
+
+    // Can not create topic in read only section. Should never happens - restricted on client
+    if (!section.is_writeble) throw N.io.BAD_REQUEST;
   });
 
 

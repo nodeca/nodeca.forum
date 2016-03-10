@@ -38,16 +38,21 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check section voteable
+  // Check section flags
   //
-  N.wire.before(apiPath, function* check_section_voteable(env) {
+  N.wire.before(apiPath, function* check_section_flags(env) {
     let section = yield N.models.forum.Section
                             .findOne({ _id: env.data.topic.section })
-                            .select('is_voteable')
+                            .select('is_voteable is_writeble')
                             .lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
+
+    // Votes disabled in this section
     if (!section.is_voteable) throw N.io.FORBIDDEN;
+
+    // Can not create topic in read only section. Should never happens - restricted on client
+    if (!section.is_writeble) throw N.io.BAD_REQUEST;
   });
 
 

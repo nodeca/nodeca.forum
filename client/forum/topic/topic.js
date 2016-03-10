@@ -36,7 +36,7 @@ const TOP_OFFSET = 50;
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.section_hid        = data.params.section_hid;
+  topicState.section            = N.runtime.page_data.section;
   topicState.topic_hid          = data.params.topic_hid;
   topicState.post_hid           = data.params.post_hid || 1;
   topicState.post_count         = N.runtime.page_data.pagination.total;
@@ -434,7 +434,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
       topicState.post_hid = newHid;
 
       href = N.router.linkTo('forum.topic', {
-        section_hid:  topicState.section_hid,
+        section_hid:  topicState.section.hid,
         topic_hid:    topicState.topic_hid,
         post_hid:     topicState.post_hid
       });
@@ -517,7 +517,7 @@ function delete_topic(as_moderator) {
       return N.io.rpc('forum.topic.destroy', request);
     })
     .then(() =>
-      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: topicState.section_hid } })
+      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: topicState.section.hid } })
     );
 }
 
@@ -530,7 +530,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('forum.topic.reply:begin', {
       topic_hid: topicState.topic_hid,
       topic_title: N.runtime.page_data.topic.title,
-      section_hid: topicState.section_hid,
+      section_hid: topicState.section.hid,
       post_id: data.$this.data('post-id'),
       post_hid: data.$this.data('post-hid')
     });
@@ -556,7 +556,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('forum.topic.post.edit:begin', {
       topic_hid: topicState.topic_hid,
       topic_title: N.runtime.page_data.topic.title,
-      section_hid: topicState.section_hid,
+      section_hid: topicState.section.hid,
       post_id: data.$this.data('post-id'),
       post_hid: data.$this.data('post-hid'),
       as_moderator: data.$this.data('as-moderator') || false
@@ -621,7 +621,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':move', function topic_move(data) {
     let topicHid = data.$this.data('topic-hid');
-    let params = { section_hid_from: topicState.section_hid };
+    let params = { section_hid_from: topicState.section.hid };
 
     return Promise.resolve()
       .then(() => N.wire.emit('forum.topic.topic_move_dlg', params))
@@ -848,7 +848,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
-        section_hid:  topicState.section_hid,
+        section_hid:  topicState.section.hid,
         topic_hid:    topicState.topic_hid,
         post_hid:     1
       }
@@ -867,7 +867,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
-        section_hid:  topicState.section_hid,
+        section_hid:  topicState.section.hid,
         topic_hid:    topicState.topic_hid,
         post_hid:     post
       }
@@ -892,7 +892,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
-        section_hid:  topicState.section_hid,
+        section_hid:  topicState.section.hid,
         topic_hid:    topicState.topic_hid,
         post_hid:     topicState.max_post
       }
@@ -910,12 +910,12 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
     .append(N.runtime.render(module.apiPath + '.navbar_alt', {
       settings:       N.runtime.page_data.settings,
       topic:          N.runtime.page_data.topic,
-      section_hid:    topicState.section_hid,
+      section:        topicState.section,
       topic_statuses: topicStatuses,
       subscription:   N.runtime.page_data.subscription,
 
       page_progress: {
-        section_hid: topicState.section_hid,
+        section_hid: topicState.section.hid,
         topic_hid:   topicState.topic_hid,
         current:     topicState.post_hid,
         max:         topicState.max_post

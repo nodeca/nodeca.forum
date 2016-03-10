@@ -34,7 +34,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
 
 
 .page-actions.forum-section__toolbar-controls
-  if self.settings.forum_can_start_topics
+  if self.settings.forum_can_start_topics && self.section.is_writeble
     button.btn.btn-primary.icon.icon-plus(
       data-on-click='forum.section:create'
       data-section-hid=self.section.hid
