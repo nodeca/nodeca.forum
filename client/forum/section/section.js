@@ -334,10 +334,19 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       let old_height = $('.forum-topiclist').height();
 
       // remove duplicate topics
-      res.topics.forEach(topic => $(`#topic${topic.hid}`).remove());
+      let deleted_count = res.topics.filter(topic => {
+        let el = $(`#topic${topic.hid}`);
+
+        if (el.length) {
+          el.remove();
+          return true;
+        }
+      }).length;
 
       // update scroll so it would point at the same spot as before
-      $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
+      if (deleted_count > 0) {
+        $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
+      }
 
       sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
       sectionState.first_offset = res.pagination.chunk_offset - $('.forum-topicline').length;
