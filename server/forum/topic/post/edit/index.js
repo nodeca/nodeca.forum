@@ -40,12 +40,13 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check section writeble
+  // Check section flags
   //
-  N.wire.before(apiPath, function* check_section_writeble(env) {
+  N.wire.before(apiPath, function* check_section_flags(env) {
     let section = yield N.models.forum.Section.findOne({ _id: env.data.topic.section }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
+    if (!section.is_enabled) throw N.io.NOT_FOUND;
 
     // Can not edit post in read only section. Should never happens - restricted on client
     if (!section.is_writeble && !env.params.as_moderator) throw N.io.BAD_REQUEST;

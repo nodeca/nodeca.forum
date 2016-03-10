@@ -53,6 +53,7 @@ module.exports = function (N, apiPath) {
     let section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
+    if (!section.is_enabled) throw N.io.NOT_FOUND;
 
     env.data.section = section;
 

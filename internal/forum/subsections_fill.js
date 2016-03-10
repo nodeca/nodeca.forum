@@ -108,13 +108,17 @@ module.exports = function (N, apiPath) {
     let _ids = env.data.subsections_info.map(s => s._id);
     env.data.subsections = [];
 
-    let sections = yield N.models.forum.Section
-                            .find({ _id: { $in: _ids } })
+    let sections = yield N.models.forum.Section.find()
+                            .where('_id').in(_ids)
+                            // Don't show disabled section
+                            .where('is_enabled').equals(true)
                             .lean(true);
 
     // sort result in the same order as ids
     _.forEach(env.data.subsections_info, subsectionInfo => {
       let foundSection = _.find(sections, s => s._id.equals(subsectionInfo._id));
+
+      if (!foundSection) return; // continue
 
       foundSection.level = subsectionInfo.level;
       env.data.subsections.push(foundSection);

@@ -25,7 +25,7 @@ module.exports = function (N, apiPath) {
   //////////////////////////////////////////////////////////////////////////
   // Hook for the "get permissions by url" feature, used in snippets
   //
-  N.wire.on('internal:common.access', function* check_post_access(access_env) {
+  N.wire.on('internal:common.access', function* check_section_access(access_env) {
     let match = N.router.matchAll(access_env.params.url).reduce(function (acc, match) {
       return match.meta.methods.get === 'forum.section' ? match : acc;
     }, null);
@@ -105,7 +105,7 @@ module.exports = function (N, apiPath) {
       let result = yield N.models.forum.Section
                             .find()
                             .where('hid').in(hids)
-                            .select('_id hid')
+                            .select('_id hid is_enabled')
                             .lean(true);
 
       locals.data.sections.forEach((hid, i) => {
@@ -126,7 +126,7 @@ module.exports = function (N, apiPath) {
       let result = yield N.models.forum.Section
                             .find()
                             .where('_id').in(ids)
-                            .select('_id')
+                            .select('_id is_enabled')
                             .lean(true);
 
       locals.data.sections.forEach((id, i) => {
@@ -150,6 +150,11 @@ module.exports = function (N, apiPath) {
 
     function check(section, i) {
       if (locals.data.access_read[i] === false) {
+        return Promise.resolve();
+      }
+
+      if (!section.is_enabled) {
+        locals.data.access_read[i] = false;
         return Promise.resolve();
       }
 

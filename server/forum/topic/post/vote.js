@@ -47,6 +47,7 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
+    if (!section.is_enabled) throw N.io.NOT_FOUND;
 
     // Votes disabled in this section
     if (!section.is_voteable) throw N.io.FORBIDDEN;

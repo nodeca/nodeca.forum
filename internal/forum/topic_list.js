@@ -46,6 +46,7 @@ module.exports = function (N, apiPath) {
     let section = yield Section.findOne({ hid: env.data.section_hid }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
+    if (!section.is_enabled) throw N.io.NOT_FOUND;
 
     env.data.section = section;
   });

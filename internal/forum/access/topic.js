@@ -124,6 +124,20 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check sections permission
+  //
+  N.wire.before(apiPath, function* check_sections(locals) {
+    let sections = _.uniq(_.map(locals.data.topics, t => String(t.section)));
+    let access_env = { params: { sections, user_info: locals.data.user_info } };
+
+    yield N.wire.emit('internal:forum.access.section', access_env);
+
+    if (!access_env.data.access_read) {
+      locals.data.access_read = locals.data.access_read.map(() => false);
+    }
+  });
+
+
   // Check topic and section permissions
   //
   N.wire.on(apiPath, function* check_topic_access(locals) {
