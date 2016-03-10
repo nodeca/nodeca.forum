@@ -356,6 +356,19 @@ N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
       let $result = $(N.runtime.render('forum.blocks.topics_list', res));
       $('.forum-topiclist').append($result);
 
+      // Workaround for FF bug, possibly this one:
+      // https://github.com/nodeca/nodeca.core/issues/2
+      //
+      // When user scrolls down and we insert content to the end
+      // of the page, and the page is large enough (~1000 topics
+      // or more), next scrollTop() read on 'scroll' event may
+      // return invalid (too low) value.
+      //
+      // Reading scrollTop in the same tick seem to prevent this
+      // from happening.
+      //
+      $window.scrollTop();
+
       // Update selection state
       _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
         $(`#topic${topicHid}`)
