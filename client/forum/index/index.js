@@ -1,6 +1,9 @@
 'use strict';
 
 
+const _ = require('lodash');
+
+
 // Scroll to the element, so it would be positioned in the viewport
 //
 //  - el    - Element to scroll
@@ -27,6 +30,26 @@ function scrollIntoView(el, coef) {
 // init on page load
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+
+  // Exclude click
+  //
+  N.wire.on(module.apiPath + ':exclude', function exclude() {
+    let params = {};
+
+    return Promise.resolve()
+      .then(() => N.io.rpc('forum.index.exclude.sections', {}))
+      .then(res => {
+        _.assign(params, res);
+        return N.wire.emit('forum.index.sections_exclude_dlg', params);
+      })
+      .then(() =>  N.io.rpc('forum.index.exclude.update', { sections_ids: params.selected }))
+      .then(() => {
+        // Update button counter
+        $('.forum-index-root__btn-exclude').text(t('exclude', params.selected.length));
+      });
+  });
+
+
   var anchor = data.anchor || '';
 
   if (anchor.match(/^#cat\d+$/)) {

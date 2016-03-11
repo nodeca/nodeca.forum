@@ -1,0 +1,28 @@
+mixin sections_tree(sections, deepness)
+  each section in sections
+
+    - var prefix = Array(deepness).join('\u2003\u2003');
+
+    option.sections-exclude-dlg__section(
+      value=section._id
+      disabled=!section.is_excludable
+      selected=self.selected.indexOf(section._id) !== -1
+    )=prefix + section.title
+
+    if section.children && section.children.length
+      mixin sections_tree(section.children, deepness + 1)
+
+
+.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+  .modal-dialog
+    .modal-content
+      form(data-on-submit=self.apiPath + ':submit')
+        .modal-header
+          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+          h4.modal-title=self.t('title')
+        .modal-body
+          select.form-control(multiple=true size=10 tabindex='1' name='sections' data-on-change=self.apiPath + ':change')
+            mixin sections_tree(self.sections, 1)
+        .modal-footer
+          button.btn.btn-default(type='button' tabindex='2' data-dismiss='modal')=self.t('cancel')
+          button.btn.btn-danger(type='submit' tabindex='3')=self.t('ok')

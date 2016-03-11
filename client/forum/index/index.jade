@@ -1,17 +1,19 @@
 article#content.forum-index-root
   != self.partial('@common.blocks.breadcrumbs')
 
-  if true || self.runtime.is_member
-    .breadcrumbs
-      button.btn.btn-default.btn-sm(
-        type='button'
-        title= self.t('news')
-      ) +15
-      button.btn.btn-default.btn-sm.icon.icon-check(
-        type='button'
-        title= self.t('mark_all_read')
-      )
-      button.btn.btn-default.btn-sm(type='button')= self.t('exclude', 5)
+  .breadcrumbs
+    button.btn.btn-default.btn-sm(
+      type='button'
+      title= self.t('news')
+    ) +15
+    button.btn.btn-default.btn-sm.icon.icon-check(
+      type='button'
+      title= self.t('mark_all_read')
+    )
+    if self.runtime.is_member
+      button.forum-index-root__btn-exclude.btn.btn-default.btn-sm(type='button'
+        data-on-click='forum.index:exclude'
+      )= self.t('exclude', self.excluded_sections.length)
 
   //h1= t('forum.index.title')
 
