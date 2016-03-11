@@ -86,9 +86,13 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function* fetch_subsections_tree_info(env) {
 
-    // We need to show 3 levels [0,1,2] for index, 2 levels [0,1] for section
+    // - get all sections for index (to be able check excluded by user)
+    // - get 2 levels [0,1] for section
     let subsections = yield N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
-                                                               env.data.section ? 2 : 3);
+                                                               env.data.section ? 2 : -1);
+
+    // Don't show disabled section
+    subsections = subsections.filter(s => s.is_enabled);
 
     // sections order is always fixed, no needs to sort.
     let s_ids = subsections.map(s => s._id.toString());
@@ -102,6 +106,31 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Filter excluded by user sections
+  //
+  N.wire.before(apiPath, function filter_excluded(env) {
+    if (!env.data.excluded_sections || !env.data.excluded_sections.length) return;
+
+    let excluded_sections = env.data.excluded_sections.map(sid => String(sid));
+
+    function excluded(section_info) {
+      if (!section_info.is_excludable) return false;
+
+      if (excluded_sections.indexOf(String(section_info._id)) === -1) return false;
+
+      let children = section_info.children || [];
+
+      for (let i = 0; i < children.length; i++) {
+        if (!excluded(children[i])) return false;
+      }
+
+      return true;
+    }
+
+    env.data.subsections_info = env.data.subsections_info.filter(s => !excluded(s));
+  });
+
+
   // Fetch subsections data and add `level` property
   //
   N.wire.on(apiPath, function* subsections_fetch_visible(env) {
@@ -110,8 +139,6 @@ module.exports = function (N, apiPath) {
 
     let sections = yield N.models.forum.Section.find()
                             .where('_id').in(_ids)
-                            // Don't show disabled section
-                            .where('is_enabled').equals(true)
                             .lean(true);
 
     // sort result in the same order as ids

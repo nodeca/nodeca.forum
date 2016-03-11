@@ -6,6 +6,7 @@ const Schema   = Mongoose.Schema;
 const memoizee = require('memoizee');
 const thenify  = require('thenify');
 const co       = require('co');
+const _        = require('lodash');
 
 
 module.exports = function (N, collectionName) {
@@ -161,7 +162,7 @@ module.exports = function (N, collectionName) {
     N.models.forum.Section
         .find()
         .sort('display_order')
-        .select('_id parent')
+        .select('_id parent is_enabled is_excludable')
         .lean(true)
         .exec(function (err, sections) {
 
@@ -173,7 +174,7 @@ module.exports = function (N, collectionName) {
       // create hash of trees for each section
       sections.forEach(section => {
         // check if section was already added by child. If not found, create it
-        result[section._id] = result[section._id] || { _id: section._id, children: [] };
+        result[section._id] = result[section._id] || _.assign({ children: [] }, section);
 
         // if section has parent, try to find it and push section to its children.
         // If parent not found, create it.
@@ -191,7 +192,7 @@ module.exports = function (N, collectionName) {
       });
 
       // root is a special fake `section` that contains array of the root-level sections
-      result.root = { children: [] };
+      result.root = { children: [], is_enabled: true, is_excludable: false };
       // fill root chirden
       sections.forEach(section => {
         if (!section.parent) {
@@ -239,7 +240,7 @@ module.exports = function (N, collectionName) {
   //
   // result:
   //
-  // - [ {_id, level} ]
+  // - [ {_id, parent, children, is_enabled, is_excluded, level} ]
   //
   Section.statics.getChildren = function (sectionID, deepness) {
 
@@ -257,7 +258,7 @@ module.exports = function (N, collectionName) {
       }
 
       section.children.forEach(childSection => {
-        children.push({ _id: childSection._id, level: curDeepness });
+        children.push(_.assign({ level: curDeepness }, childSection));
         fillChildren(childSection, curDeepness + 1, maxDeepness);
       });
     }

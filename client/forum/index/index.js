@@ -29,7 +29,7 @@ function scrollIntoView(el, coef) {
 /////////////////////////////////////////////////////////////////////
 // init on page load
 //
-N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+N.wire.once('navigate.done:' + module.apiPath, function page_setup(data) {
 
   // Exclude click
   //
@@ -42,11 +42,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
         _.assign(params, res);
         return N.wire.emit('forum.index.sections_exclude_dlg', params);
       })
-      .then(() =>  N.io.rpc('forum.index.exclude.update', { sections_ids: params.selected }))
-      .then(() => {
-        // Update button counter
-        $('.forum-index-root__btn-exclude').text(t('exclude', params.selected.length));
-      });
+      .then(() => N.io.rpc('forum.index.exclude.update', { sections_ids: params.selected }))
+      .then(() => N.wire.emit('navigate.reload'));
   });
 
 

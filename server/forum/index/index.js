@@ -10,16 +10,9 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  // Request handler
-  //
-  N.wire.on(apiPath, function forum_index(env) {
-    return N.wire.emit('internal:forum.subsections_fill', env);
-  });
-
-
   // Fill list of sections excluded by user
   //
-  N.wire.after(apiPath, function* fill_excluded_list(env) {
+  N.wire.before(apiPath, function* fill_excluded_list(env) {
     if (env.user_info.is_guest) {
       env.res.excluded_sections = env.data.excluded_sections = [];
       return;
@@ -30,6 +23,13 @@ module.exports = function (N, apiPath) {
                           .lean(true);
 
     env.res.excluded_sections = env.data.excluded_sections = (result || {}).excluded_sections || [];
+  });
+
+
+  // Fill sections via subcall
+  //
+  N.wire.on(apiPath, function subsections_fill_subcall(env) {
+    return N.wire.emit('internal:forum.subsections_fill', env);
   });
 
 
