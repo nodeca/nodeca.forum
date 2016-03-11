@@ -2,10 +2,6 @@ article#content.forum-index-root
   != self.partial('@common.blocks.breadcrumbs')
 
   .breadcrumbs
-    button.btn.btn-default.btn-sm(
-      type='button'
-      title= self.t('news')
-    ) +15
     button.btn.btn-default.btn-sm.icon.icon-check(
       type='button'
       title= self.t('mark_all_read')
@@ -14,8 +10,6 @@ article#content.forum-index-root
       button.btn.btn-default.btn-sm(type='button'
         data-on-click='forum.index:exclude'
       )= self.t('exclude', self.excluded_sections.length)
-
-  //h1= t('forum.index.title')
 
   - each category in (self.subsections || [])
     article.forum-category(id='cat_box_#{category.hid}')
@@ -40,30 +34,3 @@ article#content.forum-index-root
 
       .forum-category__content(id='cat_list_#{category.hid}', data-notify='#cat_box_#{category.hid}').collapse.in
         != self.partial('@forum.blocks.sections_list', { subsections: category.child_list })
-
-  footer
-    .page-summary
-      .page-summary__head
-        = self.t('total_active.all', { count: 710, interval: 30 })
-        ul.hlist.page-summary__subhead
-          li.hlist-item= self.t('total_active.members', 128)
-          li.hlist-item= self.t('total_active.guests', 567)
-          li.hlist-item= self.t('total_active.anonymous', 6)
-      .page-summary__content
-        ul.hlist
-          li.hlist-item: a(href='#') Google
-          li.hlist-item: a(href='#') Asso
-          li.hlist-item: a(href='#') Warfo
-          li.hlist-item: a(href='#') ibra
-          li.hlist-item: a(href='#') Brandon
-          li.hlist-item: a(href='#') hao-sama
-          li.hlist-item: a(href='#') Lesovsky
-          li.hlist-item: a(href='#') RUAHusker
-          li.hlist-item: a(href='#') MSN/Bing
-
-      .page-summary__head Total
-      .page-summary__content
-        ul.hlist
-          li.hlist-item= self.t('total_topics', 35836)
-          li.hlist-item= self.t('total_posts', 456949)
-          li.hlist-item= self.t('total_members', 269270)

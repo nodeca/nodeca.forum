@@ -1,12 +1,3 @@
 en-US:
   mark_all_read: Mark all read
   exclude: "#{count} hidden"
-  news: New topics
-  total_active:
-    all: "#{count} active ((user|users)) in the past #{interval} ((minute|minutes)):interval"
-    members: "#{count} ((member|members))"
-    guests: "#{count} ((guest|guests))"
-    anonymous: "#{count} anonymous ((member|members))"
-  total_topics: "#{count} ((Topic|Topics))"
-  total_posts: "#{count} ((Post|Posts))"
-  total_members: "#{count} ((Member|Members))"
