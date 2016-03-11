@@ -2,14 +2,16 @@ article#content.forum-index-root
   != self.partial('@common.blocks.breadcrumbs')
 
   .breadcrumbs
-    button.btn.btn-default.btn-sm.icon.icon-check(
-      type='button'
-      title= self.t('mark_all_read')
-    )
     if self.runtime.is_member
-      button.btn.btn-default.btn-sm(type='button'
+      button.btn.btn-default.btn-sm.icon.icon-sliders.icon-space-after(type='button'
         data-on-click='forum.index:exclude'
-      )= self.t('exclude', self.excluded_sections.length)
+        title=self.t('sections_exclude_title')
+      )= self.excluded_sections.length
+
+      button.btn.btn-default.btn-sm.icon.icon-check(
+        type='button'
+        title= self.t('mark_all_read')
+      )
 
   - each category in (self.subsections || [])
     article.forum-category(id='cat_box_#{category.hid}')
