@@ -157,8 +157,6 @@ module.exports = function (N, collectionName) {
   //   - children[ { _id, parent, children[...] } ]
   //
   let getSectionsTree = memoizee(callback => {
-    let result = {};
-
     N.models.forum.Section
         .find()
         .sort('display_order')
@@ -172,33 +170,20 @@ module.exports = function (N, collectionName) {
       }
 
       // create hash of trees for each section
-      sections.forEach(section => {
-        // check if section was already added by child. If not found, create it
-        result[section._id] = result[section._id] || _.assign({ children: [] }, section);
-
-        // if section has parent, try to find it and push section to its children.
-        // If parent not found, create it.
-        if (section.parent) {
-          // find parent in hash table
-          if (result[section.parent]) {
-            result[section.parent].children.push(result[section._id]);
-          } else {
-            // no parent in hash table, create and add it
-            result[section.parent] = { _id: section.parent, children: [ result[section._id] ] };
-          }
-          // set link from section to parent
-          result[section._id].parent = result[section.parent];
-        }
-      });
+      let result = sections.reduce((acc, s) => {
+        acc[s._id] = _.assign({ children: [] }, s);
+        return acc;
+      }, {});
 
       // root is a special fake `section` that contains array of the root-level sections
-      result.root = { children: [], is_enabled: true, is_excludable: false };
-      // fill root chirden
-      sections.forEach(section => {
-        if (!section.parent) {
-          result.root.children.push(result[section._id]);
-        }
+      let root = { children: [], is_enabled: true, is_excludable: false };
+
+      _.forEach(result, s => {
+        s.parent = s.parent ? result[s.parent] : root;
+        s.parent.children.push(s);
       });
+
+      result.root = root;
 
       callback(null, result);
     });
@@ -221,7 +206,7 @@ module.exports = function (N, collectionName) {
       let parentList = [];
       let current = sections[sectionID].parent;
 
-      while (current) {
+      while (current && current._id) {
         parentList.unshift(current._id);
         current = current.parent;
       }
