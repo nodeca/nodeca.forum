@@ -4,6 +4,7 @@ mixin sections_tree(sections, deepness)
     - var prefix = Array(deepness).join('\u2003\u2003');
 
     option.sections-exclude-dlg__section(
+      data-on-click=self.apiPath + ':section_click'
       value=section._id
       disabled=!section.is_excludable
       selected=self.selected.indexOf(section._id) !== -1
@@ -21,8 +22,11 @@ mixin sections_tree(sections, deepness)
           button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
           h4.modal-title=self.t('title')
         .modal-body
-          select.form-control(multiple=true size=10 tabindex='1' name='sections' data-on-change=self.apiPath + ':change')
+          select.sections-exclude-dlg__sections.form-control(multiple=true tabindex='1' name='sections')
             mixin sections_tree(self.sections, 1)
         .modal-footer
+          button.btn.btn-link.pull-left(
+            data-on-click=self.apiPath + ':unselect_all'
+          )= self.t('unselect_all')
           button.btn.btn-default(type='button' tabindex='2' data-dismiss='modal')=self.t('cancel')
           button.btn.btn-danger(type='submit' tabindex='3')=self.t('ok')

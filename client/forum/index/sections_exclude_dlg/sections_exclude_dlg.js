@@ -62,10 +62,58 @@ N.wire.once(module.apiPath, function init_handlers() {
   }
 
 
+  // Get list of parent sections _ids
+  //
+  function parentsList(_id, sections) {
+    if (!sections) sections = params.sections;
+
+    for (var i = 0; i < sections.length; i++) {
+      if (sections[i]._id === _id) return [];
+
+      let child_result = parentsList(_id, sections[i].children || []);
+
+      if (child_result) {
+        return [ sections[i]._id ].concat(child_result);
+      }
+    }
+
+    return null;
+  }
+
+
+  // Unselect all
+  //
+  N.wire.on(module.apiPath + ':unselect_all', function unselect_all_sections_exclude_dlg() {
+    _.forEach($('.sections-exclude-dlg__section:selected'), el => {
+      $(el).prop('selected', false);
+    });
+  });
+
+
   // Sections list change
   //
-  N.wire.on(module.apiPath + ':change', function sections_change_sections_exclude_dlg(data) {
-    let selected = data.$this.val() || [];
+  N.wire.on(module.apiPath + ':section_click', function section_click_sections_exclude_dlg(data) {
+
+    // Unselect all parent items if user unselect child
+    //
+    if (!data.$this.prop('selected')) {
+      let parents_ids = parentsList(data.$this.val());
+
+      parents_ids.forEach(parent_id => {
+        $(`.sections-exclude-dlg__section[value="${parent_id}"]`).prop('selected', false);
+      });
+
+      return;
+    }
+
+
+    // Select all children items if user select parent
+    //
+    let selected = [];
+
+    _.forEach($('.sections-exclude-dlg__section:selected'), el => {
+      selected.push($(el).val());
+    });
 
     selected.forEach(section_id => {
       let children_ids = childrenList(findRecursive(section_id));
@@ -89,9 +137,23 @@ N.wire.once(module.apiPath, function init_handlers() {
 });
 
 
+let resizeDialog = _.throttle(function () {
+  if (!$dialog) return;
+
+  let $sections = $dialog.find('.sections-exclude-dlg__sections');
+  let dlg_only_height = $dialog.find('.modal-dialog').outerHeight(true) - $sections.height();
+  let new_sections_height = $(window).height() - dlg_only_height;
+
+  if (new_sections_height <= $sections.css('min-height')) new_sections_height = $sections.css('min-height');
+
+  $sections.height(new_sections_height);
+}, 100);
+
+
 // Init dialog
 //
 N.wire.on(module.apiPath, function show_sections_exclude_dlg(options) {
+  let $window = $(window);
   params = options;
   $dialog = $(N.runtime.render(module.apiPath, _.assign({ apiPath: module.apiPath }, params)));
 
@@ -100,10 +162,13 @@ N.wire.on(module.apiPath, function show_sections_exclude_dlg(options) {
   return new Promise((resolve, reject) => {
     $dialog
       .on('shown.bs.modal', () => {
+        resizeDialog();
+        $window.on('resize', resizeDialog);
         $dialog.find('.btn-default').focus();
       })
       .on('hidden.bs.modal', () => {
         // When dialog closes - remove it from body and free resources
+        $window.off('resize', resizeDialog);
         $dialog.remove();
         $dialog = null;
         params = null;
