@@ -41,7 +41,7 @@ module.exports = function (N, collectionName) {
     is_category:      { type: Boolean, 'default': false }, // subsection or category
     is_enabled:       { type: Boolean, 'default': true },  // hiden inactive
     is_writeble:      { type: Boolean, 'default': true },  // read-only archive
-    is_searcheable:   { type: Boolean, 'default': true },
+    is_searchable:    { type: Boolean, 'default': true },
     is_votable:       { type: Boolean, 'default': true },
     is_counted:       { type: Boolean, 'default': true },  // inc user's counter, when posted here
     is_excludable:    { type: Boolean, 'default': true },

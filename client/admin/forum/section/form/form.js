@@ -12,7 +12,7 @@ const SECTION_FIELD_DEFAULTS = {
   is_category:    false,
   is_enabled:     true,
   is_writeble:    true,
-  is_searcheable: true,
+  is_searchable:  true,
   is_votable:     true,
   is_counted:     true,
   is_excludable:  true
