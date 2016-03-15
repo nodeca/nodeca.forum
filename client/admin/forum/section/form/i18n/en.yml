@@ -17,6 +17,6 @@ en-US:
   field_is_enabled: Enabled
   field_is_writeble: Writable
   field_is_searcheable: Searchable
-  field_is_voteable: Voteable
+  field_is_votable: Votable
   field_is_counted: Counted
   field_is_excludable: Excludable

@@ -22,7 +22,7 @@ module.exports = function (N, apiPath) {
     is_enabled:     { type: 'boolean',          required: false },
     is_writeble:    { type: 'boolean',          required: false },
     is_searcheable: { type: 'boolean',          required: false },
-    is_voteable:    { type: 'boolean',          required: false },
+    is_votable:     { type: 'boolean',          required: false },
     is_counted:     { type: 'boolean',          required: false },
     is_excludable:  { type: 'boolean',          required: false }
   });
