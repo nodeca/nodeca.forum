@@ -32,43 +32,49 @@ setting_schemas:
       default: false
 
     forum_mod_can_pin_topic:
-      priority: 500
-      category_key: perm_moderator
+      priority: 1000
+      category_key: perm_forum_moderate
       type: boolean
       default: false
 
     forum_mod_can_edit_posts:
-      priority: 510
-      category_key: perm_moderator
+      priority: 1010
+      category_key: perm_forum_moderate
       type: boolean
       default: false
 
     forum_mod_can_delete_topics:
-      priority: 520
-      category_key: perm_moderator
+      priority: 1020
+      category_key: perm_forum_moderate
       type: boolean
       default: false
 
     forum_mod_can_hard_delete_topics:
-      priority: 530
-      category_key: perm_moderator
+      priority: 1030
+      category_key: perm_forum_moderate
       type: boolean
       default: false
 
     forum_mod_can_see_hard_deleted_topics:
-      priority: 540
-      category_key: perm_moderator
+      priority: 1040
+      category_key: perm_forum_moderate
       type: boolean
       default: false
 
     forum_mod_can_edit_titles:
-      priority: 550
-      category_key: perm_moderator
+      priority: 1050
+      category_key: perm_forum_moderate
       type: boolean
       default: false
 
     forum_mod_can_close_topic:
-      priority: 560
-      category_key: perm_moderator
+      priority: 1060
+      category_key: perm_forum_moderate
+      type: boolean
+      default: false
+
+    forum_mod_can_add_infractions:
+      priority: 1070
+      category_key: perm_forum_moderate
       type: boolean
       default: false

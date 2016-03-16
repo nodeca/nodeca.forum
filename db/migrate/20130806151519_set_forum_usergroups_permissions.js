@@ -20,7 +20,8 @@ module.exports.up = co.wrap(function* (N) {
     forum_mod_can_edit_titles: { value: true },
     forum_mod_can_close_topic: { value: true },
     forum_mod_can_hard_delete_topics: { value: true },
-    forum_mod_can_see_hard_deleted_topics: { value: true }
+    forum_mod_can_see_hard_deleted_topics: { value: true },
+    forum_mod_can_add_infractions: { value: true }
   }, { usergroup_id: adminGroup._id });
 
   // add usergroup settings for member

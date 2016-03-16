@@ -4,7 +4,7 @@ i18n:
       core:
         category_names:
           perm_forum: Forum
-          perm_moderator: Forum moderation
+          perm_forum_moderate: Forum moderation
 
         setting_names:
           forum_can_view: Show Forum
@@ -16,6 +16,7 @@ i18n:
           forum_mod_can_edit_posts: Edit posts
           forum_mod_can_edit_titles: Edit topic titles
           forum_mod_can_close_topic: Close topics
+          forum_mod_can_add_infractions: Can add infractions
           forum_mod_can_delete_topics: Delete topics
           forum_mod_can_hard_delete_topics: Hard delete topics
           forum_mod_can_see_hard_deleted_topics: See hard deleted topics

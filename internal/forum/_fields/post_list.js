@@ -18,6 +18,7 @@ module.exports = {
     'forum_mod_can_edit_titles',
     'forum_mod_can_close_topic',
     'can_vote',
+    'forum_mod_can_add_infractions',
     'votes_add_max_time'
   ]
 };

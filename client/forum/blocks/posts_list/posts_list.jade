@@ -219,6 +219,12 @@ each post, post_idx in self.posts
                     span.caret
                   ul.dropdown-menu.dropdown-menu-right(role='menu')
 
+                    if self.settings.forum_mod_can_add_infractions
+                      li: a(href='#'
+                        data-post-id=post._id
+                        data-on-click='forum.topic:add_infraction'
+                      )= self.t('add_infraction')
+
                     if self.settings.can_see_ip
                       li
                         a(href='#'

@@ -571,6 +571,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Add infraction
+  //
+  N.wire.on(module.apiPath + ':add_infraction', function add_infraction(data) {
+    let params = { post_id: data.$this.data('post-id') };
+
+    return Promise.resolve()
+      .then(() => N.wire.emit('users.blocks.add_infraction_dlg', params))
+      .then(() => N.io.rpc('forum.topic.post.add_infraction', params))
+      .then(() => N.wire.emit('notify', { type: 'info', message: t('infraction_added') }));
+  });
+
+
   // Expand deleted or hellbanned post
   //
   N.wire.on(module.apiPath + '.post_expand', function post_expand(data) {
