@@ -259,7 +259,7 @@ module.exports = function (N, apiPath) {
         N.redis.zadd('views:forum_topic:track_last', score, key, function (err) {
           if (err) return;
 
-          N.redis.hincrby('views:forum_topic:count', env.data.topic._id, 1, function () {});
+          N.redis.hincrby('views:forum_topic:count', String(env.data.topic._id), 1, function () {});
         });
       });
     });
