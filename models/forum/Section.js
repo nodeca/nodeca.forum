@@ -52,10 +52,7 @@ module.exports = function (N, collectionName) {
 
     // Cache
     cache,
-    cache_hb:         cache,
-
-    // Setting storage. Only `section_usergroup` settings store should access this.
-    settings:         { type: Schema.Types.Mixed, 'default': {} }
+    cache_hb:         cache
   },
   {
     versionKey : false
@@ -83,6 +80,15 @@ module.exports = function (N, collectionName) {
     this.__isParentModified__ = this.isModified('parent') || this.isNew;
 
     next();
+  });
+
+  // Remove empty "parent" field
+  //
+  Section.pre('save', function (callback) {
+    /*eslint-disable no-undefined*/
+    if (this.parent === null) this.parent = undefined;
+
+    callback();
   });
 
   // Set 'hid' for the new section.
