@@ -14,7 +14,7 @@ module.exports = function (N, apiPath) {
     description:    { type: 'string',           required: true },
     is_category:    { type: 'boolean',          required: true },
     is_enabled:     { type: 'boolean',          required: true },
-    is_writeble:    { type: 'boolean',          required: true },
+    is_writable:    { type: 'boolean',          required: true },
     is_searchable:  { type: 'boolean',          required: true },
     is_votable:     { type: 'boolean',          required: true },
     is_counted:     { type: 'boolean',          required: true },

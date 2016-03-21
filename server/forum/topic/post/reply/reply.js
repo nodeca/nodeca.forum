@@ -44,7 +44,7 @@ module.exports = function (N, apiPath) {
     env.data.section = section;
 
     // Can not create post in read only section. Should never happens - restricted on client
-    if (!section.is_writeble) throw N.io.BAD_REQUEST;
+    if (!section.is_writable) throw N.io.BAD_REQUEST;
   });
 
 

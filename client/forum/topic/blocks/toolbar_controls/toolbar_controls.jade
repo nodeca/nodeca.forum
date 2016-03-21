@@ -69,7 +69,7 @@ if (self.selected_cnt !== 0)
 .page-actions.forum-topic__toolbar-controls
   - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 
-  if self.settings.forum_can_reply && isOpen && self.section.is_writeble
+  if self.settings.forum_can_reply && isOpen && self.section.is_writable
     button.btn.btn-primary.icon.icon-plus(
       data-on-click='forum.topic:reply'
       type='button'

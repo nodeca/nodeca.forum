@@ -43,7 +43,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* check_section_flags(env) {
     let section = yield N.models.forum.Section
                             .findOne({ _id: env.data.topic.section })
-                            .select('is_enabled is_votable is_writeble')
+                            .select('is_enabled is_votable is_writable')
                             .lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
@@ -53,7 +53,7 @@ module.exports = function (N, apiPath) {
     if (!section.is_votable) throw N.io.FORBIDDEN;
 
     // Can not create topic in read only section. Should never happens - restricted on client
-    if (!section.is_writeble) throw N.io.BAD_REQUEST;
+    if (!section.is_writable) throw N.io.BAD_REQUEST;
   });
 
 

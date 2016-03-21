@@ -20,7 +20,7 @@ module.exports = function (N, apiPath) {
     description:    { type: 'string',           required: false },
     is_category:    { type: 'boolean',          required: false },
     is_enabled:     { type: 'boolean',          required: false },
-    is_writeble:    { type: 'boolean',          required: false },
+    is_writable:    { type: 'boolean',          required: false },
     is_searchable:  { type: 'boolean',          required: false },
     is_votable:     { type: 'boolean',          required: false },
     is_counted:     { type: 'boolean',          required: false },

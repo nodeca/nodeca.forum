@@ -15,7 +15,7 @@ en-US:
   field_parent: Parent section
   field_is_category: Category
   field_is_enabled: Enabled
-  field_is_writeble: Writable
+  field_is_writable: Writable
   field_is_searchable: Searchable
   field_is_votable: Votable
   field_is_counted: Counted

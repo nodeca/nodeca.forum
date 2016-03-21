@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
     if (!section.is_enabled) throw N.io.NOT_FOUND;
 
     // Can not edit post in read only section. Should never happens - restricted on client
-    if (!section.is_writeble && !env.params.as_moderator) throw N.io.BAD_REQUEST;
+    if (!section.is_writable && !env.params.as_moderator) throw N.io.BAD_REQUEST;
   });
 
 
