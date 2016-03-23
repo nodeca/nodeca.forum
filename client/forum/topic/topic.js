@@ -969,7 +969,7 @@ function set_quote_modifiers(selector) {
   // if topicParams is not set, it means we aren't on a topic page
   if (!topicParams) return;
 
-  selector.find('.quote').addBack('.quote').each(function () {
+  selector.find('.quote').each(function () {
     let $tag = $(this);
 
     if ($tag.hasClass('quote__m-local') || $tag.hasClass('quote__m-outer')) {
