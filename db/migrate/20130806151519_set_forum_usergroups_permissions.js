@@ -33,6 +33,28 @@ module.exports.up = co.wrap(function* (N) {
     forum_can_start_topics: { value: true }
   }, { usergroup_id: memberGroup._id });
 
+  // add usergroup settings for violators
+
+  let violatorsGroup = yield N.models.users.UserGroup.findOne({ short_name: 'violators' });
+
+  yield usergroupStore.set({
+    forum_can_reply: { value: false, force: true },
+    forum_can_start_topics: { value: false, force: true },
+    forum_edit_max_time: { value: 0, force: true },
+    forum_can_close_topic: { value: false, force: true }
+  }, { usergroup_id: violatorsGroup._id });
+
+  // add usergroup settings for banned
+
+  let bannedGroup = yield N.models.users.UserGroup.findOne({ short_name: 'banned' });
+
+  yield usergroupStore.set({
+    forum_can_reply: { value: false, force: true },
+    forum_can_start_topics: { value: false, force: true },
+    forum_edit_max_time: { value: 0, force: true },
+    forum_can_close_topic: { value: false, force: true }
+  }, { usergroup_id: bannedGroup._id });
+
   // Recalculate store settings of all groups.
   yield usergroupStore.updateInherited();
 });
