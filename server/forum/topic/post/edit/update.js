@@ -1,7 +1,7 @@
 // Get post src html, update post
 'use strict';
 
-const cheequery = require('nodeca.core/lib/parser/cheequery');
+const $ = require('nodeca.core/lib/parser/cheequery');
 
 
 module.exports = function (N, apiPath) {
@@ -96,7 +96,7 @@ module.exports = function (N, apiPath) {
 
     if (max_images <= 0) return;
 
-    let ast         = cheequery(env.data.parse_result.html);
+    let ast         = $.parse(env.data.parse_result.html);
     let images      = ast.find('.image').length;
     let attachments = ast.find('.attach').length;
     let tail        = env.data.parse_result.tail.length;
@@ -117,7 +117,7 @@ module.exports = function (N, apiPath) {
 
     if (max_emojis < 0) return;
 
-    if (cheequery(env.data.parse_result.html).find('.emoji').length > max_emojis) {
+    if ($.parse(env.data.parse_result.html).find('.emoji').length > max_emojis) {
       throw {
         code: N.io.CLIENT_ERROR,
         message: env.t('err_too_many_emojis', max_emojis)
