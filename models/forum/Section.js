@@ -5,7 +5,7 @@ const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
 const memoizee = require('memoizee');
 const thenify  = require('thenify');
-const co       = require('co');
+const co       = require('bluebird-co').co;
 const _        = require('lodash');
 
 

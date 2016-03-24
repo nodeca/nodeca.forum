@@ -11,7 +11,7 @@
  */
 
 const _         = require('lodash');
-const co        = require('co');
+const co        = require('bluebird-co').co;
 const thenify   = require('thenify');
 const charlatan = require('charlatan');
 const ObjectId  = require('mongoose').Types.ObjectId;

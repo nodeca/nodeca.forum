@@ -6,7 +6,7 @@
 var Mongoose = require('mongoose');
 var Schema   = Mongoose.Schema;
 var _        = require('lodash');
-var co       = require('co');
+var co       = require('bluebird-co').co;
 
 
 // Step between cached hids. Value should be big enough to:

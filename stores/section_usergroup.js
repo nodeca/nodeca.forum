@@ -17,7 +17,7 @@
 const _        = require('lodash');
 const memoizee = require('memoizee');
 const thenify  = require('thenify');
-const co       = require('co');
+const co       = require('bluebird-co').co;
 
 
 module.exports = function (N) {

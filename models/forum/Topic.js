@@ -3,7 +3,7 @@
 
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
-const co       = require('co');
+const co       = require('bluebird-co').co;
 
 
 ////////////////////////////////////////////////////////////////////////////////
