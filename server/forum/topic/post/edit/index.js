@@ -90,15 +90,28 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fetch attachments info
+  //
   N.wire.before(apiPath, function* fetch_attachments(env) {
-    env.data.attachments = [];
+    if (!env.data.post.attach || !env.data.post.attach.length) {
+      env.data.attachments = [];
+      return;
+    }
 
-    yield env.data.post.attach.map(
-      mediaId => N.models.users.MediaInfo
-                    .findOne({ media_id: mediaId })
-                    .select('media_id file_name type')
-                    .lean(true)
-                    .then(result => env.data.attachments.push(result)));
+    let attachments = yield N.models.users.MediaInfo.find()
+                                .where('media_id').in(env.data.post.attach)
+                                .select('media_id file_name type')
+                                .lean(true);
+
+    // Sort in the same order as it was in post
+    env.data.attachments = env.data.post.attach.reduce((acc, media_id) => {
+      let attach = attachments.find(attachment => String(attachment.media_id) === String(media_id));
+
+      if (attach) {
+        acc.push(attach);
+      }
+      return acc;
+    }, []);
   });
 
 
