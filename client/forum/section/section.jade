@@ -32,12 +32,12 @@ article#content.forum-section-root(
     if self.topics && self.topics.length
       .forum-topiclist._affix(
         data-affix-top={
-          offset:     160,
+          offset:     500,
           wire_above: 'forum.section:load_prev',
           throttle:   100
         }
         data-affix-bottom={
-          offset:     160,
+          offset:     500,
           wire_below: 'forum.section:load_next',
           throttle:   100
         }
