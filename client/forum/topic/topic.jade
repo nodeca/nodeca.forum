@@ -59,8 +59,18 @@ article#content.forum-topic-root(
           | 
           =self.t('del_reason', { text: self.topic.del_reason })
 
-  .forum-postlist
-    != self.partial('@forum.blocks.posts_list')
+  .forum-postlist._affix(
+    data-affix-top={
+      offset:     160,
+      wire_above: 'forum.topic:load_prev',
+      throttle:   100
+    }
+    data-affix-bottom={
+      offset:     160,
+      wire_below: 'forum.topic:load_next',
+      throttle:   100
+    }
+  )!= self.partial('@forum.blocks.posts_list')
 
 nav.forum-topic__footer-pager
   - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }

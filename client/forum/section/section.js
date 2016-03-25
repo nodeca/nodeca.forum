@@ -193,242 +193,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 });
 
 
-///////////////////////////////////////////////////////////////////////////
-// Whenever we are close to beginning/end of topic list, check if we can
-// load more pages from the server
-//
-let prefetchScrollHandler = null;
-
-N.wire.on('navigate.done:' + module.apiPath, function prefetcher_init() {
-  if ($('.forum-topiclist').length === 0) { return; }
-
-  // an amount of topics we try to load when user scrolls to the end of the page
-  const LOAD_TOPICS_COUNT = N.runtime.page_data.pagination.per_page;
-
-  // an amount of time between successful xhr requests and failed xhr requests respectively
-  //
-  // For example, suppose user continuously scrolls. If server is up, each
-  // subsequent request will be sent each 100 ms. If server goes down, the
-  // interval between request initiations goes up to 2000 ms.
-  //
-  const LOAD_INTERVAL = 100;
-  const LOAD_AFTER_ERROR = 2000;
-
-  // an amount of topics from top/bottom that triggers prefetch in that direction
-  const LOAD_BORDER_SIZE = 10;
-
-  function load_prev_page() {
-    if (sectionState.reached_start) return;
-
-    let now = Date.now();
-
-    // `prev_loading_start` is the last request start time, which is reset to 0 on success
-    //
-    // Thus, successful requests can restart immediately, but failed ones
-    // will have to wait `LOAD_AFTER_ERROR` ms.
-    //
-    if (Math.abs(sectionState.prev_loading_start - now) < LOAD_AFTER_ERROR) return;
-
-    sectionState.prev_loading_start = now;
-
-    N.io.rpc('forum.section.list.by_range', {
-      section_hid:   sectionState.hid,
-      last_post_id:  sectionState.first_post_id,
-      before:        LOAD_TOPICS_COUNT,
-      after:         0
-    }).then(function (res) {
-      // Stop debouncer to avoid progress bar jump after page load
-      if ($(window).scrollTop() <= 0) {
-        prefetchScrollHandler.cancel();
-      }
-
-      if (!res.topics) return;
-
-      if (res.topics.length !== LOAD_TOPICS_COUNT) {
-        sectionState.reached_start = true;
-        $('.forum-section-root').addClass('forum-section-root__m-first-page');
-      }
-
-      if (res.topics.length === 0) return;
-
-      // remove duplicate topics
-      res.topics.forEach(topic => $(`#topic${topic.hid}`).remove());
-
-      let old_height = $('.forum-topiclist').height();
-
-      // render & inject topics list
-      let $result = $(N.runtime.render('forum.blocks.topics_list', res));
-      $('.forum-topiclist').prepend($result);
-
-      // update scroll so it would point at the same spot as before
-      $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
-
-      sectionState.first_post_id = res.topics[0].cache.last_post;
-      sectionState.first_offset  = res.pagination.chunk_offset;
-      sectionState.topic_count   = res.pagination.total;
-
-      // Update selection state
-      _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
-        $(`#topic${topicHid}`)
-          .addClass('forum-topicline__m-selected')
-          .find('.forum-topicline__select-cb')
-          .prop('checked', true);
-      });
-
-      // update prev/next metadata
-      $('link[rel="prev"]').remove();
-
-      if (res.head.prev) {
-        let link = $('<link rel="prev">');
-
-        link.attr('href', res.head.prev);
-        $('head').append(link);
-      }
-
-      sectionState.prev_loading_start = 0;
-
-      return N.wire.emit('forum.section.blocks.page_progress:update', {
-        max: sectionState.topic_count
-      });
-    }).catch(err => {
-      N.wire.emit('error', err);
-    });
-  }
-
-  function load_next_page() {
-    if (sectionState.reached_end) return;
-
-    let now = Date.now();
-
-    // `next_loading_start` is the last request start time, which is reset to 0 on success
-    //
-    // Thus, successful requests can restart immediately, but failed ones
-    // will have to wait `LOAD_AFTER_ERROR` ms.
-    //
-    if (Math.abs(sectionState.next_loading_start - now) < LOAD_AFTER_ERROR) return;
-
-    sectionState.next_loading_start = now;
-
-    N.io.rpc('forum.section.list.by_range', {
-      section_hid:   sectionState.hid,
-      last_post_id:  sectionState.last_post_id,
-      before:        0,
-      after:         LOAD_TOPICS_COUNT
-    }).then(function (res) {
-      let scrollHeight = (document.documentElement && document.documentElement.scrollHeight) ||
-                         document.body.scrollHeight;
-
-      // Stop debouncer to avoid progress bar jump after page load
-      if ($(window).height() + $(window).scrollTop() >= scrollHeight) {
-        prefetchScrollHandler.cancel();
-      }
-
-      if (!res.topics) return;
-
-      if (res.topics.length !== LOAD_TOPICS_COUNT) {
-        sectionState.reached_end = true;
-      }
-
-      if (res.topics.length === 0) return;
-
-      let old_height = $('.forum-topiclist').height();
-
-      // remove duplicate topics
-      let deleted_count = res.topics.filter(topic => {
-        let el = $(`#topic${topic.hid}`);
-
-        if (el.length) {
-          el.remove();
-          return true;
-        }
-      }).length;
-
-      // update scroll so it would point at the same spot as before
-      if (deleted_count > 0) {
-        $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
-      }
-
-      sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
-      sectionState.first_offset = res.pagination.chunk_offset - $('.forum-topicline').length;
-      sectionState.topic_count  = res.pagination.total;
-
-      // render & inject topics list
-      let $result = $(N.runtime.render('forum.blocks.topics_list', res));
-      $('.forum-topiclist').append($result);
-
-      // Workaround for FF bug, possibly this one:
-      // https://github.com/nodeca/nodeca.core/issues/2
-      //
-      // When user scrolls down and we insert content to the end
-      // of the page, and the page is large enough (~1000 topics
-      // or more), next scrollTop() read on 'scroll' event may
-      // return invalid (too low) value.
-      //
-      // Reading scrollTop in the same tick seem to prevent this
-      // from happening.
-      //
-      $window.scrollTop();
-
-      // Update selection state
-      _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
-        $(`#topic${topicHid}`)
-          .addClass('forum-topicline__m-selected')
-          .find('.forum-topicline__select-cb')
-          .prop('checked', true);
-      });
-
-      // update next/next metadata
-      $('link[rel="next"]').remove();
-
-      if (res.head.next) {
-        let link = $('<link rel="next">');
-
-        link.attr('href', res.head.next);
-        $('head').append(link);
-      }
-
-      sectionState.next_loading_start = 0;
-
-      return N.wire.emit('forum.section.blocks.page_progress:update', {
-        max: sectionState.topic_count
-      });
-    }).catch(err => {
-      N.wire.emit('error', err);
-    });
-  }
-
-  // If we're browsing one of the first/last 10 topics, load more pages from
-  // the server in that direction.
-  //
-  prefetchScrollHandler = _.debounce(function prefetch_on_scroll() {
-    let topics        = document.getElementsByClassName('forum-topicline'),
-        viewportStart = $window.scrollTop() + navbarHeight,
-        viewportEnd   = $window.scrollTop() + $window.height();
-
-    if (topics.length <= LOAD_BORDER_SIZE || topics[topics.length - LOAD_BORDER_SIZE].offsetTop < viewportEnd) {
-      load_next_page();
-    }
-
-    if (topics.length <= LOAD_BORDER_SIZE || topics[LOAD_BORDER_SIZE].offsetTop > viewportStart) {
-      load_prev_page();
-    }
-  }, LOAD_INTERVAL, { maxWait: LOAD_INTERVAL });
-
-
-  // avoid executing it on first tick because of initial scrollTop()
-  setTimeout(function () {
-    $window.on('scroll', prefetchScrollHandler);
-  }, 1);
-});
-
-N.wire.on('navigate.exit:' + module.apiPath, function prefetcher_teardown() {
-  if (!prefetchScrollHandler) return;
-  prefetchScrollHandler.cancel();
-  $window.off('scroll', prefetchScrollHandler);
-  prefetchScrollHandler = null;
-});
-
-
 /////////////////////////////////////////////////////////////////////
 // When user scrolls the page:
 //
@@ -878,6 +642,192 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       })
       .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_moved') }))
       .then(() => N.wire.emit('navigate.reload'));
+  });
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Whenever we are close to beginning/end of topic list, check if we can
+  // load more pages from the server
+  //
+
+  // an amount of topics we try to load when user scrolls to the end of the page
+  const LOAD_TOPICS_COUNT = N.runtime.page_data.pagination.per_page;
+
+  // A delay after failed xhr request (delay between successful requests
+  // is set with affix `throttle` argument)
+  //
+  // For example, suppose user continuously scrolls. If server is up, each
+  // subsequent request will be sent each 100 ms. If server goes down, the
+  // interval between request initiations goes up to 2000 ms.
+  //
+  const LOAD_AFTER_ERROR = 2000;
+
+  N.wire.on(module.apiPath + ':load_prev', function load_prev_page() {
+    if (sectionState.reached_start) return;
+
+    let now = Date.now();
+
+    // `prev_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(sectionState.prev_loading_start - now) < LOAD_AFTER_ERROR) return;
+
+    sectionState.prev_loading_start = now;
+
+    N.io.rpc('forum.section.list.by_range', {
+      section_hid:   sectionState.hid,
+      last_post_id:  sectionState.first_post_id,
+      before:        LOAD_TOPICS_COUNT,
+      after:         0
+    }).then(function (res) {
+      if (!res.topics) return;
+
+      if (res.topics.length !== LOAD_TOPICS_COUNT) {
+        sectionState.reached_start = true;
+        $('.forum-section-root').addClass('forum-section-root__m-first-page');
+      }
+
+      if (res.topics.length === 0) return;
+
+      // remove duplicate topics
+      res.topics.forEach(topic => $(`#topic${topic.hid}`).remove());
+
+      let old_height = $('.forum-topiclist').height();
+
+      // render & inject topics list
+      let $result = $(N.runtime.render('forum.blocks.topics_list', res));
+      $('.forum-topiclist').prepend($result);
+
+      // update scroll so it would point at the same spot as before
+      $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
+
+      sectionState.first_post_id = res.topics[0].cache.last_post;
+      sectionState.first_offset  = res.pagination.chunk_offset;
+      sectionState.topic_count   = res.pagination.total;
+
+      // Update selection state
+      _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
+        $(`#topic${topicHid}`)
+          .addClass('forum-topicline__m-selected')
+          .find('.forum-topicline__select-cb')
+          .prop('checked', true);
+      });
+
+      // update prev/next metadata
+      $('link[rel="prev"]').remove();
+
+      if (res.head.prev) {
+        let link = $('<link rel="prev">');
+
+        link.attr('href', res.head.prev);
+        $('head').append(link);
+      }
+
+      sectionState.prev_loading_start = 0;
+
+      return N.wire.emit('forum.section.blocks.page_progress:update', {
+        max: sectionState.topic_count
+      });
+    }).catch(err => {
+      N.wire.emit('error', err);
+    });
+  });
+
+
+  N.wire.on(module.apiPath + ':load_next', function load_next_page() {
+    if (sectionState.reached_end) return;
+
+    let now = Date.now();
+
+    // `next_loading_start` is the last request start time, which is reset to 0 on success
+    //
+    // Thus, successful requests can restart immediately, but failed ones
+    // will have to wait `LOAD_AFTER_ERROR` ms.
+    //
+    if (Math.abs(sectionState.next_loading_start - now) < LOAD_AFTER_ERROR) return;
+
+    sectionState.next_loading_start = now;
+
+    N.io.rpc('forum.section.list.by_range', {
+      section_hid:   sectionState.hid,
+      last_post_id:  sectionState.last_post_id,
+      before:        0,
+      after:         LOAD_TOPICS_COUNT
+    }).then(function (res) {
+      if (!res.topics) return;
+
+      if (res.topics.length !== LOAD_TOPICS_COUNT) {
+        sectionState.reached_end = true;
+      }
+
+      if (res.topics.length === 0) return;
+
+      let old_height = $('.forum-topiclist').height();
+
+      // remove duplicate topics
+      let deleted_count = res.topics.filter(topic => {
+        let el = $(`#topic${topic.hid}`);
+
+        if (el.length) {
+          el.remove();
+          return true;
+        }
+      }).length;
+
+      // update scroll so it would point at the same spot as before
+      if (deleted_count > 0) {
+        $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
+      }
+
+      sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
+      sectionState.first_offset = res.pagination.chunk_offset - $('.forum-topicline').length;
+      sectionState.topic_count  = res.pagination.total;
+
+      // render & inject topics list
+      let $result = $(N.runtime.render('forum.blocks.topics_list', res));
+      $('.forum-topiclist').append($result);
+
+      // Workaround for FF bug, possibly this one:
+      // https://github.com/nodeca/nodeca.core/issues/2
+      //
+      // When user scrolls down and we insert content to the end
+      // of the page, and the page is large enough (~1000 topics
+      // or more), next scrollTop() read on 'scroll' event may
+      // return invalid (too low) value.
+      //
+      // Reading scrollTop in the same tick seem to prevent this
+      // from happening.
+      //
+      $window.scrollTop();
+
+      // Update selection state
+      _.intersection(sectionState.selected_topics, _.map(res.topics, 'hid')).forEach(topicHid => {
+        $(`#topic${topicHid}`)
+          .addClass('forum-topicline__m-selected')
+          .find('.forum-topicline__select-cb')
+          .prop('checked', true);
+      });
+
+      // update next/next metadata
+      $('link[rel="next"]').remove();
+
+      if (res.head.next) {
+        let link = $('<link rel="next">');
+
+        link.attr('href', res.head.next);
+        $('head').append(link);
+      }
+
+      sectionState.next_loading_start = 0;
+
+      return N.wire.emit('forum.section.blocks.page_progress:update', {
+        max: sectionState.topic_count
+      });
+    }).catch(err => {
+      N.wire.emit('error', err);
+    });
   });
 });
 

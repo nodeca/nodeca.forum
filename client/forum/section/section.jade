@@ -30,8 +30,18 @@ article#content.forum-section-root(
 
   if self.section.is_category === false || (self.topics && self.topics.length)
     if self.topics && self.topics.length
-      .forum-topiclist
-        != self.partial('@forum.blocks.topics_list')
+      .forum-topiclist._affix(
+        data-affix-top={
+          offset:     160,
+          wire_above: 'forum.section:load_prev',
+          throttle:   100
+        }
+        data-affix-bottom={
+          offset:     160,
+          wire_below: 'forum.section:load_next',
+          throttle:   100
+        }
+      )!= self.partial('@forum.blocks.topics_list')
 
       nav.forum-section__page-links
         .pager
