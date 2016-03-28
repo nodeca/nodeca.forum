@@ -164,6 +164,9 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
     env.data.own_bookmarks = bookmarks;
+
+    if (!bookmarks.length) return;
+
     env.res.own_bookmarks = _.map(bookmarks, 'post_id');
   });
 
@@ -178,6 +181,8 @@ module.exports = function (N, apiPath) {
                           .lean(true);
 
     env.data.own_votes = votes;
+
+    if (!votes.length) return;
 
     // [ { _id: ..., for: '562f3569c5b8d831367b0585', value: -1 } ] -> { 562f3569c5b8d831367b0585: -1 }
     env.res.own_votes = votes.reduce((acc, vote) => {

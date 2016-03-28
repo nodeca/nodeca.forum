@@ -1,6 +1,8 @@
 - var postStatuses = '$$ JSON.stringify(N.models.forum.Post.statuses) $$'
 - self.users = self.users || {};
 - self.infractions = self.infractions || {};
+- self.own_votes = self.own_votes || {};
+- self.own_bookmarks = self.own_bookmarks || [];
 
 //- `self.pagination` may absent if post loaded via `topic.list.by_range`
 - var post_counter = self.pagination ? self.pagination.chunk_offset : 0;
