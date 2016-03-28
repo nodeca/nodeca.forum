@@ -16,6 +16,7 @@
 //       section: ...       # { hid: ... }
 //       own_bookmarks: ... # array of posts ids bookmarked by user
 //       own_votes: ...     # hash of votes owned by user ({ <post_id>: <value> })
+//       infractions: ...   # hash of infractions ({ <post_id>: <infraction> })
 //     data:
 //       posts_visible_statuses: ...
 //       settings: ...
@@ -181,6 +182,31 @@ module.exports = function (N, apiPath) {
     // [ { _id: ..., for: '562f3569c5b8d831367b0585', value: -1 } ] -> { 562f3569c5b8d831367b0585: -1 }
     env.res.own_votes = votes.reduce((acc, vote) => {
       acc[vote.for] = vote.value;
+      return acc;
+    }, {});
+  });
+
+
+  // Fetch infractions
+  //
+  N.wire.after(apiPath, function* fetch_infractions(env) {
+    env.extras.settings.params.section_id = env.data.topic.section;
+
+    let settings = yield env.extras.settings.fetch([
+      'forum_mod_can_add_infractions',
+      'can_see_infractions'
+    ]);
+
+    if (!settings.can_see_infractions && !settings.forum_mod_can_add_infractions) return;
+
+    let infractions = yield N.models.users.Infraction.find()
+                                .where('src_id').in(env.data.posts_ids)
+                                .where('exists').equals(true)
+                                .select('src_id points ts')
+                                .lean(true);
+
+    env.res.infractions = infractions.reduce((acc, infraction) => {
+      acc[infraction.src_id] = infraction;
       return acc;
     }, {});
   });

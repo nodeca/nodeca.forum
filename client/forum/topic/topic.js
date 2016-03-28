@@ -340,11 +340,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Add infraction
   //
   N.wire.on(module.apiPath + ':add_infraction', function add_infraction(data) {
-    let params = { post_id: data.$this.data('post-id') };
+    let postId = data.$this.data('post-id');
+    let params = { post_id: postId };
 
     return Promise.resolve()
       .then(() => N.wire.emit('users.blocks.add_infraction_dlg', params))
       .then(() => N.io.rpc('forum.topic.post.add_infraction', params))
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(res => {
+        let $result = $(N.runtime.render('forum.blocks.posts_list', res));
+
+        return N.wire.emit('navigate.update', { $: $result, locals: res })
+          .then(() => $(`#post${postId}`).replaceWith($result));
+      })
       .then(() => N.wire.emit('notify', { type: 'info', message: t('infraction_added') }));
   });
 

@@ -109,6 +109,18 @@ each post, post_idx in self.posts
         footer.forum-post__controls.clearfix
           ul.forum-post__controls-blk.pull-right
 
+            -var infraction = self.infractions[post._id];
+            if infraction
+              li.forum-post__control-item.forum-post__infraction(
+                class=infraction.points === 0 ? 'forum-post__infraction-m-warning' : ''
+              )
+                a.btn.forum-post__action(
+                  title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'compact') })
+                  href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions-info'
+                )
+                  //- TODO: replace with .icon-card
+                  span.icon.icon-track-watching
+
             - var showDropdown = false
             - showDropdown = showDropdown || self.settings.forum_mod_can_edit_posts
             - showDropdown = showDropdown || self.settings.forum_mod_can_delete_topics
@@ -219,7 +231,7 @@ each post, post_idx in self.posts
                     span.caret
                   ul.dropdown-menu.dropdown-menu-right(role='menu')
 
-                    if self.settings.forum_mod_can_add_infractions
+                    if self.settings.forum_mod_can_add_infractions && !self.infractions[post._id]
                       li: a(href='#'
                         data-post-id=post._id
                         data-on-click='forum.topic:add_infraction'
@@ -310,6 +322,19 @@ each post, post_idx in self.posts
 
       footer.forum-post__controls.clearfix
         ul.forum-post__controls-blk.pull-right
+
+          -var infraction = self.infractions[post._id];
+          if infraction
+            li.forum-post__control-item.forum-post__infraction(
+              class=infraction.points === 0 ? 'forum-post__infraction-m-warning' : ''
+            )
+              a.btn.forum-post__action(
+                title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'compact') })
+                href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions-info'
+              )
+                //- TODO: replace with .icon-card
+                span.icon.icon-track-watching
+
           li.forum-post__control-item
             button.btn.forum-post__action(
               data-on-click='forum.topic.post_expand'

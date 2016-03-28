@@ -75,6 +75,18 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check infraction already exists
+  //
+  N.wire.before(apiPath, function* check_exists(env) {
+    let infraction = yield N.models.users.Infraction.findOne()
+                              .where('src_id').equals(env.data.post._id)
+                              .where('exists').equals(true)
+                              .lean(true);
+
+    if (infraction) throw { code: N.io.CLIENT_ERROR, message: env.t('err_infraction_exists') };
+  });
+
+
   // Save infraction
   //
   N.wire.on(apiPath, function* add_infraction(env) {

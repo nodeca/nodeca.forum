@@ -1,2 +1,3 @@
 en-US:
   err_perm_receive: You can't add infractions to this user
+  err_infraction_exists: Can't give infraction twice
