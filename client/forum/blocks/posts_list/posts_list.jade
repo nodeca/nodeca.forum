@@ -116,7 +116,7 @@ each post, post_idx in self.posts
                 class=infraction.points === 0 ? 'forum-post__infraction-m-warning' : ''
               )
                 a.btn.forum-post__action(
-                  title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'compact') })
+                  title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'datetime') })
                   href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions-info'
                 )
                   //- TODO: replace with .icon-card
@@ -330,7 +330,7 @@ each post, post_idx in self.posts
               class=infraction.points === 0 ? 'forum-post__infraction-m-warning' : ''
             )
               a.btn.forum-post__action(
-                title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'compact') })
+                title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'datetime') })
                 href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions-info'
               )
                 //- TODO: replace with .icon-card
