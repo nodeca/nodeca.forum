@@ -1059,7 +1059,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
         category_id: N.runtime.page_data.topic.section
       };
 
-      return bag.set('topics_scroll').then(() => { uploadScrollPositions(); });
+      return bag.set('topics_scroll', positions).then(() => { uploadScrollPositions(); });
     });
   }, 300, { maxWait: 300 });
 
