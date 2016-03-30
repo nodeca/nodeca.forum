@@ -266,6 +266,21 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Set marker position
+  //
+  N.wire.after(apiPath, function* set_marker_pos(env) {
+    // TODO: set max position only if added post just after last read
+    yield N.models.users.Marker.setPos(
+      env.user_info.user_id,
+      env.data.topic._id,
+      env.data.new_post.hid,
+      env.data.new_post.hid,
+      env.data.topic.section,
+      'forum_topic'
+    );
+  });
+
+
   // Fill url of new post
   //
   N.wire.after(apiPath, function process_response(env) {
