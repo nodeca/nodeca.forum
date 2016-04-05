@@ -16,7 +16,7 @@ i18n:
           forum_mod_can_edit_posts: Edit posts
           forum_mod_can_edit_titles: Edit topic titles
           forum_mod_can_close_topic: Close topics
-          forum_mod_can_add_infractions: Can add infractions
+          forum_mod_can_add_infractions: Can give infractions at forum
           forum_mod_can_delete_topics: Delete topics
           forum_mod_can_hard_delete_topics: Hard delete topics
           forum_mod_can_see_hard_deleted_topics: See hard deleted topics

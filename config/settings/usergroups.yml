@@ -74,7 +74,7 @@ setting_schemas:
       default: false
 
     forum_mod_can_add_infractions:
-      priority: 1070
-      category_key: perm_forum_moderate
+      priority: 2100
+      category_key: perm_infractions
       type: boolean
       default: false
