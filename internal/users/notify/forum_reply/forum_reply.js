@@ -98,9 +98,9 @@ module.exports = function (N) {
       helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
       helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
 
-      let subject = N.i18n.t(locale, 'forum.notify.forum_reply.subject', {
+      let subject = N.i18n.t(locale, 'users.notify.forum_reply.subject', {
         project_name: general_project_name,
-        user_name: user ? user.name : N.i18n.t(locale, 'forum.notify.forum_reply.someone')
+        user_name: user ? user.name : N.i18n.t(locale, 'users.notify.forum_reply.someone')
       });
 
       let url = N.router.linkTo('forum.topic', {
@@ -114,7 +114,7 @@ module.exports = function (N) {
         topic_hid: topic.hid
       });
 
-      let text = render(N, 'forum.notify.forum_reply', { post_html: post.html, link: url }, helpers);
+      let text = render(N, 'users.notify.forum_reply', { post_html: post.html, link: url }, helpers);
 
       local_env.messages[user_id] = { subject, text, url, unsubscribe };
     });

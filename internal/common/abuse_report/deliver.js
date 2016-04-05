@@ -14,11 +14,11 @@
 const render = require('nodeca.core/lib/system/render/common');
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
   // Create new topic or add to existing one
   //
-  N.wire.before('internal:common.abuse_report.deliver', function* log_abuse_report(params) {
+  N.wire.before(apiPath, function* log_abuse_report(params) {
     let section_id = yield N.settings.get('general_abuse_report_section');
 
     // If section id not specified - skip

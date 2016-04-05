@@ -19,7 +19,7 @@ const _        = require('lodash');
 const userInfo = require('nodeca.users/lib/user_info');
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
   // Subcall `internal:forum.abuse_report` for `FORUM_POST` content type
   //
@@ -33,7 +33,7 @@ module.exports = function (N) {
 
   // Fetch post, topic and section
   //
-  N.wire.before('internal:common.abuse_report.forum_post', function* fetch_post_topic_section(params) {
+  N.wire.before(apiPath, function* fetch_post_topic_section(params) {
     params.data.post = yield N.models.forum.Post.findOne({ _id: params.report.src_id }).lean(true);
 
     if (!params.data.post) throw N.io.NOT_FOUND;
@@ -50,7 +50,7 @@ module.exports = function (N) {
 
   // Fetch recipients
   //
-  N.wire.before('internal:common.abuse_report.forum_post', function* fetch_recipients(params) {
+  N.wire.before(apiPath, function* fetch_recipients(params) {
     let section_moderator_store = N.settings.getStore('section_moderator');
     let recipients = yield section_moderator_store.getModeratorsInfo(params.data.section);
     let recipients_ids = _.map(recipients, '_id');
@@ -72,18 +72,18 @@ module.exports = function (N) {
 
   // Prepare locals
   //
-  N.wire.on('internal:common.abuse_report.forum_post', function* prepare_locals(params) {
+  N.wire.on(apiPath, function* prepare_locals(params) {
     let locals = params.locals || {};
     let author = params.report.from ? yield userInfo(N, params.report.from) : null;
 
     params.log_templates = {
-      body: 'forum.abuse_report.forum_post.log_templates.body',
-      subject: 'forum.abuse_report.forum_post.log_templates.subject'
+      body: 'common.abuse_report.forum_post.log_templates.body',
+      subject: 'common.abuse_report.forum_post.log_templates.subject'
     };
 
     params.email_templates = {
-      body: 'forum.abuse_report.forum_post.email_templates.body',
-      subject: 'forum.abuse_report.forum_post.email_templates.subject'
+      body: 'common.abuse_report.forum_post.email_templates.body',
+      subject: 'common.abuse_report.forum_post.email_templates.subject'
     };
 
     locals.project_name = yield N.settings.get('general_project_name');

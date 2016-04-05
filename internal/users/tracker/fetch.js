@@ -9,9 +9,9 @@ const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
-  N.wire.on('internal:users.tracker.fetch', function* tracker_fetch_topics(env) {
+  N.wire.on(apiPath, function* tracker_fetch_topics(env) {
     let topic_subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_TOPIC });
     let sect_subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_SECTION });
 
@@ -21,7 +21,9 @@ module.exports = function (N) {
     let topics = [];
 
     if (topic_subs.length !== 0) {
-      yield N.models.forum.Topic.find().where('_id').in(_.map(topic_subs, 'to')).lean(true);
+      topics = yield N.models.forum.Topic.find()
+                        .where('_id').in(_.map(topic_subs, 'to'))
+                        .lean(true);
     }
 
 

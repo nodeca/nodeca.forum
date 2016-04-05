@@ -7,9 +7,9 @@
 var render = require('nodeca.core/lib/system/render/common');
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
-  N.wire.on('internal:common.content.quote_wrap', function* generate_quote_wrapper(data) {
+  N.wire.on(apiPath, function* generate_quote_wrapper(data) {
     if (data.html) return;
 
     var match = N.router.matchAll(data.url).reduce(function (acc, match) {

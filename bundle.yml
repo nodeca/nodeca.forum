@@ -12,6 +12,7 @@ packages:
     entries:
       - client/common
       - server/common
+      - internal/common
 
   forum:
     depends:

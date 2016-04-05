@@ -4,9 +4,9 @@
 'use strict';
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
-  N.wire.on('internal:common.content.get', function* get_post_contents(data) {
+  N.wire.on(apiPath, function* get_post_contents(data) {
     if (data.html) return;
 
     let match = N.router.matchAll(data.url).reduce(
