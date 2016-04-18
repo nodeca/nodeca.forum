@@ -82,10 +82,12 @@ const createPost = co.wrap(function* (topic, reply_to) {
     to_user: reply_to ? reply_to.user : undefined,
     to_phid: reply_to ? reply_to.hid  : undefined,
 
-    ts,
-
-    params:  settings
+    ts
   });
+
+  // params_ref will be generated automatically by the hook,
+  // specifying params in constructor doesn't work 'cause params is not in the model
+  post.params = options;
 
   yield post.save();
   yield User.update({ _id: post.user }, { $inc: { post_count: 1 } });

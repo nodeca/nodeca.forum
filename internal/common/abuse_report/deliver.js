@@ -43,13 +43,16 @@ module.exports = function (N, apiPath) {
                             .where('_id').equals(section_id)
                             .lean(true);
 
+    let options = yield N.models.core.MessageParams.getParams(params.report.params_ref);
+
     // Create new post
-    let post = new N.models.forum.Post({
-      html: (yield N.parse({ text: body, attachments: [], options: {} })).html,
-      md: body,
-      st: N.models.forum.Post.statuses.VISIBLE,
-      user: params.report.from
-    });
+    let post = new N.models.forum.Post();
+
+    post.html   = (yield N.parse({ text: body, attachments: [], options })).html;
+    post.md     = body;
+    post.st     = N.models.forum.Post.statuses.VISIBLE;
+    post.user   = params.report.from;
+    post.params = options;
 
     let report_ref = yield N.models.forum.AbuseReportRef.findOne()
                               .where('src_id').equals(params.report.src_id)

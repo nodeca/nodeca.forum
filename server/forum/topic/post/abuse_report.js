@@ -54,11 +54,18 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function* send_report_subcall(env) {
     env.data.message = env.params.message;
 
+    let params = yield N.models.core.MessageParams.getParams(env.data.post.params_ref);
+
+    // enable markup used in templates (even if it's disabled in forum)
+    params.link  = true;
+    params.quote = true;
+
     let report = new N.models.core.AbuseReport({
       src_id: env.data.post._id,
       type: 'FORUM_POST',
       text: env.params.message,
-      from: env.user_info.user_id
+      from: env.user_info.user_id,
+      params_ref: yield N.models.core.MessageParams.setParams(params)
     });
 
     yield N.wire.emit('internal:common.abuse_report', { report });
