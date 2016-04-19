@@ -7,9 +7,7 @@ ul.forum-sections
     - var last_topic = section.cache.last_topic_hid
     - var last_user = self.users[section.cache.last_user]
     - var last_ts = section.cache.last_ts
-    li.forum-section(id='cat' + section.hid
-      class=self.subsections_marks[section._id] < +new Date(last_ts || 0) ? 'unread' : ''
-    )
+    li.forum-section(id='cat' + section.hid)
 
       //- Add 'unread' class & #id below, for new data
       .row
@@ -43,8 +41,6 @@ ul.forum-sections
                 = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
 
             .forum-section__enter.icon.icon-right-open.visible-xs-block
-
-            .forum-section__unread-marker
 
 
         .col-sm-2.hidden-xs

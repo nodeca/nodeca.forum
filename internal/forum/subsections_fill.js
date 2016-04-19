@@ -160,14 +160,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fill read marks
-  //
-  N.wire.after(apiPath, function* fill_marks(env) {
-    env.res.subsections_marks =
-      yield N.models.users.Marker.cuts(env.user_info.user_id, _.map(env.data.subsections, '_id'));
-  });
-
-
   // Fill response data
   //
   N.wire.after(apiPath, function subsections_fill_response(env) {
