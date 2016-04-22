@@ -236,7 +236,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     offset = currentIdx + sectionState.first_offset;
 
     N.wire.emit('forum.section.blocks.page_progress:update', {
-      current:  offset,
+      current:  offset + 1, // `+1` because offset is zero based
       max:      sectionState.topic_count
     }).catch(err => {
       N.wire.emit('error', err);
