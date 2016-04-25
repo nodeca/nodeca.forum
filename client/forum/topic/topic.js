@@ -16,6 +16,7 @@ const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - max_post:           hid of the last post in this topic
 // - post_count:         an amount of visible posts in the topic
 // - posts_per_page:     an amount of visible posts per page
+// - topic_inactive_for: time after last post (used for edit confirmation)
 // - first_post_offset:  total amount of visible posts in the topic before the first displayed post
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
 // - prev_loading_start: time when current xhr request for the previous page is started
@@ -42,6 +43,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.post_count         = N.runtime.page_data.pagination.total;
   topicState.posts_per_page     = N.runtime.page_data.pagination.per_page;
   topicState.max_post           = N.runtime.page_data.max_post;
+  topicState.topic_inactive_for = N.runtime.page_data.topic_inactive_for;
   topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
   topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
   topicState.prev_loading_start = 0;
@@ -289,6 +291,16 @@ function delete_topic(as_moderator) {
 
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
+
+  // Display confirmation when answering in an inactive topic
+  //
+  N.wire.before(module.apiPath + ':reply', function inactive_topic_confirm() {
+    if (topicState.topic_inactive_for < N.runtime.page_data.settings.forum_inactive_threshold * 24 * 60 * 60 * 1000) {
+      return;
+    }
+
+    return N.wire.emit('common.blocks.confirm', t('inactive_topic_reply_confirm'));
+  });
 
   // Click on post reply link or toolbar reply button
   //
@@ -729,11 +741,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     N.io.rpc('forum.topic.list.by_range', {
       topic_hid: topicState.topic_hid,
-      post_hid:  hid - 1,
+      post_hid:  hid,
       before:    LOAD_POSTS_COUNT,
       after:     0
     }).then(res => {
       topicState.post_count = res.topic.cache.post_count;
+      topicState.topic_inactive_for = res.topic_inactive_for;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
         topicState.max_post = res.max_post;
@@ -747,7 +760,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       let old_height = $('.forum-postlist').height();
 
-      topicState.first_post_offset -= res.posts.length;
+      topicState.first_post_offset -= res.posts.length - 1;
 
       res.pagination = {
         // used in paginator
@@ -758,6 +771,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
+
+      // cut duplicate post, used to display date intervals properly
+      let idx = $result.index($result.filter('#' + $('.forum-post:first').attr('id')));
+
+      if (idx !== -1) $result = $result.slice(0, idx);
 
       return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
         $('.forum-postlist > :first').before($result);
@@ -812,11 +830,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     N.io.rpc('forum.topic.list.by_range', {
       topic_hid: topicState.topic_hid,
-      post_hid:  hid + 1,
+      post_hid:  hid,
       before:    0,
       after:     LOAD_POSTS_COUNT
     }).then(res => {
       topicState.post_count = res.topic.cache.post_count;
+      topicState.topic_inactive_for = res.topic_inactive_for;
 
       if (res.max_post && res.max_post !== topicState.max_post) {
         topicState.max_post = res.max_post;
@@ -832,13 +851,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         // used in paginator
         total:        topicState.post_count,
         per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: topicState.last_post_offset + 1
+        chunk_offset: topicState.last_post_offset
       };
 
-      topicState.last_post_offset += res.posts.length;
+      topicState.last_post_offset += res.posts.length - 1;
 
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
+
+      // cut duplicate post, used to display date intervals properly
+      let idx = $result.index($result.filter('#' + $('.forum-post:last').attr('id')));
+
+      if (idx !== -1) $result = $result.slice(idx + 1);
 
       return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
         $('.forum-postlist > :last').after($result);

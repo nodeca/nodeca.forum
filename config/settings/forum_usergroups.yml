@@ -19,3 +19,7 @@ setting_schemas:
     forum_can_close_topic:
       extends: true
       priority: 50
+
+    forum_inactive_threshold:
+      extends: true
+      priority: 60

@@ -25,6 +25,13 @@ each post, post_idx in self.posts
       - var pgn_params  = { route: 'forum.topic', params: link_params, current: Math.floor(post_counter / self.pagination.per_page) + 1, max: page_max }
       != self.partial('@common.blocks.pagination', pgn_params)
 
+  if post_idx > 0
+    - var t1 = new Date(self.posts[post_idx - 1].ts)
+    - var t2 = new Date(post.ts)
+    if Math.abs(t2 - t1) > 7*24*60*60*1000
+      footer.forum-postlist__datediff
+        span.icon.icon-more.icon-space-after=self.t('date_interval', { interval: self.date(new Date(Date.now() - t2.getTime() + t1.getTime()), 'relativedays') })
+
   if !collapsed
 
     article.forum-post.clearfix(

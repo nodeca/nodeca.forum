@@ -45,11 +45,25 @@ function getNextDisplayOrder() {
   return display_order;
 }
 
+// generate a random number with lognormal distribution
+function lognorm(mean, sd) {
+  let norm = Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
+
+  return Math.pow(Math.E, mean + sd * norm);
+}
+
 let users = [];
 let postDay = 0;
 
 
-const createPost = co.wrap(function* (topic, reply_to) {
+const createPost = co.wrap(function* (topic, previous_posts) {
+  // 50% posts won't have any reply information, 25% posts will be
+  // answers to the previous post, 12.5% posts will be answers to the
+  // 2nd last post and so on.
+  //
+  let reply_id = previous_posts.length - Math.floor(1 / Math.random()) + 1;
+  let reply_to = previous_posts[reply_id];
+
   let md = charlatan.Lorem.paragraphs(charlatan.Helpers.rand(5, 1)).join('\n\n');
   let user = users[charlatan.Helpers.rand(USER_COUNT)];
 
@@ -61,7 +75,16 @@ const createPost = co.wrap(function* (topic, reply_to) {
     options
   });
 
-  let ts = new Date(2010, 0, postDay++);
+  let ts;
+
+  if (previous_posts.length) {
+    // Generate random spacing between posts in a large topic,
+    // it gives about 10% probability of 7 days interval, and 0.02% probability of 5 years interval
+    //
+    ts = new Date(+previous_posts[previous_posts.length - 1].ts + lognorm(17, 2.5));
+  } else {
+    ts = new Date(2010, 0, postDay++);
+  }
 
   let post = new Post({
     _id: new ObjectId(Math.round(ts / 1000)),
@@ -143,14 +166,7 @@ const createTopic = co.wrap(function* (section, post_count) {
   let posts = [];
 
   for (let i = 0; i < post_count; i++) {
-    // 50% posts won't have any reply information, 25% posts will be
-    // answers to the previous post, 12.5% posts will be answers to the
-    // 2nd last post and so on.
-    //
-    let reply_id = posts.length - Math.floor(1 / Math.random()) + 1;
-    let reply_to = posts[reply_id];
-
-    var post = yield createPost(topic, reply_to);
+    var post = yield createPost(topic, posts);
 
     if (!first_post) {
       first_post = post;

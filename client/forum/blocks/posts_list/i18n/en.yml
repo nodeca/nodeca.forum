@@ -20,3 +20,4 @@ en-US:
   expand: Expand
   multiselect_hint: "Click with shift to start range selection"
   infraction_title: "#{points} ((point|points)):points, added at #{date}"
+  date_interval: "#{interval} later"

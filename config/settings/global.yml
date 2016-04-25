@@ -45,3 +45,10 @@ setting_schemas:
       category_key: topic
       type: number
       default: 30
+
+    forum_inactive_threshold:
+      priority: 50
+      group_key: forum_editor
+      category_key: topic
+      type: number
+      default: 30
