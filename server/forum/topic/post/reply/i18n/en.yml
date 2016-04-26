@@ -1,5 +1,5 @@
 en-US:
   error_invalid_parent_post: "You are trying to reply to a non-existing post."
   err_text_too_short: "Post text should have at least #{count} ((character|characters))"
-  err_too_many_images: "Post should have no more than #{count} ((image|images))"
-  err_too_many_emojis: "Post should have no more than #{count} ((emoticon|emoticons))"
+  err_too_many_images: "Post can not have more than #{count} ((image|images))"
+  err_too_many_emojis: "Post can not have more than #{count} ((emoticon|emoticons))"

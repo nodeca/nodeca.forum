@@ -1,4 +1,4 @@
-// Check draft attachments exists
+// Check if draft attachments exist
 //
 // params:
 // - media_ids - array of media_id to check
