@@ -9,7 +9,7 @@ module.exports = {
     'forum_topic_title_min_length',
     'forum_can_reply',
     'forum_edit_max_time',
-    'forum_inactive_threshold',
+    'forum_reply_old_post_threshold',
     'forum_can_close_topic',
     'forum_mod_can_delete_topics',
     'forum_mod_can_hard_delete_topics',

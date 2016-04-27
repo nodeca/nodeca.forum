@@ -20,6 +20,6 @@ setting_schemas:
       extends: true
       priority: 50
 
-    forum_inactive_threshold:
+    forum_reply_old_post_threshold:
       extends: true
       priority: 60
