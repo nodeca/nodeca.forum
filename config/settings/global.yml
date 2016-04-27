@@ -21,19 +21,19 @@ setting_schemas:
       category_key: topic
       default: 10
 
-    forum_post_text_min_length:
+    forum_post_min_length:
       type: number
       group_key: forum_editor
       category_key: post
       default: 10
 
-    forum_post_text_max_images:
+    forum_post_max_images:
       type: number
       group_key: forum_editor
       category_key: post
       default: 100
 
-    forum_post_text_max_emojis:
+    forum_post_max_emojis:
       type: number
       group_key: forum_editor
       category_key: post

@@ -157,7 +157,7 @@ module.exports = function (N, apiPath) {
   // Check post length
   //
   N.wire.after(apiPath, function* check_post_length(env) {
-    let min_length = yield env.extras.settings.fetch('forum_post_text_min_length');
+    let min_length = yield env.extras.settings.fetch('forum_post_min_length');
 
     if (env.data.parse_result.text_length < min_length) {
       throw {
@@ -171,7 +171,7 @@ module.exports = function (N, apiPath) {
   // Limit an amount of images in the post
   //
   N.wire.after(apiPath, function* check_images_count(env) {
-    let max_images = yield env.extras.settings.fetch('forum_post_text_max_images');
+    let max_images = yield env.extras.settings.fetch('forum_post_max_images');
 
     if (max_images <= 0) return;
 
@@ -192,7 +192,7 @@ module.exports = function (N, apiPath) {
   // Limit an amount of emoticons in the post
   //
   N.wire.after(apiPath, function* check_emoji_count(env) {
-    let max_emojis = yield env.extras.settings.fetch('forum_post_text_max_emojis');
+    let max_emojis = yield env.extras.settings.fetch('forum_post_max_emojis');
 
     if (max_emojis < 0) return;
 
