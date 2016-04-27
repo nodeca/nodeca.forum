@@ -67,7 +67,7 @@ const createPost = co.wrap(function* (topic, previous_posts) {
   let md = charlatan.Lorem.paragraphs(charlatan.Helpers.rand(5, 1)).join('\n\n');
   let user = users[charlatan.Helpers.rand(USER_COUNT)];
 
-  let options = yield settings.getByCategory('forum_markup', { usergroup_ids: user.usergroups }, { alias: true });
+  let options = yield settings.getByCategory('forum_posts_markup', { usergroup_ids: user.usergroups }, { alias: true });
 
   let result = yield parser({
     text: md,

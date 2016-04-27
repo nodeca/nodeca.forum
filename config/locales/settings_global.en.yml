@@ -10,7 +10,7 @@ i18n:
           forum: Forum
           topic: Topic
           post: Post
-          forum_markup: Forum markup
+          forum_posts_markup: Forum posts markup
 
         setting_names:
           forum_topic_title_min_length: Min title length

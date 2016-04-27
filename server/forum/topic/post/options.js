@@ -20,7 +20,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function* fill_parse_options(env) {
     env.res.parse_options = yield N.settings.getByCategory(
-      'forum_markup',
+      'forum_posts_markup',
       { usergroup_ids: env.user_info.usergroups },
       { alias: true }
     );

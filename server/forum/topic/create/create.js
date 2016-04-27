@@ -87,7 +87,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function* prepare_options(env) {
     let settings = yield N.settings.getByCategory(
-      'forum_markup',
+      'forum_posts_markup',
       { usergroup_ids: env.user_info.usergroups },
       { alias: true });
 
