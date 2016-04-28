@@ -28,7 +28,7 @@ each post, post_idx in self.posts
   if post_idx > 0
     - var t1 = new Date(self.posts[post_idx - 1].ts)
     - var t2 = new Date(post.ts)
-    if Math.abs(t2 - t1) > 7*24*60*60*1000
+    if Math.abs(t2 - t1) > self.settings.forum_show_post_interval * 24*60*60*1000 && self.settings.forum_show_post_interval > 0
       footer.forum-postlist__datediff
         span.icon.icon-more.icon-space-after=self.t('date_interval', { interval: self.date(new Date(Date.now() - t2.getTime() + t1.getTime()), 'relativedays') })
 
@@ -210,6 +210,7 @@ each post, post_idx in self.posts
                   data-on-click='forum.topic:reply'
                   data-post-id=post._id
                   data-post-hid=post.hid
+                  data-post-ts=post.ts
                 )
                   span.icon.icon-reply.icon-space-after= self.t('reply')
                 //- for narrow screen
@@ -217,6 +218,7 @@ each post, post_idx in self.posts
                   data-on-click='forum.topic:reply'
                   data-post-id=post._id
                   data-post-hid=post.hid
+                  data-post-ts=post.ts
                   title=self.t('reply')
                 )
                   span.icon.icon-reply

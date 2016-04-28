@@ -20,6 +20,7 @@ module.exports = {
     'forum_mod_can_close_topic',
     'can_vote',
     'forum_mod_can_add_infractions',
-    'votes_add_max_time'
+    'votes_add_max_time',
+    'forum_show_post_interval'
   ]
 };

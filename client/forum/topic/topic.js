@@ -294,14 +294,25 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Display confirmation when answering in an inactive topic
   //
-  N.wire.before(module.apiPath + ':reply', function inactive_topic_confirm() {
-    let time = N.runtime.page_data.settings.forum_reply_old_post_threshold * 24 * 60 * 60 * 1000;
+  N.wire.before(module.apiPath + ':reply', function old_reply_confirm(data) {
+    let topic_inactive_for_days = Math.floor(topicState.topic_inactive_for / (24 * 60 * 60 * 1000));
 
-    if (topicState.topic_inactive_for < time) {
-      return;
+    if (topic_inactive_for_days >= N.runtime.page_data.settings.forum_reply_old_post_threshold) {
+      return N.wire.emit('common.blocks.confirm', {
+        html: t('old_topic_reply_confirm', { count: topic_inactive_for_days })
+      });
     }
 
-    return N.wire.emit('common.blocks.confirm', t('inactive_topic_reply_confirm'));
+    if (data.$this.data('post-id')) {
+      let post_time = new Date(data.$this.data('post-ts')).getTime();
+      let post_older_than_days = Math.floor((Date.now() - post_time) / (24 * 60 * 60 * 1000));
+
+      if (post_older_than_days >= N.runtime.page_data.settings.forum_reply_old_post_threshold) {
+        return N.wire.emit('common.blocks.confirm', {
+          html: t('old_post_reply_confirm', { count: post_older_than_days })
+        });
+      }
+    }
   });
 
   // Click on post reply link or toolbar reply button

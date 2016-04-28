@@ -21,3 +21,4 @@ i18n:
           forum_mod_can_hard_delete_topics: Hard delete topics
           forum_mod_can_see_hard_deleted_topics: See hard deleted topics
           forum_reply_old_post_threshold: Ask reply confirmation when topic is inactive for XX days (or post is older than XX days)
+          forum_show_post_interval: Display time interval between posts if it's more than XX days

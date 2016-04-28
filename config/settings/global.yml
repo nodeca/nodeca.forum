@@ -52,3 +52,10 @@ setting_schemas:
       category_key: topic
       type: number
       default: 30
+
+    forum_show_post_interval:
+      priority: 60
+      group_key: forum_editor
+      category_key: topic
+      type: number
+      default: 7

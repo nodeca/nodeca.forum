@@ -31,4 +31,14 @@ en-US:
   abuse_reported: Your report has been sent
   infraction_added: Infraction added
 
-  inactive_topic_reply_confirm: "This topic is probably outdated. Are you sure you want to bring it up again?"
+  old_post_reply_confirm: |
+    md:
+      **This post is very old!** It was created #{count} days ago, and is probably outdated.
+
+      Are you sure you wish to reply?
+
+  old_topic_reply_confirm: |
+    md:
+      **This topic is very old!** Last post here was created #{count} days ago.
+
+      Your reply would bump this topic to the top of its list. Are you sure you wish to continue?

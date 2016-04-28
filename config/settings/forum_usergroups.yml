@@ -23,3 +23,7 @@ setting_schemas:
     forum_reply_old_post_threshold:
       extends: true
       priority: 60
+
+    forum_show_post_interval:
+      extends: true
+      priority: 70
