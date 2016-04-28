@@ -295,9 +295,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Display confirmation when answering in an inactive topic
   //
   N.wire.before(module.apiPath + ':reply', function inactive_topic_confirm() {
-    let t = N.runtime.page_data.settings.forum_inactive_threshold * 24 * 60 * 60 * 1000;
+    let time = N.runtime.page_data.settings.forum_reply_old_post_threshold * 24 * 60 * 60 * 1000;
 
-    if (topicState.topic_inactive_for < t) {
+    if (topicState.topic_inactive_for < time) {
       return;
     }
 
