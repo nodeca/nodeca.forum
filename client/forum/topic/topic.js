@@ -16,7 +16,7 @@ const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 // - max_post:           hid of the last post in this topic
 // - post_count:         an amount of visible posts in the topic
 // - posts_per_page:     an amount of visible posts per page
-// - topic_inactive_for: time after last post (used for edit confirmation)
+// - topic_last_ts:      last post creation time (used for edit confirmation)
 // - first_post_offset:  total amount of visible posts in the topic before the first displayed post
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
 // - prev_loading_start: time when current xhr request for the previous page is started
@@ -42,8 +42,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.post_hid           = data.params.post_hid || 1;
   topicState.post_count         = N.runtime.page_data.pagination.total;
   topicState.posts_per_page     = N.runtime.page_data.pagination.per_page;
-  topicState.max_post           = N.runtime.page_data.max_post;
-  topicState.topic_inactive_for = N.runtime.page_data.topic_inactive_for;
+  topicState.max_post           = N.runtime.page_data.topic.cache.last_post_hid;
+  topicState.topic_last_ts      = N.runtime.page_data.topic.cache.last_ts;
   topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
   topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
   topicState.prev_loading_start = 0;
@@ -295,7 +295,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Display confirmation when answering in an inactive topic
   //
   N.wire.before(module.apiPath + ':reply', function old_reply_confirm(data) {
-    let topic_inactive_for_days = Math.floor(topicState.topic_inactive_for / (24 * 60 * 60 * 1000));
+    let topic_inactive_for_days = Math.floor((Date.now() - new Date(topicState.topic_last_ts)) / (24 * 60 * 60 * 1000));
 
     if (topic_inactive_for_days >= N.runtime.page_data.settings.forum_reply_old_post_threshold) {
       return N.wire.emit('common.blocks.confirm', {
@@ -759,10 +759,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       after:     0
     }).then(res => {
       topicState.post_count = res.topic.cache.post_count;
-      topicState.topic_inactive_for = res.topic_inactive_for;
+      topicState.topic_last_ts = res.topic.cache.last_ts;
 
-      if (res.max_post && res.max_post !== topicState.max_post) {
-        topicState.max_post = res.max_post;
+      if (res.topic.cache.last_post_hid !== topicState.max_post) {
+        topicState.max_post = res.topic.cache.last_post_hid;
 
         N.wire.emit('forum.topic.blocks.page_progress:update', {
           max: topicState.max_post
@@ -848,10 +848,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       after:     LOAD_POSTS_COUNT
     }).then(res => {
       topicState.post_count = res.topic.cache.post_count;
-      topicState.topic_inactive_for = res.topic_inactive_for;
+      topicState.topic_last_ts = res.topic.cache.last_ts;
 
-      if (res.max_post && res.max_post !== topicState.max_post) {
-        topicState.max_post = res.max_post;
+      if (res.topic.cache.last_post_hid !== topicState.max_post) {
+        topicState.max_post = res.topic.cache.last_post_hid;
 
         N.wire.emit('forum.topic.blocks.page_progress:update', {
           max: topicState.max_post

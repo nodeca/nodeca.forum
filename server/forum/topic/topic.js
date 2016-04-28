@@ -174,18 +174,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Add data from post cache:
-  //  - last post number, used for navigation and progress bar display
-  //  - inactive period, used for reply confirmation
-  //
-  N.wire.on(apiPath, function attach_last_post_hid(env) {
-    let cache = env.user_info.hb ? env.data.topic.cache_hb : env.data.topic.cache;
-
-    env.res.max_post = cache.last_post_hid;
-    env.res.topic_inactive_for = Math.abs(Date.now() - cache.last_ts);
-  });
-
-
   // Fill breadcrumbs info
   //
   N.wire.after(apiPath, function* fill_topic_breadcrumbs(env) {
