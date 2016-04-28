@@ -30,7 +30,7 @@ each post, post_idx in self.posts
     - var t2 = new Date(post.ts)
     if Math.abs(t2 - t1) > self.settings.forum_show_post_interval * 24*60*60*1000 && self.settings.forum_show_post_interval > 0
       footer.forum-postlist__datediff
-        span.icon.icon-more.icon-space-after=self.t('date_interval', { interval: self.date(new Date(Date.now() - t2.getTime() + t1.getTime()), 'relativedays') })
+        span.icon.icon-more.icon-space-after=self.t('date_interval', { interval: self.date(new Date(Date.now() - t2.getTime() + t1.getTime()), 'relative_days') })
 
   if !collapsed
 
