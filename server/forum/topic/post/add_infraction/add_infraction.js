@@ -79,7 +79,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function* check_exists(env) {
     let infraction = yield N.models.users.Infraction.findOne()
-                              .where('src_id').equals(env.data.post._id)
+                              .where('src').equals(env.data.post._id)
                               .where('exists').equals(true)
                               .lean(true);
 
@@ -96,7 +96,7 @@ module.exports = function (N, apiPath) {
       type: env.params.type,
       reason: env.params.reason,
       points: env.params.points,
-      src_id: env.data.post._id,
+      src: env.data.post._id,
       src_type: 'FORUM_POST'
     });
 

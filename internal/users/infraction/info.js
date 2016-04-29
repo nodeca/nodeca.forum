@@ -7,7 +7,7 @@
 //
 // Out:
 //
-// - info (Object) - key is `src_id`, value { url, title }
+// - info (Object) - key is `src`, value { url, title }
 //
 'use strict';
 
@@ -18,7 +18,7 @@ const _ = require('lodash');
 module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, function* fetch_infraction_info(info_env) {
-    let posts_ids = _.map(info_env.infractions.filter(i => i.src_type === 'FORUM_POST'), 'src_id');
+    let posts_ids = _.map(info_env.infractions.filter(i => i.src_type === 'FORUM_POST'), 'src');
 
     if (!posts_ids.length) return;
 

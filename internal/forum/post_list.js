@@ -205,13 +205,13 @@ module.exports = function (N, apiPath) {
     if (!settings.can_see_infractions && !settings.forum_mod_can_add_infractions) return;
 
     let infractions = yield N.models.users.Infraction.find()
-                                .where('src_id').in(env.data.posts_ids)
+                                .where('src').in(env.data.posts_ids)
                                 .where('exists').equals(true)
-                                .select('src_id points ts')
+                                .select('src points ts')
                                 .lean(true);
 
     env.res.infractions = infractions.reduce((acc, infraction) => {
-      acc[infraction.src_id] = infraction;
+      acc[infraction.src] = infraction;
       return acc;
     }, {});
   });
