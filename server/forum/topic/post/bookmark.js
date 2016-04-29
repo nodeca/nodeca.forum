@@ -54,13 +54,13 @@ module.exports = function (N, apiPath) {
     // If `env.params.remove` - remove bookmark
     if (env.params.remove) {
       yield N.models.forum.PostBookmark.remove(
-        { user_id: env.user_info.user_id, post_id: env.params.post_id });
+        { user: env.user_info.user_id, post_id: env.params.post_id });
 
       return;
     }
 
     // Add bookmark
-    let data = { user_id: env.user_info.user_id, post_id: env.params.post_id };
+    let data = { user: env.user_info.user_id, post_id: env.params.post_id };
 
     // Use `findOneAndUpdate` with `upsert` to avoid duplicates in case of multi click
     yield N.models.forum.PostBookmark.findOneAndUpdate(data, data, { upsert: true });

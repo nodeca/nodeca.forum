@@ -159,7 +159,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function* fetch_and_fill_bookmarks(env) {
     let bookmarks = yield N.models.forum.PostBookmark.find()
-                            .where('user_id').equals(env.user_info.user_id)
+                            .where('user').equals(env.user_info.user_id)
                             .where('post_id').in(env.data.posts_ids)
                             .lean(true);
 

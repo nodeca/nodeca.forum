@@ -7,7 +7,7 @@ var Schema   = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   var PostBookmark = new Schema({
-      user_id: Schema.ObjectId,
+      user:    Schema.ObjectId,
       post_id: Schema.ObjectId
     },
     {
@@ -18,7 +18,7 @@ module.exports = function (N, collectionName) {
   // Indexes
 
   // Used in post list. Get posts bookmarks for user.
-  PostBookmark.index({ user_id: 1, post_id: 1 });
+  PostBookmark.index({ user: 1, post_id: 1 });
 
 
   N.wire.on('init:models', function emit_init_PostBookmark() {

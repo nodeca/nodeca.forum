@@ -126,7 +126,7 @@ module.exports = function (N, apiPath) {
     let postIds = env.data.topics.map(topic => topic.cache.first_post);
 
     let bookmarks = yield N.models.forum.PostBookmark.find()
-                              .where('user_id').equals(env.user_info.user_id)
+                              .where('user').equals(env.user_info.user_id)
                               .where('post_id').in(postIds)
                               .lean(true);
 
