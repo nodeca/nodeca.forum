@@ -62,12 +62,12 @@ module.exports = function (N) {
 
     let subscriptions = yield Subscription
                                 .find()
-                                .where('user_id').in(local_env.to)
+                                .where('user').in(local_env.to)
                                 .where('to').equals(topic._id)
                                 .where('type').equals(Subscription.types.WATCHING)
                                 .lean(true);
 
-    let watching = subscriptions.map(subscription => String(subscription.user_id));
+    let watching = subscriptions.map(subscription => String(subscription.user));
 
     // Only if `user_id` in both arrays
     local_env.to = _.intersection(local_env.to, watching);

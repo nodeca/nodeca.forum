@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function* fetch_subscription(env) {
     env.data.subscription = yield N.models.users.Subscription
-                                      .findOne({ user_id: env.user_info.user_id, to: env.data.section._id })
+                                      .findOne({ user: env.user_info.user_id, to: env.data.section._id })
                                       .lean(true);
   });
 
@@ -80,7 +80,7 @@ module.exports = function (N, apiPath) {
 
     // Update with `upsert` to avoid duplicates
     yield Subscription.update(
-      { user_id: env.user_info.user_id, to: env.data.section._id },
+      { user: env.user_info.user_id, to: env.data.section._id },
       { type: updatedType, to_type: Subscription.to_types.FORUM_SECTION },
       { upsert: true }
     );

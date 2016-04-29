@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function* subscription_add_remove(env) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
     yield N.models.users.Subscription.update(
-      { user_id: env.user_info.user_id, to: env.data.topic._id },
+      { user: env.user_info.user_id, to: env.data.topic._id },
       {
         type: env.params.type,
         to_type: N.models.users.Subscription.to_types.FORUM_TOPIC

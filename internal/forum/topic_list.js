@@ -143,7 +143,7 @@ module.exports = function (N, apiPath) {
     }
 
     let subscriptions = yield N.models.users.Subscription.find()
-                          .where('user_id').equals(env.user_info.user_id)
+                          .where('user').equals(env.user_info.user_id)
                           .where('to').in(env.data.topics_ids)
                           .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
                           .lean(true);

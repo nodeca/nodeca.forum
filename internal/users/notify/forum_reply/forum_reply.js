@@ -64,12 +64,12 @@ module.exports = function (N) {
 
     let subscriptions = yield Subscription
                                 .find()
-                                .where('user_id').in(local_env.to)
+                                .where('user').in(local_env.to)
                                 .where('to').equals(topic._id)
                                 .where('type').equals(Subscription.types.MUTED)
                                 .lean(true);
 
-    let muted = subscriptions.map(subscription => String(subscription.user_id));
+    let muted = subscriptions.map(subscription => String(subscription.user));
 
     // If `user_id` only in `local_env.to`
     local_env.to = _.difference(local_env.to, muted);

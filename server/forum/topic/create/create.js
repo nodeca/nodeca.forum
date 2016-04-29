@@ -264,7 +264,7 @@ module.exports = function (N, apiPath) {
 
     yield N.wire.emit('internal:users.notify', {
       src: env.data.new_topic._id,
-      to: _.map(subscriptions, 'user_id'),
+      to: _.map(subscriptions, 'user'),
       type: 'FORUM_NEW_TOPIC'
     });
   });
