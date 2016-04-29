@@ -34,7 +34,7 @@ module.exports = function (N, apiPath) {
   // Fetch post, topic and section
   //
   N.wire.before(apiPath, function* fetch_post_topic_section(params) {
-    params.data.post = yield N.models.forum.Post.findOne({ _id: params.report.src_id }).lean(true);
+    params.data.post = yield N.models.forum.Post.findOne({ _id: params.report.src }).lean(true);
 
     if (!params.data.post) throw N.io.NOT_FOUND;
 

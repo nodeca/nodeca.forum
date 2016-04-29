@@ -12,10 +12,10 @@ module.exports = function (N, collectionName) {
   let AbuseReportRef = new Schema({
 
       // _id of reported content
-      src_id: Schema.ObjectId,
+      src:  Schema.ObjectId,
 
       // Report discussion topic
-      dest_id: Schema.ObjectId
+      dest: Schema.ObjectId
     },
     {
       versionKey: false
@@ -25,8 +25,8 @@ module.exports = function (N, collectionName) {
   ////////////////////////////////////////////////////////////////////////////////
   // Indexes
 
-  // Used `internal:forum.abuse_report`. Get abuse report discussion _id by src_id.
-  AbuseReportRef.index({ src_id: 1 });
+  // Used `internal:forum.abuse_report`. Get abuse report discussion _id by src.
+  AbuseReportRef.index({ src: 1 });
 
 
   N.wire.on('init:models', function emit_init_AbuseReportRef() {

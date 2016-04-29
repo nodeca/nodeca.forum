@@ -55,14 +55,14 @@ module.exports = function (N, apiPath) {
     post.params = options;
 
     let report_ref = yield N.models.forum.AbuseReportRef.findOne()
-                              .where('src_id').equals(params.report.src_id)
+                              .where('src').equals(params.report.src)
                               .lean(true);
     let topic;
 
     // If ref exists - try fetch topic
     if (report_ref) {
       topic = yield N.models.forum.Topic.findOne()
-                        .where('_id').equals(report_ref.dest_id)
+                        .where('_id').equals(report_ref.dest)
                         .lean(true);
 
       // If topic not exists - delete invalid ref
@@ -82,8 +82,8 @@ module.exports = function (N, apiPath) {
       });
 
       report_ref = new N.models.forum.AbuseReportRef({
-        src_id: params.report.src_id,
-        dest_id: topic._id
+        src: params.report.src,
+        dest: topic._id
       });
 
       yield [

@@ -61,7 +61,7 @@ module.exports = function (N, apiPath) {
     params.quote = true;
 
     let report = new N.models.core.AbuseReport({
-      src_id: env.data.post._id,
+      src: env.data.post._id,
       type: 'FORUM_POST',
       text: env.params.message,
       from: env.user_info.user_id,
