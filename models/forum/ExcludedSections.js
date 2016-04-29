@@ -12,7 +12,7 @@ module.exports = function (N, collectionName) {
   let ExcludedSections = new Schema({
 
       // _id of user
-      user_id: Schema.ObjectId,
+      user: Schema.ObjectId,
 
       // array of excluded sections
       excluded_sections: [ Schema.ObjectId ]
@@ -25,7 +25,7 @@ module.exports = function (N, collectionName) {
   ////////////////////////////////////////////////////////////////////////////////
   // Indexes
 
-  ExcludedSections.index({ user_id: 1 });
+  ExcludedSections.index({ user: 1 });
 
 
   N.wire.on('init:models', function emit_init_ExcludedSections() {

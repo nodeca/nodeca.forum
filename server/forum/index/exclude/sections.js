@@ -19,7 +19,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, function* fill_excluded_list(env) {
     let result = yield N.models.forum.ExcludedSections.findOne()
-                          .where('user_id').equals(env.user_info.user_id)
+                          .where('user').equals(env.user_info.user_id)
                           .lean(true);
 
     env.res.selected = (result || {}).excluded_sections || [];

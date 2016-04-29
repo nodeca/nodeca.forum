@@ -19,7 +19,7 @@ module.exports = function (N, apiPath) {
     }
 
     let result = yield N.models.forum.ExcludedSections.findOne()
-                          .where('user_id').equals(env.user_info.user_id)
+                          .where('user').equals(env.user_info.user_id)
                           .lean(true);
 
     env.res.excluded_sections = env.data.excluded_sections = (result || {}).excluded_sections || [];
