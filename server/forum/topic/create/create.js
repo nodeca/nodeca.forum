@@ -221,6 +221,7 @@ module.exports = function (N, apiPath) {
 
     topic.cache.last_post = post._id;
     topic.cache.last_ts = post.ts;
+    topic.cache.last_post_hid = 1;
     topic.cache.last_user = post.user;
 
     _.assign(topic.cache_hb, topic.cache);
