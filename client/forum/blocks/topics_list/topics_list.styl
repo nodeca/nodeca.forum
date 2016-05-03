@@ -46,11 +46,15 @@
 
 .forum-topicline__meta
 .forum-topicline__meta-deleted
+.forum-topicline__meta-hellbanned
 .forum-topicline__microstat
   color grayLight
   margin-left 10px
   line-height 1.6em
   font-size 12px
+
+.forum-topicline__meta-hellbanned
+  display none
 
 .forum-topicline__microstat
   font-size 11px
@@ -144,6 +148,7 @@ a.forum-topicline__lpost-user-link
 .forum-topicline__unread-marker
 .forum-topicline__pinned-marker
 .forum-topicline__closed-marker
+.forum-topicline__hellbanned-marker
 .forum-topicline__deleted-marker
 .forum-topicline__bookmarked-marker
 .forum-topicline__new-marker
@@ -180,6 +185,23 @@ a.forum-topicline__lpost-user-link
   .forum-topicline__pinned-marker
     display inline-block
 
+.forum-topicline__m-hellbanned
+  background-color #f8f8f8
+  opacity 0.7
+  &:hover
+    opacity 1
+  .forum-topicline__hellbanned-marker
+    display inline-block
+  .forum-topicline__meta
+  .forum-topicline__microstat
+    display none !important
+  .forum-topicline__meta-hellbanned
+    display inline-block
+  .forum-topicline__lpost
+  .forum-topicline__counters
+    // Should not use display:none - table layout will be broken,
+    // if deleted topic appears at first line.
+    visibility hidden
 
 .forum-topicline__m-closed
   .forum-topicline__closed-marker
@@ -189,6 +211,7 @@ a.forum-topicline__lpost-user-link
 
 .forum-topicline__m-deleted
 .forum-topicline__m-deleted-hard
+  background-color #f8f8f8
   opacity 0.7
   &:hover
     opacity 1

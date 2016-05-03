@@ -16,8 +16,9 @@ each topic, idx in self.topics
   - var replies = topic.cache.post_count - 1;
   - var views   = topic.views_count;
   .forum-topicline(
-    class=(topic.st === topicStatuses.PINNED) ? 'forum-topicline__m-pinned' : ''
-    class=(topic.st === topicStatuses.CLOSED || topic.ste === topicStatuses.CLOSED) ? 'forum-topicline__m-closed' : ''
+    class=(topic.st === topicStatuses.HB) ? 'forum-topicline__m-hellbanned' : ''
+    class=([ topic.st, topic.ste ].indexOf(topicStatuses.PINNED) !== -1) ? 'forum-topicline__m-pinned' : ''
+    class=([ topic.st, topic.ste ].indexOf(topicStatuses.CLOSED) !== -1) ? 'forum-topicline__m-closed' : ''
     class=(topic.st === topicStatuses.DELETED) ? 'forum-topicline__m-deleted' : ''
     class=(topic.st === topicStatuses.DELETED_HARD) ? 'forum-topicline__m-deleted-hard' : ''
     class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
@@ -32,6 +33,7 @@ each topic, idx in self.topics
         span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-sm.icon-dimmed.icon-space-after(title=self.t('bookmarked'))
         span.forum-topicline__deleted-marker.icon.icon-deleted.icon-sm.icon-dimmed.icon-space-after(title=self.t('deleted'))
         span.forum-topicline__closed-marker.icon.icon-closed.icon-sm.icon-dimmed.icon-space-after(title=self.t('closed'))
+        span.forum-topicline__hellbanned-marker.icon.icon-sm.icon-dimmed.icon-space-after(title=self.t('hellbanned'))
 
         - var href;
 
@@ -48,6 +50,9 @@ each topic, idx in self.topics
           - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid });
 
         a.forum-topicline__title-link(href=href)= topic.title
+
+      .forum-topicline__meta-hellbanned
+        =self.t('hellbanned_description')
 
       if topic.del_by
         - var delUser = self.users[topic.del_by] || {}

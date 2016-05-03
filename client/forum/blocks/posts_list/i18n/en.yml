@@ -16,7 +16,7 @@ en-US:
   del_by: "Deleted by:"
   del_post_text: Post deleted.
   del_hard_post_text: Post hard deleted.
-  hb_post_text: Post hellbanned.
+  hb_post_text: Hellbanned
   expand: Expand
   multiselect_hint: "Click with shift to start range selection"
   infraction_title: "#{points} ((point|points)):points, added at #{date}"

@@ -8,6 +8,8 @@ en-US:
   new: New topic
   pinned: Pinned topic
   closed: Closed topic
+  hellbanned: Hellbanned topic
+  hellbanned_description: Hellbanned
   deleted: Deleted topic
   bookmarked: You bookmarked this topic
   multiselect_hint: "Click with shift to start range selection"
