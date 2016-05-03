@@ -26,7 +26,7 @@ module.exports = function (N, apiPath) {
     let res = yield N.models.users.MediaInfo
                         .find({
                           media_id: { $in: env.params.media_ids },
-                          user_id: env.user_info.user_id,
+                          user: env.user_info.user_id,
                           type: { $in: N.models.users.MediaInfo.types.LIST_VISIBLE }
                         })
                         .lean(true)
