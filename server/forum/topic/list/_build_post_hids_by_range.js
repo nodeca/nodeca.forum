@@ -39,7 +39,7 @@ module.exports = function (N) {
     let countable_statuses = [ Post.statuses.VISIBLE ];
 
     // For hellbanned users - count hellbanned posts too
-    if (env.user_info.hb) {
+    if (env.data.settings.can_see_hellbanned || env.user_info.hb) {
       countable_statuses.push(Post.statuses.HB);
     }
 

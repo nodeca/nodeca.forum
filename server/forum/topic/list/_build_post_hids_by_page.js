@@ -37,13 +37,14 @@ module.exports = function (N) {
     let countable_statuses = [ Post.statuses.VISIBLE ];
 
     // For hellbanned users - count hellbanned posts too
-    if (env.user_info.hb) {
+    if (env.data.settings.can_see_hellbanned || env.user_info.hb) {
       countable_statuses.push(Post.statuses.HB);
     }
 
     // Page numbers starts from 1, not from 0
     let page_current = parseInt(env.params.page, 10);
-    let post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
+    let post_count = (env.data.settings.can_see_hellbanned || env.user_info.hb) ?
+                     env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
     let page_max = Math.ceil(post_count / posts_per_page) || 1;
 
     // Algorithm:

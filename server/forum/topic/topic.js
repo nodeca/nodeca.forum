@@ -96,7 +96,8 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* fetch_pagination(env) {
     let posts_per_page = yield env.extras.settings.fetch('posts_per_page');
 
-    let post_count = env.user_info.hb ? env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
+    let post_count = (env.data.settings.can_see_hellbanned || env.user_info.hb) ?
+                     env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
 
     // If user requests a specific page, we know how many posts are displayed
     // before it.
@@ -124,7 +125,7 @@ module.exports = function (N, apiPath) {
       env.data.topic.version,
       // `env.data.posts_hids` could not be empty, but we should avoid exception in all cases.
       env.data.posts_hids[0] || 0,
-      env.user_info.hb
+      env.data.settings.can_see_hellbanned || env.user_info.hb
     );
 
 
