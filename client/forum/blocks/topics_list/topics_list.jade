@@ -33,7 +33,6 @@ each topic, idx in self.topics
         span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-sm.icon-dimmed.icon-space-after(title=self.t('bookmarked'))
         span.forum-topicline__deleted-marker.icon.icon-deleted.icon-sm.icon-dimmed.icon-space-after(title=self.t('deleted'))
         span.forum-topicline__closed-marker.icon.icon-closed.icon-sm.icon-dimmed.icon-space-after(title=self.t('closed'))
-        span.forum-topicline__hellbanned-marker.icon.icon-sm.icon-dimmed.icon-space-after(title=self.t('hellbanned'))
 
         - var href;
 
@@ -52,7 +51,7 @@ each topic, idx in self.topics
         a.forum-topicline__title-link(href=href)= topic.title
 
       .forum-topicline__meta-hellbanned
-        =self.t('hellbanned_description')
+        =self.t('hellbanned')
 
       if topic.del_by
         - var delUser = self.users[topic.del_by] || {}
