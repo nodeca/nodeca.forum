@@ -370,6 +370,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
 
 
 const bag = require('bagjs')({ prefix: 'nodeca' });
+let selected_topics_key;
 // Flag shift key pressed
 let shift_key_pressed = false;
 // DOM element of first selected post (for many check)
@@ -398,13 +399,11 @@ function key_down(event) {
 // Save selected topics + debounced
 //
 function save_selected_topics_immediate() {
-  let key = 'section_selected_topics_' + sectionState.hid;
-
   if (sectionState.selected_topics.length) {
     // Expire after 1 day
-    bag.set(key, sectionState.selected_topics, 60 * 60 * 24);
+    bag.set(selected_topics_key, sectionState.selected_topics, 60 * 60 * 24).catch(() => {});
   } else {
-    bag.remove(key);
+    bag.remove(selected_topics_key).catch(() => {});
   }
 }
 const save_selected_topics = _.debounce(save_selected_topics_immediate, 500);
@@ -413,11 +412,14 @@ const save_selected_topics = _.debounce(save_selected_topics_immediate, 500);
 // Load previously selected topics
 //
 N.wire.on('navigate.done:' + module.apiPath, function section_load_previously_selected_topics() {
+  selected_topics_key = `section_selected_topics_${N.runtime.user_hid}_${sectionState.hid}`;
+
   $(document)
     .on('keyup', key_up)
     .on('keydown', key_down);
 
-  return bag.get('section_selected_topics_' + sectionState.hid)
+  // Don't need wait here
+  bag.get(selected_topics_key)
     .then(hids => {
       sectionState.selected_topics = hids || [];
       sectionState.selected_topics.forEach(topicHid => {

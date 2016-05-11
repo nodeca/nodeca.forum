@@ -6,6 +6,7 @@
 const _             = require('lodash');
 const charcount     = require('charcount');
 const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
+const bag           = require('bagjs')({ prefix: 'nodeca' });
 
 
 // Topic state
@@ -1009,12 +1010,12 @@ N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardo
 ///////////////////////////////////////////////////////////////////////////////
 // Save scroll position
 //
-const bag = require('bagjs')({ prefix: 'nodeca' });
 let scrollPositionTracker = null;
+let scrollPositionsKey;
 
 
 const uploadScrollPositions = _.debounce(function () {
-  bag.get('topics_scroll').then(positions => {
+  bag.get(scrollPositionsKey).then(positions => {
     if (positions) {
       _.forEach(positions, function (data, id) {
         N.live.emit('private.forum.marker_set_pos', {
@@ -1025,7 +1026,7 @@ const uploadScrollPositions = _.debounce(function () {
         });
       });
 
-      return bag.remove('topics_scroll');
+      return bag.remove(scrollPositionsKey);
     }
   });
 }, 2000);
@@ -1036,6 +1037,8 @@ const uploadScrollPositions = _.debounce(function () {
 N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init() {
   // Skip for guests
   if (N.runtime.is_guest) return;
+
+  scrollPositionsKey = `topics_scroll_${N.runtime.user_hid}`;
 
   let lastPos = -1;
   let lastRead = -1;
@@ -1088,7 +1091,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     lastRead = read;
 
     // Save current position locally and request upload
-    bag.get('topics_scroll').then(positions => {
+    bag.get(scrollPositionsKey).then(positions => {
       positions = positions || {};
       positions[N.runtime.page_data.topic._id] = {
         pos,
@@ -1096,7 +1099,8 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
         category_id: N.runtime.page_data.topic.section
       };
 
-      return bag.set('topics_scroll', positions).then(() => { uploadScrollPositions(); });
+      // Expire after 7 days
+      return bag.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => { uploadScrollPositions(); });
     });
   }, 300, { maxWait: 300 });
 
@@ -1129,6 +1133,7 @@ N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_teard
 //
 
 
+let selected_posts_key;
 // Flag shift key pressed
 let shift_key_pressed = false;
 // DOM element of first selected post (for many check)
@@ -1157,13 +1162,11 @@ function key_down(event) {
 // Save selected posts + debounced
 //
 function save_selected_posts_immediate() {
-  let key = 'topic_selected_posts_' + topicState.topic_hid;
-
   if (topicState.selected_posts.length) {
     // Expire after 1 day
-    bag.set(key, topicState.selected_posts, 60 * 60 * 24);
+    bag.set(selected_posts_key, topicState.selected_posts, 60 * 60 * 24);
   } else {
-    bag.remove(key);
+    bag.remove(selected_posts_key);
   }
 }
 const save_selected_posts = _.debounce(save_selected_posts_immediate, 500);
@@ -1172,11 +1175,14 @@ const save_selected_posts = _.debounce(save_selected_posts_immediate, 500);
 // Load previously selected posts
 //
 N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_selected_posts() {
+  selected_posts_key = `topic_selected_posts_${N.runtime.user_hid}_${topicState.topic_hid}`;
+
   $(document)
     .on('keyup', key_up)
     .on('keydown', key_down);
 
-  return bag.get('topic_selected_posts_' + topicState.topic_hid)
+  // Don't need wait here
+  bag.get(selected_posts_key)
     .then(ids => {
       topicState.selected_posts = ids || [];
       topicState.selected_posts.forEach(postId => {
