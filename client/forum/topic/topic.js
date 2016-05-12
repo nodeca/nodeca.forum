@@ -1014,7 +1014,7 @@ let scrollPositionTracker = null;
 let scrollPositionsKey;
 
 
-const uploadScrollPositions = _.debounce(function () {
+function uploadScrollPositionsImmediate() {
   bag.get(scrollPositionsKey).then(positions => {
     if (positions) {
       _.forEach(positions, function (data, id) {
@@ -1029,7 +1029,9 @@ const uploadScrollPositions = _.debounce(function () {
       return bag.remove(scrollPositionsKey);
     }
   });
-}, 2000);
+}
+
+const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
 
 
 // Track scroll position
@@ -1100,7 +1102,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       };
 
       // Expire after 7 days
-      return bag.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => { uploadScrollPositions(); });
+      return bag.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => uploadScrollPositions());
     });
   }, 300, { maxWait: 300 });
 
@@ -1111,9 +1113,15 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
 });
 
 
-// Try upload scroll positions on each `navigate.done`
+// Try upload scroll positions on `navigate.exit`
 //
-N.wire.on('navigate.done', uploadScrollPositions);
+N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_on_exit() {
+  // Skip for guests
+  if (N.runtime.is_guest) return;
+
+  uploadScrollPositions.cancel();
+  uploadScrollPositionsImmediate();
+});
 
 
 // Teardown scroll handler
