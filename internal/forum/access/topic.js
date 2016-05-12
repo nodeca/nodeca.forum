@@ -28,7 +28,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, { priority: -100 }, function init_access_read(locals) {
     locals.data = locals.data || {};
 
-    locals.data.topics = _.isArray(locals.params.topics) ? locals.params.topics : [ locals.params.topics ];
+    locals.data.topics = _.isArray(locals.params.topics) ? locals.params.topics.slice() : [ locals.params.topics ];
 
     locals.data.access_read = locals.data.topics.map(function () {
       return null;
@@ -113,7 +113,7 @@ module.exports = function (N, apiPath) {
       locals.data.topics.forEach(function (id, i) {
         if (locals.data.access_read[i] === false) return; // continue
 
-        locals.data.topics[i] = _.find(result, { _id: String(id) });
+        locals.data.topics[i] = _.find(result, r => String(r._id) === String(id));
 
         if (!locals.data.topics[i]) {
           locals.data.access_read[i] = false;
@@ -129,12 +129,18 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* check_sections(locals) {
     let sections = _.uniq(_.map(locals.data.topics, t => String(t.section)));
     let access_env = { params: { sections, user_info: locals.data.user_info } };
-
     yield N.wire.emit('internal:forum.access.section', access_env);
 
-    if (!access_env.data.access_read) {
-      locals.data.access_read = locals.data.access_read.map(() => false);
-    }
+    // section_id -> access
+    let sections_access = {};
+
+    sections.forEach((section_id, i) => {
+      sections_access[section_id] = access_env.data.access_read[i];
+    });
+
+    locals.data.topics.forEach((topic, i) => {
+      if (!sections_access[topic.section]) locals.data.access_read[i] = false;
+    });
   });
 
 

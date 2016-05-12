@@ -46,7 +46,8 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, { priority: -100 }, function init_access_read(locals) {
     locals.data = locals.data || {};
 
-    locals.data.sections = _.isArray(locals.params.sections) ? locals.params.sections : [ locals.params.sections ];
+    locals.data.sections =
+      _.isArray(locals.params.sections) ? locals.params.sections.slice() : [ locals.params.sections ];
 
     locals.data.access_read = locals.data.sections.map(function () {
       return null;
@@ -132,7 +133,7 @@ module.exports = function (N, apiPath) {
       locals.data.sections.forEach((id, i) => {
         if (locals.data.access_read[i] === false) return; // continue
 
-        locals.data.sections[i] = _.find(result, { _id: String(id) });
+        locals.data.sections[i] = _.find(result, r => String(r._id) === String(id));
 
         if (!locals.data.sections[i]) {
           locals.data.access_read[i] = false;
