@@ -33,6 +33,10 @@ let navbarHeight = $('.navbar').height();
 // height of a space between text content of a post and the next post header
 const TOP_OFFSET = 50;
 
+// whenever there are more than 600 posts, cut off-screen posts down to 400
+const CUT_ITEMS_MAX = 600;
+const CUT_ITEMS_MIN = 400;
+
 
 /////////////////////////////////////////////////////////////////////
 // init on page load and destroy editor on window unload
@@ -772,8 +776,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       if (!res.posts || !res.posts.length) return;
 
-      let old_height = $('.forum-postlist').height();
-
       topicState.first_post_offset -= res.posts.length - 1;
 
       res.pagination = {
@@ -786,16 +788,43 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-      // cut duplicate post, used to display date intervals properly
+      // Cut duplicate post, used to display date intervals properly,
+      // here's an example showing how it works:
+      //
+      //   DOM                + fetched          = result
+      // | ...           |                     | ...           |
+      // +---------------+                     +---------------+
+      // | post#37       |                     | post#37       |
+      // +---------------+                     +---------------+
+      // | paginator     |                     | paginator     |
+      // | interval      |                     | interval      |
+      // | etc.          |                     | etc.          |
+      // +---------------+  +---------------+  +---------------+
+      // | post#38       |  | post#38 (cut) |  | post#38       |
+      // +---------------+  +---------------+  +---------------+
+      //                    | paginator     |  | paginator     |
+      //                    | interval      |  | interval      |
+      //                    | etc.          |  | etc.          |
+      //                    +---------------+  +---------------+
+      //                    | post#39       |  | post#39       |
+      //                    +---------------+  +---------------+
+      //                    | ...           |  | ...           |
+      //
+      // Reason for this: we don't have the data to display post intervals
+      //                  for the first post in the DOM.
+      //
       let idx = $result.index($result.filter('#' + $('.forum-post:first').attr('id')));
 
       if (idx !== -1) $result = $result.slice(0, idx);
 
       return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
+        let old_height = $('.forum-postlist').height();
+        let old_scroll = $window.scrollTop();
+
         $('.forum-postlist > :first').before($result);
 
         // update scroll so it would point at the same spot as before
-        $window.scrollTop($window.scrollTop() + $('.forum-postlist').height() - old_height);
+        $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);
 
         // Update selection state
         _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
@@ -805,6 +834,29 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
             .prop('checked', true);
         });
 
+        //
+        // Limit total amount of posts in DOM
+        //
+        let posts     = document.getElementsByClassName('forum-post');
+        let cut_count = posts.length - CUT_ITEMS_MIN;
+
+        if (cut_count > CUT_ITEMS_MAX - CUT_ITEMS_MIN) {
+          let post = posts[posts.length - cut_count - 1];
+
+          // This condition is a safeguard to prevent infinite loop,
+          // which happens if we remove a post on the screen and trigger
+          // prefetch in the opposite direction (test it with
+          // CUT_ITEMS_MAX=10, CUT_ITEMS_MIN=0)
+          if (post.getBoundingClientRect().top > $window.height() + 600) {
+            let old_length = posts.length;
+
+            $(post).nextAll().remove();
+
+            topicState.last_post_offset -= old_length - document.getElementsByClassName('forum-post').length;
+          }
+        }
+
+        // reset lock
         topicState.prev_loading_start = 0;
       });
 
@@ -873,7 +925,31 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-      // cut duplicate post, used to display date intervals properly
+      // Cut duplicate post, used to display date intervals properly,
+      // here's an example showing how it works:
+      //
+      //   DOM                + fetched          = result
+      // | ...           |                     | ...           |
+      // +---------------+                     +---------------+
+      // | post#37       |                     | post#37       |
+      // +---------------+                     +---------------+
+      // | paginator     |                     | paginator     |
+      // | interval      |                     | interval      |
+      // | etc.          |                     | etc.          |
+      // +---------------+  +---------------+  +---------------+
+      // | post#38       |  | post#38 (cut) |  | post#38       |
+      // +---------------+  +---------------+  +---------------+
+      //                    | paginator     |  | paginator     |
+      //                    | interval      |  | interval      |
+      //                    | etc.          |  | etc.          |
+      //                    +---------------+  +---------------+
+      //                    | post#39       |  | post#39       |
+      //                    +---------------+  +---------------+
+      //                    | ...           |  | ...           |
+      //
+      // Reason for this: we don't have the data to display post intervals
+      //                  for the first post in the DOM.
+      //
       let idx = $result.index($result.filter('#' + $('.forum-post:last').attr('id')));
 
       if (idx !== -1) $result = $result.slice(idx + 1);
@@ -889,6 +965,33 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
             .prop('checked', true);
         });
 
+        //
+        // Limit total amount of posts in DOM
+        //
+        let posts     = document.getElementsByClassName('forum-post');
+        let cut_count = posts.length - CUT_ITEMS_MIN;
+
+        if (cut_count > CUT_ITEMS_MAX - CUT_ITEMS_MIN) {
+          let post = posts[cut_count];
+
+          // This condition is a safeguard to prevent infinite loop,
+          // which happens if we remove a post on the screen and trigger
+          // prefetch in the opposite direction (test it with
+          // CUT_ITEMS_MAX=10, CUT_ITEMS_MIN=0)
+          if (post.getBoundingClientRect().bottom < -600) {
+            let old_height = $('.forum-postlist').height();
+            let old_scroll = $window.scrollTop(); // might change on remove()
+            let old_length = posts.length;
+
+            $(post).prevAll().remove();
+
+            // update scroll so it would point at the same spot as before
+            $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);
+            topicState.first_post_offset += old_length - document.getElementsByClassName('forum-post').length;
+          }
+        }
+
+        // reset lock
         topicState.next_loading_start = 0;
       });
 
