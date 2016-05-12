@@ -33,7 +33,16 @@ module.exports = function (N) {
 
     // Sanitize sections
     sections = yield sanitize_section(N, sections, env.user_info);
+    sections = _.keyBy(sections, '_id');
 
-    env.res.forum_sections = _.assign(env.res.forum_sections || {}, _.keyBy(sections, '_id'));
+    env.res.forum_sections = _.assign(env.res.forum_sections || {}, sections);
+
+
+    // Fill missed subscriptions (for deleted sections)
+    //
+    let missed = _.filter(subs, s => !sections[s.to]);
+
+    env.data.missed_subscriptions = env.data.missed_subscriptions || [];
+    env.data.missed_subscriptions = env.data.missed_subscriptions.concat(missed);
   });
 };
