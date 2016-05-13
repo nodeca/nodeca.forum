@@ -69,9 +69,9 @@ module.exports = function (N, apiPath) {
       user_id: user_info.user_id,
       usergroup_ids: user_info.usergroups
     };
-    let can_receive_infractions = yield N.settings.get('can_receive_infractions', params, {});
+    let cannot_receive_infractions = yield N.settings.get('cannot_receive_infractions', params, {});
 
-    if (!can_receive_infractions) throw { code: N.io.CLIENT_ERROR, message: env.t('err_perm_receive') };
+    if (cannot_receive_infractions) throw { code: N.io.CLIENT_ERROR, message: env.t('err_perm_receive') };
   });
 
 
