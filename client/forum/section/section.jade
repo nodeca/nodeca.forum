@@ -9,8 +9,6 @@ article#content.forum-section-root(
     'end':  'forum.section:nav_to_end'
   }
   class=(self.pagination.chunk_offset > 0 ? '' : 'forum-section-root__m-first-page')
-  data-first-post-id=  self.topics.length ? self.topics[0].cache.last_post : null
-  data-last-post-id=   self.topics.length ? self.topics[self.topics.length-1].cache.last_post : null
   data-section-level=  self.section_level
   data-parent-hid=     self.parent_hid
   data-last-topic-hid= self.last_topic_hid

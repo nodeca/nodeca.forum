@@ -25,6 +25,7 @@ each topic, idx in self.topics
     class=(self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1) ? 'forum-topicline__m-unread' : ''
     class=(self.read_marks[topic._id].isNew) ? 'forum-topicline__m-new' : ''
     data-topic-hid=topic.hid
+    data-last-post=topic.cache.last_post
     id='topic' + topic.hid
   )
     .forum-topicline__summary.forum-topicline__cell

@@ -12,8 +12,6 @@ const _ = require('lodash');
 // - max_page:           a number of the last page in this section
 // - reached_start:      true iff no more pages exist above first loaded one
 // - reached_end:        true iff no more pages exist below last loaded one
-// - first_post_id:      id of the last post in the first loaded topic
-// - last_post_id:       id of the last post in the last loaded topic
 // - prev_loading_start: time when current xhr request for the previous page is started
 // - next_loading_start: time when current xhr request for the next page is started
 // - selected_topics:    array of selected topics in current topic
@@ -27,6 +25,10 @@ let navbarHeight = $('.navbar').height();
 // offset between navbar and the first topic
 const TOP_OFFSET = 32;
 
+// whenever there are more than 600 topics, cut off-screen topics down to 400
+const CUT_ITEMS_MAX = 600;
+const CUT_ITEMS_MIN = 400;
+
 
 /////////////////////////////////////////////////////////////////////
 // init on page load
@@ -39,11 +41,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   sectionState.first_offset       = pagination.chunk_offset;
   sectionState.current_offset     = -1;
   sectionState.topic_count        = pagination.total;
-  sectionState.first_post_id      = $('.forum-section-root').data('first-post-id');
-  sectionState.last_post_id       = $('.forum-section-root').data('last-post-id');
-  sectionState.reached_start      = (sectionState.first_offset === 0) || !sectionState.first_post_id;
-  sectionState.reached_end        = (last_topic_hid === $('.forum-topicline:last').data('topic-hid')) ||
-                                    !sectionState.last_post_id;
+  sectionState.reached_start      = sectionState.first_offset === 0;
+  sectionState.reached_end        = last_topic_hid === $('.forum-topicline:last').data('topic-hid');
   sectionState.prev_loading_start = 0;
   sectionState.next_loading_start = 0;
   sectionState.selected_topics    = [];
@@ -667,6 +666,11 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
   N.wire.on(module.apiPath + ':load_prev', function load_prev_page() {
     if (sectionState.reached_start) return;
 
+    let last_post_id = $('.forum-topicline:first').data('last-post');
+
+    // No topics on the page
+    if (!last_post_id) return;
+
     let now = Date.now();
 
     // `prev_loading_start` is the last request start time, which is reset to 0 on success
@@ -680,7 +684,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
 
     N.io.rpc('forum.section.list.by_range', {
       section_hid:   sectionState.hid,
-      last_post_id:  sectionState.first_post_id,
+      last_post_id,
       before:        LOAD_TOPICS_COUNT,
       after:         0
     }).then(function (res) {
@@ -705,7 +709,6 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       // update scroll so it would point at the same spot as before
       $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
 
-      sectionState.first_post_id = res.topics[0].cache.last_post;
       sectionState.first_offset  = res.pagination.chunk_offset;
       sectionState.topic_count   = res.pagination.total;
 
@@ -727,6 +730,27 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         $('head').append(link);
       }
 
+      //
+      // Limit total amount of posts in DOM
+      //
+      let topics    = document.getElementsByClassName('forum-topicline');
+      let cut_count = topics.length - CUT_ITEMS_MIN;
+
+      if (cut_count > CUT_ITEMS_MAX - CUT_ITEMS_MIN) {
+        let topic = topics[topics.length - cut_count - 1];
+
+        // This condition is a safeguard to prevent infinite loop,
+        // which happens if we remove a post on the screen and trigger
+        // prefetch in the opposite direction (test it with
+        // CUT_ITEMS_MAX=10, CUT_ITEMS_MIN=0)
+        if (topic.getBoundingClientRect().top > $window.height() + 600) {
+          $(topic).nextAll().remove();
+
+          sectionState.reached_end = false;
+        }
+      }
+
+      // reset lock
       sectionState.prev_loading_start = 0;
 
       return N.wire.emit('forum.section.blocks.page_progress:update', {
@@ -741,6 +765,11 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
   N.wire.on(module.apiPath + ':load_next', function load_next_page() {
     if (sectionState.reached_end) return;
 
+    let last_post_id = $('.forum-topicline:last').data('last-post');
+
+    // No topics on the page
+    if (!last_post_id) return;
+
     let now = Date.now();
 
     // `next_loading_start` is the last request start time, which is reset to 0 on success
@@ -754,7 +783,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
 
     N.io.rpc('forum.section.list.by_range', {
       section_hid:   sectionState.hid,
-      last_post_id:  sectionState.last_post_id,
+      last_post_id,
       before:        0,
       after:         LOAD_TOPICS_COUNT
     }).then(function (res) {
@@ -783,7 +812,6 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         $window.scrollTop($window.scrollTop() + $('.forum-topiclist').height() - old_height);
       }
 
-      sectionState.last_post_id = res.topics[res.topics.length - 1].cache.last_post;
       sectionState.first_offset = res.pagination.chunk_offset - $('.forum-topicline').length;
       sectionState.topic_count  = res.pagination.total;
 
@@ -822,6 +850,35 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         $('head').append(link);
       }
 
+      //
+      // Limit total amount of topics in DOM
+      //
+      let topics    = document.getElementsByClassName('forum-topicline');
+      let cut_count = topics.length - CUT_ITEMS_MIN;
+
+      if (cut_count > CUT_ITEMS_MAX - CUT_ITEMS_MIN) {
+        let topic = topics[cut_count];
+
+        // This condition is a safeguard to prevent infinite loop,
+        // which happens if we remove a post on the screen and trigger
+        // prefetch in the opposite direction (test it with
+        // CUT_ITEMS_MAX=10, CUT_ITEMS_MIN=0)
+        if (topic.getBoundingClientRect().bottom < -600) {
+          let old_height = $('.forum-topiclist').height();
+          let old_scroll = $window.scrollTop(); // might change on remove()
+          let old_length = topics.length;
+
+          $(topic).prevAll().remove();
+
+          // update scroll so it would point at the same spot as before
+          $window.scrollTop(old_scroll + $('.forum-topiclist').height() - old_height);
+          sectionState.first_offset += old_length - document.getElementsByClassName('forum-topicline').length;
+
+          sectionState.reached_start = false;
+        }
+      }
+
+      // reset lock
       sectionState.next_loading_start = 0;
 
       return N.wire.emit('forum.section.blocks.page_progress:update', {
