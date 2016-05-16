@@ -27,7 +27,7 @@ module.exports = function (N, apiPath) {
     //
     let posts = yield N.models.forum.Post.find()
                           .where('_id').in(posts_ids)
-                          .select('_id hid topic st ste')
+                          .select('_id hid topic st ste md')
                           .lean(true);
 
 
@@ -81,7 +81,8 @@ module.exports = function (N, apiPath) {
           section_hid: sections[topics[post.topic].section].hid,
           topic_hid: topics[post.topic].hid,
           post_hid: post.hid
-        })
+        }),
+        text: post.md
       };
     });
   });
