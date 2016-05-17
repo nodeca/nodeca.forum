@@ -55,7 +55,4 @@ module.exports.up = co.wrap(function* (N) {
   yield usergroupStore.set({
     forum_edit_max_time: { value: 0 }
   }, { usergroup_id: bannedGroup._id });
-
-  // Recalculate store settings of all groups.
-  yield usergroupStore.updateInherited();
 });
