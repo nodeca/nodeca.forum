@@ -143,7 +143,7 @@ module.exports = function (N, collectionName) {
   });
 
 
-  // Update cache last_post, last_user, last_ts
+  // Update cache: last_post, last_post_hid, last_user, last_ts
   //
   // - topicID - id of topic to update
   //
@@ -177,10 +177,13 @@ module.exports = function (N, collectionName) {
                                   .sort('-hid')
                                   .lean(true);
 
-      updateData['cache.last_post']     = post_visible._id;
-      updateData['cache.last_post_hid'] = post_visible.hid;
-      updateData['cache.last_user']     = post_visible.user;
-      updateData['cache.last_ts']       = post_visible.ts;
+      // topic might not have any visible posts if it's created by HB
+      if (post_visible) {
+        updateData['cache.last_post']     = post_visible._id;
+        updateData['cache.last_post_hid'] = post_visible.hid;
+        updateData['cache.last_user']     = post_visible.user;
+        updateData['cache.last_ts']       = post_visible.ts;
+      }
     }
 
     let count = yield [ statuses.VISIBLE, statuses.HB ].map(st => N.models.forum.Post
