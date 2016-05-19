@@ -57,10 +57,10 @@ module.exports = function (N, apiPath) {
 
     // If no moderators found - send message to all administrators
     if (!recipients_ids.length) {
-      let admin_group = yield N.models.users.UserGroup.findOne({ short_name: 'administrators' });
+      let admin_group_id = yield N.models.users.UserGroup.findIdByName('administrators');
 
       recipients = yield N.models.users.User.find()
-                            .where('usergroups').equals(admin_group._id)
+                            .where('usergroups').equals(admin_group_id)
                             .select('_id')
                             .lean(true);
       recipients_ids = _.map(recipients, '_id');
