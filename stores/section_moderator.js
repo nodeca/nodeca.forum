@@ -373,17 +373,7 @@ module.exports = function (N) {
         section_settings.markModified('data');
       });
 
-
-      // Select publicly visible moderators to update `moderators`
-      let visibleModeratorIds = allModeratorIds.filter(userId =>
-                                                        section_settings.data[userId] &&
-                                                        section_settings.data[userId].forum_mod_visible &&
-                                                        section_settings.data[userId].forum_mod_visible.value);
-
-      return section_settings.save().then(() => {
-        section.moderators = visibleModeratorIds;
-        return section.save();
-      });
+      return section_settings.save();
     });
   });
 

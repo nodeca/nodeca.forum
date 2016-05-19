@@ -24,16 +24,6 @@ ul.forum-sections
                   li.forum-section__subforum-item
                     a.forum-section__subforum-link(href=self.link_to('forum.section', { section_hid: sub_section.hid }))= sub_section.title
 
-            - var moderators = section.moderators.filter(function(id) { return self.users[id] });
-            if moderators && moderators.length > 0
-              dl.forum-section__moderators.hidden-xs
-                dt.forum-section__moderators-caption= self.t('moderators', moderators.length)
-                each moderator in moderators
-                  - var mod = self.users[moderator]
-                  dd.forum-section__moderator
-                    a.forum-section__moderator-link(
-                      href=self.link_to('users.member', { user_hid: mod.hid })
-                    )= mod.name
             .forum-section__microstat.visible-xs-block
               if !section.cache.topic_count
                 = self.t('empty')

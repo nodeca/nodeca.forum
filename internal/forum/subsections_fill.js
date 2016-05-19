@@ -166,33 +166,13 @@ module.exports = function (N, apiPath) {
 
     env.data.users = env.data.users || [];
 
-    // collect users from subsections
-    env.data.subsections.forEach(function (doc) {
-      // queue moderators only for second level on index page and for first level on section page
-      if (doc.level === (env.data.section ? 0 : 1)) {
-        if (doc.moderators) {
-          doc.moderators.forEach(function (user) {
-            env.data.users.push(user);
-          });
-        }
-        if (doc.cache.last_user) {
-          env.data.users.push(doc.cache.last_user);
-        }
-      }
-    });
-
-    // Collect users/moderators from subsections. Only first & second levels required
+    // Collect users from subsections. Only first & second levels required
     // Calculate deepness limit, depending on `forum index` or `forum.section`
     let max_subsection_level = Number((env.data.section || {}).level) + 2;
 
     env.data.subsections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
       if (doc.level < max_subsection_level) {
-        if (doc.moderators) {
-          doc.moderators.forEach(function (user) {
-            env.data.users.push(user);
-          });
-        }
         if (doc.cache.last_user) {
           env.data.users.push(doc.cache.last_user);
         }

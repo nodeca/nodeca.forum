@@ -1,5 +1,4 @@
 en-US:
-  moderators: "((moderator|moderators))"
   topics: "#{count} ((topic|topics))"
   posts: "#{count} ((post|posts))"
   empty: "No topics"

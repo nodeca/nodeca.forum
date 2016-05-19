@@ -34,9 +34,6 @@ module.exports = function (N, collectionName) {
     // Sections tree paths/cache
     parent:           Schema.ObjectId,
 
-    // Visible moderator list.
-    moderators:       [ Schema.ObjectId ],
-
     // Options
     is_category:      { type: Boolean, 'default': false }, // subsection or category
     is_enabled:       { type: Boolean, 'default': true },  // hiden inactive
