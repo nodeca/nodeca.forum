@@ -4,10 +4,8 @@
 
 
 const _                = require('lodash');
-const async            = require('async');
-const memoizee         = require('memoizee');
+const memoize          = require('promise-memoize');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
-const thenify          = require('thenify');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,25 +20,20 @@ module.exports = function (N, apiPath) {
    *
    * Returns  hash { _id: Boolean(visibility) } for selected subsections
    */
-  let filterVisibility = thenify(memoizee(
-    function (s_ids, g_ids, callback) {
-      let result = {};
+  let filterVisibility = memoize(function (s_ids, g_ids) {
+    let result = {};
 
-      async.each(s_ids, (_id, next) => {
-        let params = { section_id: _id, usergroup_ids: g_ids };
+    return Promise.all(s_ids.map(_id => {
+      let params = { section_id: _id, usergroup_ids: g_ids };
 
-        N.settings.get([ 'forum_can_view' ], params).then(data => {
+      return N.settings.get([ 'forum_can_view' ], params)
+        .then(data => {
           result[_id] = data.forum_can_view;
-          process.nextTick(next);
-        }, err => process.nextTick(() => next(err)));
-      }, err => callback(err, result));
-    },
-    {
-      async:      true,
-      maxAge:     60000, // cache TTL = 60 seconds
-      primitive:  true   // keys are calculated as toStrings, ok for our case
-    }
-  ));
+        });
+    }))
+    .then(() => result);
+  }, { maxAge: 60000 });
+
 
   /*
    *  to_tree(source[, root = null]) -> array

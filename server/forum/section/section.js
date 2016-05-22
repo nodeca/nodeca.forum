@@ -3,9 +3,8 @@
 'use strict';
 
 
-const memoizee  = require('memoizee');
-const _         = require('lodash');
-const thenify   = require('thenify');
+const memoize = require('promise-memoize');
+const _       = require('lodash');
 
 
 module.exports = function (N, apiPath) {
@@ -18,18 +17,9 @@ module.exports = function (N, apiPath) {
   let buildTopicsIds = require('./list/_build_topics_ids_by_range.js')(N);
 
 
-  let fetchSection = thenify(memoizee(
-    function (id, callback) {
-      N.models.forum.Section.findById(id)
-        .lean(true)
-        .exec(callback);
-    },
-    {
-      async:      true,
-      maxAge:     60000, // cache TTL = 60 seconds
-      primitive:  true   // params keys are calculated as toString
-    }
-  ));
+  let fetchSection = memoize(id =>
+    N.models.forum.Section.findById(id).lean(true).exec(), { maxAge: 60000 });
+
 
   function buildTopicsIdsAndGetOffset(env) {
     return env.extras.settings.fetch('topics_per_page').then(topics_per_page => {

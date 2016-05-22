@@ -3,8 +3,7 @@
 
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
-const memoizee = require('memoizee');
-const thenify  = require('thenify');
+const memoize  = require('promise-memoize');
 const co       = require('bluebird-co').co;
 const _        = require('lodash');
 
@@ -159,47 +158,35 @@ module.exports = function (N, collectionName) {
   //   - parent - link to parent section object
   //   - children[ { _id, parent, children[...] } ]
   //
-  let getSectionsTree = memoizee(callback => {
+  let getSectionsTree = memoize(() =>
     N.models.forum.Section
         .find()
         .sort('display_order')
         .select('_id parent is_enabled is_excludable')
         .lean(true)
-        .exec(function (err, sections) {
+        .exec()
+        .then(sections => {
 
-      if (err) {
-        callback(err);
-        return;
-      }
+          // create hash of trees for each section
+          let result = sections.reduce((acc, s) => {
+            acc[s._id] = _.assign({ children: [] }, s);
+            return acc;
+          }, {});
 
-      // create hash of trees for each section
-      let result = sections.reduce((acc, s) => {
-        acc[s._id] = _.assign({ children: [] }, s);
-        return acc;
-      }, {});
+          // root is a special fake `section` that contains array of the root-level sections
+          let root = { children: [], is_enabled: true, is_excludable: false };
 
-      // root is a special fake `section` that contains array of the root-level sections
-      let root = { children: [], is_enabled: true, is_excludable: false };
+          _.forEach(result, s => {
+            s.parent = s.parent ? result[s.parent] : root;
+            s.parent.children.push(s);
+          });
 
-      _.forEach(result, s => {
-        s.parent = s.parent ? result[s.parent] : root;
-        s.parent.children.push(s);
-      });
+          result.root = root;
 
-      result.root = root;
-
-      callback(null, result);
-    });
-  }, {
-    async:      true,
-    maxAge:     60000, // cache TTL = 60 seconds
-    primitive:  true   // params keys are calculated as toString, ok for our case
-  });
-
-  // Save clear method before wrap with thenify.
-  let getSectionsTreeClear = getSectionsTree.clear;
-
-  getSectionsTree = thenify(getSectionsTree);
+          return result;
+        }),
+    { maxAge: 60000 }
+  );
 
 
   // Returns list of parent _id-s for given section `_id`
@@ -261,7 +248,7 @@ module.exports = function (N, collectionName) {
 
   // Provide a possibility to clear section tree cache (used in seeds)
   //
-  Section.statics.getChildren.clear = () => getSectionsTreeClear();
+  Section.statics.getChildren.clear = () => getSectionsTree.clear();
 
 
   // Update `last_post`, `last_topic`, `last_user`, `last_ts`, `post_count`,

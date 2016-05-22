@@ -3,48 +3,38 @@
 'use strict';
 
 
-var _         = require('lodash');
-var memoizee  = require('memoizee');
+const _       = require('lodash');
+const memoize = require('promise-memoize');
 
 
 module.exports = function (N, apiPath) {
 
   // Helper - cacheable bredcrumbs info fetch, to save DB request.
   // We can cache it, because cache size is limited by sections count.
-  var fetchSectionsInfo = memoizee(
+  let fetchSectionsInfo = memoize(
+    ids => N.models.forum.Section
+      .find({ _id: { $in: ids } })
+      .select('hid title')
+      .lean(true)
+      .exec()
+      .then(parents => {
+        let result = [];
 
-    function (ids, callback) {
-      var result = [];
-
-      N.models.forum.Section
-        .find({ _id: { $in: ids } })
-        .select('hid title')
-        .lean(true)
-        .exec(function (err, parents) {
-
-          // sort result in the same order as ids
-          _.forEach(ids, function (id) {
-            var foundParent = _.find(parents, function (parent) {
-              return parent._id.equals(id);
-            });
-            result.push(foundParent);
-          });
-
-          callback(err, result);
+        // sort result in the same order as ids
+        _.forEach(ids, id => {
+          result.push(_.find(parents, p => p._id.equals(id)));
         });
-    },
-    {
-      async: true,
-      maxAge:     60000, // cache TTL = 60 seconds
-      primitive:  true   // params keys are calculated as toString, ok for our case
-    }
+
+        return result;
+      }),
+    { maxAge: 60000 }
   );
 
   // data = { env, parents }
   // parents - array of forums ids to show in breadcrumbs
-  N.wire.on(apiPath, function internal_breadcrumbs_fill(data, callback) {
-    var env     = data.env;
-    var parents = data.parents;
+  N.wire.on(apiPath, function* internal_breadcrumbs_fill(data) {
+    let env     = data.env;
+    let parents = data.parents;
 
     // first element - always link to forum root
     env.res.breadcrumbs = [ {
@@ -53,31 +43,21 @@ module.exports = function (N, apiPath) {
     } ];
 
     // no parents - we are on the root
-    if (_.isEmpty(parents)) {
-      callback();
-      return;
-    }
+    if (_.isEmpty(parents)) return;
 
-    fetchSectionsInfo(parents, function (err, parentsInfo) {
-      if (err) {
-        callback(err);
-        return;
-      }
+    let parentsInfo = yield fetchSectionsInfo(parents);
 
-      var bc_list = parentsInfo.slice(); // clone result to keep cache safe
+    let bc_list = parentsInfo.slice(); // clone result to keep cache safe
 
-      // transform fetched data & glue to output
-      env.res.breadcrumbs = env.res.breadcrumbs.concat(
-        _.map(bc_list, function (section_info) {
-          return {
-            text: section_info.title,
-            route: 'forum.section',
-            params: { section_hid: section_info.hid }
-          };
-        })
-      );
-
-      callback();
-    });
+    // transform fetched data & glue to output
+    env.res.breadcrumbs = env.res.breadcrumbs.concat(
+      _.map(bc_list, function (section_info) {
+        return {
+          text: section_info.title,
+          route: 'forum.section',
+          params: { section_hid: section_info.hid }
+        };
+      })
+    );
   });
 };

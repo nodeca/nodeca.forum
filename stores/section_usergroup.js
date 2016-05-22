@@ -15,8 +15,7 @@
 
 
 const _        = require('lodash');
-const memoizee = require('memoizee');
-const thenify  = require('thenify');
+const memoize  = require('promise-memoize');
 const co       = require('bluebird-co').co;
 
 
@@ -24,23 +23,17 @@ module.exports = function (N) {
 
   // Helper to fetch usergroups by IDs
   //
-  function fetchSectionSettings(id, callback) {
-    N.models.forum.SectionUsergroupStore
+  function fetchSectionSettings(id) {
+    return N.models.forum.SectionUsergroupStore
       .findOne({ section_id: id })
       .lean(true)
-      .exec(callback);
+      .exec();
   }
 
   // Memoized version of `fetchSectionSettings` helper.
   // Revalidate cache after 30 seconds.
   //
-  let fetchSectionSettingsCached = thenify(memoizee(fetchSectionSettings, {
-    async:     true,
-    maxAge:    30000,
-    primitive: true
-  }));
-
-  let fetchSectionSettingsAsync = thenify(fetchSectionSettings);
+  let fetchSectionSettingsCached = memoize(fetchSectionSettings, { maxAge: 30000 });
 
 
   let SectionUsergroupStore = N.settings.createStore({
@@ -69,7 +62,7 @@ module.exports = function (N) {
               'settings from `section_usergroup` store.';
       }
 
-      let fetch = options.skipCache ? fetchSectionSettingsAsync : fetchSectionSettingsCached;
+      let fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
       let section_settings = yield fetch(params.section_id);
       let results = {};
 

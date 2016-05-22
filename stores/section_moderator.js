@@ -15,8 +15,7 @@
 
 
 const _        = require('lodash');
-const memoizee = require('memoizee');
-const thenify  = require('thenify');
+const memoize  = require('promise-memoize');
 const co       = require('bluebird-co').co;
 
 
@@ -24,23 +23,17 @@ module.exports = function (N) {
 
   // Helper to fetch moderators by IDs
   //
-  function fetchSectionSettings(id, callback) {
-    N.models.forum.SectionModeratorStore
+  function fetchSectionSettings(id) {
+    return N.models.forum.SectionModeratorStore
       .findOne({ section_id: id })
       .lean(true)
-      .exec(callback);
+      .exec();
   }
 
   // Memoized version of `fetchSectionSettings` helper.
   // Revalidate cache after 30 seconds.
   //
-  let fetchSectionSettingsCached = thenify(memoizee(fetchSectionSettings, {
-    async:     true,
-    maxAge:    30000,
-    primitive: true
-  }));
-
-  let fetchSectionSettingsAsync = thenify(fetchSectionSettings);
+  let fetchSectionSettingsCached = memoize(fetchSectionSettings, { maxAge: 30000 });
 
 
   let SectionModeratorStore = N.settings.createStore({
@@ -68,7 +61,7 @@ module.exports = function (N) {
         throw '`user_id` parameter is required for getting settings from `section_moderator` store.';
       }
 
-      let fetch = options.skipCache ? fetchSectionSettingsAsync : fetchSectionSettingsCached;
+      let fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
       let section_settings = yield fetch(params.section_id);
 
       if (!section_settings) throw `'section_moderator' store for forum section ${params.section_id} does not exist.`;
