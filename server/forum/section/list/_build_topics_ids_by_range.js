@@ -33,63 +33,67 @@ module.exports = function (N) {
   // Shortcut
   const Topic = N.models.forum.Topic;
 
+  function select_visible_before(env) {
+    let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
+
+    let count = env.data.select_posts_before;
+    if (count <= 0) return Promise.resolve([]);
+
+    // first page, don't need to fetch anything
+    if (!env.data.select_posts_start) return Promise.resolve([]);
+
+    let query = Topic.find();
+
+    if (env.data.select_posts_start) {
+      query = query.where(lookup_key).gt(env.data.select_posts_start);
+    }
+
+    return query
+             .where('section').equals(env.data.section._id)
+             .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+             .select('_id')
+             .sort(`${lookup_key}`)
+             .limit(count)
+             .lean(true)
+             .then(topics => _.map(topics, '_id').reverse());
+  }
+
+  function select_visible_after(env) {
+    let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
+
+    let count = env.data.select_posts_after;
+    if (count <= 0) return Promise.resolve([]);
+
+    let query = Topic.find();
+
+    if (env.data.select_posts_start) {
+      if (env.data.select_posts_after > 0 && env.data.select_posts_before > 0) {
+        // if we're selecting both `after` and `before`, include current post
+        // in the result, otherwise don't
+        query = query.where(lookup_key).lte(env.data.select_posts_start);
+        count++;
+      } else {
+        query = query.where(lookup_key).lt(env.data.select_posts_start);
+      }
+    }
+
+    return query
+             .where('section').equals(env.data.section._id)
+             .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+             .select('_id')
+             .sort(`-${lookup_key}`)
+             .limit(count)
+             .lean(true)
+             .then(topics => _.map(topics, '_id'));
+  }
+
+
   return co.wrap(function* buildTopicsIds(env) {
     let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
 
-    function select_visible_before() {
-      let count = env.data.select_posts_before;
-      if (count <= 0) return Promise.resolve([]);
-
-      // first page, don't need to fetch anything
-      if (!env.data.select_posts_start) return Promise.resolve([]);
-
-      let query = Topic.find();
-
-      if (env.data.select_posts_start) {
-        query = query.where(lookup_key).gt(env.data.select_posts_start);
-      }
-
-      return query
-               .where('section').equals(env.data.section._id)
-               .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-               .select('_id')
-               .sort(`${lookup_key}`)
-               .limit(count)
-               .lean(true)
-               .then(topics => _.map(topics, '_id').reverse());
-    }
-
-    function select_visible_after() {
-      let count = env.data.select_posts_after;
-      if (count <= 0) return Promise.resolve([]);
-
-      let query = Topic.find();
-
-      if (env.data.select_posts_start) {
-        if (env.data.select_posts_after > 0 && env.data.select_posts_before > 0) {
-          // if we're selecting both `after` and `before`, include current post
-          // in the result, otherwise don't
-          query = query.where(lookup_key).lte(env.data.select_posts_start);
-          count++;
-        } else {
-          query = query.where(lookup_key).lt(env.data.select_posts_start);
-        }
-      }
-
-      return query
-               .where('section').equals(env.data.section._id)
-               .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-               .select('_id')
-               .sort(`-${lookup_key}`)
-               .limit(count)
-               .lean(true)
-               .then(topics => _.map(topics, '_id'));
-    }
-
-
     // Run both functions in parallel and concatenate results
     //
-    let results = yield [ select_visible_before(), select_visible_after() ];
+    let results = yield [ select_visible_before(env), select_visible_after(env) ];
 
     env.data.topics_ids = Array.prototype.concat.apply([], results);
 
