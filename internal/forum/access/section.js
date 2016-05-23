@@ -160,7 +160,6 @@ module.exports = function (N, apiPath) {
       }
 
       let params = {
-        user_id: locals.data.user_info.user_id,
         usergroup_ids: locals.data.user_info.usergroups,
         section_id: section._id
       };

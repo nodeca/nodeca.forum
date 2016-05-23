@@ -21,17 +21,14 @@ module.exports = function (N, apiPath) {
    * Returns  hash { _id: Boolean(visibility) } for selected subsections
    */
   let filterVisibility = memoize(function (s_ids, g_ids) {
-    let result = {};
+    let access_env = { params: { sections: s_ids, user_info: { usergroups: g_ids } } };
 
-    return Promise.all(s_ids.map(_id => {
-      let params = { section_id: _id, usergroup_ids: g_ids };
-
-      return N.settings.get([ 'forum_can_view' ], params)
-        .then(data => {
-          result[_id] = data.forum_can_view;
-        });
-    }))
-    .then(() => result);
+    return N.wire.emit('internal:forum.access.section', access_env).then(() =>
+      s_ids.reduce((acc, _id, i) => {
+        acc[_id] = access_env.data.access_read[i];
+        return acc;
+      }, {})
+    );
   }, { maxAge: 60000 });
 
 
@@ -83,9 +80,6 @@ module.exports = function (N, apiPath) {
     // - get 2 levels [0,1] for section
     let subsections = yield N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
                                                                env.data.section ? 2 : -1);
-
-    // Don't show disabled section
-    subsections = subsections.filter(s => s.is_enabled);
 
     // sections order is always fixed, no needs to sort.
     let s_ids = subsections.map(s => s._id.toString());
