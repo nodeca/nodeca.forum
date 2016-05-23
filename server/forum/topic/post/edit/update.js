@@ -1,7 +1,9 @@
 // Get post src html, update post
 'use strict';
 
-const $ = require('nodeca.core/lib/parser/cheequery');
+
+const $       = require('nodeca.core/lib/parser/cheequery');
+const Promise = require('bluebird');
 
 
 module.exports = function (N, apiPath) {

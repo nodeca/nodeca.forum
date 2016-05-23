@@ -17,6 +17,7 @@
 
 
 const _        = require('lodash');
+const Promise  = require('bluebird');
 const ObjectId = require('mongoose').Types.ObjectId;
 const userInfo = require('nodeca.users/lib/user_info');
 
@@ -156,9 +157,7 @@ module.exports = function (N, apiPath) {
     ];
 
     function check(topic, i) {
-      if (locals.data.access_read[i] === false) {
-        return Promise.resolve();
-      }
+      if (locals.data.access_read[i] === false) return Promise.resolve();
 
       let params = {
         user_id: locals.data.user_info.user_id,

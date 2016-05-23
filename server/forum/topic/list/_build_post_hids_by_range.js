@@ -23,8 +23,9 @@
 'use strict';
 
 
-const _  = require('lodash');
-const co = require('bluebird-co').co;
+const _       = require('lodash');
+const Promise = require('bluebird');
+const co      = require('bluebird-co').co;
 
 
 module.exports = function (N) {
@@ -45,7 +46,7 @@ module.exports = function (N) {
 
     function select_visible_before() {
       let posts_count = env.params.before;
-      if (posts_count <= 0) return Promise.resolve([]);
+      if (posts_count <= 0) return Promise.resolve();
 
       return Post.find()
         .where('topic').equals(env.data.topic._id)

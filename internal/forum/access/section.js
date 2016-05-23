@@ -16,6 +16,7 @@
 
 
 const _        = require('lodash');
+const Promise  = require('bluebird');
 const ObjectId = require('mongoose').Types.ObjectId;
 const userInfo = require('nodeca.users/lib/user_info');
 
@@ -150,9 +151,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function* check_section_access(locals) {
 
     function check(section, i) {
-      if (locals.data.access_read[i] === false) {
-        return Promise.resolve();
-      }
+      if (locals.data.access_read[i] === false) return Promise.resolve();
 
       if (!section.is_enabled) {
         locals.data.access_read[i] = false;

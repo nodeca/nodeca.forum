@@ -2,23 +2,19 @@
 //
 'use strict';
 
+
+const Promise  = require('bluebird');
+
+
 // Max posts ids to fetch
 const LIMIT = 100;
+
 
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    topic_hid: {
-      type: 'integer',
-      required: true
-    },
-    posts_ids: {
-      type: 'array',
-      required: true,
-      uniqueItems: true,
-      maxItems: LIMIT,
-      items: { format: 'mongo' }
-    }
+    topic_hid: { type: 'integer', required: true },
+    posts_ids: { type: 'array', required: true, uniqueItems: true, maxItems: LIMIT, items: { format: 'mongo' } }
   });
 
 
