@@ -4,7 +4,7 @@
 
 
 var dns   = require('mz/dns');
-var whois = require('thenify')(require('whois').lookup);
+var whois = require('whois').lookup;
 
 
 module.exports = function (N, apiPath) {
@@ -47,7 +47,9 @@ module.exports = function (N, apiPath) {
   // Fetch whois info
   //
   N.wire.after(apiPath, function* fetch_whois(env) {
-    let data = yield whois(env.data.ip);
+    let data = yield new Promise((res, rej) => {
+      whois(env.data.ip, (err, data) => (err ? rej(err) : res(data)));
+    });
 
     env.res.whois = data.replace(/\r?\n/g, '\n')
                         .replace(/^[#%].*/mg, '')     // comments

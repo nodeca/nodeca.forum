@@ -12,7 +12,6 @@
 
 const _         = require('lodash');
 const co        = require('bluebird-co').co;
-const thenify   = require('thenify');
 const charlatan = require('charlatan');
 const ObjectId  = require('mongoose').Types.ObjectId;
 
@@ -284,16 +283,20 @@ const updateSectionStat = co.wrap(function* (section) {
 
   let sections = yield Section.getChildren(section._id, -1);
 
-  // aggregation doesn't return a promise in mongoose?
-  let sum = yield thenify(callback => Topic.aggregate(
-    { $match: {
-      section: { $in: _.map(sections.concat([ section ]), '_id') }
-    } },
-    { $group: {
-      _id: null,
-      topic_count: { $sum: 1 },
-      post_count: { $sum: '$cache.post_count' }
-    } }).exec(callback));
+  let sum = yield Topic.aggregate(
+    {
+      $match: {
+        section: { $in: _.map(sections.concat([ section ]), '_id') }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        topic_count: { $sum: 1 },
+        post_count: { $sum: '$cache.post_count' }
+      }
+    }
+  ).exec();
 
   if (sum && sum[0]) {
     postCount  = sum[0].post_count;
