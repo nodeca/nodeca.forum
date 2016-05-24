@@ -238,7 +238,7 @@ module.exports = function (N, collectionName) {
       });
     }
 
-    return Promise.resolve(getSectionsTree()).then(sections => {
+    return getSectionsTree().then(sections => {
       let storedSection = sections[sectionID || 'root'];
 
       fillChildren(storedSection, 0, deepness);
