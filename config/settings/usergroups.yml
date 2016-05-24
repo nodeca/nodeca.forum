@@ -25,12 +25,6 @@ setting_schemas:
       type: number
       default: 30
 
-    forum_reply_old_post_threshold:
-      priority: 50
-      category_key: forum
-      type: number
-      default: 30
-
     forum_can_close_topic:
       priority: 60
       category_key: forum

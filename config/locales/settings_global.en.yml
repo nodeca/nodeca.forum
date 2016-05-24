@@ -17,5 +17,7 @@ i18n:
           forum_post_min_length: Min post text length
           forum_post_max_images: Max number of images in a post
           forum_post_max_emojis: Max number of emoticons in a post
+          forum_reply_old_post_threshold: Ask reply confirmation when topic is inactive for XX days (or post is older than XX days)
+          forum_show_post_interval: Display time interval between posts if it's more than XX days
 
           general_abuse_report_section: Private section for abuse reports
