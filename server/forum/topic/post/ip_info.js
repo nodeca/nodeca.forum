@@ -3,8 +3,9 @@
 'use strict';
 
 
-var dns   = require('mz/dns');
-var whois = require('whois').lookup;
+var dns     = require('mz/dns');
+var whois   = require('whois').lookup;
+var Promise = require('bluebird');
 
 
 module.exports = function (N, apiPath) {
@@ -47,9 +48,7 @@ module.exports = function (N, apiPath) {
   // Fetch whois info
   //
   N.wire.after(apiPath, function* fetch_whois(env) {
-    let data = yield new Promise((res, rej) => {
-      whois(env.data.ip, (err, data) => (err ? rej(err) : res(data)));
-    });
+    let data = yield Promise.fromCallback(cb => whois(env.data.ip, cb));
 
     env.res.whois = data.replace(/\r?\n/g, '\n')
                         .replace(/^[#%].*/mg, '')     // comments
