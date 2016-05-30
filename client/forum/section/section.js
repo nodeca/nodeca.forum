@@ -133,6 +133,17 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   });
 
 
+  // Show list of section moderators
+  //
+  N.wire.on(module.apiPath + ':show_moderators', function show_moderators(data) {
+    let hid = data.$this.data('section-hid');
+
+    return Promise.resolve()
+      .then(() => N.io.rpc('forum.section.show_moderators', { section_hid: hid }))
+      .then(res => N.wire.emit('forum.section.moderator_info_dlg', res));
+  });
+
+
   // Click topic create
   //
   N.wire.on(module.apiPath + ':create', function reply(data) {

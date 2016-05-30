@@ -1,0 +1,18 @@
+.modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+        h4.modal-title= self.t('title')
+      .modal-body.help-dlg__content
+        if self.moderators.length
+          ul.moderator-info__list
+            each moderator in self.moderators
+              - var user = self.users[moderator]
+              if user
+                li.moderator-info__list-item
+                  a(href=self.link_to('users.member', { user_hid: user.hid }))
+                    img.moderator-info__avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
+                    = user.nick
+        else
+          .moderator-info__list-empty= self.t('no_moderators')

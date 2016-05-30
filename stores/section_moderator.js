@@ -371,6 +371,33 @@ module.exports = function (N) {
   });
 
 
+  // Get a list of section moderators
+  //
+  SectionModeratorStore.getModerators = co.wrap(function* getModerators(sectionId) {
+    let section_ids = yield N.models.forum.Section.getParentList(sectionId);
+
+    section_ids.push(sectionId);
+
+    let moderators = {}; // hash userId => isVisible (boolean)
+
+    for (let section_id of section_ids) {
+      let permissions = yield fetchSectionSettingsCached(section_id);
+
+      if (!permissions.data) continue;
+
+      for (let user_id of Object.keys(permissions.data)) {
+        if (permissions.data[user_id].forum_mod_visible) {
+          moderators[user_id] = permissions.data[user_id].forum_mod_visible.value;
+        } else {
+          moderators[user_id] = this.getDefaultValue('forum_mod_visible');
+        }
+      }
+    }
+
+    return Object.keys(moderators).filter(user_id => moderators[user_id]).sort();
+  });
+
+
   // Remove single moderator entry at section.
   //
   SectionModeratorStore.removeModerator = co.wrap(function* removeModerator(sectionId, userId) {
