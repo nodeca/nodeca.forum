@@ -51,7 +51,9 @@ module.exports = function (N, apiPath) {
       };
     }
 
-    env.res.moderators = yield SectionModeratorStore.getModerators(env.data.section._id);
+    env.res.moderators = (yield SectionModeratorStore.getModeratorsInfo(env.data.section._id))
+                             .filter(moderator => moderator.visible)
+                             .map(moderator => moderator._id);
 
     env.data.users = (env.data.users || []).concat(env.res.moderators);
   });

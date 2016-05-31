@@ -159,7 +159,8 @@ module.exports = function (N) {
   //     {
   //       _id: '51f0835b0798894c2f000006',  // user id
   //       own: 1,       // count of changed settings done in this section
-  //       inherited: 3  // count of changed settings inherited from parent section
+  //       inherited: 3, // count of changed settings inherited from parent section
+  //       visible: true // value of 'forum_mod_visible' setting
   //     },
   //     { ... }
   //   ]
@@ -180,7 +181,10 @@ module.exports = function (N) {
         result.push({
           _id:       userId,
           own:       _.filter(section_settings.data[userId], { own: true  }).length,
-          inherited: _.filter(section_settings.data[userId], { own: false }).length
+          inherited: _.filter(section_settings.data[userId], { own: false }).length,
+          visible:   section_settings.data[userId].forum_mod_visible ?
+                     section_settings.data[userId].forum_mod_visible.value :
+                     this.getDefaultValue('forum_mod_visible')
         });
       });
     }
@@ -368,33 +372,6 @@ module.exports = function (N) {
 
       return section_settings.save();
     });
-  });
-
-
-  // Get a list of section moderators
-  //
-  SectionModeratorStore.getModerators = co.wrap(function* getModerators(sectionId) {
-    let section_ids = yield N.models.forum.Section.getParentList(sectionId);
-
-    section_ids.push(sectionId);
-
-    let moderators = {}; // hash userId => isVisible (boolean)
-
-    for (let section_id of section_ids) {
-      let permissions = yield fetchSectionSettingsCached(section_id);
-
-      if (!permissions.data) continue;
-
-      for (let user_id of Object.keys(permissions.data)) {
-        if (permissions.data[user_id].forum_mod_visible) {
-          moderators[user_id] = permissions.data[user_id].forum_mod_visible.value;
-        } else {
-          moderators[user_id] = this.getDefaultValue('forum_mod_visible');
-        }
-      }
-    }
-
-    return Object.keys(moderators).filter(user_id => moderators[user_id]).sort();
   });
 
 

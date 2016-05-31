@@ -13,6 +13,6 @@
                 li.moderator-info__list-item
                   a(href=self.link_to('users.member', { user_hid: user.hid }))
                     img.moderator-info__avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
-                    = user.nick
+                    = user.name
         else
           .moderator-info__list-empty= self.t('no_moderators')
