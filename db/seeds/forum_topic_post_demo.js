@@ -68,7 +68,7 @@ const createPost = co.wrap(function* (topic, previous_posts) {
 
   let options = yield settings.getByCategory('forum_posts_markup', { usergroup_ids: user.usergroups }, { alias: true });
 
-  let result = yield parser({
+  let result = yield parser.md2html({
     text: md,
     attachments: [],
     options
@@ -387,7 +387,7 @@ module.exports = co.wrap(function* (N) {
   UserGroup = N.models.users.UserGroup;
   Vote      = N.models.users.Vote;
   settings  = N.settings;
-  parser    = N.parse;
+  parser    = N.parser;
 
   yield createUsers();
   yield createSections();
