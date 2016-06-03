@@ -45,7 +45,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     )
 
   if self.runtime.is_member
-    button.btn.btn-default.hidden-xxs.icon.icon-check(
+    button.btn.btn-default.hidden-xs.icon.icon-check(
       type='button'
       data-on-click='forum.section:mark_read'
       data-section-hid=self.section.hid
@@ -66,7 +66,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-default.hidden-xxs.icon(
+    button.btn.btn-default.hidden-xs.icon(
       title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.section:subscription'
@@ -86,7 +86,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
           case item
 
             when 'mark_read'
-              li.visible-xxs-block: a(href='#'
+              li.visible-xs-block: a(href='#'
                 data-on-click='forum.section:mark_read'
                 data-section-hid=self.section.hid
               )= self.t('mark_read')
