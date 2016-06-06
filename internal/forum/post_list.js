@@ -248,6 +248,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* check_ignores(env) {
     let users = env.data.posts.map(post => post.user).filter(Boolean);
 
+    // don't fetch `_id` to load all data from composite index
     let ignored = yield N.models.users.Ignore.find()
                             .where('from').equals(env.user_info.user_id)
                             .where('to').in(users)
