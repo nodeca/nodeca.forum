@@ -15,6 +15,7 @@ module.exports.up = co.wrap(function* (N) {
     forum_can_reply: { value: true },
     forum_can_start_topics: { value: true },
     forum_can_close_topic: { value: true },
+    forum_show_ignored: { value: true },
     forum_mod_can_pin_topic: { value: true },
     forum_mod_can_edit_posts: { value: true },
     forum_mod_can_delete_topics: { value: true },

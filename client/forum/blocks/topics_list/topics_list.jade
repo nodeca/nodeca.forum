@@ -10,7 +10,7 @@
 
 each topic, idx in self.topics
   //- skip topics created by ignored users
-  - if (self.ignored_users[topic.cache.first_user]) { continue; }
+  - if (self.ignored_users[topic.cache.first_user] && !self.settings.forum_show_ignored) { continue; }
 
   - var fp_user = self.users[topic.cache.first_user] || {}
   - var lp_user = self.users[topic.cache.last_user] || {}
@@ -27,6 +27,7 @@ each topic, idx in self.topics
     class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
     class=(self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1) ? 'forum-topicline__m-unread' : ''
     class=(self.read_marks[topic._id].isNew) ? 'forum-topicline__m-new' : ''
+    class=(self.ignored_users[topic.cache.first_user] ? 'forum-topicline__m-ignored' : '')
     data-topic-hid=topic.hid
     data-last-post=topic.cache.last_post
     id='topic' + topic.hid

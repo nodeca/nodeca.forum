@@ -31,6 +31,12 @@ setting_schemas:
       type: boolean
       default: false
 
+    forum_show_ignored:
+      priority: 70
+      category_key: forum
+      type: boolean
+      default: false
+
     forum_mod_can_pin_topic:
       priority: 1000
       category_key: perm_forum_moderate
