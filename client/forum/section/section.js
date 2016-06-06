@@ -14,6 +14,8 @@ const _ = require('lodash');
 // - reached_end:        true iff no more pages exist below last loaded one
 // - prev_loading_start: time when current xhr request for the previous page is started
 // - next_loading_start: time when current xhr request for the next page is started
+// - top_marker:         last post id of the topmost topic (for prefetch)
+// - bottom_marker:      last post id of the bottom topic (for prefetch)
 // - selected_topics:    array of selected topics in current topic
 //
 let sectionState = {};
@@ -45,6 +47,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   sectionState.reached_end        = last_topic_hid === $('.forum-topicline:last').data('topic-hid');
   sectionState.prev_loading_start = 0;
   sectionState.next_loading_start = 0;
+  sectionState.top_marker         = $('.forum-section-root').data('top-marker');
+  sectionState.bottom_marker      = $('.forum-section-root').data('bottom-marker');
   sectionState.selected_topics    = [];
 
   // disable automatic scroll to an anchor in the navigator
@@ -677,7 +681,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
   N.wire.on(module.apiPath + ':load_prev', function load_prev_page() {
     if (sectionState.reached_start) return;
 
-    let last_post_id = $('.forum-topicline:first').data('last-post');
+    let last_post_id = sectionState.top_marker;
 
     // No topics on the page
     if (!last_post_id) return;
@@ -707,6 +711,8 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       }
 
       if (res.topics.length === 0) return;
+
+      sectionState.top_marker = res.topics[0].cache.last_post;
 
       // remove duplicate topics
       res.topics.forEach(topic => $(`#topic${topic.hid}`).remove());
@@ -757,6 +763,9 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         if (topic.getBoundingClientRect().top > $window.height() + 600) {
           $(topic).nextAll().remove();
 
+          // Update range for the next time we'll be doing prefetch
+          sectionState.bottom_marker = $('.forum-topicline:last').data('last-post');
+
           sectionState.reached_end = false;
         }
       }
@@ -776,7 +785,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
   N.wire.on(module.apiPath + ':load_next', function load_next_page() {
     if (sectionState.reached_end) return;
 
-    let last_post_id = $('.forum-topicline:last').data('last-post');
+    let last_post_id = sectionState.bottom_marker;
 
     // No topics on the page
     if (!last_post_id) return;
@@ -805,6 +814,8 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       }
 
       if (res.topics.length === 0) return;
+
+      sectionState.bottom_marker = res.topics[res.topics.length - 1].cache.last_post;
 
       let old_height = $('.forum-topiclist').height();
 
@@ -880,6 +891,9 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
           let old_length = topics.length;
 
           $(topic).prevAll().remove();
+
+          // Update range for the next time we'll be doing prefetch
+          sectionState.top_marker = $('.forum-topicline:first').data('last-post');
 
           // update scroll so it would point at the same spot as before
           $window.scrollTop(old_scroll + $('.forum-topiclist').height() - old_height);

@@ -22,6 +22,8 @@ const bag           = require('bagjs')({ prefix: 'nodeca' });
 // - last_post_offset:   total amount of visible posts in the topic before the last displayed post
 // - prev_loading_start: time when current xhr request for the previous page is started
 // - next_loading_start: time when current xhr request for the next page is started
+// - top_marker:         hid of the top post (for prefetch)
+// - bottom_marker:      hid of the bottom post (for prefetch)
 // - selected_posts:     array of selected posts in current topic
 //
 let topicState = {};
@@ -51,6 +53,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   topicState.topic_last_ts      = N.runtime.page_data.topic.cache.last_ts;
   topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
   topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
+  topicState.top_marker         = $('.forum-topic-root').data('top-marker');
+  topicState.bottom_marker      = $('.forum-topic-root').data('bottom-marker');
   topicState.prev_loading_start = 0;
   topicState.next_loading_start = 0;
   topicState.selected_posts     = [];
@@ -653,10 +657,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // User presses "home" button
   //
   N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
-    let hid = $('.forum-post:first').data('post-hid');
+    let hid = topicState.top_marker;
 
     // if the first post is already loaded, scroll to the top
-    if (hid <= 1) {
+    if (!hid || hid <= 1) {
       $window.scrollTop(0);
       return;
     }
@@ -694,10 +698,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // User presses "end" button
   //
   N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
-    let hid = $('.forum-post:last').data('post-hid');
+    let hid = topicState.bottom_marker;
 
     // if the last post is already loaded, scroll to the bottom
-    if (hid >= topicState.max_post) {
+    if (!hid || hid >= topicState.max_post) {
       $window.scrollTop($('.forum-post:last').offset().top - navbarHeight);
       return;
     }
@@ -745,7 +749,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     topicState.prev_loading_start = now;
 
-    let hid = $('.forum-post:first').data('post-hid');
+    let hid = topicState.top_marker;
 
     // No posts on the page
     if (!hid) return;
@@ -852,6 +856,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
             $(post).nextAll().remove();
 
+            topicState.bottom_marker = $('.forum-post:last').data('post-hid');
+
             topicState.last_post_offset -= old_length - document.getElementsByClassName('forum-post').length;
           }
         }
@@ -885,7 +891,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     topicState.next_loading_start = now;
 
-    let hid = $('.forum-post:last').data('post-hid');
+    let hid = topicState.bottom_marker;
 
     // No posts on the page
     if (!hid) return;
@@ -984,6 +990,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
             let old_length = posts.length;
 
             $(post).prevAll().remove();
+
+            topicState.top_marker = $('.forum-post:first').data('post-hid');
 
             // update scroll so it would point at the same spot as before
             $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);

@@ -243,6 +243,25 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check if any users are ignored
+  //
+  N.wire.after(apiPath, function* check_ignores(env) {
+    let users = env.data.posts.map(post => post.user).filter(Boolean);
+
+    let ignored = yield N.models.users.Ignore.find()
+                            .where('from').equals(env.user_info.user_id)
+                            .where('to').in(users)
+                            .select('from to -_id')
+                            .lean(true);
+
+    env.res.ignored_users = env.res.ignored_users || {};
+
+    ignored.forEach(row => {
+      env.res.ignored_users[row.to] = true;
+    });
+  });
+
+
   // Sanitize and fill posts
   //
   N.wire.after(apiPath, function* posts_sanitize_and_fill(env) {

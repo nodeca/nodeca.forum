@@ -37,6 +37,10 @@ each post, post_idx in self.posts
         - var pgn_params  = { route: 'forum.topic', params: link_params, current: Math.floor(post_counter / self.pagination.per_page) + 1, max: page_max }
         != self.partial('@common.blocks.pagination', pgn_params)
 
+  //- skip posts created by ignored users
+  - if (self.ignored_users[post.user]) { continue; }
+
+  if post_idx > 0
     //-
     //- Intervals between posts
     //-

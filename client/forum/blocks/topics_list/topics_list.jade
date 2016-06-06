@@ -9,6 +9,9 @@
 - var many_ops_permitted = self.settings.forum_mod_can_delete_topics || self.settings.forum_mod_can_close_topic;
 
 each topic, idx in self.topics
+  //- skip topics created by ignored users
+  - if (self.ignored_users[topic.cache.first_user]) { continue; }
+
   - var fp_user = self.users[topic.cache.first_user] || {}
   - var lp_user = self.users[topic.cache.last_user] || {}
   - var fp_ts   = topic.cache.first_ts

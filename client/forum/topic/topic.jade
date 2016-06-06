@@ -19,6 +19,8 @@ article#content.forum-topic-root(
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
   class=(self.topic.st === topicStatuses.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''
+  data-top-marker= self.posts && self.posts.length > 0 ? self.posts[0].hid : null
+  data-bottom-marker= self.posts && self.posts.length > 0 ? self.posts[self.posts.length - 1].hid : null
 )
   != self.partial('@common.blocks.breadcrumbs')
 
