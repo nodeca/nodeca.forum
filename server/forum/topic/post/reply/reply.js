@@ -297,6 +297,14 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function* add_reply_notification(env) {
     if (!env.data.new_post.to) return;
 
+    let ignore_data = yield N.models.users.Ignore.findOne()
+                               .where('from').equals(env.data.new_post.to_user)
+                               .where('to').equals(env.user_info.user_id)
+                               .select('from to -_id')
+                               .lean(true);
+
+    if (ignore_data) return;
+
     yield N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
       to: env.data.new_post.to_user,
@@ -315,9 +323,24 @@ module.exports = function (N, apiPath) {
 
     if (!subscriptions.length) return;
 
+    let subscribed_users = _.map(subscriptions, 'user');
+
+    let ignore = _.keyBy(
+      yield N.models.users.Ignore.find()
+                .where('from').in(subscribed_users)
+                .where('to').equals(env.user_info.user_id)
+                .select('from to -_id')
+                .lean(true),
+      'from'
+    );
+
+    subscribed_users = subscribed_users.filter(user_id => !ignore[user_id]);
+
+    if (!subscribed_users.length) return;
+
     yield N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
-      to: _.map(subscriptions, 'user'),
+      to: subscribed_users,
       type: 'FORUM_NEW_POST'
     });
   });
