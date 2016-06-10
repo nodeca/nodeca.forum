@@ -241,7 +241,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function* fill_image_info(env) {
     yield N.queue.worker('forum_post_images_fetch').postpone({
-      post_id: env.data.new_post._id
+      msg_id: env.data.new_post._id
     });
   });
 
