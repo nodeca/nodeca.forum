@@ -85,6 +85,39 @@ module.exports = function (N, apiPath) {
     env.data.users = env.data.users.concat(_.map(topics, 'cache.last_user'));
     env.data.users = env.data.users.concat(_.map(topics, 'cache.first_user'));
 
+    // Remove topics created by ignored users (except for subscribed ones)
+    //
+    let topic_subs_by_id = _.keyBy(topic_subs, 'to');
+
+    let first_users = topics.map(topic => _.get(topic, 'cache.first_user')).filter(Boolean);
+
+    let ignored = _.keyBy(
+      yield N.models.users.Ignore.find()
+                .where('from').equals(env.user_info.user_id)
+                .where('to').in(first_users)
+                .select('from to -_id')
+                .lean(true),
+      'to'
+    );
+
+    topics = topics.filter(topic => {
+      // Topic starter is ignored, and topic is not subscribed to
+      if (ignored[_.get(topic, 'cache.first_user')] &&
+          !topic_subs_by_id[topic._id]) {
+
+        return false;
+      }
+
+      // Last poster is ignored, and there is only one unread message
+      // (topic still shows up if ignored user leaves multiple messages)
+      if (ignored[_.get(topic, 'cache.last_user')] &&
+          read_marks[topic._id].position >= _.get(topic, 'cache.last_post_hid') - 1) {
+
+        return false;
+      }
+
+      return true;
+    });
 
     // Fetch sections
     let sections = yield N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
