@@ -4,16 +4,27 @@
 @import "nodeca.core/client/common/_variables"
 
 .forum-sections
+  display table
   margin 0
   padding 0
-  list-style none
   border-top 1px solid grayLightest
+  width 100%
 
 .forum-section
+  display table-row
   padding (baseLineHeight / 2) 0
   border-bottom 1px solid grayLightest
   // for link overlay
   position relative
+
+.forum-section__cell
+  display table-cell
+  padding-top 10px
+  padding-bottom 10px
+
+.forum-section__stats
+  width 100px
+  text-align right
 
 //
 // first (main) column
@@ -23,21 +34,19 @@
   padding-left 20px
   padding-right 20px
   position relative
+  width auto
 
 .forum-section__title
   font-family sansWideFontFamily
   position relative
   font-weight normal
-  font-size 18px
+  font-size $font-size-base
   line-height inherit
   margin-top 0
   margin-bottom 0
 
-  @media (max-width: screenSm - 1)
-    font-size 16px
-
 .forum-section__title-link
-  color grayDark
+  color $body-color
   display inline-block
   width 100%
   &:hover
@@ -49,7 +58,7 @@
   font-size 12px
   margin-left .7em
   padding 0
-  color grayLight
+  color $body-color-secondary
   &:before
     content '╰ '
 
@@ -63,14 +72,13 @@
     content: "";
 
 a.forum-section__subforum-link
-  color grayLight
+  color $body-color-secondary
   &:hover
     color linkColorHover
 
 .forum-section__microstat
   font-size 11px
-  margin-left .7em
-  color grayLight
+  color $body-color-secondary
   shortable()
 
 .forum-section__enter
@@ -80,7 +88,7 @@ a.forum-section__subforum-link
   height 100%
   width 20px
   text-align center
-  color grayLight
+  color $body-color-secondary
   &:before
     margin-right 0
     height 100%

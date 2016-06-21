@@ -2,61 +2,42 @@
 
 - self.users = self.users || {};
 
-ul.forum-sections
+.forum-sections
   each section in self.subsections
     - var last_topic = section.cache.last_topic_hid
     - var last_user = self.users[section.cache.last_user]
     - var last_ts = section.cache.last_ts
-    li.forum-section(id='cat' + section.hid)
+    .forum-section(id='cat' + section.hid)
 
       //- Add 'unread' class & #id below, for new data
-      .row
-        .col-sm-8
+      .forum-section__summary.forum-section__cell
 
-          .forum-section__summary
+        h3.forum-section__title
+          a.forum-section__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))= section.title
 
-            h3.forum-section__title
-              a.forum-section__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))= section.title
+        if section.child_list && section.child_list.length > 0
+          ul.forum-section__subforums.hidden-sm-down
+            each sub_section in section.child_list
+              li.forum-section__subforum-item
+                a.forum-section__subforum-link(href=self.link_to('forum.section', { section_hid: sub_section.hid }))= sub_section.title
 
-            if section.child_list && section.child_list.length > 0
-              ul.forum-section__subforums.hidden-xs
-                each sub_section in section.child_list
-                  li.forum-section__subforum-item
-                    a.forum-section__subforum-link(href=self.link_to('forum.section', { section_hid: sub_section.hid }))= sub_section.title
+        .forum-section__microstat.hidden-md-up
+          if !section.cache.topic_count
+            = self.t('empty')
+          else
+            = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
 
-            .forum-section__microstat.visible-xs-block
-              if !section.cache.topic_count
-                = self.t('empty')
-              else
-                = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
+        .forum-section__enter.icon.icon-right-open.hidden-md-up
 
-            .forum-section__enter.icon.icon-right-open.visible-xs-block
+      .forum-section__stats.forum-section__microstat.forum-section__cell.hidden-sm-down
+        if last_ts
+          != self.timetag(last_ts, 'relative')
 
+      .forum-section__stats.forum-section__microstat.forum-section__cell.hidden-sm-down
+        = section.cache.topic_count
 
-        .col-sm-2.hidden-xs
-
-          ul.forum-section__counters
-            li.forum-section__counter-item
-              = self.t('topics', section.cache.topic_count)
-            li.forum-section__counter-item
-              = self.t('posts', section.cache.post_count)
-
-        if last_topic
-          .col-sm-2.hidden-xs
-            ul.forum-section__lpost
-              //-li.forum-section__lpost-title
-                a.forum-section__lpost-title-link(
-                  href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: last_topic }) +'#'+ section.cache.last_post
-                ) #{section.cache.last_topic_title}
-              //-if last_user
-                li.forum-section__lpost-user
-                  a.forum-section__lpost-user-link._ucard-popover(
-                    href=self.link_to('users.member', { user_hid: last_user })
-                    data-user-id=last_user._id
-                  ) #{last_user.name}
-              if last_ts
-                li.forum-section__lpost-time
-                  != self.timetag(last_ts, 'relative')
+      .forum-section__stats.forum-section__microstat.forum-section__cell.hidden-sm-down
+        = section.cache.post_count
 
       //- cover all space with link for small screens
-      a.forum-section__overlay.visible-xs-block(href=self.link_to('forum.section', { section_hid: section.hid }))
+      a.forum-section__overlay.hidden-md-up(href=self.link_to('forum.section', { section_hid: section.hid }))
