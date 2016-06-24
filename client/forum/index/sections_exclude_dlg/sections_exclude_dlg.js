@@ -164,7 +164,7 @@ N.wire.on(module.apiPath, function show_sections_exclude_dlg(options) {
       .on('shown.bs.modal', () => {
         resizeDialog();
         $window.on('resize', resizeDialog);
-        $dialog.find('.btn-default').focus();
+        $dialog.find('.btn-secondary').focus();
       })
       .on('hidden.bs.modal', () => {
         // When dialog closes - remove it from body and free resources

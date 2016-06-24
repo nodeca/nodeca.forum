@@ -27,16 +27,20 @@
           else
             = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
 
-        .forum-section__enter.icon.icon-right-open.hidden-md-up
-
-      .forum-section__stats.forum-section__microstat.forum-section__cell.hidden-sm-down
+      .forum-section__stats.forum-section__cell.hidden-sm-down
         if last_ts
           != self.timetag(last_ts, 'relative')
 
-      .forum-section__stats.forum-section__microstat.forum-section__cell.hidden-sm-down
+      .forum-section__stats.forum-section__cell.hidden-sm-down(
+        title=self.t('topics_tip')
+      )
+        span.icon.icon-threads.icon-space-after
         = section.cache.topic_count
 
-      .forum-section__stats.forum-section__microstat.forum-section__cell.hidden-sm-down
+      .forum-section__stats.forum-section__cell.hidden-sm-down(
+        title=self.t('posts_tip')
+      )
+        span.icon.icon-posts.icon-space-after
         = section.cache.post_count
 
       //- cover all space with link for small screens

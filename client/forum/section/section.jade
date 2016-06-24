@@ -15,41 +15,44 @@ article#content.forum-section-root(
   data-top-marker=     self.topics && self.topics.length > 0 ? self.topics[0].cache.last_post : null
   data-bottom-marker=  self.topics && self.topics.length > 0 ? self.topics[self.topics.length - 1].cache.last_post : null
 )
-  != self.partial('@common.blocks.breadcrumbs')
+  nav.breadcrumbs-container
+    .layout__container.container-fluid
+      != self.partial('@common.blocks.breadcrumbs')
 
-  header.page-head
-    .pull-right
-      != self.partial('@forum.section.blocks.toolbar_controls')
-    h1.page-head__title(itemprop='name')= self.section.title
-    p.page-head__descr.hidden-xs(itemprop='description')
-      | #{self.section.description}
+  .layout__container.container-fluid
+    header.page-head
+      .pull-xs-right
+        != self.partial('@forum.section.blocks.toolbar_controls')
+      h1.page-head__title(itemprop='name')= self.section.title
+      p.page-head__descr.hidden-xs-down(itemprop='description')
+        | #{self.section.description}
 
-  //- Subsections, if exist
-  if (self.subsections || []).length
-    != self.partial('@forum.blocks.sections_list')
+    //- Subsections, if exist
+    if (self.subsections || []).length
+      != self.partial('@forum.blocks.sections_list')
 
-  if self.section.is_category === false || (self.topics && self.topics.length)
-    if self.topics && self.topics.length
-      .forum-topiclist._affix(
-        data-affix-top={
-          offset:     500,
-          wire_above: 'forum.section:load_prev',
-          throttle:   100
-        }
-        data-affix-bottom={
-          offset:     500,
-          wire_below: 'forum.section:load_next',
-          throttle:   100
-        }
-      )!= self.partial('@forum.blocks.topics_list')
+    if self.section.is_category === false || (self.topics && self.topics.length)
+      if self.topics && self.topics.length
+        .forum-topiclist._affix(
+          data-affix-top={
+            offset:     500,
+            wire_above: 'forum.section:load_prev',
+            throttle:   100
+          }
+          data-affix-bottom={
+            offset:     500,
+            wire_below: 'forum.section:load_next',
+            throttle:   100
+          }
+        )!= self.partial('@forum.blocks.topics_list')
 
-      nav.forum-section__page-links
-        .pager
-          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.prev_topic_hid });
-          li: a(href=link)= self.t('prev_page')
+        nav.forum-section__page-links
+          .pager
+            - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.prev_topic_hid });
+            li: a(href=link)= self.t('prev_page')
 
-          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.next_topic_hid });
-          li: a(href=link)= self.t('next_page')
-    else
-      p.forum-section__notopics
-        != self.t('no_topics')
+            - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.next_topic_hid });
+            li: a(href=link)= self.t('next_page')
+      else
+        p.forum-section__notopics
+          != self.t('no_topics')

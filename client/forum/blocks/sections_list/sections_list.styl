@@ -7,41 +7,61 @@
   display table
   margin 0
   padding 0
-  border-top 1px solid grayLightest
   width 100%
 
 .forum-section
   display table-row
   padding (baseLineHeight / 2) 0
-  border-bottom 1px solid grayLightest
   // for link overlay
   position relative
 
 .forum-section__cell
   display table-cell
-  padding-top 10px
-  padding-bottom 10px
+  padding-top 1rem
+  padding-bottom 1rem
+  height 3.5rem           // = min-height for table
+  vertical-align middle
 
 .forum-section__stats
   width 100px
+  font-size $font-size-sm
+  color lighten($body-color-secondary, 30%)
   text-align right
+  .icon
+    visibility hidden
+
+.forum-section:first-child > .forum-section__stats .icon
+  visibility visible
 
 //
 // first (main) column
 //
 
+triangle-size = .25rem
+
 .forum-section__summary
-  padding-left 20px
-  padding-right 20px
+  padding-left 1.25rem
   position relative
   width auto
+  // triangle
+  &:before
+    position absolute
+    left 0
+    top 50%
+    margin-top -(triangle-size)
+    width 0
+    height 0
+    border-style solid
+    border-width triangle-size 0 triangle-size (triangle-size * 1.4)
+    border-color transparent transparent transparent $decorator-color
+    content ''
 
 .forum-section__title
-  font-family sansWideFontFamily
   position relative
   font-weight normal
   font-size $font-size-base
-  line-height inherit
+  font-family $font-family-sans-serif-wide
+  line-height 1.3
   margin-top 0
   margin-bottom 0
 
@@ -55,12 +75,17 @@
 // -- subforums list
 .forum-section__subforums
   position relative
-  font-size 12px
-  margin-left .7em
+  font-family $font-family-sans-serif-wide
+  font-size $font-size-xs
+  margin 0 0 0 1em
   padding 0
-  color $body-color-secondary
+  color lighten($body-color, 30%)
   &:before
-    content '╰ '
+    position absolute
+    left -1em
+    content '⤷'
+    color $brand-success
+    font-weight bold
 
 .forum-section__subforum-item
   display inline-block
@@ -72,29 +97,14 @@
     content: "";
 
 a.forum-section__subforum-link
-  color $body-color-secondary
+  color lighten($body-color, 30%)
   &:hover
     color linkColorHover
 
 .forum-section__microstat
-  font-size 11px
+  font-size $font-size-xs
   color $body-color-secondary
   shortable()
-
-.forum-section__enter
-  position absolute
-  right 0
-  top 50%
-  height 100%
-  width 20px
-  text-align center
-  color $body-color-secondary
-  &:before
-    margin-right 0
-    height 100%
-    vertical-align middle
-    font-size 18px
-    line-height 0
 
 // Enabled only for small screens
 .forum-section__overlay

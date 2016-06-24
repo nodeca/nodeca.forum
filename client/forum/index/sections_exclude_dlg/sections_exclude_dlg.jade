@@ -28,5 +28,5 @@ mixin sections_tree(sections, deepness)
           button.btn.btn-link.pull-left(
             data-on-click=self.apiPath + ':unselect_all'
           )= self.t('unselect_all')
-          button.btn.btn-default(type='button' tabindex='2' data-dismiss='modal')=self.t('cancel')
+          button.btn.btn-secondary(type='button' tabindex='2' data-dismiss='modal')=self.t('cancel')
           button.btn.btn-danger(type='submit' tabindex='3')=self.t('ok')

@@ -1,9 +1,9 @@
 article#content.forum-index-root
-  nav.breadcrumbs-line
+  nav.breadcrumbs-container
     .layout__container.container-fluid
       != self.partial('@common.blocks.breadcrumbs')
 
-      .breadcrumbs
+      .breadcrumbs-controls
         if self.runtime.is_member
           button.btn.btn-secondary.btn-xs.icon.icon-sliders.icon-space-after(
             type='button'

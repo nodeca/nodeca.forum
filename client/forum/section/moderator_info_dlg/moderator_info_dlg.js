@@ -15,7 +15,7 @@ N.wire.on(module.apiPath, function show_moderators_dlg(params) {
   return new Promise(resolve => {
     $dialog
       .on('shown.bs.modal', function () {
-        $dialog.find('.btn-default').focus();
+        $dialog.find('.btn-secondary').focus();
       })
       .on('hidden.bs.modal', function () {
         // When dialog closes - remove it from body and free resources.

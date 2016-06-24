@@ -90,7 +90,7 @@ if (self.selected_cnt !== 0)
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-default.hidden-xs.icon(
+    button.btn.btn-secondary.hidden-xs-down.icon(
       title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.topic:subscription'
@@ -100,7 +100,7 @@ if (self.selected_cnt !== 0)
 
   if items.length > 0
     .page-actions__dropdown
-      button.btn.btn-default.dropdown-toggle(type='button' data-toggle='dropdown')
+      button.btn.btn-secondary.dropdown-toggle(type='button' data-toggle='dropdown')
         span.caret
 
       ul.dropdown-menu.dropdown-menu-right

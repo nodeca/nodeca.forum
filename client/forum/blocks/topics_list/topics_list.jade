@@ -68,7 +68,7 @@ each topic, idx in self.topics
             | 
             =self.t('del_reason', { text: topic.del_reason })
 
-      .forum-topicline__meta.hidden-xs
+      .forum-topicline__meta.hidden-xs-down
         if fp_user
           a.forum-topicline__author(
             href=self.link_to('users.member', { user_hid: fp_user.hid })
@@ -76,25 +76,24 @@ each topic, idx in self.topics
         span.forum-topicline__time
           != self.timetag(fp_ts, 'relative')
 
-      .forum-topicline__microstat.visible-xs-block
+      .forum-topicline__microstat.hidden-sm-up
         = self.t('stat', { count: replies, last: self.date(lp_ts, 'relative'), name: lp_user.name })
 
-      //-.forum-topicline__enter.icon.icon-right-open.visible-xs-block
+      //-.forum-topicline__enter.icon.icon-right-open.hidden-sm-up
 
       .forum-topicline__new-marker(title=self.t('new'))
 
       //- cover all space with link for small screens
-      a.forum-topicline__overlay.visible-xs-block(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))
-        .forum-topicline__enter.icon.icon-right-open
+      a.forum-topicline__overlay.hidden-sm-up(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))
 
-    ul.forum-topicline__cell.forum-topicline__counters.hidden-xs
+    ul.forum-topicline__cell.forum-topicline__counters.hidden-xs-down
       li.forum-topicline__counter-item
         = self.t('replies', replies)
 
       li.forum-topicline__counter-item
         = self.t('views', views)
 
-    ul.forum-topicline__cell.forum-topicline__lpost.hidden-xs
+    ul.forum-topicline__cell.forum-topicline__lpost.hidden-xs-down
       li.forum-topicline__lpost-time
         a.forum-topicline__lpost-time-link(
           href= self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })

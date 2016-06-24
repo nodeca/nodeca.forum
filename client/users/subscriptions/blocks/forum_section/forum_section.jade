@@ -12,11 +12,11 @@ if section
           data-on-click='users.subscriptions:delete'
           data-subscription=self.item
           data-block-name=self.block_name
-        ).user-subscriptions-item__btn-delete.btn.btn-default.icon.icon-deleted.pull-right
+        ).user-subscriptions-item__btn-delete.btn.btn-secondary.icon.icon-deleted.pull-right
         a(href='#'
           title=self.t('edit_subscription')
           data-on-click='users.subscriptions:update'
           data-subscription=self.item
           data-block-name=self.block_name
           class=self.icon(self.item.type)
-        ).user-subscriptions-item__btn-edit.btn.btn-default.icon.pull-right
+        ).user-subscriptions-item__btn-edit.btn.btn-secondary.icon.pull-right

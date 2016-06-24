@@ -14,7 +14,7 @@ if items.length > 0
 - items.push('mod_header')
 - items.push('mod_announce')
 - items.push('mod_add_moderator')
-  
+
 if self.selected_cnt !== 0
   if items.length > 0
     - items.push('divider')
@@ -36,7 +36,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
 
 .page-actions.forum-section__toolbar-controls
   if self.settings.forum_can_start_topics && self.section.is_writable
-    button.btn.btn-primary.icon.icon-plus(
+    button.btn.btn-primary.btn-square.icon.icon-plus(
       data-on-click='forum.section:create'
       data-section-hid=self.section.hid
       data-section-title=self.section.title
@@ -45,7 +45,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     )
 
   if self.runtime.is_member
-    button.btn.btn-default.hidden-xs.icon.icon-check(
+    button.btn.btn-secondary.btn-square.hidden-xs-down.icon.icon-check(
       type='button'
       data-on-click='forum.section:mark_read'
       data-section-hid=self.section.hid
@@ -66,7 +66,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-default.hidden-xs.icon(
+    button.btn.btn-secondary.btn-square.hidden-xs-down.icon(
       title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.section:subscription'
@@ -77,8 +77,10 @@ if items.length > 0 && items[items.length - 1] === 'header'
   if items.length > 0
     .page-actions__dropdown
 
-      button.btn.btn-default.dropdown-toggle(type='button', data-toggle='dropdown')
-        span.caret
+      button.btn.btn-secondary.btn-square.icon.icon-dropdown.dropdown-toggle(
+        type='button'
+        data-toggle='dropdown'
+      )
 
       ul.dropdown-menu.dropdown-menu-right
 
@@ -86,7 +88,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
           case item
 
             when 'mark_read'
-              li.visible-xs-block: a(href='#'
+              li.hidden-sm-up: a(href='#'
                 data-on-click='forum.section:mark_read'
                 data-section-hid=self.section.hid
               )= self.t('mark_read')
