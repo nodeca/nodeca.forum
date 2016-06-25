@@ -22,60 +22,67 @@ article#content.forum-topic-root(
   data-top-marker= self.posts && self.posts.length > 0 ? self.posts[0].hid : null
   data-bottom-marker= self.posts && self.posts.length > 0 ? self.posts[self.posts.length - 1].hid : null
 )
-  != self.partial('@common.blocks.breadcrumbs')
+  nav.breadcrumbs-container
+    .layout__container.container-fluid
+      != self.partial('@common.blocks.breadcrumbs')
 
-  header.page-head
-    - var canEdit = (self.runtime.is_member && self.topic.cache.first_user === self.runtime.user_id) &&
-    -               (self.settings.forum_edit_max_time === 0 || new Date(self.topic.cache.first_ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000) &&
-    -               self.section.is_writable;
+  .layout__container.container-fluid
+    header.page-head
+      -
+        var canEdit =
+          (self.runtime.is_member && self.topic.cache.first_user === self.runtime.user_id) &&
+          (self.settings.forum_edit_max_time === 0 ||
+            (new Date(self.topic.cache.first_ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000)
+          ) &&
+          self.section.is_writable;
 
-    h1.forum-topic-title.page-head__title(itemprop='name')
-      .pull-right
-        != self.partial('@forum.topic.blocks.toolbar_controls')
+      h1.forum-topic-title.page-head__title(itemprop='name')
+        .pull-xs-right
+          != self.partial('@forum.topic.blocks.toolbar_controls')
 
-      span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
+        span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
 
-      span.forum-topic-title__text= self.topic.title
+        span.forum-topic-title__text= self.topic.title
 
-      if canEdit || self.settings.forum_mod_can_edit_titles
-        a.forum-topic-title__edit.icon.icon-edit.icon-space-before(
-          href='#'
-          title=self.t('edit_title')
-          data-on-click='forum.topic.edit_title'
-          data-topic-hid=self.topic.hid
-          data-as-moderator='#{!canEdit}'
-        )
+        if canEdit || self.settings.forum_mod_can_edit_titles
+          a.forum-topic-title__edit.icon.icon-edit.icon-space-before(
+            href='#'
+            title=self.t('edit_title')
+            data-on-click='forum.topic.edit_title'
+            data-topic-hid=self.topic.hid
+            data-as-moderator='#{!canEdit}'
+          )
 
-    if self.topic._seo_desc
-      p.page-head__descr(itemprop='description')
-        | #{self.topic._seo_desc}
+      if self.topic._seo_desc
+        p.page-head__descr(itemprop='description')
+          | #{self.topic._seo_desc}
 
-    if self.topic.del_by
-      - var delUser = self.users[self.topic.del_by] || {}
-      .forum-topic-title__meta-deleted
-        =self.t('del_by')
-        | 
-        a(href=self.link_to('users.member', { user_hid: delUser.hid }))=delUser.name
-        if self.topic.del_reason
+      if self.topic.del_by
+        - var delUser = self.users[self.topic.del_by] || {}
+        .forum-topic-title__meta-deleted
+          =self.t('del_by')
           | 
-          =self.t('del_reason', { text: self.topic.del_reason })
+          a(href=self.link_to('users.member', { user_hid: delUser.hid }))=delUser.name
+          if self.topic.del_reason
+            | 
+            =self.t('del_reason', { text: self.topic.del_reason })
 
-  .forum-postlist._affix(
-    data-affix-top={
-      offset:     500,
-      wire_above: 'forum.topic:load_prev',
-      throttle:   100
-    }
-    data-affix-bottom={
-      offset:     500,
-      wire_below: 'forum.topic:load_next',
-      throttle:   100
-    }
-  )!= self.partial('@forum.blocks.posts_list')
+    .forum-postlist._affix(
+      data-affix-top={
+        offset:     500,
+        wire_above: 'forum.topic:load_prev',
+        throttle:   100
+      }
+      data-affix-bottom={
+        offset:     500,
+        wire_below: 'forum.topic:load_next',
+        throttle:   100
+      }
+    )!= self.partial('@forum.blocks.posts_list')
 
-nav.forum-topic__footer-pager
-  - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
-  - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
-  - var page_max     = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
-  - var pgn_params   = { route: 'forum.topic', params: link_params, current: page_current, max: page_max }
-  != self.partial('@common.blocks.pagination', pgn_params)
+  nav.forum-topic__footer-pager
+    - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
+    - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
+    - var page_max     = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
+    - var pgn_params   = { route: 'forum.topic', params: link_params, current: page_current, max: page_max }
+    != self.partial('@common.blocks.pagination', pgn_params)

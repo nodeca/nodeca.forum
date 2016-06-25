@@ -6,26 +6,32 @@ mixin render_sections_tree(sections, level)
       li.aforum-index__slist-item._sortable_tree_item(data-id=section._id)
         //- Section's own control bar.
         .aforum-index__section
-          .pull-right
+          .pull-xs-right
             span.aforum-index__section-mods.dropdown
-              a.dropdown-toggle(data-toggle="dropdown")
+              button.dropdown-toggle.btn.btn-link.btn-sm(
+                type='button'
+                data-toggle='dropdown'
+              )
                 = self.t('moderators_info', { count: moderators.length })
-              span.caret
 
-              ul.pull-right.dropdown-menu
+              .dropdown-menu.dropdown-menu-right
                 each moderator_id in moderators
-                  li
-                    a(href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator_id }))
-                      = self.users[moderator_id].name
+                  a.dropdown-item(
+                    href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator_id })
+                  )
+                    = self.users[moderator_id].name
 
                 if 0 !== moderators.length
-                  li.divider
+                  .dropdown-divider
 
-                li
-                  a(href="#", data-on-click="admin.forum.section.select_moderator_nick", data-section_id=section._id)
-                    = self.t('add_moderator')
+                button.dropdown-item(
+                  type='button'
+                  data-on-click='admin.forum.section.select_moderator_nick'
+                  data-section_id=section._id
+                )
+                  = self.t('add_moderator')
 
-            a.aforum-index__section-delete(
+            a.aforum-index__section-delete.btn.btn-link.btn-sm(
               href="#",
               data-on-click="admin.forum.section.destroy",
               data-id=section._id,
@@ -48,7 +54,7 @@ mixin render_sections_tree(sections, level)
     != self.partial('@admin.core.blocks.breadcrumbs')
 
     h1
-      .pull-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
+      .pull-xs-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
 
       | #{self.head.title}
 

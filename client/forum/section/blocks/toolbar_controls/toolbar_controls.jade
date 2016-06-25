@@ -1,4 +1,5 @@
 - var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+- var menu_rnd_id = 'rnd' + String(Math.random()).slice(2, 10)
 
 - var items = []
 
@@ -37,10 +38,10 @@ if items.length > 0 && items[items.length - 1] === 'header'
 .page-actions.forum-section__toolbar-controls
   if self.settings.forum_can_start_topics && self.section.is_writable
     button.btn.btn-primary.btn-square.icon.icon-plus(
+      type='button'
       data-on-click='forum.section:create'
       data-section-hid=self.section.hid
       data-section-title=self.section.title
-      type='button'
       title=self.t('topic_create')
     )
 
@@ -67,6 +68,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
     button.btn.btn-secondary.btn-square.hidden-xs-down.icon(
+      type='button'
       title=subscriptionTitle
       class=subscriptionIcon
       data-on-click='forum.section:subscription'
@@ -79,79 +81,94 @@ if items.length > 0 && items[items.length - 1] === 'header'
 
       button.btn.btn-secondary.btn-square.icon.icon-dropdown.dropdown-toggle(
         type='button'
+        id=menu_rnd_id
+        aria-haspopup='true'
+        aria-expanded='false'
         data-toggle='dropdown'
       )
 
-      ul.dropdown-menu.dropdown-menu-right
+      .dropdown-menu.dropdown-menu-right(aria-labelledby=menu_rnd_id)
 
         each item in items
           case item
 
             when 'mark_read'
-              li.hidden-sm-up: a(href='#'
+              button.dropdown-item.hidden-sm-up(
+                type='button'
                 data-on-click='forum.section:mark_read'
                 data-section-hid=self.section.hid
               )= self.t('mark_read')
 
             when 'subscription'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:subscription'
                 data-section-hid=self.section.hid
                 data-section-subscription=self.subscription
               )
                 if self.subscription && self.subscription !== subscriptionTypes.NORMAL
-                  span.icon(class=subscriptionIcon)
-                  | 
+                  span.icon.icon-space-before(class=subscriptionIcon)
                 = self.t('subscription')
 
             when 'show_moderators'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:show_moderators'
                 data-section-hid=self.section.hid
               )= self.t('show_moderators')
 
             when 'divider'
-              li.divider
+              .dropdown-divider
 
             when 'mod_header'
-              li.dropdown-header= self.t('mod_actions')
+              .dropdown-header= self.t('mod_actions')
 
             when 'mod_announce'
-              li.disabled: a(href='#')= self.t('announce')
+              button.dropdown-item.disabled(
+                type='button'
+              )= self.t('announce')
 
             when 'mod_add_moderator'
-              li.disabled: a(href='#')= self.t('add_moderator')
+              button.dropdown-item.disabled(
+                type='button'
+              )= self.t('add_moderator')
 
             when 'many_header'
-              li.dropdown-header=self.t('many_header', { count: self.selected_cnt })
+              .dropdown-header=self.t('many_header', { count: self.selected_cnt })
 
             when 'many_unselect'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:topics_unselect'
               )=self.t('many_unselect')
 
             when 'many_delete'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:delete_many'
               )= self.t('many_delete')
 
             when 'many_undelete'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:undelete_many'
               )= self.t('many_undelete')
 
             when 'many_close'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:close_many'
               )= self.t('many_close')
 
             when 'many_open'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:open_many'
               )= self.t('many_open')
 
             when 'many_move'
-              li: a(href='#'
+              button.dropdown-item(
+                type='button'
                 data-on-click='forum.section:move_many'
               )= self.t('many_move')
 
