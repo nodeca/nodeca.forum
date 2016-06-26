@@ -33,28 +33,32 @@ each topic, idx in self.topics
     id='topic' + topic.hid
   )
     .forum-topicline__summary.forum-topicline__cell
+      - var href;
+
+      if (self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1)
+        //- If user subscribed and unread messages in topic - go to first unread
+        - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].next });
+
+      else if (self.read_marks[topic._id].position !== -1)
+        //- If we have position info - go to last position
+        - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].position });
+
+      else
+        //- Go to first post in topic
+        - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid });
+
       h2.forum-topicline__title
-        span.forum-topicline__pinned-marker.icon.icon-pin.icon-sm.icon-dimmed.icon-space-after(title=self.t('pinned'))
-        span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-sm.icon-dimmed.icon-space-after(title=self.t('bookmarked'))
-        span.forum-topicline__deleted-marker.icon.icon-deleted.icon-sm.icon-dimmed.icon-space-after(title=self.t('deleted'))
-        span.forum-topicline__closed-marker.icon.icon-closed.icon-sm.icon-dimmed.icon-space-after(title=self.t('closed'))
-
-        - var href;
-
-        if (self.read_marks[topic._id].next !== -1 && self.subscriptions.indexOf(topic._id) !== -1)
-          //- If user subscribed and unread messages in topic - go to first unread
-          - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].next });
-
-        else if (self.read_marks[topic._id].position !== -1)
-          //- If we have position info - go to last position
-          - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].position });
-
-        else
-          //- Go to first post in topic
-          - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid });
+        span.forum-topicline__bookmarked-marker.icon.icon-bookmark-empty.icon-space-after(title=self.t('bookmarked'))
+        span.forum-topicline__deleted-marker.icon.icon-deleted.icon-dimmed.icon-space-after(title=self.t('deleted'))
+        span.forum-topicline__closed-marker.icon.icon-closed.icon-space-after(title=self.t('closed'))
+        span.forum-topicline__pinned-marker.icon.icon-pin.icon-space-after(title=self.t('pinned'))
 
         a.forum-topicline__title-link(href=href)= topic.title
 
+        .forum-topicline__new-marker= self.t('new')
+
+      .forum-topicline__meta-ignored
+        =self.t('ignored')
       .forum-topicline__meta-hellbanned
         =self.t('hellbanned')
 
@@ -63,48 +67,43 @@ each topic, idx in self.topics
         .forum-topicline__meta-deleted
           =self.t('del_by')
           | 
-          a(href=self.link_to('users.member', { user_hid: delUser.hid }))=delUser.name
+          a.forum-topicline__meta-del-by._ucard-popover(
+            href=self.link_to('users.member', { user_hid: delUser.hid })
+            data-user-id=delUser._id
+          )=delUser.name
+
           if topic.del_reason
             | 
             =self.t('del_reason', { text: topic.del_reason })
 
-      .forum-topicline__meta.hidden-xs-down
-        if fp_user
-          a.forum-topicline__author(
-            href=self.link_to('users.member', { user_hid: fp_user.hid })
-          )= fp_user.name
-        span.forum-topicline__time
+      .forum-topicline__microstat
+        span.forum-topicline__microstat-replies.hidden-sm-up
+          = self.t('replies', replies)
+        span.forum-topicline__microstat-time
           != self.timetag(fp_ts, 'relative')
-
-      .forum-topicline__microstat.hidden-sm-up
-        = self.t('stat', { count: replies, last: self.date(lp_ts, 'relative'), name: lp_user.name })
-
-      //-.forum-topicline__enter.icon.icon-right-open.hidden-sm-up
-
-      .forum-topicline__new-marker(title=self.t('new'))
-
-      //- cover all space with link for small screens
-      a.forum-topicline__overlay.hidden-sm-up(href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid }))
-
-    ul.forum-topicline__cell.forum-topicline__counters.hidden-xs-down
-      li.forum-topicline__counter-item
-        = self.t('replies', replies)
-
-      li.forum-topicline__counter-item
-        = self.t('views', views)
-
-    ul.forum-topicline__cell.forum-topicline__lpost.hidden-xs-down
-      li.forum-topicline__lpost-time
-        a.forum-topicline__lpost-time-link(
-          href= self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
-        )
-          != self.timetag(lp_ts, 'relative')
-      if lp_user
-        li.forum-topicline__lpost-user
-          a.forum-topicline__lpost-user-link._ucard-popover(
+        if lp_user.hid
+          a.forum-topicline__microstat-author._ucard-popover(
             href=self.link_to('users.member', { user_hid: lp_user.hid })
             data-user-id=lp_user._id
           )= lp_user.name
+
+      .forum-topicline__unread-marker
+      .forum-topicline__highlight-marker
+
+      //- cover all space with link for small screens
+      a.forum-topicline__overlay.hidden-sm-up(href=href)
+
+    .forum-topicline__stat.forum-topicline__cell.hidden-xs-down(
+      title=self.t('replies_tip')
+    )
+      span.icon.icon-replies.icon-space-after
+      = replies
+
+    .forum-topicline__stat.forum-topicline__cell.hidden-sm-down(
+      title=self.t('views_tip')
+    )
+      span.icon.icon-views.icon-space-after
+      = views
 
     if many_ops_permitted
       label.forum-topicline__select.forum-topicline__cell(title=self.t('multiselect_hint'))

@@ -12,11 +12,8 @@ ul.page-progress(data-current=current, data-total=total, data-section=self.secti
       href= self.link_to('forum.section', { section_hid: self.section.hid })
     )
 
-  li.page-progress__item.dropdown
-    a.page-progress__info.dropdown-toggle(
-      href='#'
-      data-toggle='dropdown'
-    )
+  li.page-progress__item.no-hover
+    .page-progress__info
       .page-progress__label= self.t('label', { current: current, total: total })
       .page-progress__bar
         .page-progress__bar-fill(style="width: " + (current / total * 100).toFixed(2) + "%")

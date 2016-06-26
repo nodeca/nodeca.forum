@@ -1,14 +1,15 @@
 en-US:
   page_separator: "page #{value}"
   replies: "#{count} ((reply|replies))"
-  views: "#{count} ((view|views))"
-  stat: "#{count} ((reply|replies)) · Last #{last}, by #{name}"
+  replies_tip: Replies
+  views_tip: Views
   del_reason: "(#{text})"
   del_by: "Deleted by:"
-  new: New topic
+  new: new
   pinned: Pinned topic
   closed: Closed topic
   hellbanned: Hellbanned
+  ignored: Author ignored
   deleted: Deleted topic
   bookmarked: You bookmarked this topic
   multiselect_hint: "Click with shift to start range selection"

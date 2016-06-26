@@ -9,24 +9,20 @@
 
 .forum-topicline
   display table-row
-  padding 10px 0
-  border-top 1px solid grayLightest
-  // hide border on first item
-  //&:first-child
-  //  border-top 0
 
 .forum-topicline__cell
   display table-cell
-  padding-top 10px
-  padding-bottom 10px
+  padding-top 1rem
+  padding-bottom 1rem
+  height 4.5rem           // = min-height for table
+  vertical-align middle
 
 //
 // First column
 //
 
 .forum-topicline__summary
-  padding-left 5px
-  padding-right 20px
+  padding-left 1.25rem
   position relative
   width auto
 
@@ -35,7 +31,7 @@
   font-weight normal
   font-size $font-size-base
   font-family $font-family-sans-serif-wide
-  line-height inherit
+  line-height 1.3
   margin-top 0
   margin-bottom 0
 
@@ -44,30 +40,38 @@
   &:hover
     color linkColorHover
 
-.forum-topicline__meta
-.forum-topicline__meta-deleted
-.forum-topicline__meta-hellbanned
 .forum-topicline__microstat
-  color grayLight
-  margin-left 10px
-  line-height 1.6em
-  font-size 12px
-
-.forum-topicline__meta-hellbanned
-  display none
-
-.forum-topicline__microstat
-  font-size 11px
+  color $body-color-secondary
+  font-size $font-size-xs
   shortable()
 
-a.forum-topicline__author
-  color grayLight
-  &:hover
-    color linkColorHover
+.forum-topicline__microstat-replies
+  margin-right .5em
+  &:after
+    content '·'
+    margin-left .5em
 
-.forum-topicline__time
-  font-style italic
-  margin-left 1em
+.forum-topicline__microstat-time
+  margin-right .5em
+  &:after
+    content ','
+
+.forum-topicline__microstat-author
+.forum-topicline__meta-del-by
+  color $body-color-secondary
+
+
+.forum-topicline__meta-deleted
+.forum-topicline__meta-hellbanned
+.forum-topicline__meta-ignored
+  color $body-color-secondary
+  font-size $font-size-xs
+  shortable()
+
+.forum-topicline__meta-hellbanned
+.forum-topicline__meta-ignored
+  display none
+
 
 // Enabled only for small screens
 .forum-topicline__overlay
@@ -77,52 +81,30 @@ a.forum-topicline__author
   width 100%
   height 100%
   z-index 10
-  &:focus
-  &:hover
-    background-color rgba(grayLighter, 0.1)
 
 //
-// Second column (topics/posts counters)
+// Second columns
 //
 
-.forum-topicline__counters
-  width 130px
-  list-style none
-  font-size 12px
-  color gray
-  margin 0
-
-.forum-topicline__counter-item
+.forum-topicline__stat
+  width 6rem
+  font-size $font-size-sm
+  color lighten($body-color-secondary, 30%)
   text-align right
-  shortable()
+  .icon
+    visibility hidden
 
-//
-// Last column (latest post info)
-//
+.forum-topicline:first-child > .forum-topicline__stat .icon
+  visibility visible
 
-.forum-topicline__lpost
-  width 190px
-  list-style none
-  font-size 12px
-  margin 0
-
-.forum-topicline__lpost-user
-.forum-topicline__lpost-time
-  shortable()
-
-a.forum-topicline__lpost-time-link
-  color grayLight
-
-a.forum-topicline__lpost-user-link
-  color gray
 
 //
 // Moderation column (checkboxes)
 //
 
 .forum-topicline__select
-  width 30px
-  text-align center
+  width 3rem
+  text-align right
   vertical-align middle
 .forum-topicline__select-cb
   position relative
@@ -131,95 +113,112 @@ a.forum-topicline__lpost-user-link
 // Markers
 //
 .forum-topicline__unread-marker
+  position absolute
+  left 0
+  top .5rem
+  bottom .5rem
+  width 0.2rem
+  border-radius 0.125rem
+  background-color $decorator-color
+
+.forum-topicline__highlight-marker
+  display none
+  position absolute
+  left 0
+  top .5rem
+  width 0.2rem
+  height 0.4rem
+  border-radius 0.125rem
+  background-color $brand-danger
+
+
+.forum-topicline__new-marker
+  display none
+  color $brand-success
+  font-size $font-size-xs
+  margin-left .5em
+  vertical-align top
+
 .forum-topicline__pinned-marker
 .forum-topicline__closed-marker
-.forum-topicline__deleted-marker
+  color $brand-primary
+  display none
+
 .forum-topicline__bookmarked-marker
-.forum-topicline__new-marker
+  color $brand-success
+  display none
+
+.forum-topicline__deleted-marker
   display none
 
 
-.forum-topicline__new-marker
-  position absolute
-  left 7px
-  line-height 0
-  width 6px
-  height 6px
-  border-radius 10px
-  margin-top -3px
-  top 50%
-  background-color grayLighter
-
-
-.forum-topicline__m-ignored
-  background-color grayLightest
-
-.forum-topicline__m-selected
-  background-color #ffd
+// Marker toggles
+//
+.forum-topicline__m-unread
+  .forum-topicline__unread-marker
+    background-color $brand-primary
 
 .forum-topicline__m-new
-  .forum-topicline__summary
-    padding-left 20px
+  .forum-topicline__unread-marker
+    background-color $brand-primary
   .forum-topicline__new-marker
-    display block
-    background-color colorUnread
-
-.forum-topicline__m-unread
-  .forum-topicline__title
-    font-weight bold
+    display inline-block
 
 .forum-topicline__m-pinned
   .forum-topicline__pinned-marker
     display inline-block
 
-.forum-topicline__m-hellbanned
-  background-color #f0f0f0
+.forum-topicline__m-bookmarked
+  .forum-topicline__bookmarked-marker
+    display inline-block
+
+.forum-topicline__m-closed
+  opacity .8
+  .forum-topicline__closed-marker
+    display inline-block
+
+
+
+.forum-topicline__m-ignored
+  background-color $deleted-bg
   opacity 0.7
   &:hover
     opacity 1
-  .forum-topicline__meta
+  .forum-topicline__meta-ignored
+    display block
+
+
+.forum-topicline__m-hellbanned
+  background-color $deleted-bg
+  opacity 0.7
+  &:hover
+    opacity 1
   .forum-topicline__microstat
     display none !important
   .forum-topicline__meta-hellbanned
-    display inline-block
-  .forum-topicline__lpost
-  .forum-topicline__counters
-    // Should not use display:none - table layout will be broken,
-    // if deleted topic appears at first line.
-    visibility hidden
-
-.forum-topicline__m-closed
-  .forum-topicline__closed-marker
-    display inline-block
-  opacity .8
-
+    display block
 
 .forum-topicline__m-deleted
 .forum-topicline__m-deleted-hard
-  background-color #f0f0f0
+  background-color $deleted-bg
   opacity 0.7
   &:hover
     opacity 1
   .forum-topicline__deleted-marker
     display inline-block
-  .forum-topicline__meta
   .forum-topicline__microstat
     display none !important
-  .forum-topicline__lpost
-  .forum-topicline__counters
-    // Should not use display:none - table layout will be broken,
-    // if deleted topic appears at first line.
-    visibility hidden
-
-.forum-topicline__m-bookmarked
-  .forum-topicline__bookmarked-marker
-    display inline-block
 
 @keyframes forum-topicline-flash-animation {
   from  { background: #bbeeff;  }
   to    { background: none; }
 }
 
+
 .forum-topicline__m-highlight
   animation forum-topicline-flash-animation 3s
-  border-left 1px solid #428bca
+  .forum-topicline__highlight-marker
+    display block
+
+.forum-topicline__m-selected
+  background-color #ffd
