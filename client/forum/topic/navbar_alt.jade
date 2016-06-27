@@ -1,9 +1,10 @@
 .pull-xs-left
-  a.navbar__level-up.icon.icon-level-up(
+  != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
+
+.pull-xs-left.navbar-nav
+  a.navbar__level-up.nav-link.icon.icon-level-up(
     href=self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.topic.hid })
   )
-
-  != self.partial('@forum.topic.blocks.page_progress', self.page_progress)
 
 .pull-xs-right
   != self.partial('@forum.topic.blocks.toolbar_controls')

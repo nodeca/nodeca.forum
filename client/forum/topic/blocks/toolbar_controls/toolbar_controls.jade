@@ -71,7 +71,12 @@ if (self.selected_cnt !== 0)
   - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 
   if self.settings.forum_can_reply && isOpen && self.section.is_writable
-    button.btn.btn-primary.btn-square.icon.icon-plus(
+    button.hidden-nav-alt.btn.btn-primary.btn-square.icon.icon-plus(
+      type='button'
+      data-on-click='forum.topic:reply'
+      title=self.t('post_add')
+    )
+    button.visible-nav-alt.btn.btn-secondary.btn-square.icon.icon-plus(
       type='button'
       data-on-click='forum.topic:reply'
       title=self.t('post_add')

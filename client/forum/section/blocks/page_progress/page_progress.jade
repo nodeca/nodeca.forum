@@ -6,7 +6,11 @@
 //- ensure that current is in [1..total] range
 - current = Math.max(1, Math.min(current, total));
 
-ul.nav.navbar-nav.page-progress(data-current=current, data-total=total, data-section=self.section.hid)
+ul.nav.navbar-nav.page-progress(
+  data-current=current
+  data-total=total
+  data-section=self.section.hid
+)
   li.nav-item.page-progress__item
     a.nav-link.page-progress__button-first.icon.icon-to-top(
       href= self.link_to('forum.section', { section_hid: self.section.hid })
