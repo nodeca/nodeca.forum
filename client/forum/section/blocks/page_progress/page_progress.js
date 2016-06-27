@@ -19,9 +19,8 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
   // ensure that current is in [1..total] range
   current = Math.max(1, Math.min(current, total));
 
-  $('.page-progress__label').text(
-    N.runtime.t(module.apiPath + '.label', { current, total })
-  );
+  $('.page-progress__label-current').text(current);
+  $('.page-progress__label-total').text(total);
 
   $('.page-progress__bar-fill').css({
     width: (current / total * 100).toFixed(2) + '%'

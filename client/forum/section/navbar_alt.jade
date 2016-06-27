@@ -6,9 +6,10 @@
   -   parent_link = self.link_to('forum.index') + '#cat' + self.section.hid
   - }
 
-  a.navbar__level-up.icon.icon-level-up(href=parent_link)
-
   != self.partial('@forum.section.blocks.page_progress', self.page_progress)
+
+.pull-xs-left.navbar-nav
+  a.navbar__level-up.nav-link.icon.icon-level-up(href=parent_link)
 
 .pull-xs-right
   != self.partial('@forum.section.blocks.toolbar_controls')
