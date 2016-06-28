@@ -19,7 +19,7 @@
         // ko foreach: settings
         .form-group.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
 
-          label.control-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
+          label.form-control-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
           .col-xs-4.control-value
             // ko if: 'boolean' === type
@@ -33,7 +33,7 @@
             // /ko
 
             // ko if: localizedHelp
-            span.help-block(data-bind="text: localizedHelp")
+            small.text-muted(data-bind="text: localizedHelp")
             // /ko
 
           .col-xs-4

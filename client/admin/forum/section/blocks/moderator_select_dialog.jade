@@ -9,7 +9,7 @@ form#moderator_select.modal.form-horizontal.fade(autocomplete="off", role='dialo
       .modal-body
         .form-group
           input(type="hidden", name="section_id", value=self.section_id)
-          label.control-label.col-sm-2 #{self.t('nick')}
+          label.form-control-label.col-sm-2 #{self.t('nick')}
           .col-sm-10
             input.form-control(type="text", name="nick", placeholder=self.t('input_nick_placeholder'))
 
