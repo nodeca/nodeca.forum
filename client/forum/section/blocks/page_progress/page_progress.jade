@@ -3,8 +3,8 @@
 - var total    = self.max;
 - var page_max = Math.ceil(total / self.per_page) || 1;
 
-//- ensure that current is in [1..total] range
-- current = Math.max(1, Math.min(current, total));
+//- ensure that current is in [1..total] range, except for 0/0
+- current = total > 0 ? Math.max(1, Math.min(current, total)) : 0;
 
 ul.nav.navbar-nav.page-progress(
   data-current=current

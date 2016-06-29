@@ -1,4 +1,7 @@
-.pull-xs-left
+#navbar-progress-source.pull-xs-left
+  != self.partial('@forum.section.blocks.page_progress', self.page_progress)
+
+.navbar-nav.pull-xs-left
   - var parent_link;
   - if (self.parent_hid && self.section_level >= 2) {
   -   parent_link = self.link_to('forum.section', { section_hid: self.parent_hid }) + '#cat' + self.section.hid;
@@ -6,9 +9,6 @@
   -   parent_link = self.link_to('forum.index') + '#cat' + self.section.hid
   - }
 
-  != self.partial('@forum.section.blocks.page_progress', self.page_progress)
-
-.pull-xs-left.navbar-nav
   a.navbar__level-up.nav-link.icon.icon-level-up(href=parent_link)
 
 .pull-xs-right

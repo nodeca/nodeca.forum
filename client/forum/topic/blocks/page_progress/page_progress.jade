@@ -25,8 +25,8 @@ mixin _page_progress_dropdown_menu()
 - var current = self.current;
 - var total   = self.max;
 
-//- ensure that current is in [1..total] range
-- current = Math.max(1, Math.min(current, total));
+//- ensure that current is in [1..total] range, except for 0/0
+- current = total > 0 ? Math.max(1, Math.min(current, total)) : 0;
 
 ul.nav.navbar-nav.page-progress(
   data-current=current

@@ -1053,11 +1053,6 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
   return N.wire.emit('forum.topic:scroll');
 });
 
-N.wire.on('navigate.exit:' + module.apiPath, function navbar_teardown() {
-  $('.navbar-alt').empty();
-  $('.navbar').removeClass('navbar__m-secondary');
-});
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Set a "same page" modifier to all block quotes which point to the same topic
