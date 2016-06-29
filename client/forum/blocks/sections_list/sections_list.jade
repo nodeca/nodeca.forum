@@ -35,13 +35,13 @@
         title=self.t('topics_tip')
       )
         span.icon.icon-threads.icon-space-after
-        = section.cache.topic_count
+        = self.number_short(section.cache.topic_count)
 
       .forum-section__stats.forum-section__cell.hidden-sm-down(
         title=self.t('posts_tip')
       )
         span.icon.icon-posts.icon-space-after
-        = section.cache.post_count
+        = self.number_short(section.cache.post_count)
 
       //- cover all space with link for small screens
       a.forum-section__overlay.hidden-md-up(href=self.link_to('forum.section', { section_hid: section.hid }))

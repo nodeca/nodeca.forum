@@ -97,13 +97,13 @@ each topic, idx in self.topics
       title=self.t('replies_tip')
     )
       span.icon.icon-replies.icon-space-after
-      = replies
+      = self.number_short(replies)
 
     .forum-topicline__stat.forum-topicline__cell.hidden-sm-down(
       title=self.t('views_tip')
     )
       span.icon.icon-views.icon-space-after
-      = views
+      = self.number_short(views)
 
     if many_ops_permitted
       label.forum-topicline__select.forum-topicline__cell(title=self.t('multiselect_hint'))
