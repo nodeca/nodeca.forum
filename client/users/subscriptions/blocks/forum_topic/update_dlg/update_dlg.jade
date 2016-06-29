@@ -14,28 +14,28 @@
               span.icon.icon-track-watching
               | 
               =self.t('watching')
-              small.text-muted=self.t('watching_desc')
+              p: small.text-muted=self.t('watching_desc')
           .radio
             label
               input(type='radio' name='type' tabindex='1' value=types.TRACKING checked=self.subscription === types.TRACKING)
               span.icon.icon-track-tracking
               | 
               =self.t('tracking')
-              small.text-muted=self.t('tracking_desc')
+              p: small.text-muted=self.t('tracking_desc')
           .radio
             label
               input(type='radio' name='type' tabindex='3' value=types.NORMAL checked=!self.subscription || self.subscription === types.NORMAL)
               span.icon.icon-track-normal
               | 
               =self.t('normal')
-              small.text-muted=self.t('normal_desc')
+              p: small.text-muted=self.t('normal_desc')
           .radio
             label
               input(type='radio' name='type' tabindex='4' value=types.MUTED checked=self.subscription === types.MUTED)
               span.icon.icon-track-muted
               | 
               =self.t('muted')
-              small.text-muted=self.t('muted_desc')
+              p: small.text-muted=self.t('muted_desc')
         .modal-footer
           button.btn.btn-secondary(type='button' tabindex='5' data-dismiss='modal')=self.t('cancel')
           button.btn.btn-primary(type='submit' tabindex='6')=self.t('ok')
