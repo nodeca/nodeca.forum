@@ -46,13 +46,12 @@ article#content.forum-section-root(
           }
         )!= self.partial('@forum.blocks.topics_list')
 
-        nav.forum-section__page-links
-          .pager
-            - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.prev_topic_hid });
-            li: a(href=link)= self.t('prev_page')
+        nav.pager
+          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.prev_topic_hid });
+          a.btn.btn-secondary(href=link)= self.t('prev_page')
 
-            - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.next_topic_hid });
-            li: a(href=link)= self.t('next_page')
+          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.next_topic_hid });
+          a.btn.btn-secondary(href=link)= self.t('next_page')
       else
         p.forum-section__notopics
           != self.t('no_topics')

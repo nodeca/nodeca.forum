@@ -80,7 +80,7 @@ article#content.forum-topic-root(
       }
     )!= self.partial('@forum.blocks.posts_list')
 
-  nav.forum-topic__footer-pager
+  nav.forum-topic__footer-pagination
     - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
     - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
     - var page_max     = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
