@@ -48,7 +48,7 @@ each post, post_idx in self.posts
     - var t2 = new Date(post.ts)
     if Math.abs(t2 - t1) > self.settings.forum_show_post_interval * 24*60*60*1000 && self.settings.forum_show_post_interval > 0
       footer.forum-postlist__datediff
-        span.icon.icon-more.icon-space-after=self.t('date_interval', { interval: self.date(new Date(Date.now() - t2.getTime() + t1.getTime()), 'relative_days') })
+        span.icon.icon-clock.icon-space-after=self.t('date_interval', { interval: self.date(new Date(Date.now() - t2.getTime() + t1.getTime()), 'relative_days') })
 
   if !collapsed
 
@@ -135,164 +135,164 @@ each post, post_idx in self.posts
           .forum-post__tail.markup-tail
             !=tail
 
-        footer.forum-post__controls.clearfix
-          ul.forum-post__controls-blk.pull-xs-right
+      footer.forum-post__controls
+        ul.forum-post__controls-blk
 
-            -var infraction = self.infractions[post._id];
-            if infraction
-              li.forum-post__control-item.forum-post__infraction(
-                class=infraction.points === 0 ? 'forum-post__infraction-m-warning' : ''
+          -var infraction = self.infractions[post._id];
+          if infraction
+            li.forum-post__control-item.forum-post__infraction(
+              class=infraction.points === 0 ? 'forum-post__infraction-m-warning' : ''
+            )
+              a.btn.forum-post__action(
+                title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'datetime') })
+                href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions'
               )
-                a.btn.forum-post__action(
-                  title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'datetime') })
-                  href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions'
-                )
-                  span.icon.icon-infraction
+                span.icon.icon-infraction
 
-            - var showDropdown = false
-            - showDropdown = showDropdown || self.settings.forum_mod_can_edit_posts
-            - showDropdown = showDropdown || self.settings.forum_mod_can_delete_topics
-            - showDropdown = showDropdown || self.settings.can_see_ip
+          - var showDropdown = false
+          - showDropdown = showDropdown || self.settings.forum_mod_can_edit_posts
+          - showDropdown = showDropdown || self.settings.forum_mod_can_delete_topics
+          - showDropdown = showDropdown || self.settings.can_see_ip
 
-            if self.runtime.is_member && self.runtime.user_id !== post.user
+          if self.runtime.is_member && self.runtime.user_id !== post.user
 
-              if self.section.is_writable && self.section.is_votable && self.settings.can_vote && (self.settings.votes_add_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
-                li.forum-post__control-item.forum-post__vote-up
-                  button.btn.forum-post__action(
-                    title=self.t('vote_up')
-                    data-on-click='forum.topic.post_vote'
-                    data-post-id=post._id
-                    data-value=self.own_votes[post._id] === 1 ? '0' : '1'
-                  )
-                    span.icon.icon-vote-up
-
-                li.forum-post__control-item.forum-post__vote-down
-                  button.btn.forum-post__action(
-                    title=self.t('vote_down')
-                    data-on-click='forum.topic.post_vote'
-                    data-post-id=post._id
-                    data-value=self.own_votes[post._id] === -1 ? '0' : '-1'
-                  )
-                    span.icon.icon-vote-down
-
-            if self.settings.can_report_abuse
-              li.forum-post__control-item.forum-post__report
-                button.btn.forum-post__action(title=self.t('report')
-                  data-post-id=post._id
-                  data-on-click='forum.topic:report'
-                )
-                  span.icon.icon-report
-
-            if self.runtime.is_member
-
-              li.forum-post__control-item.forum-post__bookmark
-                button.btn.forum-post__action.forum-post__bookmark-add(
-                  data-on-click='forum.topic.post_bookmark'
-                  data-post-id=post._id
-                  title=self.t('bookmark_add')
-                )
-                  span.icon.icon-bookmark-empty
-                  span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
-
-                button.btn.forum-post__action.forum-post__bookmark-remove(
-                  data-on-click='forum.topic.post_bookmark'
-                  data-post-id=post._id
-                  data-remove='true'
-                  title=self.t('bookmark_remove')
-                )
-                  span.icon.icon-bookmark
-                  span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
-
-
-            if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
-              li.forum-post__control-item.forum-post__edit
+            if self.section.is_writable && self.section.is_votable && self.settings.can_vote && (self.settings.votes_add_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.votes_add_max_time * 60 * 60 * 1000)
+              li.forum-post__control-item.forum-post__vote-up
                 button.btn.forum-post__action(
-                  data-on-click='forum.topic:post_edit'
+                  title=self.t('vote_up')
+                  data-on-click='forum.topic.post_vote'
                   data-post-id=post._id
-                  data-post-hid=post.hid
+                  data-value=self.own_votes[post._id] === 1 ? '0' : '1'
                 )
-                  span.icon.icon-edit
+                  span.icon.icon-vote-up
 
-              li.forum-post__delete.forum-post__control-item
+              li.forum-post__control-item.forum-post__vote-down
                 button.btn.forum-post__action(
-                  data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                  title=self.t('vote_down')
+                  data-on-click='forum.topic.post_vote'
                   data-post-id=post._id
-                  data-topic-hid=self.topic.hid
-                  title=self.t('delete')
+                  data-value=self.own_votes[post._id] === -1 ? '0' : '-1'
                 )
-                  span.icon.icon-trash
+                  span.icon.icon-vote-down
 
-            if self.settings.forum_can_reply
-              li.forum-post__control-item.forum-post__reply
-                //- for wide screen
-                button.full.btn.forum-post__action(
-                  data-on-click='forum.topic:reply'
-                  data-post-id=post._id
-                  data-post-hid=post.hid
-                  data-post-ts=post.ts
-                )
-                  span.icon.icon-reply.icon-space-after= self.t('reply')
-                //- for narrow screen
-                button.short.btn.forum-post__action(
-                  data-on-click='forum.topic:reply'
-                  data-post-id=post._id
-                  data-post-hid=post.hid
-                  data-post-ts=post.ts
-                  title=self.t('reply')
-                )
-                  span.icon.icon-reply
+          if self.settings.can_report_abuse
+            li.forum-post__control-item.forum-post__report
+              button.btn.forum-post__action(title=self.t('report')
+                data-post-id=post._id
+                data-on-click='forum.topic:report'
+              )
+                span.icon.icon-report
 
-            li.forum-post__control-item.forum-post__votes
+          if self.runtime.is_member
+
+            li.forum-post__control-item.forum-post__bookmark
+              button.btn.forum-post__action.forum-post__bookmark-add(
+                data-on-click='forum.topic.post_bookmark'
+                data-post-id=post._id
+                title=self.t('bookmark_add')
+              )
+                span.icon.icon-bookmark-empty
+                span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
+
+              button.btn.forum-post__action.forum-post__bookmark-remove(
+                data-on-click='forum.topic.post_bookmark'
+                data-post-id=post._id
+                data-remove='true'
+                title=self.t('bookmark_remove')
+              )
+                span.icon.icon-bookmark-empty
+                span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
+
+
+          if (user && user._id === self.runtime.user_id && (self.settings.forum_edit_max_time === 0 || new Date(post.ts).getTime() > Date.now() - self.settings.forum_edit_max_time * 60 * 1000))
+            li.forum-post__control-item.forum-post__edit
               button.btn.forum-post__action(
-                data-on-click='common.votes_popover'
-                data-votes-popover-placement='left'
-                data-votes-popover-for=post._id
-                title=self.t('vote_details')
-                data-votes-count=(post.votes > 0 ? '+' : '') + post.votes
+                data-on-click='forum.topic:post_edit'
+                data-post-id=post._id
+                data-post-hid=post.hid
               )
+                span.icon.icon-edit
 
-            if showDropdown
-                //- no aria parts - visible to moderators only
-                .forum-post__control-item.forum-post__mod-menu.dropdown.dropup
-                  button.btn.btn-square.forum-post__action.dropdown-toggle(
-                    data-toggle='dropdown'
-                    role='button'
-                  )
-                  .dropdown-menu.dropdown-menu-right(role='menu')
+            li.forum-post__delete.forum-post__control-item
+              button.btn.forum-post__action(
+                data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                data-post-id=post._id
+                data-topic-hid=self.topic.hid
+                title=self.t('delete')
+              )
+                span.icon.icon-trash
 
-                    if self.settings.forum_mod_can_add_infractions && !self.infractions[post._id]
-                      button.dropdown-item(
-                        data-post-id=post._id
-                        data-on-click='forum.topic:add_infraction'
-                      )= self.t('add_infraction')
+          if self.settings.forum_can_reply
+            li.forum-post__control-item.forum-post__reply
+              //- for wide screen
+              button.full.btn.forum-post__action(
+                data-on-click='forum.topic:reply'
+                data-post-id=post._id
+                data-post-hid=post.hid
+                data-post-ts=post.ts
+              )
+                span.icon.icon-reply.icon-space-after= self.t('reply')
+              //- for narrow screen
+              button.short.btn.forum-post__action(
+                data-on-click='forum.topic:reply'
+                data-post-id=post._id
+                data-post-hid=post.hid
+                data-post-ts=post.ts
+                title=self.t('reply')
+              )
+                span.icon.icon-reply
 
-                    if self.settings.can_see_ip
-                      button.dropdown-item(
-                        data-post-id=post._id
-                        data-on-click='forum.topic.post_show_ip'
-                      )= self.t('ip_info')
+          li.forum-post__control-item.forum-post__votes
+            button.btn.forum-post__action(
+              data-on-click='common.votes_popover'
+              data-votes-popover-placement='left'
+              data-votes-popover-for=post._id
+              title=self.t('vote_details')
+              data-votes-count=(post.votes > 0 ? '+' : '') + post.votes
+            )
 
-                    if self.settings.forum_mod_can_edit_posts
-                      button.dropdown-item(
-                        data-on-click='forum.topic:post_edit'
-                        data-post-id=post._id
-                        data-post-hid=post.hid
-                        data-as-moderator='true'
-                      )= self.t('edit')
+          if showDropdown
+              //- no aria parts - visible to moderators only
+              .forum-post__control-item.forum-post__mod-menu.dropdown.dropup
+                button.btn.btn-square.forum-post__action.dropdown-toggle(
+                  data-toggle='dropdown'
+                  role='button'
+                )
+                .dropdown-menu.dropdown-menu-right(role='menu')
 
-                    if self.settings.forum_mod_can_delete_topics
-                      button.dropdown-item.forum-post__delete(
-                        data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
-                        data-post-id=post._id
-                        data-topic-hid=self.topic.hid
-                        data-as-moderator='true'
-                      )= self.t('delete')
+                  if self.settings.forum_mod_can_add_infractions && !self.infractions[post._id]
+                    button.dropdown-item(
+                      data-post-id=post._id
+                      data-on-click='forum.topic:add_infraction'
+                    )= self.t('add_infraction')
 
-                      button.dropdown-item.forum-post__undelete(
-                        data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
-                        data-post-id=post._id
-                        data-topic-hid=self.topic.hid
-                      )= self.t('undelete')
+                  if self.settings.can_see_ip
+                    button.dropdown-item(
+                      data-post-id=post._id
+                      data-on-click='forum.topic.post_show_ip'
+                    )= self.t('ip_info')
+
+                  if self.settings.forum_mod_can_edit_posts
+                    button.dropdown-item(
+                      data-on-click='forum.topic:post_edit'
+                      data-post-id=post._id
+                      data-post-hid=post.hid
+                      data-as-moderator='true'
+                    )= self.t('edit')
+
+                  if self.settings.forum_mod_can_delete_topics
+                    button.dropdown-item.forum-post__delete(
+                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                      data-post-id=post._id
+                      data-topic-hid=self.topic.hid
+                      data-as-moderator='true'
+                    )= self.t('delete')
+
+                    button.dropdown-item.forum-post__undelete(
+                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
+                      data-post-id=post._id
+                      data-topic-hid=self.topic.hid
+                    )= self.t('undelete')
 
 
   else
@@ -360,7 +360,7 @@ each post, post_idx in self.posts
               data-post-id=post._id
               data-on-change='forum.topic:post_check')
 
-      .forum-post__content
+      .forum-post__content-collapsed
         case post.st
           when postStatuses.DELETED
            =self.t('del_post_text')
@@ -381,8 +381,8 @@ each post, post_idx in self.posts
               data-user-id=post.del_by
             ) #{delUser.name}
 
-      footer.forum-post__controls.clearfix
-        ul.forum-post__controls-blk.pull-xs-right
+      footer.forum-post__controls
+        ul.forum-post__controls-blk
 
           -var infraction = self.infractions[post._id];
           if infraction
