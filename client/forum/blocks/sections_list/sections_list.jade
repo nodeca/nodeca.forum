@@ -27,6 +27,9 @@
           else
             = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
 
+        //- cover all space with link for small screens
+        a.forum-section__overlay.hidden-md-up(href=self.link_to('forum.section', { section_hid: section.hid }))
+
       .forum-section__stats.forum-section__cell.hidden-sm-down
         if last_ts
           != self.timetag(last_ts, 'relative')
@@ -42,6 +45,3 @@
       )
         span.icon.icon-posts.icon-space-after
         = self.number_short(section.cache.post_count)
-
-      //- cover all space with link for small screens
-      a.forum-section__overlay.hidden-md-up(href=self.link_to('forum.section', { section_hid: section.hid }))
