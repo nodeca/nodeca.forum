@@ -117,8 +117,12 @@ asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
 .forum-post__content
   margin-right 0px
   margin-left asideSize + 16px
-  margin-top -.25rem // Compensate line-height 1.5 rem
   min-height 60px // Dont allow post controls to be above avatar bottom
+
+.forum-post__message
+  & > p:first-child
+    margin-top -.25rem // Compensate line-height 1.5 rem
+
 
 .forum-post__content-collapsed
   margin 0 1rem
