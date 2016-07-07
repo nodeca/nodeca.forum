@@ -8,13 +8,10 @@
 'use strict';
 
 
-const _   = require('lodash');
-const bag = require('bagjs')({ prefix: 'nodeca' });
+const _ = require('lodash');
 
 
-let draftKey;
 let options;
-let draft;
 
 
 function updateOptions() {
@@ -50,41 +47,14 @@ N.wire.before(module.apiPath + ':begin', function fetch_options() {
 });
 
 
-// Fetch draft data
-//
-N.wire.before(module.apiPath + ':begin', function fetch_draft(data) {
-  draftKey = [ 'topic_create', N.runtime.user_hid, data.section_hid ].join('_');
-  draft = {};
-
-  return bag.get(draftKey)
-    .then(data => { draft = data || {}; })
-    .catch(() => {}); // SUppress storage errors
-});
-
-
-// Check draft attachments
-//
-N.wire.before(module.apiPath + ':begin', function check_draft_attachments() {
-  if (!draft.attachments || draft.attachments.length === 0) {
-    return;
-  }
-
-  let params = {
-    media_ids: _.map(draft.attachments, 'media_id')
-  };
-
-  return N.io.rpc('forum.topic.attachments_check', params).then(res => {
-    draft.attachments = draft.attachments.filter(attach => res.media_ids.indexOf(attach.media_id) !== -1);
-  });
-});
-
-
 // Show editor and add handlers for editor events
 //
 N.wire.on(module.apiPath + ':begin', function show_editor(data) {
   let $editor = N.MDEdit.show({
-    text: draft.text,
-    attachments: draft.attachments
+    draftKey: [ 'topic_create', N.runtime.user_hid, data.section_hid ].join('_'),
+    draftCustomFields: {
+      '.topic-create__title': 'input'
+    }
   });
 
   updateOptions();
@@ -97,18 +67,9 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       });
 
       $editor.find('.mdedit-header__caption').html(title);
-      $editor.find('.mdedit-header')
-        .append(N.runtime.render(module.apiPath + '.title_input', draft));
+      $editor.find('.mdedit-header').append(N.runtime.render(module.apiPath + '.title_input'));
 
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
-    })
-    .on('change.nd.mdedit', () => {
-      // Expire after 7 days
-      bag.set(draftKey, {
-        title: $('.topic-create__title').val(),
-        text: N.MDEdit.text(),
-        attachments: N.MDEdit.attachments()
-      }, 7 * 24 * 60 * 60);
     })
     .on('submit.nd.mdedit', () => {
       let params = {
@@ -122,19 +83,15 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       };
 
       N.io.rpc('forum.topic.create', params).then(response => {
-        bag.remove(draftKey)
-          .catch(() => {}) // Suppress storage erors
-          .then(() => {
-            N.MDEdit.hide();
-            N.wire.emit('navigate.to', {
-              apiPath: 'forum.topic',
-              params: {
-                section_hid: data.section_hid,
-                topic_hid:   response.topic_hid,
-                post_hid:    response.post_hid
-              }
-            });
-          });
+        N.MDEdit.hide({ removeDraft: true });
+        N.wire.emit('navigate.to', {
+          apiPath: 'forum.topic',
+          params: {
+            section_hid: data.section_hid,
+            topic_hid:   response.topic_hid,
+            post_hid:    response.post_hid
+          }
+        });
       }).catch(err => N.wire.emit('error', err));
 
       return false;
