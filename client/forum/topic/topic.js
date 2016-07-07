@@ -780,6 +780,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       if (!res.posts || !res.posts.length) return;
 
+      topicState.top_marker = res.posts[0].hid;
+
       topicState.first_post_offset -= res.posts.length - 1;
 
       res.pagination = {
@@ -918,6 +920,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       }
 
       if (!res.posts || !res.posts.length) return;
+
+      topicState.bottom_marker = res.posts[res.posts.length - 1].hid;
 
       res.pagination = {
         // used in paginator
