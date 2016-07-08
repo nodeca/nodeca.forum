@@ -29,7 +29,7 @@
       a.subscription-dlg__item.list-group-item(href='#'
         data-on-click=self.apiPath + ':select'
         data-type=types.NORMAL
-        class=self.subscription === types.NORMAL ? 'active' : ''
+        class=(!self.subscription || self.subscription === types.NORMAL) ? 'active' : ''
       )
         h4.subscription-dlg__item-heading.list-group-item-heading
           span.icon.icon-track-normal
