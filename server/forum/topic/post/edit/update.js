@@ -71,7 +71,6 @@ module.exports = function (N, apiPath) {
       text: env.params.txt,
       attachments: env.params.attach,
       options: env.data.parse_options,
-      image_info: env.data.post.image_info,
       user_info: env.user_info
     });
   });
@@ -144,7 +143,6 @@ module.exports = function (N, apiPath) {
     post.params       = env.data.parse_options;
     post.imports      = env.data.parse_result.imports;
     post.import_users = env.data.parse_result.import_users;
-    post.image_info   = env.data.parse_result.image_info;
 
     yield post.save();
   });

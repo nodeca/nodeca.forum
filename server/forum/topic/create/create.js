@@ -191,7 +191,6 @@ module.exports = function (N, apiPath) {
     post.params = env.data.parse_options;
     post.imports = env.data.parse_result.imports;
     post.import_users = env.data.parse_result.import_users;
-    post.image_info = env.data.parse_result.image_info;
 
     if (env.user_info.hb) {
       post.st  = N.models.forum.Post.statuses.HB;

@@ -73,9 +73,6 @@ module.exports = function (N, collectionName) {
   // List of users to fetch in order to properly display the post
     import_users    : [ Schema.ObjectId ],
 
-  // Image sizes and attachment attributes with "url:" or "media:" prefix respectively
-    image_info      : Schema.Types.Mixed,
-
   // Info to display post tail
     tail            : [ new Schema({ // explicit definition to remove `_id` field
       media_id: Schema.ObjectId,
@@ -135,7 +132,7 @@ module.exports = function (N, collectionName) {
   });
 
 
-  // Remove empty "imports", "import_users", "image_info" fields
+  // Remove empty "imports" and "import_users" fields
   //
   Post.pre('save', function (callback) {
     if (this.imports && this.imports.length === 0) {
@@ -146,11 +143,6 @@ module.exports = function (N, collectionName) {
     if (this.import_users && this.import_users.length === 0) {
       /*eslint-disable no-undefined*/
       this.import_users = undefined;
-    }
-
-    if (this.image_info && Object.keys(this.image_info).length === 0) {
-      /*eslint-disable no-undefined*/
-      this.image_info = undefined;
     }
 
     callback();
