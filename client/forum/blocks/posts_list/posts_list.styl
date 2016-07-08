@@ -279,9 +279,13 @@ asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
     .icon
       color $brand-danger
 
+.forum-post__bookmarks-count
+  font-size $font-size-xs
+  color $body-color-secondary
+
 .forum-post__bookmarks-count:after
   content attr(data-bm-count)
-  margin-left .2em
+  margin-left .3em
 
 .forum-post__bookmarks-count[data-bm-count="0"]:after
   display none
