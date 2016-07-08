@@ -17,29 +17,19 @@
 
 //
 
-.forum-postlist
-  margin-top 10px
-
-.forum-topic-title__meta-deleted
-  color grayLight
-  font-size 12px
-
 .forum-topic-title__edit
-  color gray
-  opacity .3
-  transition opacity .3s ease
-  &:hover
-    opacity 1
+  display none
+  font-size $font-size-base
+  color $body-color-secondary
+  vertical-align middle
+  padding .25rem .5rem
 
 .forum-topic__closed-mark
   display none
 
-.forum-topic-title__edit
-  display none
-
 .forum-topic-root__m-open
   .forum-topic-title__edit
-    display inline
+    display inline-block
 
 .forum-topic-root__m-closed
   .forum-topic__closed-mark
@@ -76,6 +66,3 @@
 .forum-topic__tracking
   margin-top baseLineHeight
   shortable()
-
-.forum-topic__tracking-btn
-  margin-right .5em

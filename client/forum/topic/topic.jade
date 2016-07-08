@@ -45,7 +45,7 @@ article#content.forum-topic-root(
         span.forum-topic-title__text= self.topic.title
 
         if canEdit || self.settings.forum_mod_can_edit_titles
-          a.forum-topic-title__edit.icon.icon-edit.icon-space-before(
+          a.forum-topic-title__edit.icon.icon-edit(
             href='#'
             title=self.t('edit_title')
             data-on-click='forum.topic.edit_title'
@@ -59,7 +59,7 @@ article#content.forum-topic-root(
 
       if self.topic.del_by
         - var delUser = self.users[self.topic.del_by] || {}
-        .forum-topic-title__meta-deleted
+        p.page-head__descr.forum-topic-title__meta-deleted
           =self.t('del_by')
           | 
           a(href=self.link_to('users.member', { user_hid: delUser.hid }))=delUser.name
