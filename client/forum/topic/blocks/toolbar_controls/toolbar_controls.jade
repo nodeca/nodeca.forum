@@ -140,7 +140,7 @@ if (self.selected_cnt !== 0)
                 data-topic-subscription=self.subscription
               )
                 if self.subscription && self.subscription !== subscriptionTypes.NORMAL
-                  span.icon.icon-space-before(class=subscriptionIcon)
+                  span.icon.icon-space-after(class=subscriptionIcon)
                 = self.t('subscription')
 
             when 'delete'

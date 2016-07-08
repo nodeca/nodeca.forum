@@ -114,7 +114,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
                 data-section-subscription=self.subscription
               )
                 if self.subscription && self.subscription !== subscriptionTypes.NORMAL
-                  span.icon.icon-space-before(class=subscriptionIcon)
+                  span.icon.icon-space-after(class=subscriptionIcon)
                 = self.t('subscription')
 
             when 'show_moderators'
