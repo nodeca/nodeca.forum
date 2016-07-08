@@ -2,40 +2,48 @@
 
 .modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
   .modal-dialog
-    .modal-content
-      form(data-on-submit=self.submit_action)
-        .modal-header
-          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
-          h4.modal-title=self.t('title')
-        .modal-body
-          .radio
-            label
-              input(type='radio' name='type' tabindex='2' value=types.WATCHING checked=self.subscription === types.WATCHING)
-              span.icon.icon-track-watching
-              | 
-              =self.t('watching')
-              p: small.text-muted=self.t('watching_desc')
-          .radio
-            label
-              input(type='radio' name='type' tabindex='1' value=types.TRACKING checked=self.subscription === types.TRACKING)
-              span.icon.icon-track-tracking
-              | 
-              =self.t('tracking')
-              p: small.text-muted=self.t('tracking_desc')
-          .radio
-            label
-              input(type='radio' name='type' tabindex='3' value=types.NORMAL checked=!self.subscription || self.subscription === types.NORMAL)
-              span.icon.icon-track-normal
-              | 
-              =self.t('normal')
-              p: small.text-muted=self.t('normal_desc')
-          .radio
-            label
-              input(type='radio' name='type' tabindex='4' value=types.MUTED checked=self.subscription === types.MUTED)
-              span.icon.icon-track-muted
-              | 
-              =self.t('muted')
-              p: small.text-muted=self.t('muted_desc')
-        .modal-footer
-          button.btn.btn-secondary(type='button' tabindex='5' data-dismiss='modal')=self.t('cancel')
-          button.btn.btn-primary(type='submit' tabindex='6')=self.t('ok')
+    .modal-content.list-group
+
+      a.subscription-dlg__item.list-group-item(href='#'
+        data-on-click=self.apiPath + ':select'
+        data-type=types.WATCHING
+        class=self.subscription === types.WATCHING ? 'active' : ''
+      )
+        h4.subscription-dlg__item-heading.list-group-item-heading
+          span.icon.icon-track-watching
+          =' '
+          =self.t('watching')
+        p.subscription-dlg__item-text.list-group-item-text=self.t('watching_desc')
+
+      a.subscription-dlg__item.list-group-item(href='#'
+        data-on-click=self.apiPath + ':select'
+        data-type=types.TRACKING
+        class=self.subscription === types.TRACKING ? 'active' : ''
+      )
+        h4.subscription-dlg__item-heading.list-group-item-heading
+          span.icon.icon-track-tracking
+          =' '
+          =self.t('tracking')
+        p.subscription-dlg__item-text.list-group-item-text=self.t('tracking_desc')
+
+      a.subscription-dlg__item.list-group-item(href='#'
+        data-on-click=self.apiPath + ':select'
+        data-type=types.NORMAL
+        class=self.subscription === types.NORMAL ? 'active' : ''
+      )
+        h4.subscription-dlg__item-heading.list-group-item-heading
+          span.icon.icon-track-normal
+          =' '
+          =self.t('normal')
+        p.subscription-dlg__item-text.list-group-item-text=self.t('normal_desc')
+
+      a.subscription-dlg__item.list-group-item(href='#'
+        data-on-click=self.apiPath + ':select'
+        data-type=types.MUTED
+        class=self.subscription === types.MUTED ? 'active' : ''
+      )
+        h4.subscription-dlg__item-heading.list-group-item-heading
+          span.icon.icon-track-muted
+          =' '
+          =self.t('muted')
+        p.subscription-dlg__item-text.list-group-item-text=self.t('muted_desc')

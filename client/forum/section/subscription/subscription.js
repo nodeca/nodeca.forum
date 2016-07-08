@@ -17,10 +17,10 @@ let result;
 
 N.wire.once(module.apiPath, function init_handlers() {
 
-  // Submit button handler
+  // Select subscription type
   //
-  N.wire.on(module.apiPath + ':submit', function submit_subscription_dlg(form) {
-    params.subscription = result = +form.fields.type;
+  N.wire.on(module.apiPath + ':select', function select_type_subscription_dlg(data) {
+    params.subscription = result = +data.$this.data('type');
     $dialog.modal('hide');
   });
 
@@ -39,7 +39,7 @@ N.wire.once(module.apiPath, function init_handlers() {
 //
 N.wire.on(module.apiPath, function show_subscription_dlg(options) {
   params = options;
-  $dialog = $(N.runtime.render(module.apiPath, _.assign({ submit_action: module.apiPath + ':submit' }, params)));
+  $dialog = $(N.runtime.render(module.apiPath, _.assign({ apiPath: module.apiPath }, params)));
   $('body').append($dialog);
 
   return new Promise((resolve, reject) => {
