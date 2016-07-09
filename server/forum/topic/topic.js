@@ -84,7 +84,7 @@ module.exports = function (N, apiPath) {
     }
 
     let subscription = yield N.models.users.Subscription
-                          .findOne({ user_id: env.user_info.user_id, to: env.data.topic._id })
+                          .findOne({ user: env.user_info.user_id, to: env.data.topic._id })
                           .lean(true);
 
     env.res.subscription = subscription ? subscription.type : null;
