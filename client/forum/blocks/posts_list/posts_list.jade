@@ -84,6 +84,7 @@ each post, post_idx in self.posts
         .forum-post__meta-flex
           .forum-post__meta-content
             .forum-post__meta-author
+              span.forum-post__ignored-mark.icon.icon-ignore.icon-space-after
               if user
                 a.forum-post__author._ucard-popover(
                   href=self.link_to('users.member', { user_hid: user.hid })
@@ -325,6 +326,7 @@ each post, post_idx in self.posts
         .forum-post__meta-flex
           .forum-post__meta-content
             .forum-post__meta-author
+              span.forum-post__ignored-mark.icon.icon-ignore.icon-space-after
               if user
                 a.forum-post__author._ucard-popover(
                   href=self.link_to('users.member', { user_hid: user.hid })

@@ -265,6 +265,12 @@ asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
   .forum-post__reply
     display none
 
+.forum-post__ignored-mark
+  display none
+.forum-post__m-ignored
+  .forum-post__ignored-mark
+    display inline-block
+
 .forum-post__m-voted-up
   .forum-post__vote-up
     .forum-post__action
@@ -278,6 +284,7 @@ asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
       opacity 1
     .icon
       color $brand-danger
+
 
 .forum-post__bookmarks-count
   font-size $font-size-xs
