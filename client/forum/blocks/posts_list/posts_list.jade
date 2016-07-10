@@ -74,12 +74,12 @@ each post, post_idx in self.posts
         .forum-post__meta-avatar
           if user
             a.forum-post__userpic(href=self.link_to('users.member', { user_hid: user.hid }))
-              img.av-l(alt=user.name)&attributes(self.avatar(user, 'md'))
+              img.forum-post__userpic-img-sm(alt=user.name)&attributes(self.avatar(user, 'md'))
           else if post.legacy_nick
             span.forum-post__userpic
-              img.av-l(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
+              img.forum-post__userpic-img-sm(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
           else
-            .av-l
+            .forum-post__userpic-img-sm
 
         .forum-post__meta-flex
           .forum-post__meta-content
@@ -122,12 +122,12 @@ each post, post_idx in self.posts
       .forum-post__aside
         if user
           a.forum-post__userpic(href=self.link_to('users.member', { user_hid: user.hid }))
-            img.av-l(alt=user.name)&attributes(self.avatar(user, 'md'))
+            img.forum-post__userpic-img(alt=user.name)&attributes(self.avatar(user, 'md'))
         else if post.legacy_nick
           span.forum-post__userpic
-            img.av-l(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
+            img.forum-post__userpic-img(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
         else
-          .av-l
+          .forum-post__userpic-img
       .forum-post__content
         .forum-post__message.markup !{post.html}
 
@@ -316,12 +316,12 @@ each post, post_idx in self.posts
         .forum-post__meta-avatar
           if user
             a.forum-post__userpic(href=self.link_to('users.member', { user_hid: user.hid }))
-              img.av-l(alt=user.name)&attributes(self.avatar(user, 'md'))
+              img.forum-post__userpic-img-sm(alt=user.name)&attributes(self.avatar(user, 'md'))
           else if post.legacy_nick
             span.forum-post__userpic
-              img.av-l(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
+              img.forum-post__userpic-img-sm(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
           else
-            .av-l
+            .forum-post__userpic-img-sm
 
         .forum-post__meta-flex
           .forum-post__meta-content

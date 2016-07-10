@@ -41,21 +41,26 @@
   margin-bottom 1rem
   color $body-color-secondary
   font-size $font-size-xs
-  line-height 1em
+  line-height 1.25em
   background-color white
 
 .forum-post__meta-flex
   border-bottom 1px solid $decorator-color
   display table-cell
   vertical-align bottom
-  padding-bottom .5rem
-  //&:last-child
-  //  padding-right 15px
+  padding-bottom .375rem
 
 .forum-post__meta-avatar
   display none
-  width 50px
+  width 45px
   vertical-align bottom
+
+.forum-post__userpic-img-sm
+  display inline-block
+  width 36px
+  height 36px
+  border-radius 2px
+  box-shadow 1px solid $decorator-color
 
 .forum-post__meta-content
   display flex
@@ -65,7 +70,7 @@
 .forum-post__meta-author
   width 100%
   font-size $font-size-base
-  line-height 1em
+  line-height 1.25em
   color darken($body-color-secondary, 10%)
   shortable()
 
@@ -105,19 +110,24 @@
 // left / right columns
 //
 
-asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
+//asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
+asideSize = 80px
 
 .forum-post__aside
   float left
   margin-top .125rem
-  .av-l
-    width asideSize
-    height asideSize
+
+.forum-post__userpic-img
+  display inline-block
+  width asideSize
+  height asideSize
+  border-radius 3px
+  box-shadow 1px solid $decorator-color
 
 .forum-post__content
   margin-right 0px
   margin-left asideSize + 16px
-  min-height 60px // Dont allow post controls to be above avatar bottom
+  min-height asideSize - 40 // Dont allow post controls to be above avatar bottom
 
 .forum-post__message
   & > p:first-child
@@ -145,21 +155,16 @@ asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
     flex-direction column
   .forum-post__meta-author
     font-size $font-size-sm
-    margin-bottom .25rem
   .forum-post__meta-info
     margin-left 0
     font-size $font-size-xs
-    margin-bottom .25rem
+    margin-bottom .125rem
     color lighten($body-color-secondary, 20%)
     align-self stretch
 
   .forum-post__reply-to-avatar
     width 12px
     height 12px
-  .av-l
-    width 40px
-    height 40px
-    border-radius 2px
 
 //
 // content column
