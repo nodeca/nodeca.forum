@@ -11,23 +11,21 @@ let bloodhound;
 
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
-  $('._sortable_tree').nestedSortable({
-    listType: 'ul',
-    forcePlaceholderSize: true,
-    items: '._sortable_tree_item',
-    placeholder: 'aforum-index__section-placeholder',
-    opacity: 0.6,
-    revert: 250,
-    tabSize: 25,
-    doNotClear: true,
-    isTree: true,
-    expandOnHover: 700,
-    stop(event, ui) {
-
+  $('.aforum-index__scontent').nestable({
+    listNodeName: 'ul',
+    rootClass: 'aforum-index__scontent',
+    listClass: 'aforum-index__slist',
+    itemClass: 'aforum-index__slist-item',
+    handleClass: 'aforum-index__section-info',
+    noDragClass: 'aforum-index__section-title',
+    collapseBtnHTML: '',
+    expandBtnHTML: '',
+    placeClass: 'aforum-index__section-placeholder',
+    callback(__, $el) {
       let request = {
-        _id:           ui.item.data('id'),
-        parent:        ui.item.parents('._sortable_tree_item').data('id') || null,
-        sibling_order: _.map(ui.item.parent().children('._sortable_tree_item'), function (child) {
+        _id: $el.data('id'),
+        parent: $el.parents('.aforum-index__slist-item').data('id') || null,
+        sibling_order: _.map($el.parent().children('.aforum-index__slist-item'), function (child) {
           // calculate new data order for each sibling of the current sections
           return $(child).data('id');
         })

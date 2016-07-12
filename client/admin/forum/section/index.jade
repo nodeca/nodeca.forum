@@ -1,9 +1,9 @@
 //- Helper to render single section control bar with children list.
 mixin render_sections_tree(sections, level)
-  ul.aforum-index__slist(class="#{level === 0 ? '_sortable_tree' : ''}")
+  ul.aforum-index__slist
     each section in sections
       - var moderators = section.own_moderator_list.filter(function(id) { return self.users[id] });
-      li.aforum-index__slist-item._sortable_tree_item(data-id=section._id)
+      li.aforum-index__slist-item(data-id=section._id)
         //- Section's own control bar.
         .aforum-index__section
           .pull-xs-right
