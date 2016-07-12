@@ -72,6 +72,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
     .on('submit.nd.mdedit', () => {
+      $editor.find('.mdedit__submit').addClass('disabled');
+
       let params = {
         section_hid:              data.section_hid,
         title:                    $('.topic-create__title').val(),
@@ -92,7 +94,10 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
             post_hid:    response.post_hid
           }
         });
-      }).catch(err => N.wire.emit('error', err));
+      }).catch(err => {
+        $editor.find('.mdedit__submit').removeClass('disabled');
+        N.wire.emit('error', err);
+      });
 
       return false;
     });

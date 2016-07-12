@@ -92,6 +92,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
     .on('submit.nd.mdedit', () => {
+      $editor.find('.mdedit__submit').addClass('disabled');
+
       let params = {
         as_moderator:             data.as_moderator,
         post_id:                  data.post_id,
@@ -102,20 +104,21 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         option_no_quote_collapse: options.user_settings.no_quote_collapse
       };
 
-      N.io.rpc('forum.topic.post.edit.update', params)
-        .then(res => {
-          let $post = $('#post' + data.post_id);
-          let $result = $(N.runtime.render('forum.blocks.posts_list', res));
+      N.io.rpc('forum.topic.post.edit.update', params).then(res => {
+        let $post = $('#post' + data.post_id);
+        let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-          N.MDEdit.hide();
+        N.MDEdit.hide();
 
-          N.wire.emit('navigate.update', { $: $result, locals: res }, () => {
-            $post.replaceWith($result);
-            $post.removeClass('forum-post__m-flash');
-            setTimeout(() => $post.addClass('forum-post__m-flash'), 0);
-          });
-        })
-        .catch(err => N.wire.emit('error', err));
+        N.wire.emit('navigate.update', { $: $result, locals: res }, () => {
+          $post.replaceWith($result);
+          $post.removeClass('forum-post__m-flash');
+          setTimeout(() => $post.addClass('forum-post__m-flash'), 0);
+        });
+      }).catch(err => {
+        $editor.find('.mdedit__submit').removeClass('disabled');
+        N.wire.emit('error', err);
+      });
 
       return false;
     });

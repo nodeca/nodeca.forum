@@ -79,6 +79,8 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
     .on('submit.nd.mdedit', () => {
+      $editor.find('.mdedit__submit').addClass('disabled');
+
       let params = {
         section_hid:              data.section_hid,
         topic_hid:                data.topic_hid,
@@ -96,7 +98,10 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       N.io.rpc('forum.topic.post.reply', params).then(response => {
         N.MDEdit.hide({ removeDraft: true });
         N.wire.emit('navigate.to', response.redirect_url);
-      }).catch(err => N.wire.emit('error', err));
+      }).catch(err => {
+        $editor.find('.mdedit__submit').removeClass('disabled');
+        N.wire.emit('error', err);
+      });
 
       return false;
     });
