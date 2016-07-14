@@ -79,7 +79,7 @@ each post, post_idx in self.posts
             span.forum-post__userpic
               img.forum-post__userpic-img-sm(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
           else
-            .forum-post__userpic-img-sm
+            .forum-post__userpic-img-sm.av-anon
 
         .forum-post__meta-flex
           .forum-post__meta-content
@@ -127,7 +127,7 @@ each post, post_idx in self.posts
           span.forum-post__userpic
             img.forum-post__userpic-img(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
         else
-          .forum-post__userpic-img
+          .forum-post__userpic-img.av-anon
       .forum-post__content
         .forum-post__message.markup !{post.html}
 

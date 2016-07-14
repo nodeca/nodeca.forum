@@ -60,7 +60,7 @@
   width 36px
   height 36px
   border-radius 3px
-  box-shadow 0 0 1px $decorator-color
+  box-shadow 0 0 1px $body-color-secondary
 
 .forum-post__meta-content
   display flex
@@ -110,8 +110,9 @@
 // left / right columns
 //
 
-//asideSize = '$$ N.config.users.avatars.resize.md.height $$'px
-asideSize = 80px
+//$aside-size = '$$ N.config.users.avatars.resize.md.height $$'px
+$aside-size = 100px
+$aside-size-md = 80px
 
 .forum-post__aside
   float left
@@ -119,15 +120,25 @@ asideSize = 80px
 
 .forum-post__userpic-img
   display inline-block
-  width asideSize
-  height asideSize
+  width $aside-size
+  height $aside-size
   border-radius 3px
-  box-shadow 0 0 1px $decorator-color
+  box-shadow 0 0 1px $body-color-secondary
 
 .forum-post__content
   margin-right 0px
-  margin-left asideSize + 16px
-  min-height asideSize - 40 // Dont allow post controls to be above avatar bottom
+  margin-left $aside-size + 16px
+  min-height $aside-size - 40 // Dont allow post controls to be above avatar bottom
+
+@media (max-width: $grid-breakpoints.md - 1)
+  .forum-post__userpic-img
+    width $aside-size-md
+    height $aside-size-md
+
+  .forum-post__content
+    margin-left $aside-size-md + 16px
+    min-height $aside-size-md - 40 // Dont allow post controls to be above avatar bottom
+
 
 .forum-post__message
   & > p:first-child
@@ -172,7 +183,12 @@ asideSize = 80px
 
 .forum-post__controls
   text-align right
-  margin-left asideSize + 16px
+  margin-left $aside-size + 16px
+
+@media (max-width: $grid-breakpoints.md - 1)
+  .forum-post__controls
+    margin-left $aside-size-md + 16px
+
 
 @media (max-width: $grid-breakpoints.sm - 1)
   .forum-post__controls
