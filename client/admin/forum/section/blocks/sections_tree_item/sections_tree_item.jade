@@ -1,0 +1,41 @@
+- var moderators = self.section.own_moderator_list.filter(function(id) { return self.users[id] });
+//li.aforum-index__slist-item(data-id=self.section._id)
+//- Section's own control bar.
+.aforum-index__section
+  .pull-xs-right
+    span.aforum-index__section-mods.dropdown
+      button.dropdown-toggle.btn.btn-link.btn-sm(
+        type='button'
+        data-toggle='dropdown'
+      )
+        = self.t('moderators_info', { count: moderators.length })
+
+      .dropdown-menu.dropdown-menu-right
+        each moderator_id in moderators
+          a.dropdown-item(
+            href=self.link_to('admin.forum.moderator.edit', { section_id: self.section._id, user_id: moderator_id })
+          )
+            = self.users[moderator_id].name
+
+        if 0 !== moderators.length
+          .dropdown-divider
+
+        button.dropdown-item(
+          type='button'
+          data-on-click='admin.forum.section.select_moderator_nick'
+          data-section_id=self.section._id
+        )
+          = self.t('add_moderator')
+
+    a.aforum-index__section-delete.btn.btn-link.btn-sm(
+      href="#",
+      data-on-click="admin.forum.section.destroy",
+      data-id=self.section._id,
+      data-title=self.section.title
+    ) #{self.t('delete_section')}
+
+  .aforum-index__section-info
+    i.aforum-index__sorter.icon.icon-sorter._sorter
+
+    a.aforum-index__section-title(href=self.link_to('admin.forum.section.edit', { _id: self.section._id }))
+      = self.section.title

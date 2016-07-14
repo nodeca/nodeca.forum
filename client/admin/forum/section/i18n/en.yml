@@ -1,9 +1,5 @@
 en-US:
   index:
-    moderators_info: 'Moderators (#{count})'
-    add_moderator: Add moderator
     new_section: Create new section
-    delete_section: Delete
     message_confim_section_delete: 'Are you sure you want to delete "#{title}" section?'
-
     error_no_user_with_such_nick: "Can't find user with such nick: #{nick}"

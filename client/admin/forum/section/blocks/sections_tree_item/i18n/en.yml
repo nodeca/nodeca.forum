@@ -1,0 +1,4 @@
+en-US:
+  moderators_info: 'Moderators (#{count})'
+  delete_section: Delete
+  add_moderator: Add moderator

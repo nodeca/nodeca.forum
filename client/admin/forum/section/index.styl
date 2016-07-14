@@ -1,12 +1,33 @@
 @import "nodeca.core/client/common/_variables"
 
-.aforum-index__slist
-  list-style: none
+.aforum-index__scontent
+  ul
+    list-style: none
 
-.aforum-index__scontent > .aforum-index__slist
-  border-left 1px solid grayLightest
-  padding-left 5px
-  margin-left 0
+  .jqtree-tree
+    border-left 1px solid grayLightest
+    padding-left 5px
+    margin-left 0
+
+  // highlight moving item
+  .jqtree-moving
+    outline 1px dashed #4183C4
+    opacity .2
+
+  // empty div to highlight place where item will be inserted
+  .jqtree-ghost
+    background: #4183C4;
+    height 1px;
+
+  .jqtree-element
+    position relative
+
+  // empty span to highlight item which will become parent
+  .jqtree-border
+    position absolute
+    top 0
+    left 0
+    border-bottom 1px solid #4183C4
 
 //
 // Section line
@@ -22,8 +43,8 @@
 
 .aforum-index__sorter
   opacity .2
-  user-select: none
-  cursor: move
+  user-select none
+  cursor move
   margin-right 7px
 
 .aforum-index__section-mods
@@ -31,7 +52,3 @@
 
 .aforum-index__section-delete
   margin-left 20px
-
-.aforum-index__section-placeholder {
-  outline: 1px dashed #4183C4;
-}

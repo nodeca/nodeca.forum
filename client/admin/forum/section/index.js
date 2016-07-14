@@ -9,30 +9,37 @@ let $moderatorSelectDialog;
 let bloodhound;
 
 
+require('jqtree');
+
+
 N.wire.on('navigate.done:' + module.apiPath, function page_setup() {
 
-  $('.aforum-index__scontent').nestable({
-    listNodeName: 'ul',
-    rootClass: 'aforum-index__scontent',
-    listClass: 'aforum-index__slist',
-    itemClass: 'aforum-index__slist-item',
-    handleClass: 'aforum-index__section-info',
-    noDragClass: 'aforum-index__section-title',
-    collapseBtnHTML: '',
-    expandBtnHTML: '',
-    placeClass: 'aforum-index__section-placeholder',
-    callback(__, $el) {
+  $('.aforum-index__scontent').tree({
+    data: N.runtime.page_data.sections,
+    autoOpen: true,
+    dragAndDrop: true,
+    onCreateLi(section, $li) {
+      $li
+        .addClass('aforum-index__slist-item')
+        .find('.jqtree-element')
+        .html(N.runtime.render('admin.forum.section.blocks.sections_tree_item', {
+          section,
+          users: N.runtime.page_data.users
+        }));
+    }
+  }).on('tree.move', event => {
+    // Wait next tick to ensure node update
+    setTimeout(() => {
+      let node = event.move_info.moved_node;
+
       let request = {
-        _id: $el.data('id'),
-        parent: $el.parents('.aforum-index__slist-item').data('id') || null,
-        sibling_order: _.map($el.parent().children('.aforum-index__slist-item'), function (child) {
-          // calculate new data order for each sibling of the current sections
-          return $(child).data('id');
-        })
+        _id: node._id,
+        parent: node.parent._id || null,
+        sibling_order: node.parent.children.map(child => child._id)
       };
 
       N.io.rpc('admin.forum.section.update_order', request).catch(err => N.wire.emit('error', err));
-    }
+    }, 0);
   });
 });
 
