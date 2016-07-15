@@ -22,7 +22,7 @@
           | #{self.moderator_name}
 
         // ko foreach: settings
-        .form-group.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
+        .form-group.form-group-hover.row(data-bind="css: { overriden: overriden, inherited: inherited }")
 
           label.form-control-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
@@ -43,7 +43,7 @@
               = self.t('checkbox_override')
         // /ko
 
-      .form-group
+      .form-group.row
         .col-xs-9.col-xs-offset-3
           button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
             = self.t('button_save')
