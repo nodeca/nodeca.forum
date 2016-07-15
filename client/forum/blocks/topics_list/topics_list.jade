@@ -48,7 +48,7 @@ each topic, idx in self.topics
         - href = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid });
 
       h2.forum-topicline__title
-        span.forum-topicline__bookmarked-marker.icon.icon-bookmark-empty.icon-space-after(title=self.t('bookmarked'))
+        span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-space-after(title=self.t('bookmarked'))
         span.forum-topicline__deleted-marker.icon.icon-x.icon-dimmed.icon-space-after(title=self.t('deleted'))
         span.forum-topicline__closed-marker.icon.icon-closed.icon-space-after(title=self.t('closed'))
         span.forum-topicline__pinned-marker.icon.icon-pin.icon-space-after(title=self.t('pinned'))

@@ -192,7 +192,7 @@ each post, post_idx in self.posts
                 data-post-id=post._id
                 title=self.t('bookmark_add')
               )
-                span.icon.icon-bookmark-empty
+                span.icon.icon-bookmark
                 span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
               button.btn.forum-post__action.forum-post__bookmark-remove(
@@ -201,7 +201,7 @@ each post, post_idx in self.posts
                 data-remove='true'
                 title=self.t('bookmark_remove')
               )
-                span.icon.icon-bookmark-empty
+                span.icon.icon-bookmark
                 span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
 
@@ -221,7 +221,7 @@ each post, post_idx in self.posts
                 data-topic-hid=self.topic.hid
                 title=self.t('delete')
               )
-                span.icon.icon-trash
+                span.icon.icon-x
 
           if self.settings.forum_can_reply
             li.forum-post__control-item.forum-post__reply

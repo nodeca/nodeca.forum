@@ -16,7 +16,7 @@
           a.forum-section__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))= section.title
 
         if section.child_list && section.child_list.length > 0
-          ul.forum-section__subforums.hidden-sm-down
+          ul.forum-section__subforums.hidden-sm-down.icon.icon-arrow-subsections
             each sub_section in section.child_list
               li.forum-section__subforum-item
                 a.forum-section__subforum-link(href=self.link_to('forum.section', { section_hid: sub_section.hid }))= sub_section.title
