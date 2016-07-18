@@ -18,6 +18,8 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
     total = $('.page-progress').data('total');
   }
 
+  $('.page-progress').data('current', current).data('total', total);
+
   // ensure that current is in [1..total] range, except for 0/0
   current = total > 0 ? Math.max(1, Math.min(current, total)) : 0;
 
@@ -39,6 +41,4 @@ N.wire.on(module.apiPath + ':update', function update_progress(data) {
     topic_hid,
     post_hid: total
   }));
-
-  $('.page-progress').data('current', current).data('total', total);
 });

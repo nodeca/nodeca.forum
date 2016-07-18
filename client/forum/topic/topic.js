@@ -565,11 +565,22 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + '.post_undelete', function post_undelete(data) {
     let postId = data.$this.data('post-id');
 
-    return N.io.rpc('forum.topic.post.undelete', { post_id: postId }).then(() => {
-      $('#post' + postId)
-        .removeClass('forum-post__m-deleted')
-        .removeClass('forum-post__m-deleted-hard');
-    });
+    return N.io.rpc('forum.topic.post.undelete', { post_id: postId })
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(res => {
+        // update progress bar, only relevant if we're undeleting the last post
+        if (res.topic.cache.last_post_hid !== topicState.max_post) {
+          topicState.max_post = res.topic.cache.last_post_hid;
+
+          N.wire.emit('forum.topic.blocks.page_progress:update', {
+            max: topicState.max_post
+          });
+        }
+
+        $('#post' + postId)
+          .removeClass('forum-post__m-deleted')
+          .removeClass('forum-post__m-deleted-hard');
+      });
   });
 
 
@@ -621,6 +632,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       })
       .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
+        // update progress bar, only relevant if we're deleting the last post
+        if (res.topic.cache.last_post_hid !== topicState.max_post) {
+          topicState.max_post = res.topic.cache.last_post_hid;
+
+          N.wire.emit('forum.topic.blocks.page_progress:update', {
+            max: topicState.max_post
+          });
+        }
+
         if (res.posts.length === 0) {
           $post.fadeOut(function () {
             $post.remove();
