@@ -79,7 +79,9 @@ each topic, idx in self.topics
       .forum-topicline__microstat
         span.forum-topicline__microstat-replies.hidden-sm-up
           = self.t('replies', replies)
-        span.forum-topicline__microstat-time
+        a.forum-topicline__microstat-time(
+          href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
+        )
           != self.timetag(lp_ts, 'relative')
         if lp_user.hid
           a.forum-topicline__microstat-author._ucard-popover(
