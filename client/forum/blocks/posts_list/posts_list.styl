@@ -330,12 +330,9 @@ $aside-size-md = 80px
 
 
 @keyframes forum-post-flash-animation {
-  from  { background: #bbeeff;  }
+  from  { background: $decorator-color;  }
   to    { background: none; }
 }
 
-.forum-post__m-flash .forum-post__content
-  animation forum-post-flash-animation 3s
-
-.forum-post__m-highlight
-  animation forum-post-flash-animation 3s
+.forum-post__m-flash
+  animation forum-post-flash-animation 1.5s ease-in
