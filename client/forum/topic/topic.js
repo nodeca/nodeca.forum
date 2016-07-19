@@ -98,6 +98,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     //
     if (i >= posts.length) { i = posts.length - 1; }
     $window.scrollTop($(posts[i]).offset().top - navbarHeight - TOP_OFFSET);
+    $(posts[i]).addClass('forum-post__m-highlight');
 
   } else {
     // If user clicks on a link to the first post of the topic,

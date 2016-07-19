@@ -112,8 +112,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
 
         N.wire.emit('navigate.update', { $: $result, locals: res }, () => {
           $post.replaceWith($result);
-          $post.removeClass('forum-post__m-flash');
-          setTimeout(() => $post.addClass('forum-post__m-flash'), 0);
+          setTimeout(() => $result.addClass('forum-post__m-flash'), 0);
         });
       }).catch(err => {
         $editor.find('.mdedit__submit').removeClass('disabled');
