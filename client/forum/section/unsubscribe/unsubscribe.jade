@@ -1,9 +1,12 @@
 #content.forum-section-unsubscribe
-  header.page-head
-    h1.page-head__title(itemprop='name')= self.t('title')
+  .layout__container.container-fluid
+    != self.partial('@users.blocks.announces')
 
-  - var url = self.link_to('forum.section', { section_hid: self.section.hid });
-  - var link = '<a href="' + jade.escape(url) + '">' + jade.escape(self.section.title) + '</a>';
-  != self.partial('button')
-  = ' '
-  != self.t('message', { link: link })
+    header.page-head
+      h1.page-head__title(itemprop='name')= self.t('title')
+
+    - var url = self.link_to('forum.section', { section_hid: self.section.hid });
+    - var link = '<a href="' + jade.escape(url) + '">' + jade.escape(self.section.title) + '</a>';
+    != self.partial('button')
+    = ' '
+    != self.t('message', { link: link })

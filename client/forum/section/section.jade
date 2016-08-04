@@ -20,6 +20,8 @@ article#content.forum-section-root(
       != self.partial('@common.blocks.breadcrumbs')
 
   .layout__container.container-fluid
+    != self.partial('@users.blocks.announces')
+
     header.page-head
       .pull-xs-right
         != self.partial('@forum.section.blocks.toolbar_controls')

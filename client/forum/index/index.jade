@@ -17,6 +17,8 @@ article#content.forum-index-root
           )
 
   .layout__container.container-fluid
+    != self.partial('@users.blocks.announces')
+
     - each category in (self.subsections || [])
       article.forum-category(id='cat_box_#{category.hid}')
         header.forum-category__head(id='cat#{category.hid}')
