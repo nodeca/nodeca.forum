@@ -11,8 +11,8 @@
   margin-bottom 1.5rem
   padding .5rem 1rem
   font-size $font-size-sm
-  color lighten($body-color-secondary, 30%)
-  background-color lighten($body-bg-secondary, 50%)
+  color $body-color-secondary + 30%
+  background-color $body-bg-secondary + 50%
   border-radius 2px
 
 // hide top paginator when javascript is disabled
@@ -71,7 +71,7 @@
   width 100%
   font-size $font-size-base
   line-height 1.25em
-  color darken($body-color-secondary, 10%)
+  color $body-color-secondary - 10%
   shortable()
 
 .forum-post__meta-info
@@ -171,7 +171,7 @@ $aside-size-md = 80px
     margin-left 0
     font-size $font-size-xs
     margin-bottom .125rem
-    color lighten($body-color-secondary, 20%)
+    color $body-color-secondary + 20%
     align-self stretch
 
   .forum-post__reply-to-avatar
@@ -213,7 +213,7 @@ $aside-size-md = 80px
 
 .forum-post__action
   background-color transparent
-  color darken($body-color-secondary, 20%)
+  color $body-color-secondary - 20%
 
   &:hover
   &:focus

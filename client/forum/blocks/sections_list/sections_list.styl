@@ -24,7 +24,7 @@
 .forum-section__stats
   width 6rem
   font-size $font-size-sm
-  color lighten($body-color-secondary, 30%)
+  color $body-color-secondary + 30%
   text-align right
   .icon
     visibility hidden
@@ -78,7 +78,7 @@ triangle-size = .25rem
   font-size $font-size-xs
   margin 0 0 0 1.2em
   padding 0
-  color lighten($body-color, 30%)
+  color $body-color + 30%
   &:before
     position absolute
     left -1em
@@ -95,7 +95,7 @@ triangle-size = .25rem
     content: "";
 
 a.forum-section__subforum-link
-  color lighten($body-color, 30%)
+  color $body-color + 30%
   &:hover
     color linkColorHover
 
