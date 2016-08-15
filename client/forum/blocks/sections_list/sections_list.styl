@@ -87,7 +87,6 @@ triangle-size = .25rem
 
 .forum-section__subforum-item
   display inline-block
-  //line-height (baseLineHeight*3/4)
   &:after
     content: ",";
     margin-right: 0.5em;
@@ -113,47 +112,6 @@ a.forum-section__subforum-link
   height 100%
   z-index 10
 
-//
-// Second column (topics/posts counters)
-//
-
-.forum-section__counters
-  padding 0
-  list-style none
-  font-size 12px
-  color gray
-
-.forum-section__counter-item
-  text-align right
-  padding-right .5em
-  shortable()
-
-//
-// Last column (latest post info)
-//
-
-.forum-section__lpost
-  padding 0
-  list-style none
-  font-size 12px
-
-.forum-section__lpost-title
-.forum-section__lpost-user
-.forum-section__lpost-time
-  shortable()
-
-a.forum-section__lpost-title-link
-  color grayLight
-
-.forum-section__lpost-user
-a.forum-section__lpost-user-link
-  color gray
-
-.forum-section__lpost-time
-  color grayLight
-  //padding-left 0.5em
-  text-align right
-  padding-right 0.5em
 
 @keyframes forum-section-flash-animation {
   from  { background: #bbeeff;  }
