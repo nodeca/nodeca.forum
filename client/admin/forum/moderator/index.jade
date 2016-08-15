@@ -4,7 +4,8 @@
   .main
     != self.partial('@admin.core.blocks.breadcrumbs')
 
-    h1 #{self.head.title}
+    .page-head
+      h1.page-head__title= self.head.title
 
     - var moderators = self.moderators.filter(function(m) { return self.users[m._id]; });
 

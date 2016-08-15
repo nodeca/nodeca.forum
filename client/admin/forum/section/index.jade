@@ -7,10 +7,9 @@
   .main
     != self.partial('@admin.core.blocks.breadcrumbs')
 
-    h1
-      .pull-xs-right: a.btn.btn-primary(href=self.link_to('admin.forum.section.new')) #{self.t('new_section')}
+    .page-head
+      .pull-xs-right: a.btn.btn-secondary(href=self.link_to('admin.forum.section.new'))= self.t('new_section')
 
-      | #{self.head.title}
-
+      h1.page-head__title= self.head.title
 
     .aforum-index__scontent

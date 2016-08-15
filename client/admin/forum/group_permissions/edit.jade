@@ -10,7 +10,8 @@
   .main
     != self.partial('@admin.core.blocks.breadcrumbs')
 
-    h1 #{self.head.title}
+    .page-head
+      h1.page-head__title= self.head.title
 
     form#group_permissions_edit_form.form-horizontal(data-bind="submit: save", style="display: none")
       fieldset
