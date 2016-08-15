@@ -7,20 +7,20 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
   fieldset
     legend #{self.t('legend_forum_settings')}
 
-    .form-group
+    .form-group.row
       label.form-control-label.col-xs-3 #{self.t('field_title')}
       .col-xs-4: input.form-control(type="text", data-bind="value: currentSection.title")
 
-    .form-group
+    .form-group.row
       label.form-control-label.col-xs-3 #{self.t('field_description')}
       .col-xs-9: textarea.form-control(data-bind="value: currentSection.description")
 
-    .form-group
+    .form-group.row
       label.form-control-label.col-xs-3 #{self.t('field_parent')}
       .col-xs-4: select.form-control.custom-select(data-bind="value: currentSection.parent, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
 
     mixin option_field(name)
-      .form-group
+      .form-group.row
         label.form-control-label.col-xs-3(for="section_#{name}") #{self.t('field_' + name)}
         .col-xs-4
           .switch
@@ -35,6 +35,6 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
     mixin option_field('is_counted')
     mixin option_field('is_excludable')
 
-  .form-group
+  .form-group.row
     .col-xs-9.col-xs-offset-3
       button.btn.btn-primary(type="submit", data-bind="enable: isDirty") #{self.t('button_save')}

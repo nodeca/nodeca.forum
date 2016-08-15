@@ -18,7 +18,7 @@
         legend #{self.usergroup_name}
 
         // ko foreach: settings
-        .form-group.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
+        .form-group.row.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
 
           label.form-control-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
@@ -40,10 +40,11 @@
           .col-xs-4
             label.checkbox-inline
               input(type="checkbox", data-bind="checked: overriden")
+              | 
               = self.t('checkbox_override')
         // /ko
 
-      .form-group
+      .form-group.row
         .col-xs-9.col-xs-offset-3
           button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
             = self.t('button_save')

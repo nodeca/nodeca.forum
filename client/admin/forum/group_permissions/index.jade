@@ -38,10 +38,10 @@
                 li
                   span(class=('section-usergroup-override-' + override_type))
                     = usergroup.localized_name
-                  |  
+                  | 
                   a(href=self.link_to('admin.forum.group_permissions.edit', { section_id: section._id, usergroup_id: usergroup._id }))
                     = self.t('button_edit_permissions')
-                  |  
+                  | 
                   a(href="#",
                     data-on-click="admin.forum.group_permissions.destroy",
                     data-section-id=section._id,

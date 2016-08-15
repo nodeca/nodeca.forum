@@ -38,10 +38,10 @@
                 li
                   span(class=('section-moderator-override-' + override_type))
                     = self.sections[section._id].title
-                  |  
+                  | 
                   a(href=self.link_to('admin.forum.moderator.edit', { section_id: section._id, user_id: moderator._id }))
                     = self.t('button_edit')
-                  |  
+                  | 
                   a(href="#",
                     data-on-click="admin.forum.moderator.destroy",
                     data-section-id=section._id,
