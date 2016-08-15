@@ -8,7 +8,9 @@
     != self.partial('@admin.core.blocks.breadcrumbs')
 
     .page-head
-      .pull-xs-right: a.btn.btn-secondary(href=self.link_to('admin.forum.section.new'))= self.t('new_section')
+      .pull-xs-right
+        a.btn.btn-sm.btn-secondary(href=self.link_to('admin.forum.section.new'))
+          = self.t('new_section')
 
       h1.page-head__title= self.head.title
 

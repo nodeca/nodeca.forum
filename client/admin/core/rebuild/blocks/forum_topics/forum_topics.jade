@@ -1,7 +1,7 @@
 - self.add_raw_data('forum_topics_task', self.task_info);
 
 #rebuild-forum-topics-task.rebuild-widget
-  h4
+  .rebuild-widget__title
     = self.t('title')
     = ' '
     small(data-bind='visible: started, text: (current() / total() * 100 || 0).toFixed(2) + "%"')
