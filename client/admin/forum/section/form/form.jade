@@ -2,7 +2,7 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
   fieldset(data-bind="if: isNewSection")
     .form-group
       label.form-control-label.col-xs-3 #{self.t('field_copy_settings_from')}
-      .col-xs-4: select.form-control(data-bind="value: copySettingsFrom, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
+      .col-xs-4: select.form-control.custom-select(data-bind="value: copySettingsFrom, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
 
   fieldset
     legend #{self.t('legend_forum_settings')}
@@ -17,7 +17,7 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
 
     .form-group
       label.form-control-label.col-xs-3 #{self.t('field_parent')}
-      .col-xs-4: select.form-control(data-bind="value: currentSection.parent, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
+      .col-xs-4: select.form-control.custom-select(data-bind="value: currentSection.parent, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
 
     mixin option_field(name)
       .form-group
