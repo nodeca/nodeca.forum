@@ -134,14 +134,14 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     // Update location and progress bar
     //
     let posts         = document.getElementsByClassName('forum-post'),
-        postThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        postThreshold = navbarHeight + TOP_OFFSET,
         currentIdx;
 
     // Get offset of the first post in the viewport
     //
     currentIdx = _.sortedIndexBy(posts, null, post => {
       if (!post) return postThreshold;
-      return post.offsetTop + $(post).height();
+      return post.getBoundingClientRect().bottom;
     });
 
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
@@ -185,7 +185,7 @@ let locationScrollHandler = null;
 N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
   locationScrollHandler = _.debounce(function update_location_on_scroll() {
     let posts         = document.getElementsByClassName('forum-post'),
-        postThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        postThreshold = navbarHeight + TOP_OFFSET,
         newHid,
         currentIdx;
 
@@ -193,7 +193,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     //
     currentIdx = _.sortedIndexBy(posts, null, post => {
       if (!post) return postThreshold;
-      return post.offsetTop + $(post).height();
+      return post.getBoundingClientRect().bottom;
     });
 
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
@@ -203,7 +203,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     let href = null;
     let state = {
       hid:    newHid,
-      offset: postThreshold - posts[currentIdx].offsetTop
+      offset: postThreshold - posts[currentIdx].getBoundingClientRect().top
     };
 
     // save current hid to topicState, and only update url if hid is different,

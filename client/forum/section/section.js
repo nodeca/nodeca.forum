@@ -234,7 +234,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     // Update progress bar
     //
     let topics         = document.getElementsByClassName('forum-topicline'),
-        topicThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        topicThreshold = navbarHeight + TOP_OFFSET,
         offset,
         currentIdx;
 
@@ -242,10 +242,8 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     //
     currentIdx = _.sortedIndexBy(topics, null, topic => {
       if (!topic) { return topicThreshold; }
-      return topic.offsetTop;
-    });
-
-    currentIdx--;
+      return topic.getBoundingClientRect().top;
+    }) - 1;
 
     offset = currentIdx + sectionState.first_offset;
 
@@ -291,7 +289,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
 
   locationScrollHandler = _.debounce(function update_location_on_scroll() {
     let topics         = document.getElementsByClassName('forum-topicline'),
-        topicThreshold = $window.scrollTop() + navbarHeight + TOP_OFFSET,
+        topicThreshold = navbarHeight + TOP_OFFSET,
         offset         = 0,
         currentIdx;
 
@@ -299,10 +297,8 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     //
     currentIdx = _.sortedIndexBy(topics, null, topic => {
       if (!topic) { return topicThreshold; }
-      return topic.offsetTop;
-    });
-
-    currentIdx--;
+      return topic.getBoundingClientRect().top;
+    }) - 1;
 
     let href = null;
     let state = null;
@@ -312,7 +308,7 @@ N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
     if (currentIdx >= 0 && topics.length) {
       state = {
         hid:    $(topics[currentIdx]).data('topic-hid'),
-        offset: topicThreshold - topics[currentIdx].offsetTop
+        offset: topicThreshold - topics[currentIdx].getBoundingClientRect().top
       };
     }
 
