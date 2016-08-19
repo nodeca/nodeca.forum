@@ -22,6 +22,8 @@ article#content.forum-topic-root(
   data-top-marker= self.posts && self.posts.length > 0 ? self.posts[0].hid : null
   data-bottom-marker= self.posts && self.posts.length > 0 ? self.posts[self.posts.length - 1].hid : null
 )
+  != self.partial('@common.blocks.navbar')
+
   nav.breadcrumbs-container
     .layout__container.container-fluid
       != self.partial('@common.blocks.breadcrumbs')

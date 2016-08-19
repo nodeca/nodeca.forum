@@ -30,8 +30,6 @@ let topicState = {};
 
 let $window = $(window);
 
-let navbarHeight = $('.navbar').height();
-
 // height of a space between text content of a post and the next post header
 const TOP_OFFSET = 50;
 
@@ -44,6 +42,8 @@ const CUT_ITEMS_MIN = 400;
 // init on page load and destroy editor on window unload
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+  let navbarHeight = $('.navbar').height();
+
   topicState.section            = N.runtime.page_data.section;
   topicState.topic_hid          = data.params.topic_hid;
   topicState.post_hid           = data.params.post_hid || 1;
@@ -118,6 +118,8 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 let progressScrollHandler = null;
 
 N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
+  let navbarHeight = $('.navbar').height();
+
   progressScrollHandler = _.debounce(function update_progress_on_scroll() {
     let viewportStart = $window.scrollTop() + navbarHeight;
 
@@ -183,6 +185,8 @@ N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() 
 let locationScrollHandler = null;
 
 N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
+  let navbarHeight = $('.navbar').height();
+
   locationScrollHandler = _.debounce(function update_location_on_scroll() {
     let posts         = document.getElementsByClassName('forum-post'),
         postThreshold = navbarHeight + TOP_OFFSET,
@@ -723,7 +727,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     // if the last post is already loaded, scroll to the bottom
     if (!hid || hid >= topicState.max_post) {
-      $window.scrollTop($('.forum-post:last').offset().top - navbarHeight);
+      $window.scrollTop($('.forum-post:last').offset().top - $('.navbar').height());
       return;
     }
 
@@ -1064,7 +1068,7 @@ N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
       }
     }));
 
-  let viewportStart = $window.scrollTop() + navbarHeight;
+  let viewportStart = $window.scrollTop() + $('.navbar').height();
 
   // If we scroll below top border of the first post,
   // show the secondary navbar
@@ -1168,6 +1172,8 @@ const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
 // Track scroll position
 //
 N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init() {
+  let navbarHeight = $('.navbar').height();
+
   // Skip for guests
   if (N.runtime.is_guest) return;
 

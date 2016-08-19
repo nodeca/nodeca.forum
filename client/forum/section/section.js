@@ -22,8 +22,6 @@ let sectionState = {};
 
 let $window = $(window);
 
-let navbarHeight = $('.navbar').height();
-
 // offset between navbar and the first topic
 const TOP_OFFSET = 32;
 
@@ -93,7 +91,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   // otherwise, scroll to the first topic on that page
   //
   if (pagination.chunk_offset > 1 && $('.forum-topiclist').length) {
-    $window.scrollTop($('.forum-topiclist').offset().top - navbarHeight);
+    $window.scrollTop($('.forum-topiclist').offset().top - $('.navbar').height());
 
   } else {
     $window.scrollTop(0);
@@ -216,6 +214,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 let progressScrollHandler = null;
 
 N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
+  let navbarHeight = $('.navbar').height();
+
   if ($('.forum-topiclist').length === 0) { return; }
 
   progressScrollHandler = _.debounce(function update_progress_on_scroll() {
@@ -285,6 +285,8 @@ N.wire.on('navigate.exit:' + module.apiPath, function progress_updater_teardown(
 let locationScrollHandler = null;
 
 N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
+  let navbarHeight = $('.navbar').height();
+
   if ($('.forum-topiclist').length === 0) { return; }
 
   locationScrollHandler = _.debounce(function update_location_on_scroll() {
