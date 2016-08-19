@@ -22,7 +22,22 @@ article#content.forum-topic-root(
   data-top-marker= self.posts && self.posts.length > 0 ? self.posts[0].hid : null
   data-bottom-marker= self.posts && self.posts.length > 0 ? self.posts[self.posts.length - 1].hid : null
 )
-  != self.partial('@common.blocks.navbar')
+  -
+    var navbar_args = {
+      title:    self.topic.title,
+      level_up: self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.topic.hid }),
+      toolbar:  'forum.topic.blocks.toolbar_controls',
+      on_jump:  'forum.topic:nav_to_post',
+      progress: {
+        link_top:    self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 }),
+        link_bottom: self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: self.max }),
+        current:     self.pagination.chunk_offset,
+        total:       self.pagination.total
+      }
+    };
+
+  != self.partial('@common.blocks.navbar.levelup_progress_apps', navbar_args)
+  != self.partial('@common.blocks.navbar.alt_levelup_progress_title_toolbar', navbar_args)
 
   nav.breadcrumbs-container
     .layout__container.container-fluid

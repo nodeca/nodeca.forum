@@ -148,7 +148,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
 
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
 
-    N.wire.emit('forum.topic.blocks.page_progress:update', {
+    N.wire.emit('common.blocks.navbar.blocks.progress:update', {
       current: $(posts[currentIdx]).data('post-hid'),
       max:     topicState.max_post
     }).catch(err => {
@@ -577,7 +577,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         if (res.topic.cache.last_post_hid !== topicState.max_post) {
           topicState.max_post = res.topic.cache.last_post_hid;
 
-          N.wire.emit('forum.topic.blocks.page_progress:update', {
+          N.wire.emit('common.blocks.navbar.blocks.progress:update', {
             max: topicState.max_post
           });
         }
@@ -641,7 +641,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         if (res.topic.cache.last_post_hid !== topicState.max_post) {
           topicState.max_post = res.topic.cache.last_post_hid;
 
-          N.wire.emit('forum.topic.blocks.page_progress:update', {
+          N.wire.emit('common.blocks.navbar.blocks.progress:update', {
             max: topicState.max_post
           });
         }
@@ -798,7 +798,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       if (res.topic.cache.last_post_hid !== topicState.max_post) {
         topicState.max_post = res.topic.cache.last_post_hid;
 
-        N.wire.emit('forum.topic.blocks.page_progress:update', {
+        N.wire.emit('common.blocks.navbar.blocks.progress:update', {
           max: topicState.max_post
         });
       }
@@ -939,7 +939,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       if (res.topic.cache.last_post_hid !== topicState.max_post) {
         topicState.max_post = res.topic.cache.last_post_hid;
 
-        N.wire.emit('forum.topic.blocks.page_progress:update', {
+        N.wire.emit('common.blocks.navbar.blocks.progress:update', {
           max: topicState.max_post
         });
       }
@@ -1044,42 +1044,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       N.wire.emit('navigate.reload');
     });
   });
-});
-
-
-//////////////////////////////////////////////////////////////////////////
-// Replace primary navbar with alt navbar specific to this page
-//
-N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
-  $('.navbar-alt')
-    .empty()
-    .append(N.runtime.render(module.apiPath + '.navbar_alt', {
-      settings:       N.runtime.page_data.settings,
-      topic:          N.runtime.page_data.topic,
-      section:        topicState.section,
-      topic_statuses: topicStatuses,
-      subscription:   N.runtime.page_data.subscription,
-
-      page_progress: {
-        section_hid: topicState.section.hid,
-        topic_hid:   topicState.topic_hid,
-        current:     topicState.post_hid,
-        max:         topicState.max_post
-      }
-    }));
-
-  let viewportStart = $window.scrollTop() + $('.navbar').height();
-
-  // If we scroll below top border of the first post,
-  // show the secondary navbar
-  //
-  if ($('.forum-postlist').offset().top < viewportStart) {
-    $('.navbar').addClass('navbar__m-secondary');
-  } else {
-    $('.navbar').removeClass('navbar__m-secondary');
-  }
-
-  return N.wire.emit('forum.topic:scroll');
 });
 
 

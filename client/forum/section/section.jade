@@ -9,13 +9,28 @@ article#content.forum-section-root(
     'end':  'forum.section:nav_to_end'
   }
   class=(self.pagination.chunk_offset > 0 ? '' : 'forum-section-root__m-first-page')
-  data-section-level=  self.section_level
-  data-parent-hid=     self.parent_hid
   data-last-topic-hid= self.last_topic_hid
   data-top-marker=     self.topics && self.topics.length > 0 ? self.topics[0].cache.last_post : null
   data-bottom-marker=  self.topics && self.topics.length > 0 ? self.topics[self.topics.length - 1].cache.last_post : null
 )
-  != self.partial('@common.blocks.navbar')
+
+  -
+    var navbar_args = {
+      title:    self.section.title,
+      level_up: self.parent_hid && self.section_level >= 2 ?
+                self.link_to('forum.section', { section_hid: self.parent_hid }) + '#cat' + self.section.hid :
+                self.link_to('forum.index') + '#cat' + self.section.hid,
+      toolbar:  'forum.section.blocks.toolbar_controls',
+      progress: {
+        link_top:    self.link_to('forum.section', { section_hid: self.section.hid }),
+        link_bottom: self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.last_topic_hid }),
+        current:     self.pagination.chunk_offset,
+        total:       self.pagination.total
+      }
+    };
+
+  != self.partial('@common.blocks.navbar.levelup_progress_apps', navbar_args)
+  != self.partial('@common.blocks.navbar.alt_levelup_progress_title_toolbar', navbar_args)
 
   nav.breadcrumbs-container
     .layout__container.container-fluid

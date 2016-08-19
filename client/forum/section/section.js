@@ -247,7 +247,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
 
     offset = currentIdx + sectionState.first_offset;
 
-    N.wire.emit('forum.section.blocks.page_progress:update', {
+    N.wire.emit('common.blocks.navbar.blocks.progress:update', {
       current:  offset + 1, // `+1` because offset is zero based
       max:      sectionState.topic_count
     }).catch(err => {
@@ -346,28 +346,6 @@ N.wire.on('navigate.exit:' + module.apiPath, function location_updater_teardown(
   locationScrollHandler.cancel();
   $window.off('scroll', locationScrollHandler);
   locationScrollHandler = null;
-});
-
-
-//////////////////////////////////////////////////////////////////////////
-// Replace primary navbar with alt navbar specific to this page
-//
-N.wire.on('navigate.done:' + module.apiPath, function navbar_setup() {
-  $('.navbar-alt')
-    .empty()
-    .append(N.runtime.render(module.apiPath + '.navbar_alt', {
-      settings:      N.runtime.page_data.settings,
-      section:       N.runtime.page_data.section,
-      parent_hid:    $('.forum-section-root').data('parent-hid'),
-      section_level: $('.forum-section-root').data('section-level'),
-      subscription:  N.runtime.page_data.subscription,
-
-      page_progress: {
-        current:        sectionState.current_offset,
-        max:            sectionState.topic_count,
-        last_topic_hid: $('.forum-section-root').data('last-topic-hid')
-      }
-    }));
 });
 
 
@@ -766,7 +744,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       // reset lock
       sectionState.prev_loading_start = 0;
 
-      return N.wire.emit('forum.section.blocks.page_progress:update', {
+      return N.wire.emit('common.blocks.navbar.blocks.progress:update', {
         max: sectionState.topic_count
       });
     }).catch(err => {
@@ -899,7 +877,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       // reset lock
       sectionState.next_loading_start = 0;
 
-      return N.wire.emit('forum.section.blocks.page_progress:update', {
+      return N.wire.emit('common.blocks.navbar.blocks.progress:update', {
         max: sectionState.topic_count
       });
     }).catch(err => {
