@@ -29,8 +29,8 @@ article#content.forum-topic-root(
       toolbar:  'forum.topic.blocks.toolbar_controls',
       on_jump:  'forum.topic:nav_to_post',
       progress: {
-        link_top:    self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: 1 }),
-        link_bottom: self.link_to('forum.topic', { section_hid: self.section_hid, topic_hid: self.topic_hid, post_hid: self.max }),
+        link_top:    self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: 1 }),
+        link_bottom: self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: self.topic.cache.last_post_hid }),
         current:     self.pagination.chunk_offset,
         total:       self.pagination.total
       }
