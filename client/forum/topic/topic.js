@@ -148,7 +148,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
 
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
 
-    N.wire.emit('common.blocks.navbar.blocks.progress:update', {
+    N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
       current: $(posts[currentIdx]).data('post-hid'),
       max:     topicState.max_post
     }).catch(err => {
@@ -577,7 +577,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         if (res.topic.cache.last_post_hid !== topicState.max_post) {
           topicState.max_post = res.topic.cache.last_post_hid;
 
-          N.wire.emit('common.blocks.navbar.blocks.progress:update', {
+          N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
             max: topicState.max_post
           });
         }
@@ -641,7 +641,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         if (res.topic.cache.last_post_hid !== topicState.max_post) {
           topicState.max_post = res.topic.cache.last_post_hid;
 
-          N.wire.emit('common.blocks.navbar.blocks.progress:update', {
+          N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
             max: topicState.max_post
           });
         }
@@ -798,7 +798,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       if (res.topic.cache.last_post_hid !== topicState.max_post) {
         topicState.max_post = res.topic.cache.last_post_hid;
 
-        N.wire.emit('common.blocks.navbar.blocks.progress:update', {
+        N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
           max: topicState.max_post
         });
       }
@@ -939,7 +939,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       if (res.topic.cache.last_post_hid !== topicState.max_post) {
         topicState.max_post = res.topic.cache.last_post_hid;
 
-        N.wire.emit('common.blocks.navbar.blocks.progress:update', {
+        N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
           max: topicState.max_post
         });
       }
