@@ -40,3 +40,5 @@ en-US:
     md:**This topic is very old!** Last post here was created #{count} days ago.
 
     Your reply would bump this topic to the top of its list. Are you sure you wish to continue?
+
+  post_add: Add post
