@@ -3,6 +3,9 @@
 
 - var items = []
 
+if self.settings.forum_can_start_topics && self.section.is_writable
+  - items.push('topic_create')
+
 if self.runtime.is_member
   - items.push('mark_read')
   - items.push('subscription')
@@ -37,7 +40,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
       data-section-title=self.section.title
       title=self.t('topic_create')
     )
-    button.visible-nav-alt.btn.btn-secondary.btn-square.icon.icon-plus(
+    button.visible-nav-alt.btn.btn-secondary.btn-square.hidden-xs-down.icon.icon-plus(
       type='button'
       data-on-click='forum.section:create'
       data-section-hid=self.section.hid
@@ -91,6 +94,14 @@ if items.length > 0 && items[items.length - 1] === 'header'
 
         each item in items
           case item
+
+            when 'topic_create'
+              button.dropdown-item.hidden-sm-up(
+                type='button'
+                data-on-click='forum.section:create'
+                data-section-hid=self.section.hid
+                data-section-title=self.section.title
+              )= self.t('topic_create')
 
             when 'mark_read'
               button.dropdown-item.hidden-sm-up(

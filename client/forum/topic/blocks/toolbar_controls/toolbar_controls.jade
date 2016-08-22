@@ -3,7 +3,16 @@
 - var topicOwnerId = self.topic.cache.first_user
 - var menu_rnd_id = 'rnd' + String(Math.random()).slice(2, 10)
 
+- var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
+
 - var items = []
+
+
+if self.settings.forum_can_reply && isOpen && self.section.is_writable
+  - items.push('post_add')
+
+if self.runtime.is_member
+  - items.push('subscription')
 
 
 if topicOwnerId === self.runtime.user_id
@@ -17,9 +26,6 @@ if topicOwnerId === self.runtime.user_id
       - items.push('close')
     if self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED
       - items.push('open')
-
-if self.runtime.is_member
-  - items.push('subscription')
 
 if items.length > 0
   - items.push('divider')
@@ -68,15 +74,13 @@ if (self.selected_cnt !== 0)
   - items.push('many_undelete')
 
 .page-actions.forum-topic__toolbar-controls
-  - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
-
   if self.settings.forum_can_reply && isOpen && self.section.is_writable
     button.hidden-nav-alt.btn.btn-primary.btn-square.icon.icon-plus(
       type='button'
       data-on-click='forum.topic:reply'
       title=self.t('post_add')
     )
-    button.visible-nav-alt.btn.btn-secondary.btn-square.icon.icon-plus(
+    button.visible-nav-alt.btn.btn-secondary.btn-square.hidden-xs-down.icon.icon-plus(
       type='button'
       data-on-click='forum.topic:reply'
       title=self.t('post_add')
@@ -131,6 +135,12 @@ if (self.selected_cnt !== 0)
               button.dropdown-item.disabled(
                 type='button'
               )= self.t('history')
+
+            when 'post_add'
+              button.dropdown-item.hidden-sm-up(
+                type='button'
+                data-on-click='forum.topic:reply'
+              )= self.t('post_add')
 
             when 'subscription'
               button.dropdown-item(
