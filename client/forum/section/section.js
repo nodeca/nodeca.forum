@@ -9,7 +9,6 @@ const _ = require('lodash');
 // - hid:                current section hid
 // - first_offset:       offset of the first topic in the DOM
 // - current_offset:     offset of the current topic (first in the viewport)
-// - max_page:           a number of the last page in this section
 // - reached_start:      true iff no more pages exist above first loaded one
 // - reached_end:        true iff no more pages exist below last loaded one
 // - prev_loading_start: time when current xhr request for the previous page is started
@@ -248,8 +247,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     offset = currentIdx + sectionState.first_offset;
 
     N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-      current:  offset + 1, // `+1` because offset is zero based
-      max:      sectionState.topic_count
+      current: offset + 1 // `+1` because offset is zero based
     }).catch(err => {
       N.wire.emit('error', err);
     });

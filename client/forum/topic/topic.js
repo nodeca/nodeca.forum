@@ -149,8 +149,7 @@ N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
     if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
 
     N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-      current: $(posts[currentIdx]).data('post-hid'),
-      max:     topicState.max_post
+      current: $(posts[currentIdx]).data('post-hid')
     }).catch(err => {
       N.wire.emit('error', err);
     });
@@ -578,7 +577,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           topicState.max_post = res.topic.cache.last_post_hid;
 
           N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-            max: topicState.max_post
+            max:         topicState.max_post,
+            link_bottom: N.router.linkTo('forum.topic', {
+              section_hid: topicState.section.hid,
+              topic_hid:   topicState.topic_hid,
+              post_hid:    topicState.max_post
+            })
           });
         }
 
@@ -642,7 +646,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           topicState.max_post = res.topic.cache.last_post_hid;
 
           N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-            max: topicState.max_post
+            max:         topicState.max_post,
+            link_bottom: N.router.linkTo('forum.topic', {
+              section_hid: topicState.section.hid,
+              topic_hid:   topicState.topic_hid,
+              post_hid:    topicState.max_post
+            })
           });
         }
 
@@ -799,7 +808,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         topicState.max_post = res.topic.cache.last_post_hid;
 
         N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-          max: topicState.max_post
+          max:         topicState.max_post,
+          link_bottom: N.router.linkTo('forum.topic', {
+            section_hid: topicState.section.hid,
+            topic_hid:   topicState.topic_hid,
+            post_hid:    topicState.max_post
+          })
         });
       }
 
@@ -940,7 +954,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         topicState.max_post = res.topic.cache.last_post_hid;
 
         N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-          max: topicState.max_post
+          max:         topicState.max_post,
+          link_bottom: N.router.linkTo('forum.topic', {
+            section_hid: topicState.section.hid,
+            topic_hid:   topicState.topic_hid,
+            post_hid:    topicState.max_post
+          })
         });
       }
 
