@@ -28,6 +28,8 @@ const TOP_OFFSET = 32;
 const CUT_ITEMS_MAX = 600;
 const CUT_ITEMS_MIN = 400;
 
+const navbarHeight = parseInt($('body').css('margin-top'), 10) + parseInt($('body').css('padding-top'), 10);
+
 
 /////////////////////////////////////////////////////////////////////
 // init on page load
@@ -213,8 +215,6 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 let progressScrollHandler = null;
 
 N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
-  let navbarHeight = $('.navbar').height();
-
   if ($('.forum-topiclist').length === 0) { return; }
 
   progressScrollHandler = _.debounce(function update_progress_on_scroll() {
@@ -282,8 +282,6 @@ N.wire.on('navigate.exit:' + module.apiPath, function progress_updater_teardown(
 let locationScrollHandler = null;
 
 N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
-  let navbarHeight = $('.navbar').height();
-
   if ($('.forum-topiclist').length === 0) { return; }
 
   locationScrollHandler = _.debounce(function update_location_on_scroll() {
