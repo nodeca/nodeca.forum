@@ -818,6 +818,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       topicState.first_post_offset -= res.posts.length - 1;
 
+      $('.forum-topic__loading-prev').toggleClass('hidden-xs-up', topicState.top_marker <= 1);
+
       res.pagination = {
         // used in paginator
         total:        topicState.post_count,
@@ -894,6 +896,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
             topicState.bottom_marker = $('.forum-post:last').data('post-hid');
 
+            $('.forum-topic__loading-next').toggleClass('hidden-xs-up',
+              topicState.bottom_marker >= topicState.max_post);
+
             topicState.last_post_offset -= old_length - document.getElementsByClassName('forum-post').length;
           }
         }
@@ -961,6 +966,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       if (!res.posts || !res.posts.length) return;
 
       topicState.bottom_marker = res.posts[res.posts.length - 1].hid;
+
+      $('.forum-topic__loading-next').toggleClass('hidden-xs-up', topicState.bottom_marker >= topicState.max_post);
 
       res.pagination = {
         // used in paginator
@@ -1035,6 +1042,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
             $(post).prevAll().remove();
 
             topicState.top_marker = $('.forum-post:first').data('post-hid');
+
+            $('.forum-topic__loading-prev').toggleClass('hidden-xs-up', topicState.top_marker <= 1);
 
             // update scroll so it would point at the same spot as before
             $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);

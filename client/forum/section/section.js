@@ -674,6 +674,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
         sectionState.reached_start = true;
         $('.forum-section-root').addClass('forum-section-root__m-first-page');
+        $('.forum-section__loading-prev').addClass('hidden-xs-up');
       }
 
       if (res.topics.length === 0) return;
@@ -733,6 +734,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
           sectionState.bottom_marker = $('.forum-topicline:last').data('last-post');
 
           sectionState.reached_end = false;
+          $('.forum-section__loading-next').removeClass('hidden-xs-up');
         }
       }
 
@@ -777,6 +779,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
         sectionState.reached_end = true;
+        $('.forum-section__loading-next').addClass('hidden-xs-up');
       }
 
       if (res.topics.length === 0) return;
@@ -866,6 +869,8 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
           sectionState.first_offset += old_length - document.getElementsByClassName('forum-topicline').length;
 
           sectionState.reached_start = false;
+          $('.forum-section-root').removeClass('forum-section-root__m-first-page');
+          $('.forum-section__loading-prev').removeClass('hidden-xs-up');
         }
       }
 

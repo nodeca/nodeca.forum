@@ -86,6 +86,11 @@ article#content.forum-topic-root(
             | 
             =self.t('del_reason', { text: self.topic.del_reason })
 
+    .forum-topic__loading-prev(
+      class=(!(self.posts && self.posts.length > 0) || self.posts[0].hid <= 1 ? 'hidden-xs-up' : '')
+    )
+      span.icon.icon-more
+
     .forum-postlist._affix(
       data-affix-top={
         offset:     500,
@@ -98,6 +103,11 @@ article#content.forum-topic-root(
         throttle:   100
       }
     )!= self.partial('@forum.blocks.posts_list')
+
+    .forum-topic__loading-next(
+      class=(!(self.posts && self.posts.length > 0) || self.posts[self.posts.length - 1].hid >= self.topic.cache.last_post_hid ? 'hidden-xs-up' : '')
+    )
+      span.icon.icon-more
 
     //- Topic Open/Close/... status clarified via CSS modifiers
     if self.settings.forum_can_reply && self.section.is_writable
