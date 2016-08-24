@@ -29,24 +29,7 @@ function scrollIntoView(el, coef) {
 /////////////////////////////////////////////////////////////////////
 // init on page load
 //
-N.wire.once('navigate.done:' + module.apiPath, function page_setup(data) {
-
-  // Exclude click
-  //
-  N.wire.on(module.apiPath + ':exclude', function exclude() {
-    let params = {};
-
-    return Promise.resolve()
-      .then(() => N.io.rpc('forum.index.exclude.sections', {}))
-      .then(res => {
-        _.assign(params, res);
-        return N.wire.emit('forum.index.sections_exclude_dlg', params);
-      })
-      .then(() => N.io.rpc('forum.index.exclude.update', { sections_ids: params.selected }))
-      .then(() => N.wire.emit('navigate.reload'));
-  });
-
-
+N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   var anchor = data.anchor || '';
 
   if (anchor.match(/^#cat\d+$/)) {
@@ -66,4 +49,23 @@ N.wire.once('navigate.done:' + module.apiPath, function page_setup(data) {
       return;
     }
   }
+});
+
+
+N.wire.once('navigate.done:' + module.apiPath, function page_once() {
+
+  // Exclude click
+  //
+  N.wire.on(module.apiPath + ':exclude', function exclude() {
+    let params = {};
+
+    return Promise.resolve()
+      .then(() => N.io.rpc('forum.index.exclude.sections', {}))
+      .then(res => {
+        _.assign(params, res);
+        return N.wire.emit('forum.index.sections_exclude_dlg', params);
+      })
+      .then(() => N.io.rpc('forum.index.exclude.update', { sections_ids: params.selected }))
+      .then(() => N.wire.emit('navigate.reload'));
+  });
 });
