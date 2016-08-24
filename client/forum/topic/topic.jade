@@ -89,7 +89,7 @@ article#content.forum-topic-root(
     .forum-topic__loading-prev(
       class=(!(self.posts && self.posts.length > 0) || self.posts[0].hid <= 1 ? 'hidden-xs-up' : '')
     )
-      span.icon.icon-more
+      span.icon.icon-dropdown
 
     .forum-postlist._affix(
       data-affix-top={
@@ -107,7 +107,7 @@ article#content.forum-topic-root(
     .forum-topic__loading-next(
       class=(!(self.posts && self.posts.length > 0) || self.posts[self.posts.length - 1].hid >= self.topic.cache.last_post_hid ? 'hidden-xs-up' : '')
     )
-      span.icon.icon-more
+      span.icon.icon-dropdown
 
     //- Topic Open/Close/... status clarified via CSS modifiers
     if self.settings.forum_can_reply && self.section.is_writable
