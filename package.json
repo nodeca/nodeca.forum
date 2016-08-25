@@ -1,8 +1,23 @@
 {
-  "name"            : "nodeca.forum",
-  "description"     : "Nodeca forum app",
-  "version"         : "0.0.1",
-  "keywords"        : ["nodeca", "forum"],
-  "license"         : "MIT",
-  "repository"      : "nodeca/nodeca.forum"
+  "name": "nodeca.forum",
+  "description": "Nodeca forum app",
+  "version": "0.0.1",
+  "keywords": [
+    "nodeca",
+    "forum"
+  ],
+  "license": "MIT",
+  "repository": "nodeca/nodeca.forum",
+  "browserify": {
+    "transform": [
+      [
+        "babelify",
+        {
+          "presets": [
+            "es2015"
+          ]
+        }
+      ]
+    ]
+  }
 }
