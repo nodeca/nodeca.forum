@@ -111,12 +111,13 @@ article#content.forum-topic-root(
 
     //- Topic Open/Close/... status clarified via CSS modifiers
     if self.settings.forum_can_reply && self.section.is_writable
-      button.forum-topic__reply.btn.btn-block.btn-link.icon.icon-plus.icon-space-after(
-        type='button'
-        data-on-click='forum.topic:reply'
-        title=self.t('post_add')
-      )
-        = self.t('post_add')
+      .forum-topic__reply
+        button.btn.btn-block.btn-link.icon.icon-plus.icon-space-after(
+          type='button'
+          data-on-click='forum.topic:reply'
+          title=self.t('post_add')
+        )
+          = self.t('post_add')
 
     nav.forum-topic__footer-pagination
       - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
