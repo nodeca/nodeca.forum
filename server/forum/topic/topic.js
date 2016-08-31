@@ -111,6 +111,8 @@ module.exports = function (N, apiPath) {
         chunk_offset: posts_per_page * (page_current - 1)
       };
 
+      env.res.current_post_hid = env.res.posts[0] && env.res.posts[0].hid;
+
       return;
     }
 
@@ -128,6 +130,7 @@ module.exports = function (N, apiPath) {
       env.data.settings.can_see_hellbanned || env.user_info.hb
     );
 
+    env.res.current_post_hid = env.params.post_hid;
 
     // Create page info
     env.data.pagination = {

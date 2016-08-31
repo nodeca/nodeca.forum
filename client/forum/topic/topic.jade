@@ -31,8 +31,8 @@ article#content.forum-topic-root(
       progress: {
         link_top:    self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: 1 }),
         link_bottom: self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: self.topic.cache.last_post_hid }),
-        current:     self.pagination.chunk_offset,
-        total:       self.pagination.total
+        current:     self.current_post_hid || 0,
+        total:       self.topic.cache.last_post_hid
       }
     };
 
