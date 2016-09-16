@@ -239,6 +239,7 @@ const createUsers = co.wrap(function* () {
       nick:       charlatan.Internet.userName(),
       email:      charlatan.Internet.email(),
       joined_ts:  new Date(),
+      joined_ip:  charlatan.Internet.IPv4(),
       usergroups: userGroupsByName.members
     });
 
