@@ -64,7 +64,7 @@ if items.length > 0 && items[items.length - 1] === 'divider'
 if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
   - items.push('mod_history')
 
-if (self.selected_cnt !== 0)
+if self.selected_cnt
   if items.length > 0
     - items.push('divider')
   - items.push('many_header')

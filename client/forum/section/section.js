@@ -104,15 +104,14 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 // Update section state
 //
 function updateSectionState() {
-  let params = {};
-
-  return N.wire.emit('navigate.get_page_raw', params).then(() => {
-    let data = _.assign({}, params.data, { selected_cnt: sectionState.selected_topics.length });
-
-    // Need to re-render reply button and dropdown here
-    $('.forum-section__toolbar-controls')
-      .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', data));
-  });
+  // Need to re-render reply button and dropdown here
+  $('.forum-section__toolbar-controls')
+    .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', {
+      section:      N.runtime.page_data.section,
+      settings:     N.runtime.page_data.settings,
+      subscription: N.runtime.page_data.subscription,
+      selected_cnt: sectionState.selected_topics.length
+    }));
 }
 
 
@@ -123,14 +122,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + ':subscription', function topic_subscription(data) {
     let hid = data.$this.data('section-hid');
     let params = { subscription: data.$this.data('section-subscription') };
-    let pageParams = {};
 
     return Promise.resolve()
       .then(() => N.wire.emit('forum.section.subscription', params))
-      .then(() => N.wire.emit('navigate.get_page_raw', pageParams))
       .then(() => N.io.rpc('forum.section.subscribe', { section_hid: hid, type: params.subscription }))
       .then(() => {
-        pageParams.data.subscription = params.subscription;
+        N.runtime.page_data.subscription = params.subscription;
       })
       .then(updateSectionState);
   });
@@ -401,15 +398,17 @@ N.wire.on('navigate.done:' + module.apiPath, function section_load_previously_se
   // Don't need wait here
   bag.get(selected_topics_key)
     .then(hids => {
-      sectionState.selected_topics = hids || [];
+      hids = hids || [];
+      sectionState.selected_topics = hids;
       sectionState.selected_topics.forEach(topicHid => {
         $(`#topic${topicHid}`)
           .addClass('forum-topicline__m-selected')
           .find('.forum-topicline__select-cb')
           .prop('checked', true);
       });
+
+      return hids.length ? updateSectionState() : null;
     })
-    .then(updateSectionState)
     .catch(() => {}); // Suppress storage errors
 });
 

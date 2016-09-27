@@ -238,32 +238,32 @@ N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() 
 // Update topic menu and modifiers by page data
 //
 function updateTopicState() {
-  let params = {};
+  // Need to re-render reply button and dropdown here
+  $('.forum-topic__toolbar-controls')
+    .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', {
+      topic:        N.runtime.page_data.topic,
+      section:      N.runtime.page_data.section,
+      settings:     N.runtime.page_data.settings,
+      subscription: N.runtime.page_data.subscription,
+      selected_cnt: topicState.selected_posts.length
+    }));
 
-  return N.wire.emit('navigate.get_page_raw', params).then(() => {
-    let data = _.assign({}, params.data, { selected_cnt: topicState.selected_posts.length });
+  let modifiers = {
+    'forum-topic-root__m-open': topicStatuses.OPEN,
+    'forum-topic-root__m-closed': topicStatuses.CLOSED,
+    'forum-topic-root__m-deleted': topicStatuses.DELETED,
+    'forum-topic-root__m-deleted-hard': topicStatuses.DELETED_HARD,
+    'forum-topic-root__m-pinned': topicStatuses.PINNED
+  };
 
-    // Need to re-render reply button and dropdown here
-    $('.forum-topic__toolbar-controls')
-      .replaceWith(N.runtime.render(module.apiPath + '.blocks.toolbar_controls', data));
+  let $topicRoot = $('.forum-topic-root');
 
-    let modifiers = {
-      'forum-topic-root__m-open': topicStatuses.OPEN,
-      'forum-topic-root__m-closed': topicStatuses.CLOSED,
-      'forum-topic-root__m-deleted': topicStatuses.DELETED,
-      'forum-topic-root__m-deleted-hard': topicStatuses.DELETED_HARD,
-      'forum-topic-root__m-pinned': topicStatuses.PINNED
-    };
-
-    let $topicRoot = $('.forum-topic-root');
-
-    _.forEach(modifiers, (state, modifier) => {
-      if (params.data.topic.st === state || params.data.topic.ste === state) {
-        $topicRoot.addClass(modifier);
-      } else {
-        $topicRoot.removeClass(modifier);
-      }
-    });
+  _.forEach(modifiers, (state, modifier) => {
+    if (N.runtime.page_data.topic.st === state || N.runtime.page_data.topic.ste === state) {
+      $topicRoot.addClass(modifier);
+    } else {
+      $topicRoot.removeClass(modifier);
+    }
   });
 }
 
@@ -419,14 +419,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + '.pin', function topic_pin(data) {
     let topicHid = data.$this.data('topic-hid');
     let unpin = data.$this.data('unpin') || false;
-    let params = {};
 
     return Promise.resolve()
-      .then(() => N.wire.emit('navigate.get_page_raw', params))
       .then(() => N.io.rpc('forum.topic.pin', { topic_hid: topicHid, unpin }))
       .then(res => {
-        params.data.topic.st = res.topic.st;
-        params.data.topic.ste = res.topic.ste;
+        N.runtime.page_data.topic.st = res.topic.st;
+        N.runtime.page_data.topic.ste = res.topic.ste;
       })
       .then(updateTopicState)
       .then(() => {
@@ -466,14 +464,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       reopen: data.$this.data('reopen') || false,
       as_moderator: data.$this.data('as-moderator') || false
     };
-    let pageParams = {};
 
     return Promise.resolve()
-      .then(() => N.wire.emit('navigate.get_page_raw', pageParams))
       .then(() => N.io.rpc('forum.topic.close', params))
       .then(res => {
-        pageParams.data.topic.st = res.topic.st;
-        pageParams.data.topic.ste = res.topic.ste;
+        N.runtime.page_data.topic.st = res.topic.st;
+        N.runtime.page_data.topic.ste = res.topic.ste;
       })
       .then(updateTopicState)
       .then(() => {
@@ -524,14 +520,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + '.topic_undelete', function topic_undelete(data) {
     let topicHid = data.$this.data('topic-hid');
-    let params = {};
 
     return Promise.resolve()
-      .then(() => N.wire.emit('navigate.get_page_raw', params))
       .then(() => N.io.rpc('forum.topic.undelete', { topic_hid: topicHid }))
       .then(res => {
-        params.data.topic.st = res.topic.st;
-        params.data.topic.ste = res.topic.ste;
+        N.runtime.page_data.topic.st = res.topic.st;
+        N.runtime.page_data.topic.ste = res.topic.ste;
       })
       .then(updateTopicState)
       .then(() => N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') }));
@@ -593,14 +587,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + ':subscription', function topic_subscription(data) {
     let hid = data.$this.data('topic-hid');
     let params = { subscription: data.$this.data('topic-subscription') };
-    let pageParams = {};
 
     return Promise.resolve()
       .then(() => N.wire.emit('forum.topic.topic_subscription', params))
       .then(() => N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }))
-      .then(() => N.wire.emit('navigate.get_page_raw', pageParams))
       .then(() => {
-        pageParams.data.subscription = params.subscription;
+        N.runtime.page_data.subscription = params.subscription;
       })
       .then(updateTopicState);
   });
@@ -1324,15 +1316,17 @@ N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_sele
   // Don't need wait here
   bag.get(selected_posts_key)
     .then(ids => {
-      topicState.selected_posts = ids || [];
+      ids = ids || [];
+      topicState.selected_posts = ids;
       topicState.selected_posts.forEach(postId => {
         $(`#post${postId}`)
           .addClass('forum-post__m-selected')
           .find('.forum-post__select-cb')
           .prop('checked', true);
       });
+
+      return ids.length ? updateTopicState() : null;
     })
-    .then(updateTopicState)
     .catch(() => {}); // Suppress storage errors
 });
 
