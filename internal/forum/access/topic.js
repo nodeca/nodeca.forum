@@ -195,7 +195,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    yield _.map(locals.data.topics, (topic, i) => check(topic, i));
+    yield Promise.map(locals.data.topics, (topic, i) => check(topic, i));
   });
 
 

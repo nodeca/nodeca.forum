@@ -3,10 +3,10 @@
 'use strict';
 
 
-var Mongoose = require('mongoose');
-var Schema   = Mongoose.Schema;
-var _        = require('lodash');
-var co       = require('bluebird-co').co;
+const _        = require('lodash');
+const Promise  = require('bluebird');
+const Mongoose = require('mongoose');
+const Schema   = Mongoose.Schema;
 
 
 // Step between cached hids. Value should be big enough to:
@@ -50,7 +50,7 @@ module.exports = function (N, collectionName) {
     //
     // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
     //
-    let countFn = co.wrap(function* (hid, cut_from) {
+    let countFn = Promise.coroutine(function* (hid, cut_from) {
       var Post = N.models.forum.Post;
 
       // Posts with this statuses are counted on page (others are shown, but not counted)
@@ -61,7 +61,8 @@ module.exports = function (N, collectionName) {
         countable_statuses.push(Post.statuses.HB);
       }
 
-      let counters = yield countable_statuses.map(
+      let counters = yield Promise.map(
+        countable_statuses,
         st => Post.find()
                   .where('topic').equals(src)
                   .where('st').equals(st)
@@ -81,7 +82,7 @@ module.exports = function (N, collectionName) {
     }
 
     // Fetch cache record
-    return co(function* () {
+    return Promise.coroutine(function* () {
       let cache = yield N.models.forum.PostCountCache
                             .findOne({ src })
                             .lean(true);
@@ -125,7 +126,7 @@ module.exports = function (N, collectionName) {
       let cnt = yield countFn(hid, cached_hid);
 
       return cnt + cached_hid_value;
-    });
+    })();
   };
 
 

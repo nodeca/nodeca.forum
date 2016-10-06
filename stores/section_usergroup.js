@@ -15,8 +15,8 @@
 
 
 const _        = require('lodash');
+const Promise  = require('bluebird');
 const memoize  = require('promise-memoize');
-const co       = require('bluebird-co').co;
 
 
 module.exports = function (N) {
@@ -52,7 +52,7 @@ module.exports = function (N) {
     // values will be returned instead. Such values have the lowest priority,
     // so other stores can take advance.
     //
-    get: co.wrap(function* (keys, params, options) {
+    get: Promise.coroutine(function* (keys, params, options) {
       if (!params.section_id) {
         throw '`section_id` parameter is required for getting settings from `section_usergroup` store.';
       }
@@ -113,7 +113,7 @@ module.exports = function (N) {
     //   section_id     - ObjectId
     //   usergroup_id - ObjectId
     //
-    set: co.wrap(function* (settings, params) {
+    set: Promise.coroutine(function* (settings, params) {
       var self = this;
 
       if (!params.section_id) {
@@ -159,7 +159,7 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionUsergroupStore.updateInherited = co.wrap(function* updateInherited(sectionId) {
+  SectionUsergroupStore.updateInherited = Promise.coroutine(function* updateInherited(sectionId) {
     let self = this;
     let allSections = yield N.models.forum.Section.find({}).select('_id parent').lean(true);
     let allSettings = yield N.models.forum.SectionUsergroupStore.find({});
@@ -302,14 +302,14 @@ module.exports = function (N) {
     }
 
 
-    yield sectionsToUpdate.map(updateOne);
+    yield Promise.map(sectionsToUpdate, updateOne);
   });
 
 
   // Remove all overriden usergroup settings at specific section.
   //
   /*eslint-disable max-len*/
-  SectionUsergroupStore.removePermissions = co.wrap(function* removePermissions(sectionId, usergroupId) {
+  SectionUsergroupStore.removePermissions = Promise.coroutine(function* removePermissions(sectionId, usergroupId) {
     let section_settings = yield N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId });
 
     if (!section_settings) return;
@@ -324,7 +324,7 @@ module.exports = function (N) {
 
   // Remove all setting entries for specific usergroup.
   //
-  SectionUsergroupStore.removeUsergroup = co.wrap(function* removeUsergroup(usergroupId) {
+  SectionUsergroupStore.removeUsergroup = Promise.coroutine(function* removeUsergroup(usergroupId) {
     let sections = yield N.models.forum.SectionUsergroupStore.find({});
 
     sections.map(section_settings => {

@@ -25,7 +25,6 @@
 
 const _       = require('lodash');
 const Promise = require('bluebird');
-const co      = require('bluebird-co').co;
 
 
 module.exports = function (N) {
@@ -109,8 +108,8 @@ module.exports = function (N) {
       });
   }
 
-  return co.wrap(function* buildPostHids(env) {
-    let results = yield [ select_visible_before(env), select_visible_after(env) ];
+  return Promise.coroutine(function* buildPostHids(env) {
+    let results = yield Promise.all([ select_visible_before(env), select_visible_after(env) ]);
 
     let select_from = results[0] !== null ? results[0] : env.params.post_hid - 1;
     let select_to   = results[1] !== null ? results[1] : env.params.post_hid + 1;

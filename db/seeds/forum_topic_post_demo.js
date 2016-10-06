@@ -11,7 +11,7 @@
  */
 
 const _         = require('lodash');
-const co        = require('bluebird-co').co;
+const Promise   = require('bluebird');
 const charlatan = require('charlatan');
 const ObjectId  = require('mongoose').Types.ObjectId;
 
@@ -55,7 +55,7 @@ let users = [];
 let postDay = 0;
 
 
-const createPost = co.wrap(function* (topic, previous_posts) {
+const createPost = Promise.coroutine(function* (topic, previous_posts) {
   // 50% posts won't have any reply information, 25% posts will be
   // answers to the previous post, 12.5% posts will be answers to the
   // 2nd last post and so on.
@@ -118,7 +118,7 @@ const createPost = co.wrap(function* (topic, previous_posts) {
 });
 
 
-const addVotes = co.wrap(function* (post) {
+const addVotes = Promise.coroutine(function* (post) {
   let votes = 0;
 
   for (let i = charlatan.Helpers.rand(MAX_VOTES); i > 0; i--) {
@@ -142,7 +142,7 @@ const addVotes = co.wrap(function* (post) {
 });
 
 
-const createTopic = co.wrap(function* (section, post_count) {
+const createTopic = Promise.coroutine(function* (section, post_count) {
   let first_post;
   let last_post;
 
@@ -197,7 +197,7 @@ const createTopic = co.wrap(function* (section, post_count) {
 });
 
 
-const createSection = co.wrap(function* (category, sub_section_deep) {
+const createSection = Promise.coroutine(function* (category, sub_section_deep) {
   let section = new Section({
     title: charlatan.Lorem.sentence(charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: charlatan.Lorem.sentence(),
@@ -223,7 +223,7 @@ const createSection = co.wrap(function* (category, sub_section_deep) {
 });
 
 
-const createUsers = co.wrap(function* () {
+const createUsers = Promise.coroutine(function* () {
   let userGroupsByName = {};
   let groups = yield UserGroup.find().select('_id short_name');
 
@@ -251,7 +251,7 @@ const createUsers = co.wrap(function* () {
 });
 
 
-let createSections = co.wrap(function* () {
+let createSections = Promise.coroutine(function* () {
   for (let i = 0; i < CATEGORY_COUNT; i++) {
     let category = new Category({
       title: charlatan.Lorem.sentence(charlatan.Helpers.rand(5, 3)).slice(0, -1),
@@ -271,7 +271,7 @@ let createSections = co.wrap(function* () {
 });
 
 
-const updateSectionStat = co.wrap(function* (section) {
+const updateSectionStat = Promise.coroutine(function* (section) {
   let topicCount;
   let postCount;
 
@@ -318,7 +318,7 @@ const updateSectionStat = co.wrap(function* (section) {
 });
 
 
-const createTopics = co.wrap(function* () {
+const createTopics = Promise.coroutine(function* () {
   let sections = yield Section.find({ is_category: false })
                               .select('_id cache')
                               .sort({ hid: -1 })
@@ -334,7 +334,7 @@ const createTopics = co.wrap(function* () {
 });
 
 
-const fillBigSection = co.wrap(function* () {
+const fillBigSection = Promise.coroutine(function* () {
   let section = yield Section.findOne({ is_category: false })
                              .sort({ hid: 1 });
 
@@ -346,7 +346,7 @@ const fillBigSection = co.wrap(function* () {
 });
 
 
-const addBigTopic = co.wrap(function* () {
+const addBigTopic = Promise.coroutine(function* () {
   let section = yield Section.findOne({ is_category: false })
                              .sort({ hid: 1 });
 
@@ -355,7 +355,7 @@ const addBigTopic = co.wrap(function* () {
 });
 
 
-const addModerators = co.wrap(function* () {
+const addModerators = Promise.coroutine(function* () {
   let SectionModeratorStore = settings.getStore('section_moderator');
 
   if (!SectionModeratorStore) {
@@ -379,7 +379,7 @@ const addModerators = co.wrap(function* () {
 });
 
 
-module.exports = co.wrap(function* (N) {
+module.exports = Promise.coroutine(function* (N) {
   Category  = N.models.forum.Section;
   Section   = N.models.forum.Section;
   Topic     = N.models.forum.Topic;

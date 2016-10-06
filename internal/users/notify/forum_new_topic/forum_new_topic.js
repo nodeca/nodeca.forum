@@ -4,6 +4,7 @@
 
 
 const _         = require('lodash');
+const Promise   = require('bluebird');
 const render    = require('nodeca.core/lib/system/render/common');
 const user_info = require('nodeca.users/lib/user_info');
 
@@ -68,7 +69,7 @@ module.exports = function (N) {
 
     // Filter users by access
     //
-    yield local_env.to.slice().map(user_id => {
+    yield Promise.map(local_env.to.slice(), user_id => {
       let access_env = { params: { topic, posts: post, user_info: users_info[user_id] } };
 
       return N.wire.emit('internal:forum.access.post', access_env)

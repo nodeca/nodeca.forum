@@ -25,7 +25,6 @@
 
 const _       = require('lodash');
 const Promise = require('bluebird');
-const co      = require('bluebird-co').co;
 
 
 module.exports = function (N) {
@@ -88,12 +87,12 @@ module.exports = function (N) {
   }
 
 
-  return co.wrap(function* buildTopicsIds(env) {
+  return Promise.coroutine(function* buildTopicsIds(env) {
     let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
 
     // Run both functions in parallel and concatenate results
     //
-    let results = yield [ select_visible_before(env), select_visible_after(env) ];
+    let results = yield Promise.all([ select_visible_before(env), select_visible_after(env) ]);
 
     env.data.topics_ids = Array.prototype.concat.apply([], results);
 

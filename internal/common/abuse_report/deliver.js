@@ -11,7 +11,8 @@
 'use strict';
 
 
-const render = require('nodeca.core/lib/system/render/common');
+const Promise = require('bluebird');
+const render  = require('nodeca.core/lib/system/render/common');
 
 
 module.exports = function (N, apiPath) {
@@ -86,10 +87,10 @@ module.exports = function (N, apiPath) {
         dest: topic._id
       });
 
-      yield [
+      yield Promise.all([
         topic.save(),
         report_ref.save()
-      ];
+      ]);
     }
 
     post.topic = topic._id;
@@ -97,10 +98,10 @@ module.exports = function (N, apiPath) {
     // We should save post before `updateCache` call because cache use topic data
     yield post.save();
 
-    yield [
+    yield Promise.all([
       N.models.forum.Topic.updateCache(topic._id),
       N.models.forum.Section.updateCache(section._id)
-    ];
+    ]);
 
     // Add report url to locals
     params.locals.report_topic_url = N.router.linkTo('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });

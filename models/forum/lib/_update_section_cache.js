@@ -3,8 +3,8 @@
 'use strict';
 
 
-const _  = require('lodash');
-const co = require('bluebird-co').co;
+const _       = require('lodash');
+const Promise = require('bluebird');
 
 
 module.exports = function (N) {
@@ -17,7 +17,7 @@ module.exports = function (N) {
   //
   // TODO: probably should update last post in postponed mode
   //
-  let updateCache = co.wrap(function* (sectionID, parent) {
+  let updateCache = Promise.coroutine(function* (sectionID, parent) {
     if (!parent) {
       // Postpone topic and post count update
       N.queue.worker('forum_section_post_count_update').postpone({ section_id: sectionID });
@@ -29,7 +29,7 @@ module.exports = function (N) {
     // Get all subsections of the current section and return the last post
     // from those
     //
-    let fill_cache_from_subsections = co.wrap(function* () {
+    let fill_cache_from_subsections = Promise.coroutine(function* () {
       let result = { cache: {}, cache_hb: {} };
       let children = yield Section.getChildren(sectionID, 1);
 
@@ -59,7 +59,7 @@ module.exports = function (N) {
 
     // Get the latest topic from current section
     //
-    let fill_cache_from_own_topics = co.wrap(function* () {
+    let fill_cache_from_own_topics = Promise.coroutine(function* () {
       let result = { cache: {}, cache_hb: {} };
       let visible_st_hb = [ Topic.statuses.HB ].concat(Topic.statuses.LIST_VISIBLE);
       let topic = yield Topic.findOne({ section: sectionID, st: { $in: visible_st_hb } })

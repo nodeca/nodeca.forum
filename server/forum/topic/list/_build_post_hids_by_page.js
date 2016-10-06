@@ -20,8 +20,8 @@
 'use strict';
 
 
-const _  = require('lodash');
-const co = require('bluebird-co').co;
+const _       = require('lodash');
+const Promise = require('bluebird');
 
 
 module.exports = function (N) {
@@ -29,7 +29,7 @@ module.exports = function (N) {
   // Shortcut
   const Post = N.models.forum.Post;
 
-  return co.wrap(function* buildPostHids(env) {
+  return Promise.coroutine(function* buildPostHids(env) {
 
     let posts_per_page = yield env.extras.settings.fetch('posts_per_page');
 

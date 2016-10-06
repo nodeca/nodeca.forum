@@ -6,7 +6,8 @@
 'use strict';
 
 
-const _ = require('lodash');
+const _       = require('lodash');
+const Promise = require('bluebird');
 
 
 module.exports = function (N, apiPath) {
@@ -47,6 +48,6 @@ module.exports = function (N, apiPath) {
     // for each sibling find proper section and set `display_order` to it
     sections.forEach(section => { section.display_order = siblingOrder[section._id]; });
 
-    yield sections.map(section => section.save());
+    yield Promise.map(sections, section => section.save());
   });
 };

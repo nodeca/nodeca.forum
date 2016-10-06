@@ -1,9 +1,9 @@
 'use strict';
 
 
+const Promise  = require('bluebird');
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
-const co       = require('bluebird-co').co;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -147,7 +147,7 @@ module.exports = function (N, collectionName) {
   //
   // - topicID - id of topic to update
   //
-  Topic.statics.updateCache = co.wrap(function* (topicID) {
+  Topic.statics.updateCache = Promise.coroutine(function* (topicID) {
     let statuses = N.models.forum.Post.statuses;
     let updateData = {};
 
@@ -186,10 +186,11 @@ module.exports = function (N, collectionName) {
       }
     }
 
-    let count = yield [ statuses.VISIBLE, statuses.HB ].map(st => N.models.forum.Post
-                                                                      .where('topic').equals(topicID)
-                                                                      .where('st').equals(st)
-                                                                      .count());
+    let count = yield Promise.map([ statuses.VISIBLE, statuses.HB ],
+                          st => N.models.forum.Post
+                                    .where('topic').equals(topicID)
+                                    .where('st').equals(st)
+                                    .count());
 
     // Visible post count
     updateData['cache.post_count'] = count[0];

@@ -2,7 +2,8 @@
 //
 'use strict';
 
-const _ = require('lodash');
+const _       = require('lodash');
+const Promise = require('bluebird');
 
 
 // Max topics to fetch before and after
@@ -119,7 +120,8 @@ module.exports = function (N, apiPath) {
     //
     // Count total amount of visible topics in the section
     //
-    let counters_by_status = yield statuses.map(
+    let counters_by_status = yield Promise.map(
+      statuses,
       st => N.models.forum.Topic
                 .where('section').equals(env.data.section._id)
                 .where('st').equals(st)
@@ -145,7 +147,8 @@ module.exports = function (N, apiPath) {
       let cache        = env.user_info.hb ? 'cache_hb' : 'cache';
       let last_post_id = env.data.topics[0][cache].last_post;
 
-      let counters_by_status = yield statuses.map(
+      let counters_by_status = yield Promise.map(
+        statuses,
         st => N.models.forum.Topic
                   .where(`${cache}.last_post`).gt(last_post_id)
                   .where('section').equals(env.data.section._id)

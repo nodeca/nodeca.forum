@@ -172,7 +172,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    yield _.map(locals.data.sections, (section, i) => check(section, i));
+    yield Promise.map(locals.data.sections, (section, i) => check(section, i));
   });
 
 

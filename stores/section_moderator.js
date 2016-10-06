@@ -15,8 +15,8 @@
 
 
 const _        = require('lodash');
+const Promise  = require('bluebird');
 const memoize  = require('promise-memoize');
-const co       = require('bluebird-co').co;
 
 
 module.exports = function (N) {
@@ -52,7 +52,7 @@ module.exports = function (N) {
     // will be returned instead. Such values have the lowest priority, so
     // other stores can take advance.
     //
-    get: co.wrap(function* (keys, params, options) {
+    get: Promise.coroutine(function* (keys, params, options) {
       if (!params.section_id) {
         throw '`section_id` parameter is required for getting settings from `section_moderator` store.';
       }
@@ -104,7 +104,7 @@ module.exports = function (N) {
     //   section_id - ObjectId
     //   user_id  - ObjectId
     //
-    set: co.wrap(function* (settings, params) {
+    set: Promise.coroutine(function* (settings, params) {
       if (!params.section_id) {
         throw '`section_id` parameter is required for saving settings into `section_moderator` store.';
       }
@@ -165,7 +165,7 @@ module.exports = function (N) {
   //     { ... }
   //   ]
   //
-  SectionModeratorStore.getModeratorsInfo = co.wrap(function* getModeratorsInfo(sectionId) {
+  SectionModeratorStore.getModeratorsInfo = Promise.coroutine(function* getModeratorsInfo(sectionId) {
     let section_settings = yield N.models.forum.SectionModeratorStore
                                     .findOne({ section_id: sectionId })
                                     .lean(true);
@@ -198,7 +198,7 @@ module.exports = function (N) {
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionModeratorStore.updateInherited = co.wrap(function* updateInherited(sectionId) {
+  SectionModeratorStore.updateInherited = Promise.coroutine(function* updateInherited(sectionId) {
     let allSections = yield N.models.forum.Section.find({}).select('_id parent moderators');
     let allSettings = yield N.models.forum.SectionModeratorStore.find({});
 
@@ -324,7 +324,7 @@ module.exports = function (N) {
       sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
     }
 
-    yield sectionsToUpdate.map(section => {
+    yield Promise.map(sectionsToUpdate, section => {
       let section_settings = getSettingsBySectionId(section._id);
 
       if (!section_settings) {
@@ -377,7 +377,7 @@ module.exports = function (N) {
 
   // Remove single moderator entry at section.
   //
-  SectionModeratorStore.removeModerator = co.wrap(function* removeModerator(sectionId, userId) {
+  SectionModeratorStore.removeModerator = Promise.coroutine(function* removeModerator(sectionId, userId) {
     let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId });
 
     if (!section_settings) {

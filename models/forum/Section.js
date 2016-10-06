@@ -1,11 +1,11 @@
 'use strict';
 
 
-const Mongoose = require('mongoose');
-const Schema   = Mongoose.Schema;
-const memoize  = require('promise-memoize');
-const co       = require('bluebird-co').co;
 const _        = require('lodash');
+const Promise  = require('bluebird');
+const Mongoose = require('mongoose');
+const memoize  = require('promise-memoize');
+const Schema   = Mongoose.Schema;
 
 
 module.exports = function (N, collectionName) {
@@ -122,7 +122,7 @@ module.exports = function (N, collectionName) {
       return;
     }
 
-    co(function* () {
+    Promise.coroutine(function* () {
       let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
       if (SectionUsergroupStore) {
@@ -138,7 +138,7 @@ module.exports = function (N, collectionName) {
       } else {
         N.logger.error('Settings store `section_moderator` is not registered.');
       }
-    }).catch(err => N.logger.error(err));
+    })().catch(err => N.logger.error(err));
   });
 
 
