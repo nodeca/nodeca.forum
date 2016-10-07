@@ -21,19 +21,19 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
 
     mixin option_field(name)
       .form-group.row
-        label.form-control-label.col-xs-3(for="section_#{name}") #{self.t('field_' + name)}
+        label.form-control-label.col-xs-3(for='section_' + name) #{self.t('field_' + name)}
         .col-xs-4
           .switch
-            input(id="section_#{name}", type="checkbox", data-bind="checked: currentSection.#{name}")
-            label(for="section_#{name}", data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
+            input(id='section_' + name, type="checkbox", data-bind='checked: currentSection.' + name)
+            label(for='section_' + name, data-yes=self.t('value_yes'), data-no=self.t('value_no')): i
 
-    mixin option_field('is_category')
-    mixin option_field('is_enabled')
-    mixin option_field('is_writable')
-    mixin option_field('is_searchable')
-    mixin option_field('is_votable')
-    mixin option_field('is_counted')
-    mixin option_field('is_excludable')
+    +option_field('is_category')
+    +option_field('is_enabled')
+    +option_field('is_writable')
+    +option_field('is_searchable')
+    +option_field('is_votable')
+    +option_field('is_counted')
+    +option_field('is_excludable')
 
   .form-group.row
     .col-xs-9.col-xs-offset-3

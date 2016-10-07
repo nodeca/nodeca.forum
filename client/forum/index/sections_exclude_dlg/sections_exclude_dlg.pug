@@ -11,7 +11,7 @@ mixin sections_tree(sections, deepness)
     )=prefix + section.title
 
     if section.children && section.children.length
-      mixin sections_tree(section.children, deepness + 1)
+      +sections_tree(section.children, deepness + 1)
 
 
 .modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
@@ -23,7 +23,7 @@ mixin sections_tree(sections, deepness)
           h4.modal-title=self.t('title')
         .modal-body
           select.sections-exclude-dlg__sections.form-control(multiple=true tabindex='1' name='sections')
-            mixin sections_tree(self.sections, 1)
+            +sections_tree(self.sections, 1)
         .modal-footer
           button.btn.btn-link.pull-xs-left(
             data-on-click=self.apiPath + ':unselect_all'

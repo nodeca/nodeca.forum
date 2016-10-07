@@ -12,9 +12,9 @@
         li.section-group
           .section-control
             .section-title
-              a(href="#", data-toggle="collapse", data-target="#section_#{section._id}")= section.title
+              a(href="#", data-toggle="collapse", data-target='#section_' + section._id)= section.title
 
-            ul.section-usergroup-list.collapse.in(id="section_#{section._id}")
+            ul.section-usergroup-list.collapse.in(id='section_' + section._id)
               each usergroup in self.usergroups
                 - var own_count, inherited_count, total_count
                 - own_count       = section.own_settings_count[usergroup._id]
@@ -51,8 +51,8 @@
 
           if section.children.length > 0
             ul.section-list.section-children
-              mixin sections_tree(section.children)
+              +sections_tree(section.children)
 
 
     ul.section-list
-      mixin sections_tree(self.sections)
+      +sections_tree(self.sections)

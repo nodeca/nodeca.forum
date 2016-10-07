@@ -11,7 +11,7 @@ mixin sections_tree(sections, deepness)
     )=prefix + section.title
 
     if section.children && section.children.length
-      mixin sections_tree(section.children, deepness + 1)
+      +sections_tree(section.children, deepness + 1)
 
 .modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
   .modal-dialog
@@ -23,7 +23,7 @@ mixin sections_tree(sections, deepness)
         .modal-body
           label= self.t('section_input_name')
           select.form-control.custom-select(name='section_hid' tabindex='1')
-            mixin sections_tree(self.sections, 1)
+            +sections_tree(self.sections, 1)
         .modal-footer
           button.btn.btn-secondary(type='button' tabindex='4' data-dismiss='modal')=self.t('cancel')
           button.btn.btn-danger(type='submit' tabindex='5')=self.t('ok')

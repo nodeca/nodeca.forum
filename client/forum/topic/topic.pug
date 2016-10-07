@@ -69,7 +69,7 @@ article#content.forum-topic-root(
             title=self.t('edit_title')
             data-on-click='forum.topic.edit_title'
             data-topic-hid=self.topic.hid
-            data-as-moderator='#{!canEdit}'
+            data-as-moderator=String(!canEdit)
           )
 
       if self.topic._seo_desc

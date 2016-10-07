@@ -21,26 +21,26 @@ article#content.forum-index-root
   .layout__container.container-fluid
     != self.partial('@users.blocks.announces')
 
-    - each category in (self.subsections || [])
-      article.forum-category(id='cat_box_#{category.hid}')
-        header.forum-category__head(id='cat#{category.hid}')
+    each category in (self.subsections || [])
+      article.forum-category(id='cat_box_' + category.hid)
+        header.forum-category__head(id='cat' + category.hid)
           h2.forum-category__title
             a.forum-category__link(
-              href='#cat#{category.hid}'
+              href='#cat' + category.hid
               data-toggle='collapse'
-              data-target='#cat_list_#{category.hid}'
+              data-target='#cat_list_' + category.hid
             )
               = category.title
             a.forum-category__collapser.icon.icon-collapse(
-              href='#cat#{category.hid}'
+              href='#cat' + category.hid
               data-toggle='collapse'
-              data-target='#cat_list_#{category.hid}'
+              data-target='#cat_list_' + category.hid
             )
             a.forum-category__collapser.icon.icon-expand(
-              href='#cat#{category.hid}'
+              href='#cat' + category.hid
               data-toggle='collapse'
-              data-target='#cat_list_#{category.hid}'
+              data-target='#cat_list_' + category.hid
             )
 
-        .forum-category__content(id='cat_list_#{category.hid}', data-notify='#cat_box_#{category.hid}').collapse.in
+        .forum-category__content(id='cat_list_' + category.hid, data-notify='#cat_box_' + category.hid).collapse.in
           != self.partial('@forum.blocks.sections_list', { subsections: category.child_list })

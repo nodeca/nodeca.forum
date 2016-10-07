@@ -53,7 +53,7 @@ each post, post_idx in self.posts
   if !collapsed
 
     article.forum-post.clearfix(
-      id='post#{post._id}'
+      id='post' + post._id
       class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
       class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
       class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
@@ -299,7 +299,7 @@ each post, post_idx in self.posts
   else
 
     article.forum-post.forum-post__m-collapsed.clearfix(
-      id='post#{post._id}'
+      id='post' + post._id
       class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
       class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
       class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
