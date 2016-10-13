@@ -240,7 +240,8 @@ const createUsers = Promise.coroutine(function* () {
       email:      charlatan.Internet.email(),
       joined_ts:  new Date(),
       joined_ip:  charlatan.Internet.IPv4(),
-      usergroups: userGroupsByName.members
+      usergroups: userGroupsByName.members,
+      active:     true
     });
 
     yield user.save();

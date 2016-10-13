@@ -343,4 +343,11 @@ module.exports = function (N, apiPath) {
       type: 'FORUM_NEW_POST'
     });
   });
+
+
+  // Mark user as active
+  //
+  N.wire.after(apiPath, function* set_active_flag(env) {
+    yield N.wire.emit('internal:users.mark_user_active', env);
+  });
 };
