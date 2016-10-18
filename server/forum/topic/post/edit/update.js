@@ -157,9 +157,7 @@ module.exports = function (N, apiPath) {
   // Schedule image size fetch
   //
   N.wire.after(apiPath, function* fill_image_info(env) {
-    yield N.queue.worker('forum_post_images_fetch').postpone({
-      msg_id: env.data.post._id
-    });
+    yield N.queue.forum_post_images_fetch(env.data.post._id).postpone();
   });
 
 

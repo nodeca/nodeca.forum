@@ -20,7 +20,7 @@ module.exports = function (N) {
   let updateCache = Promise.coroutine(function* (sectionID, parent) {
     if (!parent) {
       // Postpone topic and post count update
-      N.queue.worker('forum_section_post_count_update').postpone({ section_id: sectionID });
+      N.queue.forum_section_post_count_update(sectionID).postpone();
     }
 
     let Section = N.models.forum.Section;
