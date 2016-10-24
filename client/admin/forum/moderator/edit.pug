@@ -25,7 +25,7 @@
         // ko foreach: settings
         .form-group.form-group-hover.row(data-bind="css: { overriden: overriden, inherited: inherited }")
 
-          label.form-control-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
+          label.col-form-label.col-xs-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
           .col-xs-4.control-value
             // ko if: 'boolean' === type

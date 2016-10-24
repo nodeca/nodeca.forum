@@ -1,27 +1,27 @@
 form.form-horizontal(data-bind="submit: isNewSection ? create : update")
   fieldset(data-bind="if: isNewSection")
     .form-group
-      label.form-control-label.col-xs-3 #{self.t('field_copy_settings_from')}
+      label.col-form-label.col-xs-3 #{self.t('field_copy_settings_from')}
       .col-xs-4: select.form-control.custom-select(data-bind="value: copySettingsFrom, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
 
   fieldset
     legend #{self.t('legend_forum_settings')}
 
     .form-group.row
-      label.form-control-label.col-xs-3 #{self.t('field_title')}
+      label.col-form-label.col-xs-3 #{self.t('field_title')}
       .col-xs-4: input.form-control(type="text", data-bind="value: currentSection.title")
 
     .form-group.row
-      label.form-control-label.col-xs-3 #{self.t('field_description')}
+      label.col-form-label.col-xs-3 #{self.t('field_description')}
       .col-xs-9: textarea.form-control(data-bind="value: currentSection.description")
 
     .form-group.row
-      label.form-control-label.col-xs-3 #{self.t('field_parent')}
+      label.col-form-label.col-xs-3 #{self.t('field_parent')}
       .col-xs-4: select.form-control.custom-select(data-bind="value: currentSection.parent, options: allowedParents, optionsText: 'title', optionsValue: '_id'")
 
     mixin option_field(name)
       .form-group.row
-        label.form-control-label.col-xs-3(for='section_' + name) #{self.t('field_' + name)}
+        label.col-form-label.col-xs-3(for='section_' + name) #{self.t('field_' + name)}
         .col-xs-4
           .switch
             input(id='section_' + name, type="checkbox", data-bind='checked: currentSection.' + name)
