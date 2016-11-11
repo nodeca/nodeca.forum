@@ -1142,7 +1142,8 @@ function uploadScrollPositionsImmediate() {
 
       return bag.remove(scrollPositionsKey);
     }
-  });
+  })
+  .catch(() => {}); // Suppress storage errors
 }
 
 const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
@@ -1227,7 +1228,8 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
 
       // Expire after 7 days
       return bag.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => uploadScrollPositions());
-    });
+    })
+    .catch(() => {}); // Suppress storage errors
   }, 300, { maxWait: 300 });
 
   // avoid executing it on first tick because of initial scrollTop()
@@ -1296,9 +1298,9 @@ function key_down(event) {
 function save_selected_posts_immediate() {
   if (topicState.selected_posts.length) {
     // Expire after 1 day
-    bag.set(selected_posts_key, topicState.selected_posts, 60 * 60 * 24);
+    bag.set(selected_posts_key, topicState.selected_posts, 60 * 60 * 24).catch(() => {});
   } else {
-    bag.remove(selected_posts_key);
+    bag.remove(selected_posts_key).catch(() => {});
   }
 }
 const save_selected_posts = _.debounce(save_selected_posts_immediate, 500);
