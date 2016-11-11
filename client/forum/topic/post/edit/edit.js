@@ -31,8 +31,8 @@ function updateOptions() {
 
 // Load mdedit
 //
-N.wire.before(module.apiPath + ':begin', function load_mdedit(__, callback) {
-  N.loader.loadAssets('mdedit', callback);
+N.wire.before(module.apiPath + ':begin', function load_mdedit() {
+  return N.loader.loadAssets('mdedit');
 });
 
 
