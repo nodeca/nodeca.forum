@@ -4,6 +4,7 @@
 'use strict';
 
 const from2    = require('from2');
+const multi    = require('multistream');
 const pump     = require('pump');
 const through2 = require('through2');
 const userInfo = require('nodeca.users/lib/user_info');
@@ -41,37 +42,38 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    data.streams.push(from2.obj(buffer));
+    let topic_stream = pump(
+      N.models.forum.Topic.collection.find({
+        section:  { $in: visible_sections.map(section => section._id) },
+        st:       { $in: N.models.forum.Topic.statuses.LIST_VISIBLE }
+      }, {
+        section:            1,
+        hid:                1,
+        'cache.post_count': 1,
+        'cache.last_ts':    1
+      }).sort({ hid: 1 }).stream(),
 
-    data.streams.push(
-      pump(
-        N.models.forum.Topic.collection.find({
-          section:  { $in: visible_sections.map(section => section._id) },
-          st:       { $in: N.models.forum.Topic.statuses.LIST_VISIBLE }
-        }, {
-          section:            1,
-          hid:                1,
-          'cache.post_count': 1,
-          'cache.last_ts':    1
-        }).sort({ hid: 1 }).stream(),
+      through2.obj(function (topic, encoding, callback) {
+        let pages = Math.ceil(topic.cache.post_count / posts_per_page);
 
-        through2.obj(function (topic, encoding, callback) {
-          let pages = Math.ceil(topic.cache.post_count / posts_per_page);
+        for (let page = 1; page <= pages; page++) {
+          this.push({
+            loc: N.router.linkTo('forum.topic', {
+              section_hid: sections_by_id[topic.section].hid,
+              topic_hid:   topic.hid,
+              page
+            }),
+            lastmod: topic.cache.last_ts
+          });
+        }
 
-          for (let page = 1; page <= pages; page++) {
-            this.push({
-              loc: N.router.linkTo('forum.topic', {
-                section_hid: sections_by_id[topic.section].hid,
-                topic_hid:   topic.hid,
-                page
-              }),
-              lastmod: topic.cache.last_ts
-            });
-          }
-
-          callback();
-        })
-      )
+        callback();
+      })
     );
+
+    data.streams.push({
+      name: 'forum',
+      stream: multi.obj([ from2.obj(buffer), topic_stream ])
+    });
   });
 };
