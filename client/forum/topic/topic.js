@@ -6,6 +6,7 @@
 const _             = require('lodash');
 const charcount     = require('charcount');
 const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
+const postStatuses  = '$$ JSON.stringify(N.models.forum.Post.statuses) $$';
 const bag           = require('bagjs')({ prefix: 'nodeca' });
 
 
@@ -808,7 +809,12 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       topicState.top_marker = res.posts[0].hid;
 
-      topicState.first_post_offset -= res.posts.length - 1;
+      // recalculate post offset excluding deleted posts and 1 overlapping post
+      for (let post of res.posts) {
+        let visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
+
+        if (visible && post.hid !== hid) topicState.first_post_offset--;
+      }
 
       $('.forum-topic__loading-prev').toggleClass('hidden-xs-up', topicState.top_marker <= 1);
 
@@ -819,37 +825,50 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         chunk_offset: topicState.first_post_offset
       };
 
+      res.posts_list_before_post = N.runtime.page_data.posts_list_before_post;
+      res.posts_list_after_post  = N.runtime.page_data.posts_list_after_post;
+
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
       // Cut duplicate post, used to display date intervals properly,
       // here's an example showing how it works:
       //
-      //   DOM                + fetched          = result
-      // | ...           |                     | ...           |
-      // +---------------+                     +---------------+
-      // | post#37       |                     | post#37       |
-      // +---------------+                     +---------------+
-      // | paginator     |                     | paginator     |
-      // | interval      |                     | interval      |
-      // | etc.          |                     | etc.          |
-      // +---------------+  +---------------+  +---------------+
-      // | post#38       |  | post#38 (cut) |  | post#38       |
-      // +---------------+  +---------------+  +---------------+
-      //                    | paginator     |  | paginator     |
-      //                    | interval      |  | interval      |
-      //                    | etc.          |  | etc.          |
-      //                    +---------------+  +---------------+
-      //                    | post#39       |  | post#39       |
-      //                    +---------------+  +---------------+
-      //                    | ...           |  | ...           |
+      //   DOM                + fetched           = result
+      //                    | ...            |  | ...            |
+      //                    +----------------+  +----------------+
+      //                    | before         |  | before         |
+      //                    | post#37        |  | post#37        |
+      //                    | after          |  | after          |
+      // +---------------+  +----------------+  +----------------+
+      // | before        |  | before         |  | before         |
+      // | post#38       |  | post#38  (cut) |  | post#38        |
+      // | after         |  | after          |  | after          |
+      // +---------------+  +----------------+  +----------------+
+      // | before        |                      | before         |
+      // | post#39       |                      | post#39        |
+      // | after         |                      | after          |
+      // +---------------+                      +----------------+
+      // | ...           |                      | ...            |
       //
       // Reason for this: we don't have the data to display post intervals
       //                  for the first post in the DOM.
       //
       let idx = $result.index($result.filter('#' + $('.forum-post:first').attr('id')));
 
-      if (idx !== -1) $result = $result.slice(0, idx);
+      if (idx !== -1) {
+        // cut .forum-post + everything until we find second .forum-post
+        for (idx--; idx > 0; idx--) {
+          let $tag = $($result[idx]);
+
+          if ($tag.hasClass('forum-post__after') || $tag.hasClass('forum-post')) {
+            idx++;
+            break;
+          }
+        }
+
+        $result = $result.slice(0, idx);
+      }
 
       return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
         let old_height = $('.forum-postlist').height();
@@ -968,7 +987,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         chunk_offset: topicState.last_post_offset
       };
 
-      topicState.last_post_offset += res.posts.length - 1;
+      res.posts_list_before_post = N.runtime.page_data.posts_list_before_post;
+      res.posts_list_after_post  = N.runtime.page_data.posts_list_after_post;
+
+      // recalculate post offset excluding deleted posts and 1 overlapping post
+      for (let post of res.posts) {
+        let visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
+
+        if (visible && post.hid !== hid) topicState.last_post_offset++;
+      }
 
       // render & inject posts list
       let $result = $(N.runtime.render('forum.blocks.posts_list', res));
@@ -976,31 +1003,41 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       // Cut duplicate post, used to display date intervals properly,
       // here's an example showing how it works:
       //
-      //   DOM                + fetched          = result
-      // | ...           |                     | ...           |
-      // +---------------+                     +---------------+
-      // | post#37       |                     | post#37       |
-      // +---------------+                     +---------------+
-      // | paginator     |                     | paginator     |
-      // | interval      |                     | interval      |
-      // | etc.          |                     | etc.          |
-      // +---------------+  +---------------+  +---------------+
-      // | post#38       |  | post#38 (cut) |  | post#38       |
-      // +---------------+  +---------------+  +---------------+
-      //                    | paginator     |  | paginator     |
-      //                    | interval      |  | interval      |
-      //                    | etc.          |  | etc.          |
-      //                    +---------------+  +---------------+
-      //                    | post#39       |  | post#39       |
-      //                    +---------------+  +---------------+
-      //                    | ...           |  | ...           |
+      //   DOM                + fetched           = result
+      // | ...           |                      | ...            |
+      // +---------------+                      +----------------+
+      // | before        |                      | before         |
+      // | post#37       |                      | post#37        |
+      // | after         |                      | after          |
+      // +---------------+  +----------------+  +----------------+
+      // | before        |  | before         |  | before         |
+      // | post#38       |  | post#38  (cut) |  | post#38        |
+      // | after         |  | after          |  | after          |
+      // +---------------+  +----------------+  +----------------+
+      //                    | before         |  | before         |
+      //                    | post#39        |  | post#39        |
+      //                    | after          |  | after          |
+      //                    +----------------+  +----------------+
+      //                    | ...            |  | ...            |
       //
       // Reason for this: we don't have the data to display post intervals
       //                  for the first post in the DOM.
       //
       let idx = $result.index($result.filter('#' + $('.forum-post:last').attr('id')));
 
-      if (idx !== -1) $result = $result.slice(idx + 1);
+      if (idx !== -1) {
+        // cut .forum-post + everything until we find second .forum-post
+        for (idx++; idx < $result.length; idx++) {
+          let $tag = $($result[idx]);
+
+          if ($tag.hasClass('forum-post__before') || $tag.hasClass('forum-post')) {
+            idx--;
+            break;
+          }
+        }
+
+        $result = $result.slice(idx + 1);
+      }
 
       return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
         $('.forum-postlist > :last').after($result);

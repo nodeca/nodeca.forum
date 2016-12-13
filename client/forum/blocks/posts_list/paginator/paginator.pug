@@ -1,0 +1,15 @@
+- var postStatuses = '$$ JSON.stringify(N.models.forum.Post.statuses) $$'
+
+//- same as `d % n`, but works with negative numbers correctly
+- function mod(d, n) { return (d % n + n) % n; }
+
+if self.pagination && mod(self.post_counter, self.pagination.per_page) === 0
+  - var visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(self.posts[self.post_idx].st) === -1;
+
+  //- visible post and deleted post right after it have the same post_counter
+  if self.posts[self.post_idx].hid !== 1 && visible
+    nav.forum-postlist__paginator.forum-post__before
+      - var link_params = { section_hid: self.section.hid, topic_hid: self.topic.hid }
+      - var page_max    = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
+      - var pgn_params  = { route: 'forum.topic', params: link_params, current: Math.floor(self.post_counter / self.pagination.per_page) + 1, max: page_max }
+      != self.partial('@common.blocks.pagination', pgn_params)

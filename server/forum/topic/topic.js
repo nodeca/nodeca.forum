@@ -273,4 +273,14 @@ module.exports = function (N, apiPath) {
       env.data.section._id,
       'forum_topic').catch(err => N.logger.error(`Marker cannot mark topic as read: ${err}`));
   });
+
+
+  // Add blocks
+  //
+  N.wire.after(apiPath, function fill_post_list_blocks(env) {
+    env.res.posts_list_before_post = env.res.posts_list_before_post || [];
+
+    env.res.posts_list_before_post.push('paginator');
+    env.res.posts_list_before_post.push('datediff');
+  });
 };
