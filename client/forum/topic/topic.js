@@ -384,8 +384,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        return N.wire.emit('navigate.update', { $: $result, locals: res })
-          .then(() => $(`#post${postId}`).replaceWith($result));
+        return N.wire.emit('navigate.update', {
+          $: $result,
+          locals: res,
+          $replace: $(`#post${postId}`)
+        });
       })
       .then(() => N.wire.emit('notify', { type: 'info', message: t('infraction_added') }));
   });
@@ -401,16 +404,17 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         let $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
 
-        return N.wire.emit('navigate.update', { $: $result, locals: res })
-          .then(() => {
-            $('#post' + postId).replaceWith($result);
+        if (topicState.selected_posts.indexOf(postId) !== -1) {
+          $result
+            .addClass('forum-post__m-selected')
+            .find('.forum-post__select-cb').prop('checked', true);
+        }
 
-            if (topicState.selected_posts.indexOf(postId) !== -1) {
-              $result
-                .addClass('forum-post__m-selected')
-                .find('.forum-post__select-cb').prop('checked', true);
-            }
-          });
+        return N.wire.emit('navigate.update', {
+          $: $result,
+          locals: res,
+          $replace: $(`#post${postId}`)
+        });
       });
   });
 
@@ -538,19 +542,20 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   N.wire.on(module.apiPath + '.post_vote', function post_vote(data) {
     let postId = data.$this.data('post-id');
     let value = +data.$this.data('value');
-    let $post = $('#post' + postId);
     let topicHid = topicState.topic_hid;
-    let $result;
 
     return Promise.resolve()
       .then(() => N.io.rpc('forum.topic.post.vote', { post_id: postId, value }))
       .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicHid, posts_ids: [ postId ] }))
       .then(res => {
-        $result = $(N.runtime.render('forum.blocks.posts_list', res));
+        let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        return N.wire.emit('navigate.update', { $: $result, locals: res });
-      })
-      .then(() => $post.replaceWith($result));
+        return N.wire.emit('navigate.update', {
+          $: $result,
+          locals: res,
+          $replace: $(`#post${postId}`)
+        });
+      });
   });
 
 
@@ -652,7 +657,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
         let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => $post.replaceWith($result));
+        return N.wire.emit('navigate.update', {
+          $: $result,
+          locals: res,
+          $replace: $post
+        });
       });
   });
 
@@ -870,11 +879,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $result = $result.slice(0, idx);
       }
 
-      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
-        let old_height = $('.forum-postlist').height();
-        let old_scroll = $window.scrollTop();
+      let old_height = $('.forum-postlist').height();
+      let old_scroll = $window.scrollTop();
 
-        $('.forum-postlist > :first').before($result);
+      return N.wire.emit('navigate.update', {
+        $: $result,
+        locals: res,
+        $before: $('.forum-postlist > :first')
+      }).then(() => {
 
         // update scroll so it would point at the same spot as before
         $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);
@@ -1039,9 +1051,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $result = $result.slice(idx + 1);
       }
 
-      return N.wire.emit('navigate.update', { $: $result, locals: res }).then(() => {
-        $('.forum-postlist > :last').after($result);
-
+      return N.wire.emit('navigate.update', {
+        $: $result,
+        locals: res,
+        $after: $('.forum-postlist > :last')
+      }).then(() => {
         // Update selection state
         _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
           $(`#post${postId}`)
