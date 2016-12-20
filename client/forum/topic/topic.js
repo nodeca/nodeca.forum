@@ -299,6 +299,37 @@ function delete_topic(as_moderator) {
 }
 
 
+// Show/hide loading placeholders when new posts are fetched,
+// adjust scroll when adding/removing top placeholder
+//
+function reset_loading_placeholders() {
+  let prev = $('.forum-topic__loading-prev');
+  let next = $('.forum-topic__loading-next');
+
+  // if post with hid=1 is loaded, hide top placeholder
+  if (topicState.top_marker <= 1) {
+    if (!prev.hasClass('hidden-xs-up')) {
+      $window.scrollTop($window.scrollTop() - prev.outerHeight(true));
+    }
+
+    prev.addClass('hidden-xs-up');
+  } else {
+    if (prev.hasClass('hidden-xs-up')) {
+      $window.scrollTop($window.scrollTop() + prev.outerHeight(true));
+    }
+
+    prev.removeClass('hidden-xs-up');
+  }
+
+  // if post with hid=max is loaded, hide bottom placeholder
+  if (topicState.bottom_marker >= topicState.max_post) {
+    next.addClass('hidden-xs-up');
+  } else {
+    next.removeClass('hidden-xs-up');
+  }
+}
+
+
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Display confirmation when answering in an inactive topic
@@ -825,7 +856,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         if (visible && post.hid !== hid) topicState.first_post_offset--;
       }
 
-      $('.forum-topic__loading-prev').toggleClass('hidden-xs-up', topicState.top_marker <= 1);
+      reset_loading_placeholders();
 
       res.pagination = {
         // used in paginator
@@ -919,8 +950,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
             topicState.bottom_marker = $('.forum-post:last').data('post-hid');
 
-            $('.forum-topic__loading-next').toggleClass('hidden-xs-up',
-              topicState.bottom_marker >= topicState.max_post);
+            reset_loading_placeholders();
 
             topicState.last_post_offset -= old_length - document.getElementsByClassName('forum-post').length;
           }
@@ -990,7 +1020,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
       topicState.bottom_marker = res.posts[res.posts.length - 1].hid;
 
-      $('.forum-topic__loading-next').toggleClass('hidden-xs-up', topicState.bottom_marker >= topicState.max_post);
+      reset_loading_placeholders();
 
       res.pagination = {
         // used in paginator
@@ -1086,7 +1116,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
             topicState.top_marker = $('.forum-post:first').data('post-hid');
 
-            $('.forum-topic__loading-prev').toggleClass('hidden-xs-up', topicState.top_marker <= 1);
+            reset_loading_placeholders();
 
             // update scroll so it would point at the same spot as before
             $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);

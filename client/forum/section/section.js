@@ -386,6 +386,37 @@ function save_selected_topics_immediate() {
 const save_selected_topics = _.debounce(save_selected_topics_immediate, 500);
 
 
+// Show/hide loading placeholders when new topics are fetched,
+// adjust scroll when adding/removing top placeholder
+//
+function reset_loading_placeholders() {
+  let prev = $('.forum-section__loading-prev');
+  let next = $('.forum-section__loading-next');
+
+  // if topmost topic is loaded, hide top placeholder
+  if (sectionState.reached_start) {
+    if (!prev.hasClass('hidden-xs-up')) {
+      $window.scrollTop($window.scrollTop() - prev.outerHeight(true));
+    }
+
+    prev.addClass('hidden-xs-up');
+  } else {
+    if (prev.hasClass('hidden-xs-up')) {
+      $window.scrollTop($window.scrollTop() + prev.outerHeight(true));
+    }
+
+    prev.removeClass('hidden-xs-up');
+  }
+
+  // if last topic is loaded, hide bottom placeholder
+  if (sectionState.reached_end) {
+    next.addClass('hidden-xs-up');
+  } else {
+    next.removeClass('hidden-xs-up');
+  }
+}
+
+
 // Load previously selected topics
 //
 N.wire.on('navigate.done:' + module.apiPath, function section_load_previously_selected_topics() {
@@ -673,7 +704,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
         sectionState.reached_start = true;
         $('.forum-section-root').addClass('forum-section-root__m-first-page');
-        $('.forum-section__loading-prev').addClass('hidden-xs-up');
+        reset_loading_placeholders();
       }
 
       if (res.topics.length === 0) return;
@@ -733,7 +764,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
           sectionState.bottom_marker = $('.forum-topicline:last').data('last-post');
 
           sectionState.reached_end = false;
-          $('.forum-section__loading-next').removeClass('hidden-xs-up');
+          reset_loading_placeholders();
         }
       }
 
@@ -778,7 +809,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
 
       if (res.topics.length !== LOAD_TOPICS_COUNT) {
         sectionState.reached_end = true;
-        $('.forum-section__loading-next').addClass('hidden-xs-up');
+        reset_loading_placeholders();
       }
 
       if (res.topics.length === 0) return;
@@ -868,8 +899,8 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
           sectionState.first_offset += old_length - document.getElementsByClassName('forum-topicline').length;
 
           sectionState.reached_start = false;
+          reset_loading_placeholders();
           $('.forum-section-root').removeClass('forum-section-root__m-first-page');
-          $('.forum-section__loading-prev').removeClass('hidden-xs-up');
         }
       }
 
