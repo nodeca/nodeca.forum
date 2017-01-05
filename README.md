@@ -1,7 +1,7 @@
 nodeca.forum
 ============
 
-[![Build Status](https://secure.travis-ci.org/nodeca/nodeca.forum.png)](http://travis-ci.org/nodeca/nodeca.forum)
+[![Build Status](https://travis-ci.org/nodeca/nodeca.forum.svg?branch=master)](http://travis-ci.org/nodeca/nodeca.forum)
 
 Nodeca Forum app.
 
