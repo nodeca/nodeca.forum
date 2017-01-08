@@ -58,7 +58,7 @@ article#content.forum-topic-root(
           self.section.is_writable;
 
       h1.forum-topic-title.page-head__title(itemprop='name')
-        .float-xs-right
+        .float-right
           != self.partial('@forum.topic.blocks.toolbar_controls')
 
         span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))

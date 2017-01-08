@@ -42,5 +42,5 @@ article#content.forum-index-root
               data-target='#cat_list_' + category.hid
             )
 
-        .forum-category__content(id='cat_list_' + category.hid, data-notify='#cat_box_' + category.hid).collapse.in
+        .forum-category__content(id='cat_list_' + category.hid, data-notify='#cat_box_' + category.hid).collapse.show
           != self.partial('@forum.blocks.sections_list', { subsections: category.child_list })
