@@ -14,7 +14,7 @@
             .section-title
               a(href="#", data-toggle="collapse", data-target='#section_' + section._id)= section.title
 
-            ul.section-usergroup-list.collapse.in(id='section_' + section._id)
+            ul.section-usergroup-list.collapse.show(id='section_' + section._id)
               each usergroup in self.usergroups
                 - var own_count, inherited_count, total_count
                 - own_count       = section.own_settings_count[usergroup._id]

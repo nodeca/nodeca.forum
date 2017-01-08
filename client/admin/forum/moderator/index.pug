@@ -16,7 +16,7 @@
             .section-title
               a(href="#", data-toggle="collapse", data-target='#moderator_' + moderator._id)= self.users[moderator._id].name
 
-            ul.section-moderator-list.collapse.in(id='moderator_' + moderator._id)
+            ul.section-moderator-list.collapse.show(id='moderator_' + moderator._id)
               each section in moderator.sections
                 - var count, override_type
                 - count = section.own + section.inherited;
