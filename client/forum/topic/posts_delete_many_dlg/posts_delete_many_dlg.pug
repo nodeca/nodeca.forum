@@ -1,22 +1,24 @@
 .modal.fade(tabindex='-1' role='dialog' aria-hidden='true')
-  .modal-dialog
+  .modal-dialog(role='document')
     .modal-content
       form(data-on-submit='forum.topic.posts_delete_many_dlg:submit')
         .modal-header
-          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
           h4.modal-title=self.t('title')
+          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
         .modal-body
           p.text-danger=self.t('confirmation_text')
-          input.form-control(type='text' name='reason' tabindex='1' placeholder=self.t('reason_input_help'))
+          .form-group
+            input.form-control(type='text' name='reason' tabindex='1' placeholder=self.t('reason_input_help'))
           if self.canDeleteHard
-            .radio
-              label
-                input(type='radio' name='method' tabindex='2' value='soft' checked=true)
-                =self.t('delete_soft')
-            .radio
-              label
-                input(type='radio' name='method' tabindex='3' value='hard')
-                =self.t('delete_hard')
+            .form-group
+              .form-check
+                label.form-check-label
+                  input.form-check-input(type='radio' name='method' tabindex='2' value='soft' checked=true)
+                  = ' ' + self.t('delete_soft')
+              .form-check
+                label.form-check-label
+                  input.form-check-input(type='radio' name='method' tabindex='3' value='hard')
+                  = ' ' + self.t('delete_hard')
         .modal-footer
           button.btn.btn-secondary(type='button' tabindex='4' data-dismiss='modal')=self.t('cancel')
           button.btn.btn-danger(type='submit' tabindex='5')=self.t('ok')

@@ -1,10 +1,10 @@
 form#moderator_select.modal.form-horizontal.fade(autocomplete="off", role='dialog', data-on-submit="admin.forum.section.create_moderator")
-  .modal-dialog
+  .modal-dialog(role='document')
     .modal-content
 
       .modal-header
-        button.close(type='button', aria-hidden=true, data-dismiss="modal") &times;
         h4.modal-title #{self.t('title')}
+        button.close(type='button', aria-hidden=true, data-dismiss="modal") &times;
 
       .modal-body
         .form-group.row

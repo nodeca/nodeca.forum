@@ -2,8 +2,8 @@
   .modal-dialog
     .modal-content
       .modal-header
-        button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
         h4.modal-title= self.t('title')
+        button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
       .modal-body.help-dlg__content
         if self.moderators.length
           ul.moderator-info__list

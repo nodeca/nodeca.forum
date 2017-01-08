@@ -1,6 +1,6 @@
 en-US:
   title: Delete topic
-  title_moderator: Moderation delete topic
+  title_moderator: 'Moderation: delete topic'
   confirmation_text: Are you sure you want to delete topic?
   reason_input_help: Deletion reason
   ok: OK
