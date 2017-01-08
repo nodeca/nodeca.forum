@@ -39,10 +39,10 @@
             // /ko
 
           .col-4
-            label.checkbox-inline
-              input(type="checkbox", data-bind="checked: overriden")
-              | 
-              = self.t('checkbox_override')
+            .form-check
+              label.form-check-label
+                input.form-check-input(type="checkbox", data-bind="checked: overriden")
+                = ' ' + self.t('checkbox_override')
         // /ko
 
       .form-group.row
