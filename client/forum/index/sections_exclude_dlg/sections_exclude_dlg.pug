@@ -19,13 +19,13 @@ mixin sections_tree(sections, deepness)
     .modal-content
       form(data-on-submit=self.apiPath + ':submit')
         .modal-header
-          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
           h4.modal-title=self.t('title')
+          button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
         .modal-body
           select.sections-exclude-dlg__sections.form-control(multiple=true tabindex='1' name='sections')
             +sections_tree(self.sections, 1)
         .modal-footer
-          button.btn.btn-link.float-left(
+          button.btn.btn-link.mr-auto(
             data-on-click=self.apiPath + ':unselect_all'
           )= self.t('unselect_all')
           button.btn.btn-secondary(type='button' tabindex='2' data-dismiss='modal')=self.t('cancel')
