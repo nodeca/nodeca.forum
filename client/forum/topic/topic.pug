@@ -88,7 +88,7 @@ article#content.forum-topic-root(
             | 
             =self.t('del_reason', { text: self.topic.del_reason })
 
-    .forum-topic__loading-prev(
+    .forum-topic__loading-prev.nojs-hide(
       class=(!(self.posts && self.posts.length > 0) || self.posts[0].hid <= 1 ? 'hidden-xs-up' : '')
     )
       span.icon.icon-loading-placeholder
@@ -106,7 +106,7 @@ article#content.forum-topic-root(
       }
     )!= self.partial('@forum.blocks.posts_list')
 
-    .forum-topic__loading-next(
+    .forum-topic__loading-next.nojs-hide(
       class=(!(self.posts && self.posts.length > 0) || self.posts[self.posts.length - 1].hid >= self.topic.cache.last_post_hid ? 'hidden-xs-up' : '')
     )
       span.icon.icon-loading-placeholder
@@ -121,7 +121,7 @@ article#content.forum-topic-root(
         )
           = self.t('post_add')
 
-    nav.forum-topic__footer-pagination
+    nav.forum-topic__footer-pagination.js-hide
       - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
       - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
       - var page_max     = Math.ceil(self.pagination.total / self.pagination.per_page) || 1;
