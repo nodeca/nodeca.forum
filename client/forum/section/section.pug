@@ -76,11 +76,11 @@ article#content.forum-section-root(
           span.icon.icon-loading-placeholder
 
         nav.pager.js-hide
-          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.prev_topic_hid });
-          a.btn.btn-secondary(href=link)= self.t('prev_page')
+          if self.head.prev
+            a.btn.btn-secondary(href=self.head.prev)= self.t('prev_page')
 
-          - var link = self.link_to(self.apiPath, { section_hid: self.section.hid, topic_hid: self.next_topic_hid });
-          a.btn.btn-secondary(href=link)= self.t('next_page')
+          if self.head.next
+            a.btn.btn-secondary(href=self.head.next)= self.t('next_page')
       else
         p.forum-section__notopics
           != self.t('no_topics')

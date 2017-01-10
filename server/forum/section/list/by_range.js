@@ -74,10 +74,8 @@ module.exports = function (N, apiPath) {
       if (topic_data) {
         env.res.head.next = N.router.linkTo('forum.section', {
           section_hid: env.params.section_hid,
-          topic_hid:   topic_data.hid
-        });
-
-        env.res.next_topic_hid = topic_data.hid;
+          topic_hid:   env.data.topics[env.data.topics.length - 1].hid
+        }) + '?next';
       }
     }
 
@@ -101,10 +99,8 @@ module.exports = function (N, apiPath) {
       if (topic_data) {
         env.res.head.prev = N.router.linkTo('forum.section', {
           section_hid: env.params.section_hid,
-          topic_hid:   topic_data.hid
-        });
-
-        env.res.prev_topic_hid = topic_data.hid;
+          topic_hid:   env.data.topics[0].hid
+        }) + '?prev';
       }
     }
   });

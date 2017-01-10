@@ -12,7 +12,9 @@ module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     section_hid: { type: 'integer', required: true },
-    topic_hid:   { type: 'integer', required: false }
+    topic_hid:   { type: 'integer', required: false },
+    prev:        { type: 'string',  required: false },
+    next:        { type: 'string',  required: false }
   });
 
   let buildTopicsIds = require('./list/_build_topics_ids_by_range.js')(N);
@@ -22,34 +24,45 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section.findById(id).lean(true).exec(), { maxAge: 60000 });
 
 
-  function buildTopicsIdsAndGetOffset(env) {
-    return env.extras.settings.fetch('topics_per_page').then(topics_per_page => {
-      let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+  const buildTopicsIdsAndGetOffset = Promise.coroutine(function* (env) {
+    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+    let limit_direction = typeof env.params.prev !== 'undefined' || typeof env.params.next !== 'undefined';
 
-      env.data.select_posts_start  = null;
-      env.data.select_posts_before = topics_per_page;
-      env.data.select_posts_after  = topics_per_page;
+    env.data.select_posts_start  = null;
 
-      if (env.params.topic_hid) {
-        return N.models.forum.Topic.findOne({
-          section: env.data.section._id,
-          hid:     env.params.topic_hid,
-          st:      { $in: statuses }
-        }).then(topic => {
+    if (!limit_direction || typeof env.params.prev !== 'undefined') {
+      env.data.select_posts_before = env.data.topics_per_page;
+    } else {
+      env.data.select_posts_before = 0;
+    }
 
-          if (topic) {
-            env.data.select_posts_start = topic[env.user_info.hb ? 'cache_hb' : 'cache'].last_post;
-          }
-        });
+    if (!limit_direction || typeof env.params.next !== 'undefined') {
+      env.data.select_posts_after  = env.data.topics_per_page;
+    } else {
+      env.data.select_posts_after  = 0;
+    }
+
+    if (env.params.topic_hid) {
+      let topic = yield N.models.forum.Topic.findOne({
+        section: env.data.section._id,
+        hid:     env.params.topic_hid,
+        st:      { $in: statuses }
+      });
+
+      if (topic) {
+        env.data.select_posts_start = topic[env.user_info.hb ? 'cache_hb' : 'cache'].last_post;
       }
-    }).then(() => buildTopicsIds(env));
-  }
+    }
+
+    return buildTopicsIds(env);
+  });
 
   // Subcall forum.topic_list
   //
-  N.wire.on(apiPath, function subcall_topic_list(env) {
+  N.wire.on(apiPath, function* subcall_topic_list(env) {
     env.data.section_hid         = env.params.section_hid;
     env.data.build_topics_ids    = buildTopicsIdsAndGetOffset;
+    env.data.topics_per_page     = yield env.extras.settings.fetch('topics_per_page');
 
     return N.wire.emit('internal:forum.topic_list', env);
   });
@@ -58,8 +71,6 @@ module.exports = function (N, apiPath) {
   // Fetch pagination
   //
   N.wire.after(apiPath, function* fetch_pagination(env) {
-    let topics_per_page = yield env.extras.settings.fetch('topics_per_page');
-
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
     //
@@ -106,7 +117,7 @@ module.exports = function (N, apiPath) {
 
     env.res.pagination = {
       total:        topic_count,
-      per_page:     topics_per_page,
+      per_page:     env.data.topics_per_page,
       chunk_offset: topic_offset
     };
   });
@@ -200,10 +211,8 @@ module.exports = function (N, apiPath) {
       if (topic_data) {
         env.res.head.next = N.router.linkTo('forum.section', {
           section_hid: env.params.section_hid,
-          topic_hid:   topic_data.hid
-        });
-
-        env.res.next_topic_hid = topic_data.hid;
+          topic_hid:   env.data.topics[env.data.topics.length - 1].hid
+        }) + '?next';
       }
     }
 
@@ -227,10 +236,8 @@ module.exports = function (N, apiPath) {
       if (topic_data) {
         env.res.head.prev = N.router.linkTo('forum.section', {
           section_hid: env.params.section_hid,
-          topic_hid:   topic_data.hid
-        });
-
-        env.res.prev_topic_hid = topic_data.hid;
+          topic_hid:   env.data.topics[0].hid
+        }) + '?prev';
       }
     }
 
