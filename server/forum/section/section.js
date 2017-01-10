@@ -17,7 +17,8 @@ module.exports = function (N, apiPath) {
     next:        { type: 'string',  required: false }
   });
 
-  let buildTopicsIds = require('./list/_build_topics_ids_by_range.js')(N);
+  let buildTopicIdsBefore = require('./list/_build_topic_ids_before.js')(N);
+  let buildTopicIdsAfter  = require('./list/_build_topic_ids_after.js')(N);
 
 
   let fetchSection = memoize(id =>
@@ -27,34 +28,39 @@ module.exports = function (N, apiPath) {
   const buildTopicsIdsAndGetOffset = Promise.coroutine(function* (env) {
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
     let limit_direction = typeof env.params.prev !== 'undefined' || typeof env.params.next !== 'undefined';
+    let current_topic;
 
-    env.data.select_posts_start  = null;
+    env.data.select_topics_start  = null;
 
-    if (!limit_direction || typeof env.params.prev !== 'undefined') {
-      env.data.select_posts_before = env.data.topics_per_page;
-    } else {
-      env.data.select_posts_before = 0;
-    }
-
-    if (!limit_direction || typeof env.params.next !== 'undefined') {
-      env.data.select_posts_after  = env.data.topics_per_page;
-    } else {
-      env.data.select_posts_after  = 0;
-    }
+    let results = [];
 
     if (env.params.topic_hid) {
-      let topic = yield N.models.forum.Topic.findOne({
+      current_topic = yield N.models.forum.Topic.findOne({
         section: env.data.section._id,
         hid:     env.params.topic_hid,
         st:      { $in: statuses }
       });
 
-      if (topic) {
-        env.data.select_posts_start = topic[env.user_info.hb ? 'cache_hb' : 'cache'].last_post;
+      if (current_topic) {
+        env.data.select_topics_start = current_topic[env.user_info.hb ? 'cache_hb' : 'cache'].last_post;
       }
+
+      results.push(current_topic._id);
     }
 
-    return buildTopicsIds(env);
+    if (!limit_direction || typeof env.params.prev !== 'undefined') {
+      env.data.select_topics_before = env.data.topics_per_page;
+      yield buildTopicIdsBefore(env);
+      results = env.data.topics_ids.slice(0).concat(results);
+    }
+
+    if (!limit_direction || typeof env.params.next !== 'undefined') {
+      env.data.select_topics_after = env.data.topics_per_page;
+      yield buildTopicIdsAfter(env);
+      results = results.concat(env.data.topics_ids);
+    }
+
+    env.data.topics_ids = results;
   });
 
   // Subcall forum.topic_list
@@ -211,7 +217,7 @@ module.exports = function (N, apiPath) {
       if (topic_data) {
         env.res.head.next = N.router.linkTo('forum.section', {
           section_hid: env.params.section_hid,
-          topic_hid:   env.data.topics[env.data.topics.length - 1].hid
+          topic_hid:   topic_data.hid
         }) + '?next';
       }
     }
@@ -236,7 +242,7 @@ module.exports = function (N, apiPath) {
       if (topic_data) {
         env.res.head.prev = N.router.linkTo('forum.section', {
           section_hid: env.params.section_hid,
-          topic_hid:   env.data.topics[0].hid
+          topic_hid:   topic_data.hid
         }) + '?prev';
       }
     }
