@@ -14,7 +14,7 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_hid: { type: 'integer', required: true },
     topic_hid:   { type: 'integer', required: false },
-    $query:      { type: 'string',  required: false }
+    $query:      { enum: [ 'prev', 'next' ], required: false }
   });
 
   let buildTopicIdsBefore = require('./list/_build_topic_ids_before.js')(N);
