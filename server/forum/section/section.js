@@ -3,9 +3,10 @@
 'use strict';
 
 
-const _       = require('lodash');
-const Promise = require('bluebird');
-const memoize = require('promise-memoize');
+const _           = require('lodash');
+const Promise     = require('bluebird');
+const memoize     = require('promise-memoize');
+const querystring = require('querystring');
 
 
 module.exports = function (N, apiPath) {
@@ -13,8 +14,7 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_hid: { type: 'integer', required: true },
     topic_hid:   { type: 'integer', required: false },
-    prev:        { type: 'string',  required: false },
-    next:        { type: 'string',  required: false }
+    $query:      { type: 'string',  required: false }
   });
 
   let buildTopicIdsBefore = require('./list/_build_topic_ids_before.js')(N);
@@ -26,8 +26,17 @@ module.exports = function (N, apiPath) {
 
 
   const buildTopicsIdsAndGetOffset = Promise.coroutine(function* (env) {
+    let prev = false, next = false;
+
+    if (env.params.$query) {
+      let query = querystring.parse(env.params.$query);
+
+      prev = typeof query.prev !== 'undefined';
+      next = typeof query.next !== 'undefined';
+    }
+
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
-    let limit_direction = typeof env.params.prev !== 'undefined' || typeof env.params.next !== 'undefined';
+    let limit_direction = prev || next;
     let current_topic;
 
     env.data.select_topics_start  = null;
@@ -48,13 +57,13 @@ module.exports = function (N, apiPath) {
       results.push(current_topic._id);
     }
 
-    if (!limit_direction || typeof env.params.prev !== 'undefined') {
+    if (!limit_direction || prev) {
       env.data.select_topics_before = env.data.topics_per_page;
       yield buildTopicIdsBefore(env);
       results = env.data.topics_ids.slice(0).concat(results);
     }
 
-    if (!limit_direction || typeof env.params.next !== 'undefined') {
+    if (!limit_direction || next) {
       env.data.select_topics_after = env.data.topics_per_page;
       yield buildTopicIdsAfter(env);
       results = results.concat(env.data.topics_ids);
