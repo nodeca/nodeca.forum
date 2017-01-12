@@ -52,9 +52,8 @@ module.exports = function (N, apiPath) {
 
       if (current_topic) {
         env.data.select_topics_start = current_topic[env.user_info.hb ? 'cache_hb' : 'cache'].last_post;
+        results.push(current_topic._id);
       }
-
-      results.push(current_topic._id);
     }
 
     if (!limit_direction || prev) {

@@ -40,22 +40,23 @@ module.exports = function (N) {
     let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
 
     let count = env.data.select_topics_after;
-    if (count <= 0) return;
 
-    let query = Topic.find();
+    if (count > 0) {
+      let query = Topic.find();
 
-    if (env.data.select_topics_start) {
-      query = query.where(lookup_key).lt(env.data.select_topics_start);
+      if (env.data.select_topics_start) {
+        query = query.where(lookup_key).lt(env.data.select_topics_start);
+      }
+
+      let results = yield query
+                            .where('section').equals(env.data.section._id)
+                            .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+                            .select('_id')
+                            .sort(`-${lookup_key}`)
+                            .limit(count)
+                            .lean(true);
+
+      env.data.topics_ids = _.map(results, '_id');
     }
-
-    let results = yield query
-                          .where('section').equals(env.data.section._id)
-                          .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
-                          .select('_id')
-                          .sort(`-${lookup_key}`)
-                          .limit(count)
-                          .lean(true);
-
-    env.data.topics_ids = _.map(results, '_id');
   });
 };
