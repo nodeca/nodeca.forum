@@ -1,6 +1,7 @@
 'use strict';
 
 
+const _        = require('lodash');
 const Promise  = require('bluebird');
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
@@ -9,6 +10,18 @@ const Schema   = Mongoose.Schema;
 ////////////////////////////////////////////////////////////////////////////////
 
 module.exports = function (N, collectionName) {
+
+  function set_content_type(name, value) {
+    let duplicate = _.invert(_.get(N, 'shared.content_type', {}))[value];
+
+    if (typeof duplicate !== 'undefined') {
+      throw new Error(`Duplicate content type id=${value} for ${name} and ${duplicate}`);
+    }
+
+    _.set(N, 'shared.content_type.' + name, value);
+  }
+
+  set_content_type('FORUM_TOPIC', 2);
 
   // Topic statuses are optimized for paged fetches & indexes
   // Some statises can have extended info in additionsl field:
