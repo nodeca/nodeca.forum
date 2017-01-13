@@ -122,7 +122,7 @@ module.exports = function (N, apiPath) {
       { 'for': env.params.post_id, from: env.user_info.user_id },
       {
         to: env.data.post.user,
-        type: N.models.users.Vote.types.FORUM_POST,
+        type: N.shared.content_type.FORUM_POST,
         value: env.params.value === 1 ? 1 : -1,
         hb: env.user_info.hb
       },

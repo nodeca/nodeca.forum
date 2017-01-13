@@ -8,7 +8,7 @@
       h1.page-head__title(itemprop='name')= self.t('title')
 
     - var url = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid });
-    - var link = '<a href="' + jade.escape(url) + '">' + jade.escape(self.topic.title) + '</a>';
+    - var link = '<a href="' + pug.escape(url) + '">' + pug.escape(self.topic.title) + '</a>';
     != self.partial('button')
     = ' '
     != self.t('message', { link: link })

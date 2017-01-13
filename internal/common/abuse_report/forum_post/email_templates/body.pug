@@ -1,7 +1,7 @@
 p
   if self.author
-    - var profile_name = jade.escape(self.author.user_name);
-    - var profile_url = jade.escape(self.link_to('users.member', { user_hid: self.author.user_hid }));
+    - var profile_name = pug.escape(self.author.user_name);
+    - var profile_url = pug.escape(self.link_to('users.member', { user_hid: self.author.user_hid }));
     !=self.t('header', { url: '<a href="' + profile_url + '">' + profile_name + '</a>' })
   else
     =self.t('header_auto')

@@ -25,6 +25,7 @@ let Vote;
 let UserGroup;
 let settings;
 let parser;
+let shared;
 
 
 const CATEGORY_COUNT = 3;
@@ -129,7 +130,7 @@ const addVotes = Promise.coroutine(function* (post) {
       to:     post.user,
       from:   user._id,
       'for':  post._id,
-      type:   Vote.types.FORUM_POST,
+      type:   shared.content_type.FORUM_POST,
       value
     });
 
@@ -390,6 +391,7 @@ module.exports = Promise.coroutine(function* (N) {
   Vote      = N.models.users.Vote;
   settings  = N.settings;
   parser    = N.parser;
+  shared    = N.shared;
 
   yield createUsers();
   yield createSections();

@@ -18,7 +18,7 @@ const _ = require('lodash');
 module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, function* fetch_infraction_info(info_env) {
-    let posts_ids = _.map(info_env.infractions.filter(i => i.src_type === 'FORUM_POST'), 'src');
+    let posts_ids = _.map(info_env.infractions.filter(i => i.src_type === N.shared.content_type.FORUM_POST), 'src');
 
     if (!posts_ids.length) return;
 

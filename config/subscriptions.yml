@@ -1,8 +1,8 @@
 users:
   subscriptions:
     forum_topic:
-      to_type: 1
+      to_type: FORUM_TOPIC
       priority: 10
     forum_section:
-      to_type: 2
+      to_type: FORUM_SECTION
       priority: 20

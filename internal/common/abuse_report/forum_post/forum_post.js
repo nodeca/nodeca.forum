@@ -24,7 +24,7 @@ module.exports = function (N, apiPath) {
   // Subcall `internal:forum.abuse_report` for `FORUM_POST` content type
   //
   N.wire.on('internal:common.abuse_report', function* forum_post_abuse_report_subcall(params) {
-    if (params.report.type === 'FORUM_POST') {
+    if (params.report.type === N.shared.content_type.FORUM_POST) {
       params.data = params.data || {};
       yield N.wire.emit('internal:common.abuse_report.forum_post', params);
     }

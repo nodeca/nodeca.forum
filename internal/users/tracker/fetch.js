@@ -12,8 +12,8 @@ const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, function* tracker_fetch_topics(env) {
-    let topic_subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_TOPIC });
-    let sect_subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_SECTION });
+    let topic_subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
+    let sect_subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_SECTION });
 
 
     // Fetch topics by topic subscriptions

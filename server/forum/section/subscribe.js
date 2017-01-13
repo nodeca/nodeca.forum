@@ -58,7 +58,7 @@ module.exports = function (N, apiPath) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
     yield N.models.users.Subscription.update(
       { user: env.user_info.user_id, to: env.data.section._id },
-      { type: env.params.type, to_type: N.models.users.Subscription.to_types.FORUM_SECTION },
+      { type: env.params.type, to_type: N.shared.content_type.FORUM_SECTION },
       { upsert: true });
   });
 };

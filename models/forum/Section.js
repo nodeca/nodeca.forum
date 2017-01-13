@@ -10,6 +10,18 @@ const Schema   = Mongoose.Schema;
 
 module.exports = function (N, collectionName) {
 
+  function set_content_type(name, value) {
+    let duplicate = _.invert(_.get(N, 'shared.content_type', {}))[value];
+
+    if (typeof duplicate !== 'undefined') {
+      throw new Error(`Duplicate content type id=${value} for ${name} and ${duplicate}`);
+    }
+
+    _.set(N, 'shared.content_type.' + name, value);
+  }
+
+  set_content_type('FORUM_SECTION', 3);
+
   let cache = {
     topic_count:      { type: Number, 'default': 0 },
     post_count:       { type: Number, 'default': 0 },

@@ -81,7 +81,7 @@ module.exports = function (N, apiPath) {
     // Update with `upsert` to avoid duplicates
     yield Subscription.update(
       { user: env.user_info.user_id, to: env.data.section._id },
-      { type: updatedType, to_type: Subscription.to_types.FORUM_SECTION },
+      { type: updatedType, to_type: N.shared.content_type.FORUM_SECTION },
       { upsert: true }
     );
   });

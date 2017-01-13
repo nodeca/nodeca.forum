@@ -11,6 +11,7 @@
 'use strict';
 
 
+const _       = require('lodash');
 const Promise = require('bluebird');
 const render  = require('nodeca.core/lib/system/render/common');
 
@@ -26,7 +27,9 @@ module.exports = function (N, apiPath) {
     if (!section_id) return;
 
     if (!params.log_templates) {
-      N.logger.warn(`Abuse report (${params.report.type}): log templates not specified`);
+      let type_name = _.invert(_.get(N, 'shared.content_type', {}))[params.report.type];
+
+      N.logger.warn(`Abuse report (${type_name}): log templates not specified`);
       return;
     }
 

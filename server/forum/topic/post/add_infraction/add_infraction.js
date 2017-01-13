@@ -107,7 +107,7 @@ module.exports = function (N, apiPath) {
       reason,
       points: env.params.points,
       src: env.data.post._id,
-      src_type: 'FORUM_POST'
+      src_type: N.shared.content_type.FORUM_POST
     });
 
     if (env.params.expire > 0) {

@@ -59,7 +59,7 @@ module.exports = function (N, apiPath) {
       { user: env.user_info.user_id, to: env.data.topic._id },
       {
         type: env.params.type,
-        to_type: N.models.users.Subscription.to_types.FORUM_TOPIC
+        to_type: N.shared.content_type.FORUM_TOPIC
       },
       { upsert: true });
   });

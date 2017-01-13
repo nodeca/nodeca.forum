@@ -11,7 +11,7 @@ const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 module.exports = function (N) {
 
   N.wire.on('internal:users.subscriptions.fetch', function* subscriptions_fetch_topics(env) {
-    let subs = _.filter(env.data.subscriptions, { to_type: N.models.users.Subscription.to_types.FORUM_TOPIC });
+    let subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
 
     // Fetch topics
     let topics = yield N.models.forum.Topic.find().where('_id').in(_.map(subs, 'to')).lean(true);
