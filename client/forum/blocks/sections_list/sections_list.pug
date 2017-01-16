@@ -10,7 +10,7 @@
     .forum-section(id='cat' + section.hid)
 
       //- Add 'unread' class & #id below, for new data
-      .forum-section__summary.forum-section__cell
+      .forum-section__summary
 
         h3.forum-section__title
           a.forum-section__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))= section.title
@@ -30,17 +30,17 @@
         //- cover all space with link for small screens
         a.forum-section__overlay.hidden-md-up(href=self.link_to('forum.section', { section_hid: section.hid }))
 
-      .forum-section__stats.forum-section__cell.hidden-sm-down
+      .forum-section__stats.hidden-sm-down
         if last_ts
           != self.timetag(last_ts, 'relative')
 
-      .forum-section__stats.forum-section__cell.hidden-sm-down(
+      .forum-section__stats.hidden-sm-down(
         title=self.t('topics_tip')
       )
         span.icon.icon-threads.icon-space-after
         = self.number_short(section.cache.topic_count)
 
-      .forum-section__stats.forum-section__cell.hidden-sm-down(
+      .forum-section__stats.hidden-sm-down(
         title=self.t('posts_tip')
       )
         span.icon.icon-posts.icon-space-after

@@ -10,19 +10,16 @@
   width 100%
 
 .forum-section
-  display table-row
-
-.forum-section__cell
-  display table-cell
-  padding-top 1rem
-  padding-bottom 1rem
-  height 3.5rem           // = min-height for table
-  vertical-align middle
-  // for link overlay
-  position relative
+  display flex
+  align-items center
+  // min-height for thin row
+  min-height 3.5rem
+  // keep some space for fat rows (with subsections & descriptions)
+  padding .7rem 0
 
 .forum-section__stats
-  width 6rem
+  flex 0 0 0%
+  min-width 6rem
   font-size $font-size-sm
   color $body-color-secondary + 30%
   text-align right
@@ -39,6 +36,7 @@
 triangle-size = .25rem
 
 .forum-section__summary
+  flex 1 1 0%
   padding-left 1.25rem
   position relative
   width auto
