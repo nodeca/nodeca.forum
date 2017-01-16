@@ -8,23 +8,21 @@
 //
 
 .forum-topicline
-  display table-row
-
-.forum-topicline__cell
-  display table-cell
-  padding-top 1rem
-  padding-bottom 1rem
-  height 4.5rem           // = min-height for table
-  vertical-align middle
+  display flex
+  align-items center
+  padding .5rem 0
 
 //
 // First column
 //
 
 .forum-topicline__summary
-  padding-left 1.25rem
+  flex 1 1 0%
+  padding .5rem 0 .5rem 1.25rem
   position relative
   width auto
+  // for ellipsis in second line on narrow screens
+  overflow hidden
 
 .forum-topicline__title
   position relative
@@ -86,7 +84,8 @@
 //
 
 .forum-topicline__stat
-  width 6rem
+  flex 0 0 0%
+  min-width 6rem
   font-size $font-size-sm
   color $body-color-secondary + 30%
   text-align right
@@ -102,9 +101,11 @@
 //
 
 .forum-topicline__select
-  width 3rem
+  flex 0 0 0%
+  min-width 3rem
   text-align right
-  vertical-align middle
+  margin 0
+  padding .5rem 0
 .forum-topicline__select-cb
   position relative
   top 1px
@@ -114,8 +115,8 @@
 .forum-topicline__unread-marker
   position absolute
   left 0
-  top .5rem
-  bottom .5rem
+  top 0
+  bottom 0
   width 0.2rem
   border-radius 0.125rem
   background-color $decorator-color
