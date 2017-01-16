@@ -20,9 +20,8 @@
 //
 
 .forum-post__meta
-  display table
-  table-layout fixed
-  width 100%
+  display flex
+  align-items flex-end
   margin-bottom 1rem
   color $body-color-secondary
   font-size $font-size-xs
@@ -30,14 +29,16 @@
   background-color white
 
 .forum-post__meta-flex
+  flex 1 1 0%
+  display flex
+  overflow hidden
   border-bottom 1px solid $decorator-color
-  display table-cell
-  vertical-align bottom
   padding-bottom .375rem
 
 .forum-post__meta-avatar
+  flex 0 0 0%
   display none
-  width 45px
+  min-width 45px
   vertical-align bottom
 
 .forum-post__userpic-img-sm
@@ -47,13 +48,8 @@
   border-radius 3px
   box-shadow 0 0 1px $body-color-secondary
 
-.forum-post__meta-content
-  display flex
-  table-layout fixed
-  width 100%
-
 .forum-post__meta-author
-  width 100%
+  flex 1 1 0%
   font-size $font-size-base
   line-height 1.25em
   color $body-color-secondary - 10%
@@ -62,7 +58,7 @@
 .forum-post__meta-info
   white-space nowrap
   align-self flex-end
-  margin-left 1rem
+  padding-left 1rem
 
 .forum-post__author
   color inherit
@@ -82,11 +78,11 @@
   color inherit
 
 .forum-post__select
-  display table-cell
+  flex 0 0 0%
   border-bottom 1px solid $decorator-color
-  width 2rem
+  min-width 2rem
   text-align center
-  vertical-align middle
+  margin-bottom 0
   padding-bottom .5rem
 .forum-post__select-cb
   position relative
@@ -142,18 +138,19 @@ $aside-size-md = 80px
   .forum-post__content
     min-height unset
   .forum-post__meta-avatar
-    display table-cell
+    display block
   .forum-post__meta-flex
-  .forum-post__select
     padding-bottom .125rem
+  .forum-post__select
+    padding-bottom .8rem
   .forum-post__content
     margin 0
-  .forum-post__meta-content
+  .forum-post__meta-flex
     flex-direction column
   .forum-post__meta-author
     font-size $font-size-sm
   .forum-post__meta-info
-    margin-left 0
+    padding-left 0
     font-size $font-size-xs
     margin-bottom .125rem
     color $body-color-secondary + 20%

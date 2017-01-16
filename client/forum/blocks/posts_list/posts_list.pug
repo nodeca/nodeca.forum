@@ -53,36 +53,35 @@ each post, post_idx in self.posts
             .forum-post__userpic-img-sm.av-anon
 
         .forum-post__meta-flex
-          .forum-post__meta-content
-            .forum-post__meta-author
-              span.forum-post__ignored-mark.icon.icon-ignore.icon-space-after
-              if user
-                a.forum-post__author._ucard-popover(
-                  href=self.link_to('users.member', { user_hid: user.hid })
-                  data-user-id=post.user
-                ) #{user.name}
-              else if post.legacy_nick
-                span.forum-post__author=post.legacy_nick
+          .forum-post__meta-author
+            span.forum-post__ignored-mark.icon.icon-ignore.icon-space-after
+            if user
+              a.forum-post__author._ucard-popover(
+                href=self.link_to('users.member', { user_hid: user.hid })
+                data-user-id=post.user
+              ) #{user.name}
+            else if post.legacy_nick
+              span.forum-post__author=post.legacy_nick
 
-            .forum-post__meta-info
-              if post.to && post.to_user && self.users[post.to_user]
-                if !post_idx || self.posts[post_idx - 1]._id !== post.to
-                  - var _reply_to_params = {};
-                  - _reply_to_params.section_hid = post.to_fhid || self.section.hid;
-                  - _reply_to_params.topic_hid   = post.to_thid || self.topic.hid;
-                  - _reply_to_params.post_hid    = post.to_phid;
+          .forum-post__meta-info
+            if post.to && post.to_user && self.users[post.to_user]
+              if !post_idx || self.posts[post_idx - 1]._id !== post.to
+                - var _reply_to_params = {};
+                - _reply_to_params.section_hid = post.to_fhid || self.section.hid;
+                - _reply_to_params.topic_hid   = post.to_thid || self.topic.hid;
+                - _reply_to_params.post_hid    = post.to_phid;
 
-                  - var _reply_to_anchor = self.link_to('forum.topic', _reply_to_params);
-                  - var _reply_to_user = self.users[post.to_user]
+                - var _reply_to_anchor = self.link_to('forum.topic', _reply_to_params);
+                - var _reply_to_user = self.users[post.to_user]
 
-                  a.forum-post__reply-to-link(href=_reply_to_anchor)
-                    span.icon.icon-reply-for.icon-space-after
-                    img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
-                    = _reply_to_user.nick
+                a.forum-post__reply-to-link(href=_reply_to_anchor)
+                  span.icon.icon-reply-for.icon-space-after
+                  img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
+                  = _reply_to_user.nick
 
-              - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid });
-              a.forum-post__link(href=_post_anchor)
-                != self.timetag(post.ts, 'relative')
+            - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid });
+            a.forum-post__link(href=_post_anchor)
+              != self.timetag(post.ts, 'relative')
 
         if many_ops_permitted
           label.forum-post__select(title=self.t('multiselect_hint'))
@@ -295,36 +294,35 @@ each post, post_idx in self.posts
             .forum-post__userpic-img-sm
 
         .forum-post__meta-flex
-          .forum-post__meta-content
-            .forum-post__meta-author
-              span.forum-post__ignored-mark.icon.icon-ignore.icon-space-after
-              if user
-                a.forum-post__author._ucard-popover(
-                  href=self.link_to('users.member', { user_hid: user.hid })
-                  data-user-id=post.user
-                ) #{user.name}
-              else if post.legacy_nick
-                span.forum-post__author=post.legacy_nick
+          .forum-post__meta-author
+            span.forum-post__ignored-mark.icon.icon-ignore.icon-space-after
+            if user
+              a.forum-post__author._ucard-popover(
+                href=self.link_to('users.member', { user_hid: user.hid })
+                data-user-id=post.user
+              ) #{user.name}
+            else if post.legacy_nick
+              span.forum-post__author=post.legacy_nick
 
-            .forum-post__meta-info
-              if post.to && post.to_user && self.users[post.to_user]
-                if !post_idx || self.posts[post_idx - 1]._id !== post.to
-                  - var _reply_to_params = {};
-                  - _reply_to_params.section_hid = post.to_fhid || self.section.hid;
-                  - _reply_to_params.topic_hid   = post.to_thid || self.topic.hid;
-                  - _reply_to_params.post_hid    = post.to_phid;
+          .forum-post__meta-info
+            if post.to && post.to_user && self.users[post.to_user]
+              if !post_idx || self.posts[post_idx - 1]._id !== post.to
+                - var _reply_to_params = {};
+                - _reply_to_params.section_hid = post.to_fhid || self.section.hid;
+                - _reply_to_params.topic_hid   = post.to_thid || self.topic.hid;
+                - _reply_to_params.post_hid    = post.to_phid;
 
-                  - var _reply_to_anchor = self.link_to('forum.topic', _reply_to_params);
-                  - var _reply_to_user = self.users[post.to_user]
+                - var _reply_to_anchor = self.link_to('forum.topic', _reply_to_params);
+                - var _reply_to_user = self.users[post.to_user]
 
-                  a.forum-post__reply-to-link(href=_reply_to_anchor)
-                    span.icon.icon-reply-for.icon-space-after
-                    img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
-                    = _reply_to_user.nick
+                a.forum-post__reply-to-link(href=_reply_to_anchor)
+                  span.icon.icon-reply-for.icon-space-after
+                  img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
+                  = _reply_to_user.nick
 
-              - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid });
-              a.forum-post__link(href=_post_anchor)
-                != self.timetag(post.ts, 'relative')
+            - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid });
+            a.forum-post__link(href=_post_anchor)
+              != self.timetag(post.ts, 'relative')
 
         if many_ops_permitted
           label.forum-post__select(title=self.t('multiselect_hint'))
