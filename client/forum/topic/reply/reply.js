@@ -79,7 +79,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-footer').append(N.runtime.render(module.apiPath + '.options_btn'));
     })
     .on('submit.nd.mdedit', () => {
-      $editor.find('.mdedit__submit').addClass('disabled');
+      $editor.find('.mdedit-btn__submit').addClass('disabled');
 
       let params = {
         section_hid:              data.section_hid,
@@ -99,7 +99,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         N.MDEdit.hide({ removeDraft: true });
         N.wire.emit('navigate.to', response.redirect_url);
       }).catch(err => {
-        $editor.find('.mdedit__submit').removeClass('disabled');
+        $editor.find('.mdedit-btn__submit').removeClass('disabled');
         N.wire.emit('error', err);
       });
 
