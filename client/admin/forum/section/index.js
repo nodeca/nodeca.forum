@@ -76,9 +76,8 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   if (!bloodhound) {
     bloodhound = new Bloodhound({
       remote: {
-        // Hack to get nick in first param of transport call
-        url: '%QUERY',
-        wildcard: '%QUERY',
+        url: 'unused', // bloodhound throws if it's not defined
+        prepare(nick) { return nick; },
         // Reroute request to rpc
         transport(req, onSuccess, onError) {
           N.io.rpc('admin.core.user_lookup', { nick: req.url, strict: false })
