@@ -23,6 +23,11 @@ packages:
       - server/forum
       - internal/forum
 
+  search:
+    entries:
+      - client/search
+      - internal/search
+
   users:
     entries:
       - client/users

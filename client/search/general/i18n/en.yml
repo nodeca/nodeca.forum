@@ -1,0 +1,3 @@
+en-US:
+  forum_topics:
+    replies: "#{count} ((reply|replies))"

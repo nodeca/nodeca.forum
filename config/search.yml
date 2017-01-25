@@ -1,0 +1,23 @@
+search:
+  general:
+    menu:
+      forum_topics:
+        priority: 10
+
+      forum_posts:
+        priority: 20
+
+  indexes:
+    'forum_posts : _default':
+      rt_field: [ content ]
+      rt_attr_timestamp: [ ts ]
+      rt_attr_string: [ object_id ]
+      rt_attr_bigint: [ topic_uid, section_uid ]
+      rt_attr_bool: [ public, visible ]
+
+    'forum_topics : _default':
+      rt_field: [ content ]
+      rt_attr_timestamp: [ ts ]
+      rt_attr_string: [ object_id ]
+      rt_attr_bigint: [ section_uid ]
+      rt_attr_bool: [ public, visible ]
