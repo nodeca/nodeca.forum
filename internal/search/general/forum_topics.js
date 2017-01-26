@@ -33,9 +33,11 @@ module.exports = function (N, apiPath) {
   }
 
 
-  // Execute actual search
+  // Send sql query to sphinx, get a response
   //
   N.wire.on(apiPath, function* execute_search(locals) {
+    locals.sandbox = locals.sandbox || {};
+
     let query  = 'SELECT object_id FROM forum_topics WHERE MATCH(?) AND public=1';
     let params = [ sphinx_escape(locals.params.query) ];
 
@@ -59,51 +61,89 @@ module.exports = function (N, apiPath) {
       "SHOW META LIKE 'total_found'"
     ]);
 
-    let topics = yield N.models.forum.Topic.find()
-                           .where('_id').in(_.map(results[0], 'object_id'))
-                           .lean(true);
+    let topics = _.keyBy(
+      yield N.models.forum.Topic.find()
+                .where('_id').in(_.map(results[0], 'object_id'))
+                .lean(true),
+      '_id'
+    );
 
-    let sections = yield N.models.forum.Section.find()
-                             .where('_id').in(_.map(topics, 'section'))
-                             .lean(true);
+    // copy topics preserving order
+    locals.sandbox.topics = results[0].map(result => topics[result.object_id]).filter(Boolean);
 
-    let topics_by_id   = _.keyBy(topics, '_id');
+    locals.sandbox.sections = yield N.models.forum.Section.find()
+                                        .where('_id')
+                                        .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
+                                        .lean(true);
 
-    let topics_sanitized   = _.keyBy(yield sanitize_topic(N, topics, locals.params.user_info), '_id');
-    let sections_sanitized = _.keyBy(yield sanitize_section(N, sections, locals.params.user_info), '_id');
+    locals.count = Number(results[1][0].Value);
+  });
 
-    let users = {};
 
-    let access_env = { params: { topics, user_info: locals.params.user_info } };
+  // Check permissions for each topic
+  //
+  N.wire.on(apiPath, function* check_permissions(locals) {
+    let access_env = { params: { topics: locals.sandbox.topics, user_info: locals.params.user_info } };
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
-    let is_topic_visible = {};
+    let sections_by_id = _.keyBy(locals.sandbox.sections, '_id');
+    let sections_used = {};
 
-    topics.forEach((topic, idx) => {
-      is_topic_visible[topic._id] = !!access_env.data.access_read[idx];
+    locals.sandbox.topics = locals.sandbox.topics.filter((topic, idx) => {
+      let section = sections_by_id[topic.section];
+      if (!section) return false;
+
+      if (access_env.data.access_read[idx]) {
+        sections_used[section._id] = section;
+        return true;
+      }
+
+      return false;
     });
 
+    locals.sandbox.sections = _.values(sections_used);
+  });
+
+
+  // Sanitize results
+  //
+  N.wire.on(apiPath, function* sanitize(locals) {
+    locals.sandbox.topics   = yield sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
+    locals.sandbox.sections = yield sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
+  });
+
+
+  // Fill results
+  //
+  N.wire.on(apiPath, function fill_results(locals) {
     locals.results = [];
 
-    for (let { object_id } of results[0]) {
-      if (!is_topic_visible[object_id]) continue;
+    let sections_by_id = _.keyBy(locals.sandbox.sections, '_id');
 
-      let topic = topics_by_id[object_id];
-      if (!topic) continue;
+    locals.sandbox.topics.forEach(topic => {
+      let section = sections_by_id[topic.section];
+      if (!section) return;
+
+      locals.results.push({ topic, section });
+    });
+  });
+
+
+  // Fill users
+  //
+  N.wire.on(apiPath, function fill_users(locals) {
+    let users = {};
+
+    locals.results.forEach(result => {
+      let topic = result.topic;
 
       users[topic.cache.first_user] = true;
       users[topic.cache.last_user] = true;
 
       if (topic.del_by) users[topic.del_by] = true;
-
-      locals.results.push({
-        topic:   topics_sanitized[topic._id],
-        section: sections_sanitized[topic.section]
-      });
-    }
+    });
 
     locals.users = Object.keys(users);
-    locals.count = Number(results[1][0].Value);
   });
 };

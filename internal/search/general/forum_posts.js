@@ -20,6 +20,7 @@
 
 
 const _                = require('lodash');
+const Promise          = require('bluebird');
 const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 const sanitize_post    = require('nodeca.forum/lib/sanitizers/post');
@@ -34,9 +35,11 @@ module.exports = function (N, apiPath) {
   }
 
 
-  // Execute actual search
+  // Send sql query to sphinx, get a response
   //
   N.wire.on(apiPath, function* execute_search(locals) {
+    locals.sandbox = locals.sandbox || {};
+
     let query  = 'SELECT object_id FROM forum_posts WHERE MATCH(?) AND public=1';
     let params = [ sphinx_escape(locals.params.query) ];
 
@@ -60,35 +63,48 @@ module.exports = function (N, apiPath) {
       "SHOW META LIKE 'total_found'"
     ]);
 
-    let posts = yield N.models.forum.Post.find()
-                          .where('_id').in(_.map(results[0], 'object_id'))
-                          .lean(true);
+    let posts = _.keyBy(
+      yield N.models.forum.Post.find()
+                .where('_id').in(_.map(results[0], 'object_id'))
+                .lean(true),
+      '_id'
+    );
 
-    let topics = yield N.models.forum.Topic.find()
-                           .where('_id').in(_.map(posts, 'topic'))
-                           .lean(true);
+    // copy posts preserving order
+    locals.sandbox.posts = results[0].map(result => posts[result.object_id]).filter(Boolean);
 
-    let sections = yield N.models.forum.Section.find()
-                             .where('_id').in(_.map(topics, 'section'))
-                             .lean(true);
+    locals.sandbox.topics = yield N.models.forum.Topic.find()
+                                      .where('_id')
+                                      .in(_.uniq(locals.sandbox.posts.map(post => String(post.topic))))
+                                      .lean(true);
 
-    let posts_by_id    = _.keyBy(posts, '_id');
-    let topics_by_id   = _.keyBy(topics, '_id');
+    locals.sandbox.sections = yield N.models.forum.Section.find()
+                                        .where('_id')
+                                        .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
+                                        .lean(true);
 
-    let posts_sanitized    = _.keyBy(yield sanitize_post(N, posts, locals.params.user_info), '_id');
-    let topics_sanitized   = _.keyBy(yield sanitize_topic(N, topics, locals.params.user_info), '_id');
-    let sections_sanitized = _.keyBy(yield sanitize_section(N, sections, locals.params.user_info), '_id');
+    locals.count = Number(results[1][0].Value);
+  });
 
-    let users = {};
 
-    locals.results = [];
+  // Check permissions for each post
+  //
+  N.wire.on(apiPath, function* check_permissions(locals) {
+    let topics_by_id   = _.keyBy(locals.sandbox.topics, '_id');
+    let sections_by_id = _.keyBy(locals.sandbox.sections, '_id');
 
-    for (let { object_id } of results[0]) {
-      let post = posts_by_id[object_id];
-      if (!post) continue;
+    let topics_used   = {};
+    let sections_used = {};
 
+    locals.sandbox.posts = (yield Promise.map(locals.sandbox.posts, Promise.coroutine(function* (post) {
       let topic = topics_by_id[post.topic];
-      if (!topic) continue;
+      if (!topic) return;
+
+      let section = sections_by_id[topic.section];
+      if (!section) return;
+
+      topics_used[topic._id] = topic;
+      sections_used[section._id] = section;
 
       let access_env = { params: {
         topic,
@@ -98,21 +114,57 @@ module.exports = function (N, apiPath) {
 
       yield N.wire.emit('internal:forum.access.post', access_env);
 
-      if (!access_env.data.access_read) continue;
+      return access_env.data.access_read ? post : null;
+    }))).filter(Boolean);
+
+    locals.sandbox.topics   = _.values(topics_used);
+    locals.sandbox.sections = _.values(sections_used);
+  });
+
+
+  // Sanitize results
+  //
+  N.wire.on(apiPath, function* sanitize(locals) {
+    locals.sandbox.posts    = yield sanitize_post(N, locals.sandbox.posts, locals.params.user_info);
+    locals.sandbox.topics   = yield sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
+    locals.sandbox.sections = yield sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
+  });
+
+
+  // Fill results
+  //
+  N.wire.on(apiPath, function fill_results(locals) {
+    locals.results = [];
+
+    let topics_by_id = _.keyBy(locals.sandbox.topics, '_id');
+    let sections_by_id = _.keyBy(locals.sandbox.sections, '_id');
+
+    locals.sandbox.posts.forEach(post => {
+      let topic = topics_by_id[post.topic];
+      if (!topic) return;
+
+      let section = sections_by_id[topic.section];
+      if (!section) return;
+
+      locals.results.push({ post, topic, section });
+    });
+  });
+
+
+  // Fill users
+  //
+  N.wire.on(apiPath, function fill_users(locals) {
+    let users = {};
+
+    locals.results.forEach(result => {
+      let post = result.post;
 
       if (post.user) users[post.user] = true;
       if (post.to_user) users[post.to_user] = true;
       if (post.del_by) users[post.del_by] = true;
       if (post.import_users) post.import_users.forEach(id => { users[id] = true; });
-
-      locals.results.push({
-        post:    posts_sanitized[post._id],
-        topic:   topics_sanitized[topic._id],
-        section: sections_sanitized[topic.section]
-      });
-    }
+    });
 
     locals.users = Object.keys(users);
-    locals.count = Number(results[1][0].Value);
   });
 };
