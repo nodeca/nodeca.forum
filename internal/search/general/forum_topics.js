@@ -29,7 +29,7 @@ module.exports = function (N, apiPath) {
   // Character list is taken from:
   // http://sphinxsearch.com/forum/view.html?id=10003
   function sphinx_escape(query) {
-    return query.replace(/[\\()|\-!@~"&/^$=]/g, '\\$1');
+    return query.replace(/([\\()|\-!@~"&/^$=])/g, '\\$1');
   }
 
 
