@@ -22,4 +22,5 @@ each result in self.results
       li.search-general__info-item
         != self.timetag(result.post.ts, 'relative')
 
-    .search-general__content!= result.post.html
+    .search-general__content
+      .markup!= result.post.html
