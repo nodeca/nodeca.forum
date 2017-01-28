@@ -1,32 +1,37 @@
-each result in self.results
-  .search-result
-    a.search-result__title(
-      href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid })
-    )= result.topic.title
+if self.results.length
 
-    .search-result__stat-narrow.hidden-sm-up
-      a.search-result__stat-link(
-        href=self.link_to('forum.section', { section_hid: result.section.hid })
-      )= result.section.title
+  each result in self.results
+    .search-result
+      a.search-result__title(
+        href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid })
+      )= result.topic.title
 
-    ul.search-result__stat
-      li.search-result__stat-item.hidden-xs-down
+      .search-result__stat-narrow.hidden-sm-up
         a.search-result__stat-link(
           href=self.link_to('forum.section', { section_hid: result.section.hid })
         )= result.section.title
 
-      //-
+      ul.search-result__stat
+        li.search-result__stat-item.hidden-xs-down
+          a.search-result__stat-link(
+            href=self.link_to('forum.section', { section_hid: result.section.hid })
+          )= result.section.title
+
+        //-
+          li.search-result__stat-item
+            - var user = self.users[result.topic.cache.first_user]
+            if user
+              img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
+              a.search-result__stat-link._ucard-popover(
+                href=self.link_to('users.member', { user_hid: user.hid })
+                data-user-id=result.topic.cache.first_user
+              )= user.nick
+
         li.search-result__stat-item
-          - var user = self.users[result.topic.cache.first_user]
-          if user
-            img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
-            a.search-result__stat-link._ucard-popover(
-              href=self.link_to('users.member', { user_hid: user.hid })
-              data-user-id=result.topic.cache.first_user
-            )= user.nick
+          != self.timetag(result.topic.cache.last_ts, 'relative')
 
-      li.search-result__stat-item
-        != self.timetag(result.topic.cache.last_ts, 'relative')
+        li.search-result__stat-item
+          = self.t('replies', result.topic.cache.post_count - 1)
 
-      li.search-result__stat-item
-        = self.t('replies', result.topic.cache.post_count - 1)
+else
+  .search-results__empty= self.t('not_found')

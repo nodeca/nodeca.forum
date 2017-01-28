@@ -1,3 +1,6 @@
 en-US:
   forum_topics:
     replies: "#{count} ((reply|replies))"
+    not_found: No results.
+  forum_posts:
+    not_found: No results.
