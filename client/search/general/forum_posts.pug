@@ -1,26 +1,26 @@
 each result in self.results
-  .search-general__item
-    a.search-general__title(
+  .search-result
+    a.search-result__title(
       href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })
     )= result.topic.title
 
-    ul.search-general__info
-      li.search-general__info-item
-        a.search-general__info-link(href=self.link_to('forum.section', { section_hid: result.section.hid }))= result.section.title
+    ul.search-result__stat
+      li.search-result__stat-item
+        a.search-result__stat-link(href=self.link_to('forum.section', { section_hid: result.section.hid }))= result.section.title
 
-      li.search-general__info-item
+      li.search-result__stat-item
         - var user = self.users[result.post.user]
         if user
-          img.search-general__info-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
-          a.search-general__info-link._ucard-popover(
+          img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
+          a.search-result__stat-link._ucard-popover(
             href=self.link_to('users.member', { user_hid: user.hid })
             data-user-id=result.post.user
           )= user.nick
         else if result.post.legacy_nick
           = result.post.legacy_nick
 
-      li.search-general__info-item
+      li.search-result__stat-item
         != self.timetag(result.post.ts, 'relative')
 
-    .search-general__content
+    .search-result__content
       .markup!= result.post.html
