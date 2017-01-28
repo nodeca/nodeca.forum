@@ -9,6 +9,9 @@ each result in self.results
         a.search-result__stat-link(href=self.link_to('forum.section', { section_hid: result.section.hid }))= result.section.title
 
       li.search-result__stat-item
+        != self.timetag(result.post.ts, 'relative')
+
+      li.search-result__stat-item
         - var user = self.users[result.post.user]
         if user
           img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
@@ -18,9 +21,6 @@ each result in self.results
           )= user.nick
         else if result.post.legacy_nick
           = result.post.legacy_nick
-
-      li.search-result__stat-item
-        != self.timetag(result.post.ts, 'relative')
 
     .search-result__content
       .markup!= result.post.html

@@ -21,7 +21,7 @@ each result in self.results
             )= user.nick
 
       li.search-result__stat-item
-        = self.t('replies', result.topic.cache.post_count - 1)
+        != self.timetag(result.topic.cache.last_ts, 'relative')
 
       li.search-result__stat-item
-        != self.timetag(result.topic.cache.last_ts, 'relative')
+        = self.t('replies', result.topic.cache.post_count - 1)
