@@ -1,5 +1,5 @@
 each result in self.results
-  .search-result
+  .search-result.search-result__m-with-content
     a.search-result__title(
       href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })
     )= result.topic.title
