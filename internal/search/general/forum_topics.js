@@ -132,9 +132,8 @@ module.exports = function (N, apiPath) {
     locals.results.forEach(result => {
       let topic = result.topic;
 
-      users[topic.cache.first_user] = true;
-      users[topic.cache.last_user] = true;
-
+      if (topic.cache.first_user) users[topic.cache.first_user] = true;
+      if (topic.cache.last_user) users[topic.cache.last_user] = true;
       if (topic.del_by) users[topic.del_by] = true;
     });
 
