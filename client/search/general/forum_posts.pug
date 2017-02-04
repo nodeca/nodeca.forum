@@ -1,35 +1,36 @@
 if self.results.length
 
   each result in self.results
-    .search-result.search-result__m-with-content
-      a.search-result__title(
-        href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })
-      )= result.topic.title
+    article.search-result.search-result__m-with-content
+      header.search-result__header
+        a.search-result__title(
+          href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })
+        )= result.topic.title
 
-      .search-result__stat-narrow.hidden-sm-up
-        a.search-result__stat-link(
-          href=self.link_to('forum.section', { section_hid: result.section.hid })
-        )= result.section.title
-
-      ul.search-result__stat
-        li.search-result__stat-item.hidden-xs-down
+        .search-result__stat-narrow.hidden-sm-up
           a.search-result__stat-link(
             href=self.link_to('forum.section', { section_hid: result.section.hid })
           )= result.section.title
 
-        li.search-result__stat-item
-          != self.timetag(result.post.ts, 'relative')
+        ul.search-result__stat
+          li.search-result__stat-item.hidden-xs-down
+            a.search-result__stat-link(
+              href=self.link_to('forum.section', { section_hid: result.section.hid })
+            )= result.section.title
 
-        li.search-result__stat-item
-          - var user = self.users[result.post.user]
-          if user
-            img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
-            a.search-result__stat-link._ucard-popover(
-              href=self.link_to('users.member', { user_hid: user.hid })
-              data-user-id=result.post.user
-            )= user.nick
-          else if result.post.legacy_nick
-            = result.post.legacy_nick
+          li.search-result__stat-item
+            != self.timetag(result.post.ts, 'relative')
+
+          li.search-result__stat-item
+            - var user = self.users[result.post.user]
+            if user
+              img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
+              a.search-result__stat-link._ucard-popover(
+                href=self.link_to('users.member', { user_hid: user.hid })
+                data-user-id=result.post.user
+              )= user.nick
+            else if result.post.legacy_nick
+              = result.post.legacy_nick
 
       .search-result__content
         .markup!= result.post.html
