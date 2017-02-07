@@ -161,4 +161,37 @@ module.exports = function (N, apiPath) {
 
     locals.users = Object.keys(users);
   });
+
+
+  // Generate snippets for each post
+  //
+  N.wire.on(apiPath, function* generate_snippets(locals) {
+    if (!locals.results.length) return;
+
+    let htmls = locals.results.map(result =>
+      // workaround to display astral characters (e.g. smilies) properly;
+      // `mysql2` module replaces them with 4 U+FFFD, `mysql` module works
+      // correctly (tested with mysql@1.1.2, sphinx@2.3.3-id64-dev)
+      result.post.html.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ch => '&#x' + ch.codePointAt(0).toString(16) + ';'));
+
+    let query = `
+      CALL SNIPPETS(
+        (?${',?'.repeat(htmls.length - 1)}),
+        'forum_posts',
+        ?,
+        '<span class="search-highlight">' AS before_match,
+        '</span>' AS after_match,
+        'retain' AS html_strip_mode,
+        1 AS query_mode,
+        0 AS limit
+      )`.replace(/\n\s+/mg, '');
+
+    let args = htmls.concat([ sphinx_escape(locals.params.query) ]);
+
+    let snippets = yield N.search.execute(query, args);
+
+    locals.results.forEach((result, i) => {
+      result.post.html = snippets[i].snippet;
+    });
+  });
 };
