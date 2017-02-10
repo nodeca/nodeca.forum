@@ -168,11 +168,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function* generate_snippets(locals) {
     if (!locals.results.length) return;
 
-    let htmls = locals.results.map(result =>
-      // workaround to display astral characters (e.g. smilies) properly;
-      // `mysql2` module replaces them with 4 U+FFFD, `mysql` module works
-      // correctly (tested with mysql@1.1.2, sphinx@2.3.3-id64-dev)
-      result.post.html.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, ch => '&#x' + ch.codePointAt(0).toString(16) + ';'));
+    let htmls = locals.results.map(result => result.post.html);
 
     let query = `
       CALL SNIPPETS(
