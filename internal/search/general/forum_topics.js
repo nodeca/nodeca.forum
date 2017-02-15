@@ -48,35 +48,53 @@ module.exports = function (N, apiPath) {
 
     query += ' LIMIT ?,?';
     params.push(locals.params.skip);
-    params.push(locals.params.limit);
 
-    let results = yield N.search.execute([
+    // increase limit by 1 to detect last chunk (only if limit != 0)
+    params.push(locals.params.limit ? (locals.params.limit + 1) : 0);
+
+    let reached_end = false;
+
+    let [ results, count ] = yield N.search.execute([
       [ query, params ],
       "SHOW META LIKE 'total_found'"
     ]);
 
-    let topics = _.keyBy(
-      yield N.models.forum.Topic.find()
-                .where('_id').in(_.map(results[0], 'object_id'))
-                .lean(true),
-      '_id'
-    );
+    if (locals.params.limit !== 0) {
+      if (results.length > locals.params.limit) {
+        results.pop();
+      } else {
+        reached_end = true;
+      }
 
-    // copy topics preserving order
-    locals.sandbox.topics = results[0].map(result => topics[result.object_id]).filter(Boolean);
+      let topics = _.keyBy(
+        yield N.models.forum.Topic.find()
+                  .where('_id').in(_.map(results, 'object_id'))
+                  .lean(true),
+        '_id'
+      );
 
-    locals.sandbox.sections = yield N.models.forum.Section.find()
-                                        .where('_id')
-                                        .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
-                                        .lean(true);
+      // copy topics preserving order
+      locals.sandbox.topics = results.map(result => topics[result.object_id]).filter(Boolean);
 
-    locals.count = Number(results[1][0].Value);
+      locals.sandbox.sections = yield N.models.forum.Section.find()
+                                          .where('_id')
+                                          .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
+                                          .lean(true);
+    } else {
+      locals.sandbox.topics = [];
+      locals.sandbox.sections = [];
+    }
+
+    locals.count = Number(count[0].Value);
+    locals.reached_end = reached_end;
   });
 
 
   // Check permissions for each topic
   //
   N.wire.on(apiPath, function* check_permissions(locals) {
+    if (!locals.sandbox.topics.length) return;
+
     let access_env = { params: { topics: locals.sandbox.topics, user_info: locals.params.user_info } };
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
@@ -103,6 +121,8 @@ module.exports = function (N, apiPath) {
   // Sanitize results
   //
   N.wire.on(apiPath, function* sanitize(locals) {
+    if (!locals.sandbox.topics.length) return;
+
     locals.sandbox.topics   = yield sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
     locals.sandbox.sections = yield sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
   });
