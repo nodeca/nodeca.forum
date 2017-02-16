@@ -64,9 +64,17 @@ module.exports = function (N, apiPath) {
     }, []);
 
 
+    // Fetch sections
+    let sections = yield N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
+
+
     // Check permissions subcall
     //
-    let access_env = { params: { topics, user_info: env.user_info } };
+    let access_env = { params: {
+      topics,
+      user_info: env.user_info,
+      preload: sections
+    } };
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
@@ -118,9 +126,6 @@ module.exports = function (N, apiPath) {
 
       return true;
     });
-
-    // Fetch sections
-    let sections = yield N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
 
     // Sanitize topics
     topics = yield sanitize_topic(N, topics, env.user_info);

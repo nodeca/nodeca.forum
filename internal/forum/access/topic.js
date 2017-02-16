@@ -2,17 +2,20 @@
 //
 // In:
 //
-// - params.topics - array of hids, ids or models.forum.Topic. Could be plain value
+// - params.topics - array of models.forum.Topic. Could be plain value
 // - params.user_info - user id or Object with `usergroups` array
+// - params.preload - array of posts, topics or sections (used as a cache)
 // - data - cache + result
 //   - user_info
 //   - access_read
 //   - topics
+// - cache - object of `id => post, topic or section`, only used internally
 //
 // Out:
 //
-// - data.access_read - data.access_read - array of boolean. If `params.topics` is not array - will be plain boolean
+// - data.access_read - array of boolean. If `params.topics` is not array - will be plain boolean
 //
+
 'use strict';
 
 
@@ -29,39 +32,24 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, { priority: -100 }, function init_access_read(locals) {
     locals.data = locals.data || {};
 
-    locals.data.topics = _.isArray(locals.params.topics) ? locals.params.topics.slice() : [ locals.params.topics ];
+    let topics = Array.isArray(locals.params.topics) ?
+                 locals.params.topics :
+                 [ locals.params.topics ];
 
-    locals.data.access_read = locals.data.topics.map(function () {
+    locals.data.topic_ids = topics.map(topic => topic._id);
+
+    // fill in cache
+    locals.cache = locals.cache || {};
+
+    topics.forEach(topic => { locals.cache[topic._id] = topic; });
+
+    (locals.params.preload || []).forEach(object => { locals.cache[object._id] = object; });
+
+    // initialize access_read, remove topics that's not found in cache
+    locals.data.access_read = locals.data.topic_ids.map(id => {
+      if (!locals.cache[id]) return false;
       return null;
     });
-  });
-
-
-  // Check that all `data.topics` have same type
-  //
-  N.wire.before(apiPath, function check_params_type(locals) {
-    let items = locals.data.topics;
-    let type, curType;
-
-    for (let i = 0; i < items.length; i++) {
-      if (_.isNumber(items[i])) {
-        curType = 'Number';
-      } else if (ObjectId.isValid(String(items[i]))) {
-        curType = 'ObjectId';
-      } else {
-        curType = 'Object';
-      }
-
-      if (!type) {
-        type = curType;
-      }
-
-      if (curType !== type) {
-        return new Error('internal:forum.access.topic - can\'t mix object types in request');
-      }
-    }
-
-    locals.data.type = type;
   });
 
 
@@ -78,58 +66,19 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch topics if it's not present already
-  //
-  N.wire.before(apiPath, function* fetch_topics(locals) {
-    if (locals.data.type === 'Number') {
-      let hids = locals.data.topics.filter((__, i) => locals.data.access_read[i] !== false);
-
-      let result = yield N.models.forum.Topic
-                            .find()
-                            .where('hid').in(hids)
-                            .select('hid st ste section')
-                            .lean(true);
-
-      locals.data.topics.forEach((hid, i) => {
-        if (locals.data.access_read[i] === false) return; // continue
-
-        locals.data.topics[i] = _.find(result, { hid });
-
-        if (!locals.data.topics[i]) {
-          locals.data.access_read[i] = false;
-        }
-      });
-      return;
-    }
-
-    if (locals.data.type === 'ObjectId') {
-      let ids = locals.data.topics.filter((__, i) => locals.data.access_read[i] !== false);
-
-      let result = yield N.models.forum.Topic
-                            .find()
-                            .where('_id').in(ids)
-                            .select('_id st ste section')
-                            .lean(true);
-
-      locals.data.topics.forEach(function (id, i) {
-        if (locals.data.access_read[i] === false) return; // continue
-
-        locals.data.topics[i] = _.find(result, r => String(r._id) === String(id));
-
-        if (!locals.data.topics[i]) {
-          locals.data.access_read[i] = false;
-        }
-      });
-      return;
-    }
-  });
-
-
   // Check sections permission
   //
   N.wire.before(apiPath, function* check_sections(locals) {
-    let sections = _.uniq(_.map(locals.data.topics, t => String(t.section)));
-    let access_env = { params: { sections, user_info: locals.data.user_info } };
+    let sections = _.uniq(
+      locals.data.topic_ids
+          .filter((__, i) => locals.data.access_read[i] !== false)
+          .map(id => String(locals.cache[id].section))
+    );
+
+    let access_env = {
+      params: { sections, user_info: locals.data.user_info },
+      cache: locals.cache
+    };
     yield N.wire.emit('internal:forum.access.section', access_env);
 
     // section_id -> access
@@ -139,8 +88,8 @@ module.exports = function (N, apiPath) {
       sections_access[section_id] = access_env.data.access_read[i];
     });
 
-    locals.data.topics.forEach((topic, i) => {
-      if (!sections_access[topic.section]) locals.data.access_read[i] = false;
+    locals.data.topic_ids.forEach((id, i) => {
+      if (!sections_access[locals.cache[id].section]) locals.data.access_read[i] = false;
     });
   });
 
@@ -158,6 +107,11 @@ module.exports = function (N, apiPath) {
 
     function check(topic, i) {
       if (locals.data.access_read[i] === false) return Promise.resolve();
+
+      if (!topic) {
+        locals.data.access_read[i] = false;
+        return Promise.resolve();
+      }
 
       let params = {
         user_id: locals.data.user_info.user_id,
@@ -195,7 +149,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    yield Promise.map(locals.data.topics, (topic, i) => check(topic, i));
+    yield Promise.map(locals.data.topic_ids, (id, i) => check(locals.cache[id], i));
   });
 
 

@@ -2,16 +2,19 @@
 //
 // In:
 //
-// - params.sections - array of hids, ids or models.forum.Section. Could be plain value
+// - params.sections - array of id or models.forum.Section. Could be plain value
 // - params.user_info - user id or Object with `usergroups` array
+// - params.preload - array of posts, topics or sections (used as a cache)
 // - data - cache + result
 //   - access_read
 //   - sections
+// - cache - object of `id => post, topic or section`, only used internally
 //
 // Out:
 //
 // - data.access_read - array of boolean. If `params.sections` is not array - will be plain boolean
 //
+
 'use strict';
 
 
@@ -33,7 +36,14 @@ module.exports = function (N, apiPath) {
 
     if (!match) return;
 
-    let access_env_sub = { params: { sections: match.params.section_hid, user_info: access_env.params.user_info } };
+    let result = yield N.models.forum.Section.findOne()
+                           .where('hid').equals(match.params.section_hid)
+                           .select('_id is_enabled')
+                           .lean(true);
+
+    if (!result) return;
+
+    let access_env_sub = { params: { sections: result, user_info: access_env.params.user_info } };
 
     yield N.wire.emit('internal:forum.access.section', access_env_sub);
 
@@ -47,40 +57,24 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, { priority: -100 }, function init_access_read(locals) {
     locals.data = locals.data || {};
 
-    locals.data.sections =
-      _.isArray(locals.params.sections) ? locals.params.sections.slice() : [ locals.params.sections ];
+    let sections = Array.isArray(locals.params.sections) ?
+                   locals.params.sections :
+                   [ locals.params.sections ];
 
-    locals.data.access_read = locals.data.sections.map(function () {
-      return null;
+    locals.data.section_ids = sections.map(function (section) {
+      return ObjectId.isValid(section) ? section : section._id;
     });
-  });
 
+    locals.data.access_read = locals.data.section_ids.map(() => null);
 
-  // Check that all `data.sections` have same type
-  //
-  N.wire.before(apiPath, function check_params_type(locals) {
-    let items = locals.data.sections;
-    let type, curType;
+    // fill in cache
+    locals.cache = locals.cache || {};
 
-    for (let i = 0; i < items.length; i++) {
-      if (_.isNumber(items[i])) {
-        curType = 'Number';
-      } else if (ObjectId.isValid(String(items[i]))) {
-        curType = 'ObjectId';
-      } else {
-        curType = 'Object';
-      }
+    sections.forEach(section => {
+      if (!ObjectId.isValid(section)) locals.cache[section._id] = section;
+    });
 
-      if (!type) {
-        type = curType;
-      }
-
-      if (curType !== type) {
-        return new Error('internal:forum.access.section - can\'t mix object types in request');
-      }
-    }
-
-    locals.data.type = type;
+    (locals.params.preload || []).forEach(object => { locals.cache[object._id] = object; });
   });
 
 
@@ -97,52 +91,29 @@ module.exports = function (N, apiPath) {
   });
 
 
-
   // Fetch sections if it's not present already
   //
   N.wire.before(apiPath, function* fetch_sections(locals) {
-    if (locals.data.type === 'Number') {
-      let hids = locals.data.sections.filter((__, i) => locals.data.access_read[i] !== false);
+    let ids = locals.data.section_ids
+                  .filter((__, i) => locals.data.access_read[i] !== false)
+                  .filter(id => !locals.cache[id]);
 
-      let result = yield N.models.forum.Section
-                            .find()
-                            .where('hid').in(hids)
-                            .select('_id hid is_enabled')
-                            .lean(true);
+    if (!ids.length) return;
 
-      locals.data.sections.forEach((hid, i) => {
-        if (locals.data.access_read[i] === false) return; // continue
+    let result = yield N.models.forum.Section
+                           .find()
+                           .where('_id').in(ids)
+                           .select('_id is_enabled')
+                           .lean(true);
 
-        locals.data.sections[i] = _.find(result, { hid });
+    result.forEach(section => {
+      locals.cache[section._id] = section;
+    });
 
-        if (!locals.data.sections[i]) {
-          locals.data.access_read[i] = false;
-        }
-      });
-      return;
-    }
-
-    if (locals.data.type === 'ObjectId') {
-      let ids = locals.data.sections.filter((__, i) => locals.data.access_read[i] !== false);
-
-      let result = yield N.models.forum.Section
-                            .find()
-                            .where('_id').in(ids)
-                            .select('_id is_enabled')
-                            .lean(true);
-
-      locals.data.sections.forEach((id, i) => {
-        if (locals.data.access_read[i] === false) return; // continue
-
-        locals.data.sections[i] = _.find(result, r => String(r._id) === String(id));
-
-        if (!locals.data.sections[i]) {
-          locals.data.access_read[i] = false;
-        }
-      });
-      return;
-    }
-    return;
+    // mark all sections that weren't found as "no access"
+    locals.data.section_ids.forEach((id, i) => {
+      if (!locals.cache[id]) locals.data.access_read[i] = false;
+    });
   });
 
 
@@ -153,7 +124,7 @@ module.exports = function (N, apiPath) {
     function check(section, i) {
       if (locals.data.access_read[i] === false) return Promise.resolve();
 
-      if (!section.is_enabled) {
+      if (!section || !section.is_enabled) {
         locals.data.access_read[i] = false;
         return Promise.resolve();
       }
@@ -172,7 +143,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    yield Promise.map(locals.data.sections, (section, i) => check(section, i));
+    yield Promise.map(locals.data.section_ids, (id, i) => check(locals.cache[id], i));
   });
 
 

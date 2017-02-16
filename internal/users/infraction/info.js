@@ -27,59 +27,44 @@ module.exports = function (N, apiPath) {
     //
     let posts = yield N.models.forum.Post.find()
                           .where('_id').in(posts_ids)
-                          .select('_id hid topic st ste md')
                           .lean(true);
-
 
     // Fetch topics
     //
     let topics = yield N.models.forum.Topic.find()
                           .where('_id').in(_.map(posts, 'topic'))
-                          .select('_id hid section st ste title')
                           .lean(true);
-
-    topics = topics.reduce((acc, t) => {
-      acc[t._id] = t;
-      return acc;
-    }, {});
-
-
-    // Check permissions to see posts
-    //
-    let restricted = [];
-
-    for (let i = 0; i < posts.length; i++) {
-      let access_env = { params: { topic: topics[posts[i].topic], posts: posts[i], user_info: info_env.user_info } };
-
-      // We should check permissions one by one because posts could be from different topics
-      yield N.wire.emit('internal:forum.access.post', access_env);
-
-      if (!access_env.data.access_read) {
-        restricted.push(posts[i]);
-      }
-    }
-
-    posts = _.difference(posts, restricted);
-
 
     // Fetch sections
     //
     let sections = yield N.models.forum.Section.find()
                             .where('_id').in(_.map(topics, 'section'))
-                            .select('_id hid')
                             .lean(true);
 
-    sections = sections.reduce((acc, s) => {
-      acc[s._id] = s;
-      return acc;
-    }, {});
+    // Check permissions to see posts
+    //
+    let access_env = { params: {
+      posts,
+      user_info: info_env.user_info,
+      preload: [].concat(topics).concat(sections)
+    } };
+
+    yield N.wire.emit('internal:forum.access.post', access_env);
+
+    posts = posts.filter((__, idx) => access_env.data.access_read[idx]);
+
+    let topics_by_id   = _.keyBy(topics, '_id');
+    let sections_by_id = _.keyBy(sections, '_id');
 
     posts.forEach(post => {
+      let topic = topics_by_id[post.topic];
+      let section = sections_by_id[topic.section];
+
       info_env.info[post._id] = {
-        title: topics[post.topic].title,
+        title: topic.title,
         url: N.router.linkTo('forum.topic', {
-          section_hid: sections[topics[post.topic].section].hid,
-          topic_hid: topics[post.topic].hid,
+          section_hid: section.hid,
+          topic_hid: topic.hid,
           post_hid: post.hid
         }),
         text: post.md

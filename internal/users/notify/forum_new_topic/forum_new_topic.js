@@ -70,7 +70,11 @@ module.exports = function (N) {
     // Filter users by access
     //
     yield Promise.map(local_env.to.slice(), user_id => {
-      let access_env = { params: { topic, posts: post, user_info: users_info[user_id] } };
+      let access_env = { params: {
+        posts: post,
+        user_info: users_info[user_id],
+        preload: [ topic ]
+      } };
 
       return N.wire.emit('internal:forum.access.post', access_env)
         .then(() => {

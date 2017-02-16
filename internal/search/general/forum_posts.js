@@ -20,7 +20,6 @@
 
 
 const _                = require('lodash');
-const Promise          = require('bluebird');
 const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 const sanitize_post    = require('nodeca.forum/lib/sanitizers/post');
@@ -109,26 +108,29 @@ module.exports = function (N, apiPath) {
     let topics_used   = {};
     let sections_used = {};
 
-    locals.sandbox.posts = (yield Promise.map(locals.sandbox.posts, Promise.coroutine(function* (post) {
+    let access_env = { params: {
+      posts: locals.sandbox.posts,
+      user_info: locals.params.user_info,
+      preload: [].concat(locals.sandbox.topics).concat(locals.sandbox.sections)
+    } };
+
+    yield N.wire.emit('internal:forum.access.post', access_env);
+
+    locals.sandbox.posts = locals.sandbox.posts.filter((post, idx) => {
       let topic = topics_by_id[post.topic];
       if (!topic) return;
 
       let section = sections_by_id[topic.section];
       if (!section) return;
 
-      topics_used[topic._id] = topic;
-      sections_used[section._id] = section;
+      if (access_env.data.access_read[idx]) {
+        topics_used[topic._id] = topic;
+        sections_used[section._id] = section;
+        return true;
+      }
 
-      let access_env = { params: {
-        topic,
-        posts: post,
-        user_info: locals.params.user_info
-      } };
-
-      yield N.wire.emit('internal:forum.access.post', access_env);
-
-      return access_env.data.access_read ? post : null;
-    }))).filter(Boolean);
+      return false;
+    });
 
     locals.sandbox.topics   = _.values(topics_used);
     locals.sandbox.sections = _.values(sections_used);

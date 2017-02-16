@@ -95,7 +95,11 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, function* check_permissions(locals) {
     if (!locals.sandbox.topics.length) return;
 
-    let access_env = { params: { topics: locals.sandbox.topics, user_info: locals.params.user_info } };
+    let access_env = { params: {
+      topics: locals.sandbox.topics,
+      user_info: locals.params.user_info,
+      preload: locals.sandbox.sections
+    } };
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 

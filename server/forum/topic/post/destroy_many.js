@@ -35,7 +35,11 @@ module.exports = function (N, apiPath) {
   // Check if user has an access to this topic
   //
   N.wire.before(apiPath, function* check_access(env) {
-    let access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
+    let access_env = { params: {
+      posts: env.data.post,
+      user_info: env.user_info,
+      preload: [ env.data.topic ]
+    } };
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 

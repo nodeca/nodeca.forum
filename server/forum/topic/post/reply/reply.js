@@ -104,7 +104,11 @@ module.exports = function (N, apiPath) {
 
     env.data.post = post;
 
-    let access_env = { params: { topic: env.data.topic, posts: env.data.post, user_info: env.user_info } };
+    let access_env = { params: {
+      posts: env.data.post,
+      user_info: env.user_info,
+      preload: [ env.data.topic ]
+    } };
 
     yield N.wire.emit('internal:forum.access.post', access_env);
 

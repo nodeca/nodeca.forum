@@ -80,7 +80,11 @@ module.exports = function (N, apiPath) {
   // Check access permissions
   //
   N.wire.before(apiPath, function* check_access(env) {
-    let access_env = { params: { topics: env.data.topic.hid, user_info: env.user_info } };
+    let access_env = { params: {
+      topics: env.data.topic,
+      user_info: env.user_info,
+      preload: [ env.data.section ]
+    } };
 
     yield N.wire.emit('internal:forum.access.topic', access_env);
 

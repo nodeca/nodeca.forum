@@ -2,18 +2,20 @@
 //
 // In:
 //
-// - params.topic - hid, id or models.forum.Topic
-// - params.posts - array of hids, ids or models.forum.Post. Could be plain value
+// - params.topics - array of models.forum.Post. Could be plain value
 // - params.user_info - user id or Object with `usergroups` array
+// - params.preload - array of posts, topics or sections (used as a cache)
 // - data - cache + result
+//   - user_info
 //   - access_read
-//   - posts
-//   - topic
+//   - topics
+// - cache - object of `id => post, topic or section`, only used internally
 //
 // Out:
 //
-// - data.access_read - array of boolean. If `params.posts` is not array - will be plain boolean
+// - data.access_read - array of boolean. If `params.topics` is not array - will be plain boolean
 //
+
 'use strict';
 
 
@@ -34,11 +36,24 @@ module.exports = function (N, apiPath) {
 
     if (!match) return;
 
+    let topic = yield N.models.forum.Topic.findOne()
+                          .where('hid').equals(match.params.topic_hid)
+                          .lean(true);
+
+    if (!topic) return;
+
+    let post = yield N.models.forum.Post.findOne()
+                         .where('topic').equals(topic._id)
+                         .where('hid').equals(match.params.post_hid)
+                         .lean(true);
+
+    if (!post) return;
+
     let access_env_sub = {
       params: {
-        topic: match.params.topic_hid,
-        posts: match.params.post_hid,
-        user_info: access_env.params.user_info
+        posts: post,
+        user_info: access_env.params.user_info,
+        preload: [ topic ]
       }
     };
 
@@ -54,39 +69,24 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, { priority: -100 }, function init_access_read(locals) {
     locals.data = locals.data || {};
 
-    locals.data.posts = _.isArray(locals.params.posts) ? locals.params.posts.slice() : [ locals.params.posts ];
+    let posts = Array.isArray(locals.params.posts) ?
+                 locals.params.posts :
+                 [ locals.params.posts ];
 
-    locals.data.access_read = locals.data.posts.map(function () {
+    locals.data.post_ids = posts.map(post => post._id);
+
+    // fill in cache
+    locals.cache = locals.cache || {};
+
+    posts.forEach(post => { locals.cache[post._id] = post; });
+
+    (locals.params.preload || []).forEach(object => { locals.cache[object._id] = object; });
+
+    // initialize access_read, remove posts that's not found in cache
+    locals.data.access_read = locals.data.post_ids.map(id => {
+      if (!locals.cache[id]) return false;
       return null;
     });
-  });
-
-
-  // Check that all `data.posts` have same type
-  //
-  N.wire.before(apiPath, function check_params_type(locals) {
-    let items = locals.data.posts;
-    let type, curType;
-
-    for (let i = 0; i < items.length; i++) {
-      if (_.isNumber(items[i])) {
-        curType = 'Number';
-      } else if (ObjectId.isValid(String(items[i]))) {
-        curType = 'ObjectId';
-      } else {
-        curType = 'Object';
-      }
-
-      if (!type) {
-        type = curType;
-      }
-
-      if (curType !== type) {
-        return new Error('internal:forum.access.post - can\'t mix object types in request');
-      }
-    }
-
-    locals.data.type = type;
   });
 
 
@@ -103,86 +103,55 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch topic if it's not present already
+  // Fetch topics for all posts into cache
   //
-  N.wire.before(apiPath, function* fetch_topic(locals) {
-    if (_.isNumber(locals.params.topic)) {
-      locals.data.topic = yield N.models.forum.Topic
-                                    .findOne({ hid: locals.params.topic })
-                                    .lean(true);
-      return;
-    }
+  N.wire.before(apiPath, function* fetch_topics(locals) {
+    // select all topic ids that belong to posts we need to check access to
+    let ids = locals.data.post_ids
+                  .filter((__, i) => locals.data.access_read[i] !== false)
+                  .map(id => locals.cache[id].topic)
+                  .filter(id => !locals.cache[id]);
 
-    if (ObjectId.isValid(String(locals.params.topic))) {
-      locals.data.topic = yield N.models.forum.Topic
-                                    .findOne({ _id: locals.params.topic })
-                                    .lean(true);
-      return;
-    }
+    if (!ids.length) return;
 
-    // Use presented
-    locals.data.topic = locals.params.topic;
+    let result = yield N.models.forum.Topic
+                           .find()
+                           .where('_id').in(ids)
+                           .lean(true);
+
+    if (!result) return;
+
+    result.forEach(topic => {
+      locals.cache[topic._id] = topic;
+    });
   });
 
 
-  // Check topic permission
+  // Check topic permissions
   //
-  N.wire.before(apiPath, function* check_topic(locals) {
-    let access_env = { params: { topics: locals.data.topic, user_info: locals.data.user_info } };
+  N.wire.before(apiPath, function* check_topics(locals) {
+    let topics = _.uniq(
+      locals.data.post_ids
+          .filter((__, i) => locals.data.access_read[i] !== false)
+          .map(id => String(locals.cache[id].topic))
+    ).map(topic_id => locals.cache[topic_id]);
 
+    let access_env = {
+      params: { topics, user_info: locals.data.user_info },
+      cache: locals.cache
+    };
     yield N.wire.emit('internal:forum.access.topic', access_env);
 
-    if (!access_env.data.access_read) {
-      locals.data.access_read = locals.data.access_read.map(() => false);
-    }
-  });
+    // topic_id -> access
+    let topics_access = {};
 
+    topics.forEach((topic, i) => {
+      topics_access[topic._id] = access_env.data.access_read[i];
+    });
 
-  // Fetch posts if it's not present already
-  //
-  N.wire.before(apiPath, function* fetch_posts(locals) {
-    if (locals.data.type === 'Number') {
-      let hids = locals.data.posts.filter((__, i) => locals.data.access_read[i] !== false);
-
-      let result = yield N.models.forum.Post.find()
-                            .where('topic').equals(locals.data.topic._id)
-                            .where('hid').in(hids)
-                            .select('hid st ste')
-                            .lean(true);
-
-      locals.data.posts.forEach((hid, i) => {
-        if (locals.data.access_read[i] === false) {
-          return; // continue
-        }
-
-        locals.data.posts[i] = _.find(result, { hid });
-
-        if (!locals.data.posts[i]) {
-          locals.data.access_read[i] = false;
-        }
-      });
-      return;
-    }
-
-    if (locals.data.type === 'ObjectId') {
-      let ids = locals.data.posts.filter((__, i) => locals.data.access_read[i] !== false);
-
-      let result = yield N.models.forum.Post.find()
-                            .where('_id').in(ids)
-                            .select('_id st ste')
-                            .lean(true);
-
-      locals.data.posts.forEach((id, i) => {
-        if (locals.data.access_read[i] === false) return; // continue
-
-        locals.data.posts[i] = _.find(result, r => String(r._id) === String(id));
-
-        if (!locals.data.posts[i]) {
-          locals.data.access_read[i] = false;
-        }
-      });
-      return;
-    }
+    locals.data.post_ids.forEach((id, i) => {
+      if (!topics_access[locals.cache[id].topic]) locals.data.access_read[i] = false;
+    });
   });
 
 
@@ -197,8 +166,10 @@ module.exports = function (N, apiPath) {
 
     let can_see_hellbanned = yield N.settings.get('can_see_hellbanned', params, {});
 
-    locals.data.posts.forEach((post, i) => {
+    locals.data.post_ids.forEach((id, i) => {
       if (locals.data.access_read[i] === false) return; // continue
+
+      let post = locals.cache[id];
 
       let allow_access = (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
 
