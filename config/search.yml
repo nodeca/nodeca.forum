@@ -8,14 +8,14 @@ search:
         priority: 20
 
   indexes:
-    'forum_posts : _default':
+    'forum_posts : _default_content':
       rt_field: [ content ]
       rt_attr_timestamp: [ ts ]
       rt_attr_string: [ object_id ]
       rt_attr_bigint: [ topic_uid, section_uid ]
       rt_attr_bool: [ public, visible ]
 
-    'forum_topics : _default':
+    'forum_topics : _default_topic':
       rt_field: [ content ]
       rt_attr_timestamp: [ ts ]
       rt_attr_string: [ object_id ]
