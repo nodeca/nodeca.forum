@@ -3,10 +3,9 @@
 'use strict';
 
 
-const _           = require('lodash');
-const Promise     = require('bluebird');
-const memoize     = require('promise-memoize');
-const querystring = require('querystring');
+const _        = require('lodash');
+const Promise  = require('bluebird');
+const memoize  = require('promise-memoize');
 
 
 module.exports = function (N, apiPath) {
@@ -14,7 +13,15 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     section_hid: { type: 'integer', required: true },
     topic_hid:   { type: 'integer', required: false },
-    $query:      { 'enum': [ 'prev', 'next' ], required: false }
+    $query:      {
+      type: 'object',
+      properties: {
+        prev: { 'enum': [ '' ] },
+        next: { 'enum': [ '' ] }
+      },
+      required: false,
+      additionalProperties: false
+    }
   });
 
   let buildTopicIdsBefore = require('./list/_build_topic_ids_before.js')(N);
@@ -29,7 +36,7 @@ module.exports = function (N, apiPath) {
     let prev = false, next = false;
 
     if (env.params.$query) {
-      let query = querystring.parse(env.params.$query);
+      let query = env.params.$query;
 
       prev = typeof query.prev !== 'undefined';
       next = typeof query.next !== 'undefined';
