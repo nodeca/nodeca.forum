@@ -18,8 +18,8 @@ each post, post_idx in self.posts
   each block in self.posts_list_before_post || []
     != self.partial('@forum.blocks.posts_list.' + block, { post_idx: post_idx, post_counter: post_counter })
 
-  if (self.ignored_users[post.user] && !self.settings.forum_show_ignored)
-    //- skip posts created by ignored users
+  if (self.ignored_users[post.user] && !self.settings.forum_show_ignored && self.current_post_hid !== post.hid)
+    //- skip posts created by ignored users (current post is always visible)
 
   else if !collapsed
 
