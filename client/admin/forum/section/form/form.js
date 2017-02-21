@@ -110,7 +110,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
     N.io.rpc('admin.forum.section.create', request).then(() => {
       _.forEach(currentSection, field => field.markClean());
 
-      N.wire.emit('notify', { type: 'info', message: t('message_created') });
+      N.wire.emit('notify.info', t('message_created'));
       return N.wire.emit('navigate.to', { apiPath: 'admin.forum.section.index' });
     }).catch(err => N.wire.emit('error', err));
   };
@@ -126,7 +126,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
     N.io.rpc('admin.forum.section.update', request).then(function () {
       _.forEach(currentSection, field => field.markClean());
 
-      N.wire.emit('notify', { type: 'info', message: t('message_updated') });
+      N.wire.emit('notify.info', t('message_updated'));
     }).catch(err => N.wire.emit('error', err));
   };
 

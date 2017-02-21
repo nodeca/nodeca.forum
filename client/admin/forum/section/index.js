@@ -61,7 +61,7 @@ N.wire.on('admin.forum.section.destroy', function section_destroy(data) {
       $container.prev('._placeholder').remove();
       $container.remove();
     })
-    .catch(err => N.wire.emit('notify', { type: 'error', message: err.message }));
+    .catch(err => N.wire.emit('notify', err.message));
 });
 
 

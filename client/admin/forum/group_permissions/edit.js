@@ -116,7 +116,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     N.io.rpc('admin.forum.group_permissions.update', request).then(() => {
       view.settings.forEach(setting => setting.markClean());
 
-      return N.wire.emit('notify', { type: 'info', message: t('message_saved') });
+      return N.wire.emit('notify.info', t('message_saved'));
     }).catch(err => N.wire.emit('error', err));
   };
 

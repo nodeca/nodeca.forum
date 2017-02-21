@@ -377,7 +377,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return Promise.resolve()
       .then(() => N.wire.emit('common.blocks.abuse_report_dlg', params))
       .then(() => N.io.rpc('forum.topic.post.abuse_report', { post_id: postId, message: params.message }))
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('abuse_reported') }));
+      .then(() => N.wire.emit('notify.info', t('abuse_reported')));
   });
 
 
@@ -421,7 +421,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           $replace: $(`#post${postId}`)
         });
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('infraction_added') }));
+      .then(() => N.wire.emit('notify.info', t('infraction_added')));
   });
 
 
@@ -464,8 +464,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       })
       .then(updateTopicState)
       .then(() => {
-        if (unpin) return N.wire.emit('notify', { type: 'info', message: t('unpin_topic_done') });
-        return N.wire.emit('notify', { type: 'info', message: t('pin_topic_done') });
+        if (unpin) return N.wire.emit('notify.info', t('unpin_topic_done'));
+        return N.wire.emit('notify.info', t('pin_topic_done'));
       });
   });
 
@@ -487,7 +487,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
         return N.io.rpc('forum.topic.move', request);
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('move_topic_done') }))
+      .then(() => N.wire.emit('notify.info', t('move_topic_done')))
       .then(() => N.wire.emit('navigate.reload'));
   });
 
@@ -509,8 +509,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       })
       .then(updateTopicState)
       .then(() => {
-        if (params.reopen) return N.wire.emit('notify', { type: 'info', message: t('open_topic_done') });
-        return N.wire.emit('notify', { type: 'info', message: t('close_topic_done') });
+        if (params.reopen) return N.wire.emit('notify.info', t('open_topic_done'));
+        return N.wire.emit('notify.info', t('close_topic_done'));
       });
   });
 
@@ -564,7 +564,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         N.runtime.page_data.topic.ste = res.topic.ste;
       })
       .then(updateTopicState)
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('undelete_topic_done') }));
+      .then(() => N.wire.emit('notify.info', t('undelete_topic_done')));
   });
 
 
@@ -1469,7 +1469,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         $post.addClass('forum-post__m-selected');
         topicState.selected_posts.push(postId);
 
-        N.wire.emit('notify', { type: 'info', message: t('msg_multiselect') });
+        N.wire.emit('notify.info', t('msg_multiselect'));
 
 
       } else {
@@ -1550,7 +1550,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
           topicState.selected_posts = [];
           save_selected_posts_immediate();
 
-          return N.wire.emit('notify', { type: 'info', message: t('many_posts_deleted') });
+          return N.wire.emit('notify.info', t('many_posts_deleted'));
         })
         .then(() => N.wire.emit('navigate.reload'));
     });
@@ -1588,7 +1588,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
           topicState.selected_posts = [];
           save_selected_posts_immediate();
         })
-        .then(() => N.wire.emit('notify', { type: 'info', message: t('many_posts_undeleted') }))
+        .then(() => N.wire.emit('notify.info', t('many_posts_undeleted')))
         .then(() => N.wire.emit('navigate.reload'));
     });
   });

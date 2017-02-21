@@ -500,7 +500,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         $topic.addClass('forum-topicline__m-selected');
         sectionState.selected_topics.push(topicHid);
 
-        N.wire.emit('notify', { type: 'info', message: t('msg_multiselect') });
+        N.wire.emit('notify.info', t('msg_multiselect'));
 
 
       } else {
@@ -564,7 +564,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         sectionState.selected_topics = [];
         save_selected_topics_immediate();
 
-        return N.wire.emit('notify', { type: 'info', message: t('many_topics_deleted') });
+        return N.wire.emit('notify.info', t('many_topics_deleted'));
       })
       .then(() => N.wire.emit('navigate.reload'));
   });
@@ -585,7 +585,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         sectionState.selected_topics = [];
         save_selected_topics_immediate();
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_undeleted') }))
+      .then(() => N.wire.emit('notify.info', t('many_topics_undeleted')))
       .then(() => N.wire.emit('navigate.reload'));
   });
 
@@ -605,7 +605,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         sectionState.selected_topics = [];
         save_selected_topics_immediate();
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_closed') }))
+      .then(() => N.wire.emit('notify.info', t('many_topics_closed')))
       .then(() => N.wire.emit('navigate.reload'));
   });
 
@@ -625,7 +625,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         sectionState.selected_topics = [];
         save_selected_topics_immediate();
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_opend') }))
+      .then(() => N.wire.emit('notify.info', t('many_topics_opend')))
       .then(() => N.wire.emit('navigate.reload'));
   });
 
@@ -652,7 +652,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
         sectionState.selected_topics = [];
         save_selected_topics_immediate();
       })
-      .then(() => N.wire.emit('notify', { type: 'info', message: t('many_topics_moved') }))
+      .then(() => N.wire.emit('notify.info', t('many_topics_moved')))
       .then(() => N.wire.emit('navigate.reload'));
   });
 
