@@ -253,6 +253,14 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Schedule search index update
+  //
+  N.wire.after(apiPath, function* add_search_index(env) {
+    yield N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+    yield N.queue.forum_posts_search_update_by_ids([ env.data.new_post._id ]).postpone();
+  });
+
+
   // Update topic counters
   //
   N.wire.after(apiPath, function* update_topic(env) {

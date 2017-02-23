@@ -150,6 +150,13 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Schedule search index update
+  //
+  N.wire.after(apiPath, function* add_search_index(env) {
+    yield N.queue.forum_topics_search_update_with_posts([ env.data.topic._id ]).postpone();
+  });
+
+
   // Update section counters
   //
   N.wire.after(apiPath, function* update_section(env) {

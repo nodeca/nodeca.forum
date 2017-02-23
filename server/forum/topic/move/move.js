@@ -26,16 +26,40 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check if user has an access to this section
+  // Fetch topic
   //
-  N.wire.before(apiPath, function* check_access(env) {
-    let access_env = { params: { sections: [ env.data.section_from, env.data.section_to ], user_info: env.user_info } };
+  N.wire.before(apiPath, function* fetch_topic(env) {
+    env.data.topic = yield N.models.forum.Topic
+                              .findOne({ hid: env.params.topic_hid })
+                              .lean(true);
+
+    if (!env.data.topic) throw N.io.NOT_FOUND;
+  });
+
+
+  // Check if user has an access to topic
+  //
+  N.wire.before(apiPath, function* check_topic_access(env) {
+    let access_env = { params: {
+      topics: env.data.topic,
+      user_info: env.user_info,
+      preload: [ env.data.section_from ]
+    } };
+
+    yield N.wire.emit('internal:forum.access.topic', access_env);
+
+    if (!access_env.data.access_read) throw N.io.FORBIDDEN;
+  });
+
+
+  // Check if user has an access to target section
+  //
+  N.wire.before(apiPath, function* check_target_section_access(env) {
+    let access_env = { params: { sections: env.data.section_to, user_info: env.user_info } };
 
     yield N.wire.emit('internal:forum.access.section', access_env);
 
-    access_env.data.access_read.forEach(access => {
-      if (!access) throw N.io.NOT_FOUND;
-    });
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
@@ -57,6 +81,13 @@ module.exports = function (N, apiPath) {
       { hid: env.params.topic_hid, section: env.data.section_from._id },
       { section: env.data.section_to._id }
     );
+  });
+
+
+  // Schedule search index update
+  //
+  N.wire.after(apiPath, function* add_search_index(env) {
+    yield N.queue.forum_topics_search_update_with_posts([ env.data.topic._id ]).postpone();
   });
 
 

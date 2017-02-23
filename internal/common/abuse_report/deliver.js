@@ -106,6 +106,8 @@ module.exports = function (N, apiPath) {
       N.models.forum.Section.updateCache(section._id)
     ]);
 
+    yield N.queue.forum_topics_search_update_with_posts([ topic._id ]).postpone();
+
     // Add report url to locals
     params.locals.report_topic_url = N.router.linkTo('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
   });

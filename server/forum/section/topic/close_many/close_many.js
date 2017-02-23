@@ -83,5 +83,12 @@ module.exports = function (N, apiPath) {
     yield bulk.execute();
   });
 
+
+  // Schedule search index update
+  //
+  N.wire.after(apiPath, function* add_search_index(env) {
+    yield N.queue.forum_topics_search_update_with_posts(env.data.topics.map(t => t._id)).postpone();
+  });
+
   // TODO: log moderator actions
 };
