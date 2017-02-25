@@ -35,7 +35,17 @@ article#content.forum-topic-root(
         link_bottom: self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: self.topic.cache.last_post_hid }),
         current:     self.current_post_hid || 0,
         total:       self.topic.cache.last_post_hid
-      }
+      },
+      search_areas: [
+        {
+          title: self.t('search_section'),
+          method: 'search.general'
+        },
+        {
+          title: self.t('search_topic'),
+          method: 'search.general'
+        }
+      ]
     };
 
   != self.partial('@common.blocks.navbar.levelup_progress_apps', navbar_args)
