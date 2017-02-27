@@ -30,7 +30,8 @@ article#content.forum-section-root(
       search_areas: [
         {
           title: self.t('search_section'),
-          method: 'search.general'
+          method: 'search.forum_section',
+          params: { hid: String(self.section.hid) }
         }
       ]
     };

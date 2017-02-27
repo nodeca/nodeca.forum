@@ -39,11 +39,13 @@ article#content.forum-topic-root(
       search_areas: [
         {
           title: self.t('search_section'),
-          method: 'search.general'
+          method: 'search.forum_section',
+          params: { hid: String(self.section.hid) }
         },
         {
           title: self.t('search_topic'),
-          method: 'search.general'
+          method: 'search.forum_topic',
+          params: { hid: String(self.topic.hid) }
         }
       ]
     };

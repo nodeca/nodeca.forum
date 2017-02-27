@@ -52,6 +52,12 @@ router:
           match: /\d+/
           type: integer
 
+    search.forum_section:
+      "/search_forum_section": ~
+
+    search.forum_topic:
+      "/search_forum_topic": ~
+
     admin.forum.section.index:
       "/forum/section": ~
 

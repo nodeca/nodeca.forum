@@ -27,6 +27,7 @@ packages:
     entries:
       - client/search
       - internal/search
+      - server/search
 
   users:
     entries:

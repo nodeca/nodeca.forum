@@ -1,0 +1,5 @@
+en-US:
+  title: Search in topic
+
+  results:
+    err_query_too_short: Query is too short

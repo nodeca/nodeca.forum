@@ -7,6 +7,19 @@ search:
       forum_posts:
         priority: 20
 
+  forum_section:
+    menu:
+      forum_topics:
+        priority: 10
+
+      forum_posts:
+        priority: 20
+
+  forum_topic:
+    menu:
+      forum_posts:
+        priority: 20
+
   indexes:
     'forum_posts : _default_content':
       rt_field: [ content ]

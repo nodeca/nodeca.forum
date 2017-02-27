@@ -1,0 +1,12 @@
+en-US:
+  title: Search
+  search: find
+  options: More options
+  sort:
+    rel: by relevance
+    date: by date
+  period:
+    0: all period
+    7: last week
+    30: last month
+    365: last year
