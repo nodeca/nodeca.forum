@@ -70,7 +70,7 @@
   font-size 4rem
   line-height 1.1em
   text-align center
-  background-color $body-bg-secondary
+  background-color $body-bg-secondary + 50%
   color $body-color-secondary + 50%
   border-radius 4px
   margin-bottom 2rem
@@ -81,22 +81,23 @@
 
 .similar_topics
   margin-bottom 2rem
-  margin-top 6rem
+  margin-top 5rem
+  padding 1.75rem 1.75rem 1rem
+  background-color $body-bg-secondary + 30%
+  border-radius 4px
 
 .similar_topics__header
-  //color $brand-primary
   color $body-color-secondary
   font-size 1.5rem
-  border-bottom 1px solid $decorator-color
-  margin-bottom 1rem
+  line-height 1.75rem
+  margin-bottom 1.5rem
 
 .similar_topics__item
   display flex
   align-items center
   position relative
-  margin-bottom .75rem
+  margin-bottom .875rem
   line-height 1.25rem
-  padding .25rem 0 .25rem 1rem
 
 .similar_topics__item-title
   flex 1 1 0
@@ -111,14 +112,6 @@
   text-align right
   color $body-color-secondary
 
-.similar_topics__guide
-  position absolute
-  left 0
-  top 0
-  bottom 0
-  width .125rem
-  border-radius .125rem
-  background-color $decorator-color
 
 @media (max-width: $grid-breakpoints.sm - 1)
   .similar_topics__item
