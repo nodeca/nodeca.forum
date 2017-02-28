@@ -3,6 +3,7 @@
 // In:
 //
 // - params.query
+// - params.section_hid
 // - params.sort
 // - params.days
 // - params.skip
@@ -22,6 +23,7 @@
 const _                = require('lodash');
 const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
+const docid_sections   = require('nodeca.forum/lib/search/docid_sections');
 const sphinx_escape    = require('nodeca.search').escape;
 
 
@@ -34,6 +36,11 @@ module.exports = function (N, apiPath) {
 
     let query  = 'SELECT object_id FROM forum_topics WHERE MATCH(?) AND public=1';
     let params = [ sphinx_escape(locals.params.query) ];
+
+    if (locals.params.section_hid) {
+      query += ' AND section_uid=?';
+      params.push(docid_sections(N, locals.params.section_hid));
+    }
 
     if (locals.params.period > 0) {
       query += ' AND ts > ?';

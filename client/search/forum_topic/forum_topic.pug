@@ -17,11 +17,8 @@ article#content.search-forum-topic
 
     form.search-form(data-on-submit='search.forum_topic:search')
 
-      input(
-        type='hidden'
-        name='type'
-        value=self.type || self.content_types[0]
-      )
+      input(type='hidden', name='type', value=self.type || self.content_types[0])
+      input(type='hidden', name='hid', value=self.hid)
 
       .search-form__input-container
         .input-group

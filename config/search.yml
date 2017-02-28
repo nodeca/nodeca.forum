@@ -15,11 +15,6 @@ search:
       forum_posts:
         priority: 20
 
-  forum_topic:
-    menu:
-      forum_posts:
-        priority: 20
-
   indexes:
     'forum_posts : _default_content':
       rt_field: [ content ]

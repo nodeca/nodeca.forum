@@ -14,9 +14,9 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     $query: {
       type: 'object',
-      required: false,
+      required: true,
       properties: {
-        hid:     { type: 'string' },
+        hid:     { type: 'string', required: true },
         query:   { type: 'string' },
         type:    { type: 'string' },
         sort:    { 'enum': sort_types },
@@ -25,7 +25,7 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  N.wire.on(apiPath, function* search_general(env) {
+  N.wire.on(apiPath, function search_general(env) {
     let menu = _.get(N.config, 'search.forum_section.menu', {});
     let content_types = Object.keys(menu)
                          .sort((a, b) => (menu[a].priority || 100) - (menu[b].priority || 100));
@@ -47,6 +47,7 @@ module.exports = function (N, apiPath) {
       env.res.query  = query.query;
       env.res.sort   = query.sort;
       env.res.period = query.period;
+      env.res.hid    = Number(query.hid);
     }
 
     env.res.type          = type;
