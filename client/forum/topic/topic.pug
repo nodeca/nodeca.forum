@@ -141,30 +141,14 @@ article#content.forum-topic-root(
       != self.partial('@common.blocks.pagination', pgn_params)
 
 
-    footer.similar_topics
-      .similar_topics__header= self.t('similar_topics')
+    if self.similar_topics
+      footer.similar_topics
+        .similar_topics__header= self.t('similar_topics')
 
-      .similar_topics__item
-        .similar_topics__item-title
-          a.similar_topics__item-link(href='#') Rem accusantium perferendis
-        .similar_topics__item-stat 4 replies, 12 oct 2016
+        each item in self.similar_topics
+          .similar_topics__item(data-weight=item.weight)
+            .similar_topics__item-title
+              - var link = self.link_to('forum.topic', { section_hid: item.section_hid, topic_hid: item.topic.hid });
+              a.similar_topics__item-link(href=link)= item.topic.title
 
-      .similar_topics__item
-        .similar_topics__item-title
-          a.similar_topics__item-link(href='#') Deserunt recusandae aut sapiente vero dignissimos quasi velit
-        .similar_topics__item-stat 0 replies, 16 sep 2010
-
-      .similar_topics__item
-        .similar_topics__item-title
-          a.similar_topics__item-link(href='#') At quas architecto
-        .similar_topics__item-stat 1 replies, 10 dec 2004
-
-      .similar_topics__item
-        .similar_topics__item-title
-          a.similar_topics__item-link(href='#') Laboriosam nam quas labore corrupti
-        .similar_topics__item-stat 29 replies, 8 jan 2014
-
-      .similar_topics__item
-        .similar_topics__item-title
-          a.similar_topics__item-link(href='#') Et totam aut
-        .similar_topics__item-stat 15 replies, 31 mar 2012
+            .similar_topics__item-stat= self.t('similar_topics_stat', { replies: item.topic.cache.post_count - 1, date: self.date(item.topic.cache.last_ts, 'date') })

@@ -47,3 +47,4 @@ en-US:
   search_topic: in topic
 
   similar_topics: 'Similar topics'
+  similar_topics_stat: '#{replies} ((reply|replies)):replies, #{date}'

@@ -2,6 +2,8 @@
 //
 'use strict';
 
+const _  = require('lodash');
+
 
 // When requested to display a post, we add a fixed amount of posts before
 // and after it.
@@ -282,5 +284,42 @@ module.exports = function (N, apiPath) {
 
     env.res.posts_list_before_post.push('paginator');
     env.res.posts_list_before_post.push('datediff');
+  });
+
+
+  // Add "similar topics" block
+  //
+  N.wire.after(apiPath, function* fill_similar_topics(env) {
+    let data = { topic: env.data.topic._id };
+
+    try {
+      yield N.wire.emit('internal:forum.topic_similar', data);
+    } catch (__) {
+      // if similar topics can't be fetched, just show empty result
+      return;
+    }
+
+    if (data.results && data.results.length > 0) {
+      let topics = yield N.models.forum.Topic.find()
+                             .where('_id').in(_.map(data.results, 'topic'))
+                             .lean(true);
+
+      let sections = yield N.models.forum.Section.find()
+                               .where('_id').in(_.uniq(_.map(topics, 'section').map(String)))
+                               .lean(true);
+
+      let topics_by_id   = _.keyBy(topics, '_id');
+      let sections_by_id = _.keyBy(sections, '_id');
+
+      // TODO: check permissions
+
+      // TODO: sanitize
+
+      env.res.similar_topics = data.results.map(result => ({
+        topic:       topics_by_id[result.topic],
+        section_hid: sections_by_id[topics_by_id[result.topic].section].hid,
+        weight:      result.weight
+      }));
+    }
   });
 };

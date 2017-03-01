@@ -28,4 +28,5 @@ search:
       rt_attr_timestamp: [ ts ]
       rt_attr_string: [ object_id ]
       rt_attr_bigint: [ section_uid ]
+      rt_attr_uint: [ post_count ]
       rt_attr_bool: [ public, visible ]
