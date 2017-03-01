@@ -32,6 +32,19 @@ article#content.search-forum-section
               type='submit'
             )= self.t('search')
 
+        -
+          var query = {};
+
+          [ 'query', 'type', 'sort', 'period' ].forEach(function (param) {
+            if (self[param]) query[param] = self[param];
+          });
+
+        a.btn.btn-sm.btn-outline-secondary(
+          href=self.link_to('search.general', { $query: query })
+        )
+          = self.filter_title
+          span.icon.icon-x.icon-space-before
+
         .search-form__meta
           a.search-form__options-toggle(
             href='#search_options'
