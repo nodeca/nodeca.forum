@@ -39,12 +39,6 @@ article#content.search-forum-topic
             if (self[param]) query[param] = self[param];
           });
 
-        a.btn.btn-sm.btn-outline-secondary(
-          href=self.link_to('search.general', { $query: query })
-        )
-          = self.filter_title
-          span.icon.icon-x.icon-space-before
-
         .search-form__meta
           a.search-form__options-toggle(
             href='#search_options'
@@ -69,6 +63,12 @@ article#content.search-forum-topic
               )
                 each type, i in self.period_types
                   option(value=type, selected=(self.period === type))= self.t('period.' + type)
+
+    span.search-filter
+      span.search-filter__title= self.filter_title
+      a.search-filter__remove.icon.icon-x(
+        href=self.link_to('search.general', { $query: query })
+      )
 
     .search-results
       //- this gets replaced by 'results' partial when search is performed
