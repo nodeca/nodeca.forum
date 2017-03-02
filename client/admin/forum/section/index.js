@@ -2,7 +2,7 @@
 
 
 const _          = require('lodash');
-const Bloodhound = require('typeahead.js/dist/bloodhound.js');
+const Bloodhound = require('corejs-typeahead/dist/bloodhound.js');
 
 
 let $moderatorSelectDialog;
