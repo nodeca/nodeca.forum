@@ -2,7 +2,8 @@
 //
 'use strict';
 
-const _  = require('lodash');
+const _              = require('lodash');
+const sanitize_topic = require('nodeca.forum/lib/sanitizers/topic');
 
 
 // When requested to display a post, we add a fixed amount of posts before
@@ -290,7 +291,7 @@ module.exports = function (N, apiPath) {
   // Add "similar topics" block
   //
   N.wire.after(apiPath, function* fill_similar_topics(env) {
-    let data = { topic: env.data.topic._id };
+    let data = { topic_id: env.data.topic._id };
 
     try {
       yield N.wire.emit('internal:forum.topic_similar', data);
@@ -301,25 +302,32 @@ module.exports = function (N, apiPath) {
 
     if (data.results && data.results.length > 0) {
       let topics = yield N.models.forum.Topic.find()
-                             .where('_id').in(_.map(data.results, 'topic'))
+                             .where('_id').in(_.map(data.results, 'topic_id'))
                              .lean(true);
 
       let sections = yield N.models.forum.Section.find()
                                .where('_id').in(_.uniq(_.map(topics, 'section').map(String)))
                                .lean(true);
 
-      let topics_by_id   = _.keyBy(topics, '_id');
-      let sections_by_id = _.keyBy(sections, '_id');
+      let access_env = { params: { topics, user_info: env.user_info, preload: sections } };
 
-      // TODO: check permissions
+      yield N.wire.emit('internal:forum.access.topic', access_env);
 
-      // TODO: sanitize
+      let is_topic_visible = {};
 
-      env.res.similar_topics = data.results.map(result => ({
-        topic:       topics_by_id[result.topic],
-        section_hid: sections_by_id[topics_by_id[result.topic].section].hid,
-        weight:      result.weight
-      }));
+      topics.forEach((topic, idx) => {
+        is_topic_visible[topic._id] = access_env.data.access_read[idx];
+      });
+
+      let topics_by_id   = _.keyBy(yield sanitize_topic(N, topics, env.user_info), '_id');
+      let sections_by_id = _.keyBy(sections, '_id'); // not sanitized because only hid is used
+
+      env.res.similar_topics = data.results.filter(result => is_topic_visible[result.topic_id])
+                                           .map(result => ({
+                                             topic:       topics_by_id[result.topic_id],
+                                             section_hid: sections_by_id[topics_by_id[result.topic_id].section].hid,
+                                             weight:      result.weight
+                                           }));
     }
   });
 };
