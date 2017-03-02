@@ -15,7 +15,7 @@ module.exports = function (N, collectionName) {
   let TopicSimilarCache = new Schema({
     topic:    Schema.ObjectId,
     ts:       { type: Date, 'default': Date.now },
-    results:  [ { topic: Schema.ObjectId, weight: Number } ]
+    results:  [ { topic_id: Schema.ObjectId, weight: Number } ]
   },
   {
     versionKey : false

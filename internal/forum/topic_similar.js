@@ -52,15 +52,23 @@ module.exports = function (N, apiPath) {
 
     if (!topic) throw new Error("Similar topics: can't find topic with id=" + locals.topic_id);
 
+    // "sum(lcs*user_weight)*1000 + bm25" - formula for default ranking mode (SPH_RANK_PROXIMITY_BM25)
+    // "interval(post_count,4)" - limit output to topics with 3+ replies
+    let ranker = '(sum(lcs*user_weight)*1000 + bm25) * interval(post_count,4)';
+
     let results = yield N.search.execute(
       `
         SELECT object_id, WEIGHT() as weight
         FROM forum_topics
-        WHERE MATCH(?) AND public=1 AND post_count > 4
+        WHERE MATCH(?)
+              AND public=1
+              AND WEIGHT() > 0
+        ORDER BY WEIGHT() DESC
         LIMIT ?
+        OPTION ranker=expr(?)
 
       `.replace(/\n\s*/mg, ' '),
-      [ '"' + sphinx_escape(topic.title) + '"/1', DISPLAY_LIMIT + 1 ]
+      [ '"' + sphinx_escape(topic.title) + '"/1', DISPLAY_LIMIT + 1, ranker ]
     );
 
     locals.results = results.map(r => ({ topic_id: new ObjectId(r.object_id), weight: r.weight }))
