@@ -8,7 +8,7 @@ if self.results.length
         )= result.topic.title
 
         .search-result__stat-narrow.hidden-sm-up
-          a.search-result__stat-link(
+          a.search-result__stat-link.search-result__m-stat-parent(
             href=self.link_to('forum.section', { section_hid: result.section.hid })
           )= result.section.title
 
