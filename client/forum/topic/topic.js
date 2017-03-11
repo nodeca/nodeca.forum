@@ -1592,6 +1592,22 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         .then(() => N.wire.emit('navigate.reload'));
     });
   });
+
+
+  // Extend dialogs create (add title & link when available)
+  N.wire.before('users.dialog.create:begin', function dialog_create_extend(params) {
+    if (!topicParams) return; // not at this page
+    if (!params.ref) return;  // no data to extend
+    if (!/^fp:/.test(params.ref)) return; // not our data
+
+    let post_id = params.ref.split(':')[1];
+    let title   = $('.forum-topic-title__text').text();
+    let hid     = $(`#post${post_id}`).data('post-hid');
+    let href    = $(`#post${post_id} .forum-post__link`).attr('href');
+
+    if (title && hid) params.title = `Re: #${hid}, ${title}`;
+    if (href)  params.text = `${href}\n\n`;
+  });
 });
 
 
