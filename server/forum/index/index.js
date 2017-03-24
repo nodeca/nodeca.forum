@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
   // Fill list of sections excluded by user
   //
   N.wire.before(apiPath, function* fill_excluded_list(env) {
-    if (env.user_info.is_guest) {
+    if (!env.user_info.is_member) {
       env.res.excluded_sections = env.data.excluded_sections = [];
       return;
     }

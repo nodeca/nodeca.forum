@@ -32,7 +32,7 @@ module.exports = function (N, apiPath) {
   // Check is member
   //
   N.wire.before(apiPath, function check_is_member(env) {
-    if (env.user_info.is_guest) throw N.io.NOT_FOUND;
+    if (!env.user_info.is_member) throw N.io.NOT_FOUND;
   });
 
 

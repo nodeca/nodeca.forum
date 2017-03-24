@@ -154,7 +154,7 @@ module.exports = function (N, apiPath) {
   // Fill subscription type
   //
   N.wire.after(apiPath, function* fill_subscription(env) {
-    if (env.user_info.is_guest) {
+    if (!env.user_info.is_member) {
       env.res.subscription = null;
       return;
     }

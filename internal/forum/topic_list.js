@@ -137,7 +137,7 @@ module.exports = function (N, apiPath) {
   // Fill subscriptions for section topics
   //
   N.wire.after(apiPath, function* fill_subscriptions(env) {
-    if (env.user_info.is_guest) {
+    if (!env.user_info.is_member) {
       env.res.subscriptions = [];
       return;
     }

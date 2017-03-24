@@ -81,7 +81,7 @@ module.exports = function (N, apiPath) {
   // Fill subscription type
   //
   N.wire.after(apiPath, function* fill_subscription(env) {
-    if (env.user_info.is_guest) {
+    if (!env.user_info.is_member) {
       env.res.subscription = null;
       return;
     }
@@ -267,7 +267,7 @@ module.exports = function (N, apiPath) {
   // Mark topic as read
   //
   N.wire.after(apiPath, function mark_topic_read(env) {
-    if (env.user_info.is_guest) return;
+    if (!env.user_info.is_member) return;
 
     // Don't need wait for callback, just log error if needed
     N.models.users.Marker.mark(

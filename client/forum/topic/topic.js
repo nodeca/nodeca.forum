@@ -1234,7 +1234,7 @@ const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
 //
 N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init() {
   // Skip for guests
-  if (N.runtime.is_guest) return;
+  if (!N.runtime.is_member) return;
 
   scrollPositionsKey = `topics_scroll_${N.runtime.user_hid}`;
 
@@ -1324,7 +1324,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
 //
 N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_on_exit() {
   // Skip for guests
-  if (N.runtime.is_guest) return;
+  if (!N.runtime.is_member) return;
 
   uploadScrollPositions.cancel();
   uploadScrollPositionsImmediate();
