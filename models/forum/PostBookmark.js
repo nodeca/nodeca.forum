@@ -7,12 +7,11 @@ var Schema   = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   var PostBookmark = new Schema({
-      user:    Schema.ObjectId,
-      post_id: Schema.ObjectId
-    },
-    {
-      versionKey : false
-    });
+    user:    Schema.ObjectId,
+    post_id: Schema.ObjectId
+  }, {
+    versionKey : false
+  });
 
   ////////////////////////////////////////////////////////////////////////////////
   // Indexes

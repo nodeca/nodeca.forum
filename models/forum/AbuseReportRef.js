@@ -10,16 +10,14 @@ const Schema   = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   let AbuseReportRef = new Schema({
+    // _id of reported content
+    src:  Schema.ObjectId,
 
-      // _id of reported content
-      src:  Schema.ObjectId,
-
-      // Report discussion topic
-      dest: Schema.ObjectId
-    },
-    {
-      versionKey: false
-    });
+    // Report discussion topic
+    dest: Schema.ObjectId
+  }, {
+    versionKey: false
+  });
 
 
   ////////////////////////////////////////////////////////////////////////////////

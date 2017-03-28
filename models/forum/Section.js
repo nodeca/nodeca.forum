@@ -61,8 +61,7 @@ module.exports = function (N, collectionName) {
     // Cache
     cache,
     cache_hb:         cache
-  },
-  {
+  }, {
     versionKey : false
   });
 

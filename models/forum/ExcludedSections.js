@@ -10,16 +10,14 @@ const Schema   = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   let ExcludedSections = new Schema({
+    // _id of user
+    user: Schema.ObjectId,
 
-      // _id of user
-      user: Schema.ObjectId,
-
-      // array of excluded sections
-      excluded_sections: [ Schema.ObjectId ]
-    },
-    {
-      versionKey: false
-    });
+    // array of excluded sections
+    excluded_sections: [ Schema.ObjectId ]
+  }, {
+    versionKey: false
+  });
 
 
   ////////////////////////////////////////////////////////////////////////////////

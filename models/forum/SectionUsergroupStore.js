@@ -8,19 +8,18 @@ var Schema = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   var SectionUsergroupStore = new Schema({
-      section_id : Schema.Types.ObjectId,
+    section_id : Schema.Types.ObjectId,
 
-      //  data:
-      //    usergroup1_id:
-      //      setting1_key:
-      //        value: Mixed
-      //        own: Boolean
-      //
-      data       : { type: Schema.Types.Mixed, 'default': {} }
-    },
-    {
-      versionKey: false
-    });
+    //  data:
+    //    usergroup1_id:
+    //      setting1_key:
+    //        value: Mixed
+    //        own: Boolean
+    //
+    data       : { type: Schema.Types.Mixed, 'default': {} }
+  }, {
+    versionKey: false
+  });
 
   // Indexes
   //////////////////////////////////////////////////////////////////////////////

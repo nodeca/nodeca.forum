@@ -20,7 +20,7 @@ module.exports = function (N, collectionName) {
 
   set_content_type('FORUM_POST', 1);
 
-  var statuses = {
+  let statuses = {
     VISIBLE:      1,
     HB:           2, // hellbanned
     PENDING:      3, // reserved, not used now
@@ -32,7 +32,7 @@ module.exports = function (N, collectionName) {
   statuses.LIST_DELETABLE = [ statuses.VISIBLE, statuses.HB, statuses.PENDING ];
 
 
-  var Post = new Schema({
+  let Post = new Schema({
     topic           : Schema.ObjectId,
     hid             : Number,
 
@@ -92,8 +92,7 @@ module.exports = function (N, collectionName) {
       file_name: String,
       type: { type: Number }
     }, { _id: false }) ]
-  },
-  {
+  }, {
     versionKey : false
   });
 
@@ -125,23 +124,23 @@ module.exports = function (N, collectionName) {
       return;
     }
 
-    var self = this;
+    let self = this;
 
     N.models.forum.Topic.findByIdAndUpdate(
-        self.topic,
-        { $inc: { last_post_counter: 1 } },
-        { 'new': true },
-        function (err, topic) {
+      self.topic,
+      { $inc: { last_post_counter: 1 } },
+      { 'new': true },
+      (err, topic) => {
+        if (err) {
+          callback(err);
+          return;
+        }
 
-      if (err) {
-        callback(err);
-        return;
+        self.hid = topic.last_post_counter;
+
+        callback();
       }
-
-      self.hid = topic.last_post_counter;
-
-      callback();
-    });
+    );
   });
 
 
@@ -165,7 +164,7 @@ module.exports = function (N, collectionName) {
   // Store parser options separately and save reference to them
   //
   Post.pre('save', function (callback) {
-    var self = this;
+    let self = this;
 
     N.models.core.MessageParams.setParams(self.params)
       .then(id => {

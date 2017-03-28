@@ -16,8 +16,7 @@ module.exports = function (N, collectionName) {
     topic:    Schema.ObjectId,
     ts:       { type: Date, 'default': Date.now },
     results:  [ { topic_id: Schema.ObjectId, weight: Number } ]
-  },
-  {
+  }, {
     versionKey : false
   });
 

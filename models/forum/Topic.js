@@ -97,8 +97,7 @@ module.exports = function (N, collectionName) {
     cache_hb:       cache,
 
     views_count:    { type: Number, 'default': 0 }
-  },
-  {
+  }, {
     versionKey : false
   });
 
