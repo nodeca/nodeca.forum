@@ -96,7 +96,8 @@ module.exports = function (N, apiPath) {
       ]);
     }
 
-    post.topic = topic._id;
+    post.topic   = topic._id;
+    post.section = topic.section;
 
     // We should save post before `updateCache` call because cache use topic data
     yield post.save();

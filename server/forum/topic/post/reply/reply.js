@@ -237,8 +237,9 @@ module.exports = function (N, apiPath) {
       post.to_phid = env.data.post.hid;
     }
 
-    post.topic = env.data.topic._id;
-    post.user = env.user_info.user_id;
+    post.topic   = env.data.topic._id;
+    post.section = env.data.topic.section;
+    post.user    = env.user_info.user_id;
 
     yield post.save();
 

@@ -94,6 +94,7 @@ const createPost = Promise.coroutine(function* (topic, previous_posts) {
 
     st:      Post.statuses.VISIBLE,
     topic:   topic._id,
+    section: topic.section,
 
     user,
 

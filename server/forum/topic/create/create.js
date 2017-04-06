@@ -228,6 +228,7 @@ module.exports = function (N, apiPath) {
     yield topic.save();
 
     post.topic = topic._id;
+    post.section = topic.section;
 
     yield post.save();
 

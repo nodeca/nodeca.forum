@@ -74,12 +74,23 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Update section for all posts in moved topic
+  //
+  N.wire.on(apiPath, function* update_section(env) {
+    yield N.models.forum.Post.update(
+      { topic: env.data.topic._id },
+      { $set: { section: env.data.section_to._id } },
+      { multi: true }
+    );
+  });
+
+
   // Move topic
   //
   N.wire.on(apiPath, function* move_topic(env) {
     yield N.models.forum.Topic.update(
-      { hid: env.params.topic_hid, section: env.data.section_from._id },
-      { section: env.data.section_to._id }
+      { _id: env.data.topic._id },
+      { $set: { section: env.data.section_to._id } }
     );
   });
 

@@ -34,6 +34,7 @@ module.exports = function (N, collectionName) {
 
   let Post = new Schema({
     topic           : Schema.ObjectId,
+    section         : Schema.ObjectId,
     hid             : Number,
 
     // Related post for replies
@@ -114,6 +115,14 @@ module.exports = function (N, collectionName) {
     topic: 1,
     st:    1,
     hid:   1
+  });
+
+  // - get posts in a section sorting by date
+  // - get last N posts in a section
+  //
+  Post.index({
+    section: 1,
+    _id:     1
   });
 
   // Set 'hid' for the new post.
