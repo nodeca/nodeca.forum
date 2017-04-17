@@ -3,6 +3,8 @@
 
 'use strict';
 
+const _  = require('lodash');
+
 const sort_types   = [ 'date', 'rel' ];
 const period_types = [ '0', '7', '30', '365' ];
 
@@ -48,8 +50,8 @@ module.exports = function (N, apiPath) {
         params: {
           user_info: env.user_info,
           query:     env.params.query,
-          topic_hid: Number(env.params.hid),
-          period:    env.params.period ? Number(env.params.period) : Number(period_types[0]),
+          topic_hid: _.toFinite(env.params.hid),
+          period:    _.toFinite(env.params.period) || _.toFinite(period_types[0]),
           sort:      env.params.sort ? env.params.sort : sort_types[0],
           limit:     env.params.limit,
           skip:      env.params.skip
@@ -66,7 +68,7 @@ module.exports = function (N, apiPath) {
       env.res.reached_end = true;
     }
 
-    env.res.hid  = Number(env.params.hid);
+    env.res.hid  = _.toFinite(env.params.hid);
     env.res.type = env.params.type;
   });
 };

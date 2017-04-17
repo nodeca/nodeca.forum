@@ -4,6 +4,8 @@
 
 'use strict';
 
+const _  = require('lodash');
+
 const sort_types   = [ 'date', 'rel' ];
 const period_types = [ '0', '7', '30', '365' ];
 
@@ -27,7 +29,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function* fetch_topic(env) {
     let topic = yield N.models.forum.Topic
-                          .findOne({ hid: Number(env.params.$query.hid) })
+                          .findOne({ hid: _.toFinite(env.params.$query.hid) })
                           .lean(true);
 
     if (!topic) throw N.io.NOT_FOUND;
@@ -54,7 +56,7 @@ module.exports = function (N, apiPath) {
     env.res.query  = env.params.$query.query;
     env.res.sort   = env.params.$query.sort;
     env.res.period = env.params.$query.period;
-    env.res.hid    = Number(env.params.$query.hid);
+    env.res.hid    = _.toFinite(env.params.$query.hid);
 
     // there are no tabs for search inside topic,
     // so only one content type possible
