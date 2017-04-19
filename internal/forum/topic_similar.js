@@ -54,7 +54,8 @@ module.exports = function (N, apiPath) {
 
     // "sum(lcs*user_weight)*1000 + bm25" - formula for default ranking mode (SPH_RANK_PROXIMITY_BM25)
     // "interval(post_count,4)" - limit output to topics with 3+ replies
-    let ranker = '(sum(lcs*user_weight)*1000 + bm25) * interval(post_count,4)';
+    //let ranker = '(sum(lcs*user_weight)*1000 + bm25) * interval(post_count,4)';
+    let ranker = 'bm25 * interval(post_count,4)';
 
     let results = yield N.search.execute(
       `
