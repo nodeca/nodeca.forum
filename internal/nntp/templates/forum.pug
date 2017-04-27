@@ -1,0 +1,244 @@
+- var mTypes = '$$ JSON.stringify(N.models.users.MediaInfo.types) $$'
+
+doctype html
+html
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+
+    style(type='text/css')
+      :stylus
+        $brand-primary        = #0275d8
+        $link-color           = $brand-primary
+        $body-color           = #2b2b2b
+        $body-color-secondary = #aeb9bf
+        $body-bg-secondary    = #f8f8f8
+        $font-size-sm         = 0.875rem
+
+        /////////////////////////////////////////////////////////////////////
+        // Markup
+        //
+        .markup
+
+          // External images
+          .image
+            max-width 100%
+            display inline-block
+            border-radius 2px
+            position relative
+            // protect from hidden images
+            min-width 10px
+            min-height 10px
+            background-color #ccc
+
+            & > img
+              max-width 100%
+              border-radius 2px
+              position absolute
+
+          .image__spacer
+            display block
+
+          // Attachments in text
+          .thumb__image
+            border-radius 2px
+
+          .thumb
+            margin-right .7rem
+            margin-bottom .7rem
+
+          .link
+            text-decoration underline
+
+          .link-banned
+            color $link-color
+
+          pre code
+            white-space unset
+
+          .ez-block
+            margin-bottom 1rem
+            border-radius 2px
+
+          .ez-player
+            max-width 600px
+
+          .ez-player-container
+            border-radius 2px
+
+          .emoji
+            font-size 1.25em
+            line-height 1em
+            vertical-align middle
+            color $body-color-secondary
+
+        /////////////////////////////////////////////////////////////////////
+        // Spoilers
+        //
+        .spoiler
+          border-left .125rem solid ($body-color-secondary + 55%)
+          margin-bottom 1rem
+
+        .spoiler__title
+          cursor pointer
+          background-color $body-bg-secondary + 50%
+          font-size $font-size-sm
+          font-weight bold
+          padding .5rem 1rem
+
+        .spoiler__inner
+          overflow hidden
+
+        .spoiler__content
+          transition margin 0.3s ease
+          padding 1rem 1rem 0
+          margin-top -100%
+          margin-bottom -.5rem
+
+        /////////////////////////////////////////////////////////////////////
+        // Quotes
+        //
+        .quote
+          background-color $body-bg-secondary + 50%
+          border-radius 0 .125rem .125rem 0
+          color $body-color + 50%
+          border-left .125rem solid ($body-color-secondary + 55%)
+          padding 1rem
+
+        .quote__title
+          font-size $font-size-sm
+          margin-top -.5rem
+          margin-right -.5px
+          padding .5rem 0
+
+        .quote__author
+          font-style normal
+
+        .quote__author-avatar
+          width 18px
+          height 18px
+          margin-right .375rem
+          border-radius 2px
+          box-shadow 0 0 1px $body-color-secondary
+          opacity .5
+
+        .quote__controls
+          margin-top -.1875rem
+          margin-right -.375rem
+          .btn
+            background-color transparent
+            margin-left 0
+
+        .quote__collapse
+        .quote__expand
+        .quote__ref-local
+          display none
+
+        /////////////////////////////////////////////////////////////////////
+        // Attachments
+        //
+        thumbImageWidth  = '$$ N.config.users.uploads.resize.sm.max_width || N.config.users.uploads.resize.sm.width $$'px
+        thumbImageHeight = '$$ N.config.users.uploads.resize.sm.max_height || N.config.users.uploads.resize.sm.height $$'px
+        cornerRadius     = 3px
+        gridSpace        = 20px
+        gridSpaceTight   = 10px
+
+        //
+        // Grid to show thumbnails
+        //
+
+        .thumb-grid
+          padding 0
+          margin 0 (-1 * gridSpace / 2)
+
+        .thumb-grid__item
+          display inline-block
+          padding 0 (gridSpace / 2)
+          margin 0 0 gridSpace
+          border-radius 3px
+
+        .thumb-grid__m-tight
+          margin 0 (-1 * gridSpaceTight / 2)
+          .thumb-grid__item
+            padding 0 (gridSpaceTight / 2)
+            margin 0 0 gridSpaceTight
+
+        //
+        // Thumbnail container (link)
+        //
+
+        .thumb
+          width thumbImageWidth
+          height thumbImageHeight
+          display inline-block
+          text-align center
+          position relative
+          border-radius cornerRadius
+          box-shadow 0 0 1px ($body-bg-secondary - 10%)
+          background-color $body-bg-secondary
+
+          &:before
+            content ''
+            height 100%
+            display inline-block;
+            vertical-align middle
+
+        // use inner only when realy need colored background
+        // for small images, like video previews
+        .thumb__inner
+          display inline-block
+          height 100%
+          border-radius cornerRadius
+          background-color #000
+          vertical-align top
+
+          &:before
+            content ''
+            height 100%
+            display inline-block;
+            vertical-align middle
+
+        .thumb__image
+          max-width thumbImageWidth
+          max-height thumbImageHeight
+          border-radius cornerRadius
+          display inline-block
+          vertical-align middle
+          text-align center
+
+
+        // Text content, when no image
+        .thumb__content
+          display inline-block
+          vertical-align middle
+          max-width 100%
+          padding 0 1em
+          shortable()
+
+  body
+    .menu
+      - var src_params = { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: self.post.hid };
+      a(href=self.link_to('forum.topic', src_params))= self.t('source')
+
+    .markup!= self.body
+
+    if self.post.tail && self.post.tail.length
+      ul.thumb-grid.thumb-grid__m-tight
+        each media in self.post.tail
+          - var href = self.link_to('users.media', { user_hid: self.user.hid, media_id: media.media_id })
+
+          li.thumb-grid__item
+            - var mType = media.type & ~mTypes.MASK_DELETED
+
+            if mType === mTypes.IMAGE
+              - var imageUrl = self.link_to('core.gridfs', { bucket: media.media_id + '_sm' })
+              a.attach.attach-img.thumb(href=href)
+                img.thumb__image(src=imageUrl)
+
+            else if mType === mTypes.BINARY
+              a.attach.attach-bin.thumb(href=href)
+                .thumb__content= media.file_name
+
+            else if mType === mTypes.MEDIALINK
+              .attach.attach-media.thumb
+                a.thumb__inner(href=href)
+                  img.thumb__image(src=media.medialink_meta.thumb)

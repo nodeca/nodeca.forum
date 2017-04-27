@@ -23,6 +23,10 @@ packages:
       - server/forum
       - internal/forum
 
+  nntp:
+    entries:
+      - internal/nntp
+
   search:
     entries:
       - client/search
