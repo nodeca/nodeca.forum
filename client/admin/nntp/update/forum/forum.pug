@@ -1,0 +1,23 @@
+#content
+  != self.partial('@admin.core.blocks.sidebar_menu')
+
+  .main
+    != self.partial('@admin.core.blocks.breadcrumbs')
+
+    .page-head
+      h1.page-head__title= self.head.title
+
+    form.form-horizontal(data-on-submit='admin.nntp.update.forum:submit')
+      input.form-control(type='hidden', name='_id', value=self.current_group._id)
+
+      fieldset
+        legend= self.t('legend_group_settings')
+
+        .form-group.row
+          label.col-form-label.col-3= self.t('field_name')
+          .col-4
+            input.form-control(type='text', name='name', value=self.current_group.name)
+
+      .form-group.row
+        .col-9.col-offset-3
+          button.btn.btn-primary(type='submit')= self.t('button_save')

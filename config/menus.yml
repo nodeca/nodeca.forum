@@ -17,3 +17,7 @@ menus:
 
           moderator:
             to: admin.forum.moderator.index
+
+    nntp:
+      forum:
+        to: admin.nntp.create.forum

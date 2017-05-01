@@ -83,3 +83,10 @@ router:
       "/forum/moderator/{section_id}/{user_id}":
         section_id: /[0-9a-f]{24}/
         user_id: /[0-9a-f]{24}/
+
+    admin.nntp.create.forum:
+      "/nntp/new_forum": ~
+
+    admin.nntp.update.forum:
+      "/nntp/edit_forum/{_id}":
+        _id: /[0-9a-f]{24}/

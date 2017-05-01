@@ -7,3 +7,9 @@ i18n:
           forum.section: Sections
           forum.group_permissions: Permissions
           forum.moderator: Moderators
+        nntp:
+          forum: Create new forum group
+    common:
+      menus:
+        navbar:
+          forum: Forum

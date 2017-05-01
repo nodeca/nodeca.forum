@@ -1,0 +1,5 @@
+en-US:
+  title: 'Edit NNTP group: #{name}'
+
+  update_group:
+    err_duplicate_name: Group with this name already exists

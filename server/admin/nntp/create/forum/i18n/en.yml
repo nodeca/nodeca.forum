@@ -1,0 +1,5 @@
+en-US:
+  title: New NNTP group
+
+  exec:
+    err_duplicate_name: Group with this name already exists
