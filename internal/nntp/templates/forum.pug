@@ -9,30 +9,32 @@ html
       !{self.asset_body('nodeca.forum/internal/nntp/templates/forum.styl')}
 
   body
-    .menu
+    .nntp-art-head
       - var src_params = { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: self.post.hid };
-      a(href=self.link_to('forum.topic', src_params))= self.t('source')
+      a.nntp-art-head__item(href=self.link_to('forum.topic', src_params))= self.t('source')
 
-    .markup!= self.body
+    .nntp-art-content
+      .markup!= self.body
 
-    if self.post.tail && self.post.tail.length
-      ul.thumb-grid.thumb-grid__m-tight
-        each media in self.post.tail
-          - var href = self.link_to('users.media', { user_hid: self.user.hid, media_id: media.media_id })
+      if self.post.tail && self.post.tail.length
+        .markup-tail
+          ul.thumb-grid.thumb-grid__m-tight
+            each media in self.post.tail
+              - var href = self.link_to('users.media', { user_hid: self.user.hid, media_id: media.media_id })
 
-          li.thumb-grid__item
-            - var mType = media.type & ~mTypes.MASK_DELETED
+              li.thumb-grid__item
+                - var mType = media.type & ~mTypes.MASK_DELETED
 
-            if mType === mTypes.IMAGE
-              - var imageUrl = self.link_to('core.gridfs', { bucket: media.media_id + '_sm' })
-              a.attach.attach-img.thumb(href=href)
-                img.thumb__image(src=imageUrl)
+                if mType === mTypes.IMAGE
+                  - var imageUrl = self.link_to('core.gridfs', { bucket: media.media_id + '_sm' })
+                  a.attach.attach-img.thumb(href=href)
+                    img.thumb__image(src=imageUrl)
 
-            else if mType === mTypes.BINARY
-              a.attach.attach-bin.thumb(href=href)
-                .thumb__content= media.file_name
+                else if mType === mTypes.BINARY
+                  a.attach.attach-bin.thumb(href=href)
+                    .thumb__content= media.file_name
 
-            else if mType === mTypes.MEDIALINK
-              .attach.attach-media.thumb
-                a.thumb__inner(href=href)
-                  img.thumb__image(src=media.medialink_meta.thumb)
+                else if mType === mTypes.MEDIALINK
+                  .attach.attach-media.thumb
+                    a.thumb__inner(href=href)
+                      img.thumb__image(src=media.medialink_meta.thumb)
