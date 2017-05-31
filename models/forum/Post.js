@@ -1,9 +1,10 @@
 'use strict';
 
 
-const _        = require('lodash');
-const Mongoose = require('mongoose');
-const Schema   = Mongoose.Schema;
+const _              = require('lodash');
+const Mongoose       = require('mongoose');
+const AttachmentInfo = require('./_AttachmentInfo');
+const Schema         = Mongoose.Schema;
 
 
 module.exports = function (N, collectionName) {
@@ -30,7 +31,6 @@ module.exports = function (N, collectionName) {
 
 
   statuses.LIST_DELETABLE = [ statuses.VISIBLE, statuses.HB, statuses.PENDING ];
-
 
   let Post = new Schema({
     topic           : Schema.ObjectId,
@@ -65,6 +65,12 @@ module.exports = function (N, collectionName) {
     votes           : { type: Number, 'default': 0 },
     votes_hb        : { type: Number, 'default': 0 },
 
+  // An amount of edits made for this post
+    revision        : { type: Number, 'default': 0 },
+
+  // Time when this post was last edited (null if no edits)
+    last_edit_ts    : Date,
+
   // Bookmarks count
     bookmarks       : { type: Number, 'default': 0 },
 
@@ -88,11 +94,7 @@ module.exports = function (N, collectionName) {
     import_users    : [ Schema.ObjectId ],
 
   // Info to display post tail
-    tail            : [ new Schema({ // explicit definition to remove `_id` field
-      media_id: Schema.ObjectId,
-      file_name: String,
-      type: { type: Number }
-    }, { _id: false }) ]
+    tail            : [ AttachmentInfo ]
   }, {
     versionKey : false
   });

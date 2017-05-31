@@ -5,6 +5,10 @@
 const $       = require('nodeca.core/lib/parser/cheequery');
 const Promise = require('bluebird');
 
+// If same user edits the same post within 5 minutes, all changes
+// made within that period will be squashed into one diff.
+const HISTORY_GRACE_PERIOD = 5 * 60 * 1000;
+
 
 module.exports = function (N, apiPath) {
 
@@ -127,9 +131,58 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Save old version in post history
+  //
+  N.wire.after(apiPath, async function save_post_history(env) {
+    let orig_post = env.data.post;
+
+    let last_revision = await N.models.forum.PostHistory.findOne({
+      post: orig_post._id
+    }).sort('-revision').lean(true);
+
+    let last_update_time = last_revision ? last_revision.ts   : orig_post.ts;
+    let last_update_user = last_revision ? last_revision.user : orig_post.user;
+    let now = new Date();
+
+    if (last_update_time > now - HISTORY_GRACE_PERIOD &&
+        last_update_time < now &&
+        String(last_update_user) === String(env.user_info.user_id)) {
+
+      // if the same user edits the same post within grace period, squash the changes
+      await N.models.forum.Post.update(
+        { _id: orig_post._id },
+        { $set: {
+          last_edit_ts: new Date()
+        } }
+      );
+      return;
+    }
+
+    /* eslint-disable no-undefined */
+    await new N.models.forum.PostHistory({
+      post:       orig_post._id,
+      user:       env.user_info.user_id,
+      md:         orig_post.md,
+      tail:       orig_post.tail,
+      title:      orig_post.hid <= 1 ? env.data.topic.title : undefined,
+      params_ref: orig_post.params_ref,
+      revision:   orig_post.revision
+    }).save();
+
+    await N.models.forum.Post.update(
+      { _id: orig_post._id },
+      { $set: {
+        last_edit_ts: new Date(),
+        revision: orig_post.revision + 1
+      } }
+    );
+  });
+
+
   // Update post
   //
   N.wire.after(apiPath, function* post_update(env) {
+    // save post using model to trigger 'post' hooks (e.g. param_ref update)
     let post = yield N.models.forum.Post
         .findOne({ _id: env.data.post._id })
         .lean(false);
@@ -148,12 +201,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  function buildPostIds(env) {
-    env.data.posts_ids = [ env.data.post._id ];
-    return Promise.resolve();
-  }
-
-
   // Schedule image size fetch
   //
   N.wire.after(apiPath, function* fill_image_info(env) {
@@ -167,6 +214,11 @@ module.exports = function (N, apiPath) {
     yield N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
   });
 
+
+  function buildPostIds(env) {
+    env.data.posts_ids = [ env.data.post._id ];
+    return Promise.resolve();
+  }
 
   // Fetch post
   //

@@ -1594,6 +1594,17 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
   });
 
 
+  // Show post history popup
+  //
+  N.wire.on('forum.topic:post_history', function show_post_history(data) {
+    let post_id = data.$this.data('post-id');
+
+    return Promise.resolve()
+      .then(() => N.io.rpc('forum.topic.post.show_history', { post_id }))
+      .then(res => N.wire.emit('forum.topic.post_history_dlg', res));
+  });
+
+
   // Extend dialogs create (add title & link when available)
   N.wire.before('users.dialog.create:begin', function dialog_create_extend(params) {
     if (!topicParams) return; // not at this page

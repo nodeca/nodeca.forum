@@ -1,0 +1,24 @@
+.modal.fade(tabindex='-1', role='dialog', aria-hidden='true')
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h4.modal-title= self.t('title')
+        button.close(type='button', tabindex='-1', data-dismiss='modal') &times;
+      .modal-body.post-history-dlg__content
+        each entry in self.entries
+          - var user = self.users[entry.user];
+
+          .post-history-dlg__entry
+            .post-history-dlg__meta
+              .post-history-dlg__meta-author
+                if user
+                  a.post-history-dlg__meta-author-link(href=self.link_to('users.member', { user_hid: user.hid }))
+                    = user.name
+              .post-history-dlg__meta-ts!= self.timetag(entry.ts, 'relative')
+
+            if entry.title_diff
+              .post-history-dlg__title
+                != entry.title_diff
+
+            .post-history-dlg__diff
+              != entry.text_diff

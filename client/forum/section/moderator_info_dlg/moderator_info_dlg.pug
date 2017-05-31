@@ -4,7 +4,7 @@
       .modal-header
         h4.modal-title= self.t('title')
         button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
-      .modal-body.help-dlg__content
+      .modal-body
         if self.moderators.length
           ul.moderator-info__list
             each moderator in self.moderators

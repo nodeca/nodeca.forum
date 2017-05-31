@@ -12,6 +12,7 @@ en-US:
   delete: Delete
   undelete: Undelete
   edit: Edit
+  last_edited: "Last edited on #{date}"
   del_reason: "Deletion reason: #{text}"
   del_by: "Deleted by:"
   del_post_text: Post deleted.
