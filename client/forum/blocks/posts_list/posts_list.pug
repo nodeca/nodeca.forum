@@ -81,7 +81,7 @@ each post, post_idx in self.posts
                   = _reply_to_user.nick
 
             if post.revision
-              a.forum-post__revision.icon.icon-edit.icon-space-after(
+              a.forum-post__revision.icon.icon-history.icon-space-after(
                 href='#'
                 title=self.t('last_edited', { date: self.date(post.last_edit_ts, 'datetime') })
                 data-on-click='forum.topic:post_history'
