@@ -43,6 +43,22 @@ function build_diff(history) {
 
   let result = [];
 
+  let initial_src = get_source(history[0]);
+  let text_diff = diff(initial_src, initial_src);
+  let title_diff;
+
+  if (typeof history[0].title !== 'undefined') {
+    title_diff = diff_line(history[0].title, history[0].title);
+  }
+
+  // Get first version for this post (no actual diff)
+  result.push({
+    user:       history[0].user,
+    ts:         history[0].ts,
+    text_diff,
+    title_diff
+  });
+
   for (let revision = 0; revision < history.length - 1; revision++) {
     let old_post = history[revision];
     let new_post = history[revision + 1];

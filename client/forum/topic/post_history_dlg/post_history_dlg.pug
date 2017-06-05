@@ -5,7 +5,7 @@
         h4.modal-title= self.t('title')
         button.close(type='button', tabindex='-1', data-dismiss='modal') &times;
       .modal-body.post-history-dlg__content
-        each entry in self.entries
+        each entry in self.entries.reverse()
           - var user = self.users[entry.user];
 
           .post-history-dlg__entry
@@ -13,7 +13,7 @@
               .post-history-dlg__meta-author
                 if user
                   a.post-history-dlg__meta-author-link(href=self.link_to('users.member', { user_hid: user.hid }))
-                    = user.name
+                    = user.nick
               .post-history-dlg__meta-ts!= self.timetag(entry.ts, 'relative')
 
             if entry.title_diff

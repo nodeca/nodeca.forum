@@ -37,14 +37,40 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
-      posts: env.data.post,
-      user_info: env.user_info,
-      preload: [ env.data.topic ]
+      topics: env.data.topic,
+      user_info: env.user_info
     } };
 
-    await N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
+
+    // Check permissions manually here instead of calling `forum.access.post`
+    // to account for deleted posts (history should still be shown to
+    // moderators).
+    //
+    env.extras.settings.params.section_id = env.data.topic.section;
+    env.data.settings = await env.extras.settings.fetch([
+      'can_see_hellbanned',
+      'forum_mod_can_delete_topics',
+      'forum_mod_can_hard_delete_topics'
+    ]);
+
+    let postVisibleSt = [ N.models.forum.Post.statuses.VISIBLE ];
+
+    if (env.data.settings.can_see_hellbanned || env.user_info.hb) {
+      postVisibleSt.push(N.models.forum.Post.statuses.HB);
+    }
+
+    if (env.data.settings.forum_mod_can_delete_topics) {
+      postVisibleSt.push(N.models.forum.Post.statuses.DELETED);
+    }
+
+    if (env.data.settings.forum_mod_can_see_hard_deleted_topics) {
+      postVisibleSt.push(N.models.forum.Post.statuses.DELETED_HARD);
+    }
+
+    if (postVisibleSt.indexOf(env.data.post.st) === -1) throw N.io.NOT_FOUND;
   });
 
 
