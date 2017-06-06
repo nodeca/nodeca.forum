@@ -79,7 +79,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function get_post_history(env) {
     let history = await N.models.forum.PostHistory.find()
                             .where('post').equals(env.data.post._id)
-                            .sort('revision')
+                            .sort('_id')
                             .lean(true);
 
     env.res.history = [];

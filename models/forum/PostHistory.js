@@ -31,9 +31,6 @@ module.exports = function (N, collectionName) {
     // topic title before changes (only for 1st post in a given topic)
     title:      String,
 
-    // 0-based revision number to keep history ordered
-    revision:   Number,
-
     // change time
     ts:         { type: Date, 'default': Date.now }
   }, {
@@ -45,7 +42,7 @@ module.exports = function (N, collectionName) {
   //////////////////////////////////////////////////////////////////////////////
 
   // find history for a particular post
-  PostHistory.index({ post: 1 });
+  PostHistory.index({ post: 1, _id: 1 });
 
 
   N.wire.on('init:models', function emit_init_PostHistory() {

@@ -66,7 +66,7 @@ module.exports = function (N, collectionName) {
     votes_hb        : { type: Number, 'default': 0 },
 
   // An amount of edits made for this post
-    revision        : { type: Number, 'default': 0 },
+    edit_count      : Number,
 
   // Time when this post was last edited (null if no edits)
     last_edit_ts    : Date,

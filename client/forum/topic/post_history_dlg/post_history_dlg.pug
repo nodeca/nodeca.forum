@@ -20,5 +20,6 @@
               .post-history-dlg__title
                 != entry.title_diff
 
-            .post-history-dlg__diff
-              != entry.text_diff
+            if entry.text_diff
+              .post-history-dlg__diff
+                != entry.text_diff

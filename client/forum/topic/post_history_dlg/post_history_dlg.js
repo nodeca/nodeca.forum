@@ -65,10 +65,18 @@ function build_diff(history) {
     let title_diff;
 
     if (typeof old_post.title !== 'undefined' || typeof new_post.title !== 'undefined') {
-      title_diff = diff_line(old_post.title, new_post.title);
+      if (old_post.title !== new_post.title) {
+        title_diff = diff_line(old_post.title, new_post.title);
+      }
     }
 
-    let text_diff = diff(get_source(old_post), get_source(new_post));
+    let old_src = get_source(old_post);
+    let new_src = get_source(new_post);
+    let text_diff;
+
+    if (old_src !== new_src) {
+      text_diff = diff(get_source(old_post), get_source(new_post));
+    }
 
     result.push({
       user:       new_post.user,
