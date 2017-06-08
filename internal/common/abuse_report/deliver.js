@@ -20,8 +20,8 @@ module.exports = function (N, apiPath) {
 
   // Create new topic or add to existing one
   //
-  N.wire.before(apiPath, function* log_abuse_report(params) {
-    let section_id = yield N.settings.get('general_abuse_report_section');
+  N.wire.before(apiPath, async function log_abuse_report(params) {
+    let section_id = await N.settings.get('general_abuse_report_section');
 
     // If section id not specified - skip
     if (!section_id) return;
@@ -43,35 +43,41 @@ module.exports = function (N, apiPath) {
     let subject = render(N, params.log_templates.subject, params.locals, helpers);
     let body = render(N, params.log_templates.body, params.locals, helpers);
 
-    let section = yield N.models.forum.Section.findOne()
+    let section = await N.models.forum.Section.findOne()
                             .where('_id').equals(section_id)
                             .lean(true);
 
-    let options = yield N.models.core.MessageParams.getParams(params.report.params_ref);
+    let options = await N.models.core.MessageParams.getParams(params.report.params_ref);
+
+    // Fetch user to send messages from
+    //
+    let bot = await N.models.users.User.findOne()
+                        .where('hid').equals(N.config.bots.default_bot_hid)
+                        .lean(true);
 
     // Create new post
     let post = new N.models.forum.Post();
 
-    post.html   = (yield N.parser.md2html({ text: body, attachments: [], options })).html;
+    post.html   = (await N.parser.md2html({ text: body, attachments: [], options })).html;
     post.md     = body;
     post.st     = N.models.forum.Post.statuses.VISIBLE;
-    post.user   = params.report.from;
+    post.user   = bot._id;
     post.params = options;
 
-    let report_ref = yield N.models.forum.AbuseReportRef.findOne()
+    let report_ref = await N.models.forum.AbuseReportRef.findOne()
                               .where('src').equals(params.report.src)
                               .lean(true);
     let topic;
 
     // If ref exists - try fetch topic
     if (report_ref) {
-      topic = yield N.models.forum.Topic.findOne()
+      topic = await N.models.forum.Topic.findOne()
                         .where('_id').equals(report_ref.dest)
                         .lean(true);
 
       // If topic not exists - delete invalid ref
       if (!topic) {
-        yield N.models.forum.AbuseReportRef.remove({ _id: report_ref._id });
+        await N.models.forum.AbuseReportRef.remove({ _id: report_ref._id });
       }
     }
 
@@ -90,7 +96,7 @@ module.exports = function (N, apiPath) {
         dest: topic._id
       });
 
-      yield Promise.all([
+      await Promise.all([
         topic.save(),
         report_ref.save()
       ]);
@@ -100,14 +106,14 @@ module.exports = function (N, apiPath) {
     post.section = topic.section;
 
     // We should save post before `updateCache` call because cache use topic data
-    yield post.save();
+    await post.save();
 
-    yield Promise.all([
+    await Promise.all([
       N.models.forum.Topic.updateCache(topic._id),
       N.models.forum.Section.updateCache(section._id)
     ]);
 
-    yield N.queue.forum_topics_search_update_with_posts([ topic._id ]).postpone();
+    await N.queue.forum_topics_search_update_with_posts([ topic._id ]).postpone();
 
     // Add report url to locals
     params.locals.report_topic_url = N.router.linkTo('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });

@@ -43,8 +43,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, function* check_access(env) {
     let access_env = { params: {
       posts: env.data.post,
-      user_info: env.user_info,
-      preload: [ env.data.topic ]
+      user_info: env.user_info
     } };
 
     yield N.wire.emit('internal:forum.access.post', access_env);
