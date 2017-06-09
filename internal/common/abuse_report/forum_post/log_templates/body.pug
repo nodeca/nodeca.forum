@@ -4,17 +4,31 @@ if self.author
   =self.t('header', { url: '[' + profile_name + '](' + profile_url + ')' })
 else
   =self.t('header_auto')
-| 
-| `````````quote
-| #{self.report_text}
-| `````````
-| 
-=self.t('to', { url: self.src_url })
-| 
-| `````````quote
-| #{self.src_text}
-| `````````
-| 
+= '\n'
+
+-
+  // calculate minimum backtick length for ````quote, so it would encapsulate
+  // original content (longest backtick sequence plus 1, but at least 3)
+  var backtick_seq_len = Math.max.apply(
+    null,
+    ('`` ' + self.report_text + ' ' + self.src_text)
+      .match(/`+/g)
+      .map(s => s.length)
+  ) + 1;
+  var backticks = '`'.repeat(backtick_seq_len);
+
+= '\n'
+= backticks + 'quote\n'
+= self.report_text + '\n'
+= backticks + '\n'
+= '\n'
+= self.t('to', { url: self.src_url }) + '\n'
+= '\n'
+= backticks + 'quote\n'
+= self.src_text + '\n'
+= backticks + '\n'
+= '\n'
+
 if self.recipients && self.recipients.length
   =self.t('message_sent_to')
   each recipient, index in self.recipients
