@@ -170,6 +170,10 @@ module.exports = function (N, collectionName) {
                         .sort('-hid')
                         .lean(true);
 
+    // Post might be missing from the database (e.g. after mongo database repair),
+    // don't change cache in this case
+    if (!post) return;
+
     updateData['cache_hb.last_post']     = post._id;
     updateData['cache_hb.last_post_hid'] = post.hid;
     updateData['cache_hb.last_user']     = post.user;
