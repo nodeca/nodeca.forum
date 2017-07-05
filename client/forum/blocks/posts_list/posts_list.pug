@@ -60,6 +60,7 @@ each post, post_idx in self.posts
                 href=self.link_to('users.member', { user_hid: user.hid })
                 data-user-id=post.user
                 data-user-ref='fp:'+post._id
+                class=user.css
               ) #{user.name}
             else if post.legacy_nick
               span.forum-post__author=post.legacy_nick
@@ -310,6 +311,8 @@ each post, post_idx in self.posts
               a.forum-post__author._ucard-popover(
                 href=self.link_to('users.member', { user_hid: user.hid })
                 data-user-id=post.user
+                data-user-ref='fp:'+post._id
+                class=user.css
               ) #{user.name}
             else if post.legacy_nick
               span.forum-post__author=post.legacy_nick
