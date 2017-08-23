@@ -80,7 +80,7 @@ if self.selected_cnt
       data-on-click='forum.topic:reply'
       title=self.t('post_add')
     )
-    button.visible-nav-alt.btn.btn-secondary.btn-square.hidden-xs-down.icon.icon-plus(
+    button.visible-nav-alt.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon.icon-plus(
       type='button'
       data-on-click='forum.topic:reply'
       title=self.t('post_add')
@@ -100,7 +100,7 @@ if self.selected_cnt
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-secondary.btn-square.hidden-xs-down.icon(
+    button.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon(
       type='button'
       title=subscriptionTitle
       class=subscriptionIcon
@@ -137,7 +137,7 @@ if self.selected_cnt
               )= self.t('history')
 
             when 'post_add'
-              button.dropdown-item.hidden-sm-up(
+              button.dropdown-item.d-sm-none(
                 type='button'
                 data-on-click='forum.topic:reply'
               )= self.t('post_add')

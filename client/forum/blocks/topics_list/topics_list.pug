@@ -77,7 +77,7 @@ each topic, idx in self.topics
             =self.t('del_reason', { text: topic.del_reason })
 
       .forum-topicline__microstat
-        span.forum-topicline__microstat-replies.hidden-sm-up
+        span.forum-topicline__microstat-replies.d-sm-none
           = self.t('replies', replies)
         a.forum-topicline__microstat-time(
           href=self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
@@ -93,15 +93,15 @@ each topic, idx in self.topics
       .forum-topicline__highlight-marker
 
       //- cover all space with link for small screens
-      a.forum-topicline__overlay.hidden-md-up(href=href)
+      a.forum-topicline__overlay.d-md-none(href=href)
 
-    .forum-topicline__stat.forum-topicline__cell.hidden-xs-down(
+    .forum-topicline__stat.forum-topicline__cell.d-none.d-sm-block(
       title=self.t('replies_tip')
     )
       span.icon.icon-replies.icon-space-after
       = self.number_short(replies)
 
-    .forum-topicline__stat.forum-topicline__cell.hidden-sm-down(
+    .forum-topicline__stat.forum-topicline__cell.d-none.d-md-block(
       title=self.t('views_tip')
     )
       span.icon.icon-views.icon-space-after

@@ -101,7 +101,7 @@ article#content.forum-topic-root(
             =self.t('del_reason', { text: self.topic.del_reason })
 
     .forum-topic__loading-prev.nojs-hide(
-      class=(!(self.posts && self.posts.length > 0) || self.posts[0].hid <= 1 ? 'hidden-xs-up' : '')
+      class=(!(self.posts && self.posts.length > 0) || self.posts[0].hid <= 1 ? 'd-none' : '')
     )
       span.icon.icon-loading-placeholder
 
@@ -119,7 +119,7 @@ article#content.forum-topic-root(
     )!= self.partial('@forum.blocks.posts_list')
 
     .forum-topic__loading-next.nojs-hide(
-      class=(!(self.posts && self.posts.length > 0) || self.posts[self.posts.length - 1].hid >= self.topic.cache.last_post_hid ? 'hidden-xs-up' : '')
+      class=(!(self.posts && self.posts.length > 0) || self.posts[self.posts.length - 1].hid >= self.topic.cache.last_post_hid ? 'd-none' : '')
     )
       span.icon.icon-loading-placeholder
 

@@ -16,31 +16,31 @@
           a.forum-section__title-link(href=self.link_to('forum.section', { section_hid: section.hid }))= section.title
 
         if section.child_list && section.child_list.length > 0
-          ul.forum-section__subforums.hidden-sm-down.icon.icon-arrow-subsections
+          ul.forum-section__subforums.d-none.d-md-block.icon.icon-arrow-subsections
             each sub_section in section.child_list
               li.forum-section__subforum-item
                 a.forum-section__subforum-link(href=self.link_to('forum.section', { section_hid: sub_section.hid }))= sub_section.title
 
-        .forum-section__microstat.hidden-md-up
+        .forum-section__microstat.d-md-none
           if !section.cache.topic_count
             = self.t('empty')
           else
             = self.t('stat', { count: section.cache.topic_count, last: self.date(last_ts, 'relative')})
 
         //- cover all space with link for small screens
-        a.forum-section__overlay.hidden-md-up(href=self.link_to('forum.section', { section_hid: section.hid }))
+        a.forum-section__overlay.d-md-none(href=self.link_to('forum.section', { section_hid: section.hid }))
 
-      .forum-section__stats.hidden-sm-down
+      .forum-section__stats.d-none.d-md-block
         if last_ts
           != self.timetag(last_ts, 'relative')
 
-      .forum-section__stats.hidden-sm-down(
+      .forum-section__stats.d-none.d-md-block(
         title=self.t('topics_tip')
       )
         span.icon.icon-threads.icon-space-after
         = self.number_short(section.cache.topic_count)
 
-      .forum-section__stats.hidden-sm-down(
+      .forum-section__stats.d-none.d-md-block(
         title=self.t('posts_tip')
       )
         span.icon.icon-posts.icon-space-after

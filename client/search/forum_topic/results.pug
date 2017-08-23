@@ -3,6 +3,6 @@
     != self.partial('@search.blocks.' + self.type)
 
   .search-results__loading-next.nojs-hide(
-    class=(self.reached_end ? 'hidden-xs-up' : '')
+    class=(self.reached_end ? 'd-none' : '')
   )
     span.icon.icon-loading-placeholder

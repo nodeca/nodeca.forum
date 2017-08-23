@@ -50,7 +50,7 @@ article#content.forum-section-root(
       .float-right
         != self.partial('@forum.section.blocks.toolbar_controls')
       h1.page-head__title(itemprop='name')= self.section.title
-      p.page-head__descr.hidden-xs-down(itemprop='description')
+      p.page-head__descr.d-none.d-sm-block(itemprop='description')
         | #{self.section.description}
 
     //- Subsections, if exist
@@ -60,7 +60,7 @@ article#content.forum-section-root(
     if self.section.is_category === false || (self.topics && self.topics.length)
       if self.topics && self.topics.length
         .forum-section__loading-prev.nojs-hide(
-          class=(self.pagination.chunk_offset === 0 ? 'hidden-xs-up' : '')
+          class=(self.pagination.chunk_offset === 0 ? 'd-none' : '')
         )
           span.icon.icon-loading-placeholder
 
@@ -78,7 +78,7 @@ article#content.forum-section-root(
         )!= self.partial('@forum.blocks.topics_list')
 
         .forum-section__loading-next.nojs-hide(
-          class=(self.topics && self.topics.length > 0 && self.topics[self.topics.length - 1].hid === self.last_topic_hid ? 'hidden-xs-up' : '')
+          class=(self.topics && self.topics.length > 0 && self.topics[self.topics.length - 1].hid === self.last_topic_hid ? 'd-none' : '')
         )
           span.icon.icon-loading-placeholder
 

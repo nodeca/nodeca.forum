@@ -26,7 +26,7 @@ li.user-tracker-item.user-tracker-item__m-forum-topic(
         a.user-tracker-item__title-link(href=href)=topic.title
       .user-tracker-item__desc
         a.user-tracker-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
-    .col-sm-3.hidden-xs-down
+    .col-sm-3.d-none.d-sm-block
       .user-tracker-item__updated
         != self.timetag(topic.cache.last_ts, 'relative')
       if user

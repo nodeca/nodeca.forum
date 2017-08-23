@@ -7,13 +7,13 @@ if self.results.length
           href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })
         )= result.topic.title
 
-        .search-result__stat-narrow.hidden-sm-up
+        .search-result__stat-narrow.d-sm-none
           a.search-result__stat-link.search-result__m-stat-parent(
             href=self.link_to('forum.section', { section_hid: result.section.hid })
           )= result.section.title
 
         ul.search-result__stat
-          li.search-result__stat-item.search-result__m-stat-parent.hidden-xs-down
+          li.search-result__stat-item.search-result__m-stat-parent.d-none.d-sm-block
             a.search-result__stat-link(
               href=self.link_to('forum.section', { section_hid: result.section.hid })
             )= result.section.title

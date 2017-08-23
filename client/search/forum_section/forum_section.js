@@ -145,7 +145,7 @@ N.wire.on(module.apiPath + ':load_next', function load_next() {
 
     // if last search result is loaded, hide bottom placeholder
     if (pageState.reached_end) {
-      $('.search-results__loading-next').addClass('hidden-xs-up');
+      $('.search-results__loading-next').addClass('d-none');
     }
 
     pageState.bottom_marker += items_per_page;

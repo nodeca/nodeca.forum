@@ -40,7 +40,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
       data-section-title=self.section.title
       title=self.t('topic_create')
     )
-    button.visible-nav-alt.btn.btn-secondary.btn-square.hidden-xs-down.icon.icon-plus(
+    button.visible-nav-alt.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon.icon-plus(
       type='button'
       data-on-click='forum.section:create'
       data-section-hid=self.section.hid
@@ -49,7 +49,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     )
 
   if self.runtime.is_member
-    button.btn.btn-secondary.btn-square.hidden-xs-down.icon.icon-check(
+    button.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon.icon-check(
       type='button'
       data-on-click='forum.section:mark_read'
       data-section-hid=self.section.hid
@@ -70,7 +70,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
     - subscriptionTitle = self.t('subs_watching')
 
   if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
-    button.btn.btn-secondary.btn-square.hidden-xs-down.icon(
+    button.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon(
       type='button'
       title=subscriptionTitle
       class=subscriptionIcon
@@ -96,7 +96,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
           case item
 
             when 'topic_create'
-              button.dropdown-item.hidden-sm-up(
+              button.dropdown-item.d-sm-none(
                 type='button'
                 data-on-click='forum.section:create'
                 data-section-hid=self.section.hid
@@ -104,7 +104,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
               )= self.t('topic_create')
 
             when 'mark_read'
-              button.dropdown-item.hidden-sm-up(
+              button.dropdown-item.d-sm-none(
                 type='button'
                 data-on-click='forum.section:mark_read'
                 data-section-hid=self.section.hid

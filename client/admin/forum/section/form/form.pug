@@ -36,5 +36,5 @@ form.form-horizontal(data-bind="submit: isNewSection ? create : update")
     +option_field('is_excludable')
 
   .form-group.row
-    .col-9.col-offset-3
+    .col-9.ml-auto
       button.btn.btn-primary(type="submit", data-bind="enable: isDirty") #{self.t('button_save')}

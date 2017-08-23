@@ -395,24 +395,24 @@ function reset_loading_placeholders() {
 
   // if topmost topic is loaded, hide top placeholder
   if (sectionState.reached_start) {
-    if (!prev.hasClass('hidden-xs-up')) {
+    if (!prev.hasClass('d-none')) {
       $window.scrollTop($window.scrollTop() - prev.outerHeight(true));
     }
 
-    prev.addClass('hidden-xs-up');
+    prev.addClass('d-none');
   } else {
-    if (prev.hasClass('hidden-xs-up')) {
+    if (prev.hasClass('d-none')) {
       $window.scrollTop($window.scrollTop() + prev.outerHeight(true));
     }
 
-    prev.removeClass('hidden-xs-up');
+    prev.removeClass('d-none');
   }
 
   // if last topic is loaded, hide bottom placeholder
   if (sectionState.reached_end) {
-    next.addClass('hidden-xs-up');
+    next.addClass('d-none');
   } else {
-    next.removeClass('hidden-xs-up');
+    next.removeClass('d-none');
   }
 }
 

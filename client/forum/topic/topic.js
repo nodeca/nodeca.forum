@@ -308,24 +308,24 @@ function reset_loading_placeholders() {
 
   // if post with hid=1 is loaded, hide top placeholder
   if (topicState.top_marker <= 1) {
-    if (!prev.hasClass('hidden-xs-up')) {
+    if (!prev.hasClass('d-none')) {
       $window.scrollTop($window.scrollTop() - prev.outerHeight(true));
     }
 
-    prev.addClass('hidden-xs-up');
+    prev.addClass('d-none');
   } else {
-    if (prev.hasClass('hidden-xs-up')) {
+    if (prev.hasClass('d-none')) {
       $window.scrollTop($window.scrollTop() + prev.outerHeight(true));
     }
 
-    prev.removeClass('hidden-xs-up');
+    prev.removeClass('d-none');
   }
 
   // if post with hid=max is loaded, hide bottom placeholder
   if (topicState.bottom_marker >= topicState.max_post) {
-    next.addClass('hidden-xs-up');
+    next.addClass('d-none');
   } else {
-    next.removeClass('hidden-xs-up');
+    next.removeClass('d-none');
   }
 }
 
