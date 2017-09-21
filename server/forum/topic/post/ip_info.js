@@ -3,9 +3,9 @@
 'use strict';
 
 
-var dns     = require('mz/dns');
-var whois   = require('whois').lookup;
-var Promise = require('bluebird');
+const promisify = require('util').promisify;
+const reverse = promisify(require('dns').reverse);
+const whois   = promisify(require('whois').lookup);
 
 
 module.exports = function (N, apiPath) {
@@ -17,8 +17,8 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
-    let can_see_ip = yield env.extras.settings.fetch('can_see_ip');
+  N.wire.before(apiPath, async function check_permissions(env) {
+    let can_see_ip = await env.extras.settings.fetch('can_see_ip');
 
     if (!can_see_ip) throw N.io.FORBIDDEN;
   });
@@ -26,8 +26,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post IP
   //
-  N.wire.on(apiPath, function* fetch_post_ip(env) {
-    let post = yield N.models.forum.Post
+  N.wire.on(apiPath, async function fetch_post_ip(env) {
+    let post = await N.models.forum.Post
                         .findOne({ _id: env.params.post_id })
                         .select('ip')
                         .lean(true);
@@ -47,8 +47,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch whois info
   //
-  N.wire.after(apiPath, function* fetch_whois(env) {
-    let data = yield Promise.fromCallback(cb => whois(env.data.ip, cb));
+  N.wire.after(apiPath, async function fetch_whois(env) {
+    let data = await whois(env.data.ip);
 
     env.res.whois = data.replace(/\r?\n/g, '\n')
                         .replace(/^[#%].*/mg, '')     // comments
@@ -61,11 +61,11 @@ module.exports = function (N, apiPath) {
 
   // Reverse resolve hostname
   //
-  N.wire.after(apiPath, function* reverse_resolve(env) {
+  N.wire.after(apiPath, async function reverse_resolve(env) {
 
     try {
       // this error is not fatal
-      let hosts = yield dns.reverse(env.data.ip);
+      let hosts = await reverse(env.data.ip);
 
       if (hosts.length) {
         env.res.hostname = hosts[0];
