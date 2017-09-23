@@ -28,8 +28,8 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function* section_fetch(env) {
-    env.data.section = yield N.models.forum.Section
+  N.wire.before(apiPath, async function section_fetch(env) {
+    env.data.section = await N.models.forum.Section
                                 .findById(env.params.section_id)
                                 .lean(true);
 
@@ -37,15 +37,15 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function* usergroup_fetch(env) {
-    env.data.usergroup = yield N.models.users.UserGroup
+  N.wire.before(apiPath, async function usergroup_fetch(env) {
+    env.data.usergroup = await N.models.users.UserGroup
                                   .findById(env.params.usergroup_id)
                                   .lean(true);
     if (!env.data.usergroup) throw N.io.NOT_FOUND;
   });
 
 
-  N.wire.on(apiPath, function* group_permissions_edit(env) {
+  N.wire.on(apiPath, async function group_permissions_edit(env) {
     let SectionUsergroupStore = N.settings.getStore('section_usergroup'),
         UsergroupStore        = N.settings.getStore('usergroup');
 
@@ -58,7 +58,7 @@ module.exports = function (N, apiPath) {
     env.res.usergroup_name = env.t.exists(usergroupI18n) ? env.t(usergroupI18n) : env.data.usergroup.short_name;
 
     // Fetch settings with inheritance info for current edit section.
-    env.res.settings = yield SectionUsergroupStore.get(
+    env.res.settings = await SectionUsergroupStore.get(
       SectionUsergroupStore.keys,
       { section_id: env.data.section._id, usergroup_ids: [ env.data.usergroup._id ] },
       { skipCache: true, extended: true }
@@ -68,7 +68,7 @@ module.exports = function (N, apiPath) {
     if (!env.data.section.parent) {
       env.res.parent_settings = null;
     } else {
-      env.res.parent_settings = yield SectionUsergroupStore.get(
+      env.res.parent_settings = await SectionUsergroupStore.get(
         SectionUsergroupStore.keys,
         { section_id: env.data.section.parent, usergroup_ids: [ env.data.usergroup._id ] },
         { skipCache: true, extended: true }
@@ -76,7 +76,7 @@ module.exports = function (N, apiPath) {
     }
 
     // Fetch inherited settings from usergroup.
-    env.res.usergroup_settings = yield UsergroupStore.get(
+    env.res.usergroup_settings = await UsergroupStore.get(
       UsergroupStore.keys,
       { usergroup_ids: [ env.data.usergroup._id ] },
       { skipCache: true }

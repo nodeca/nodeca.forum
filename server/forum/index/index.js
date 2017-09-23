@@ -12,13 +12,13 @@ module.exports = function (N, apiPath) {
 
   // Fill list of sections excluded by user
   //
-  N.wire.before(apiPath, function* fill_excluded_list(env) {
+  N.wire.before(apiPath, async function fill_excluded_list(env) {
     if (!env.user_info.is_member) {
       env.res.excluded_sections = env.data.excluded_sections = [];
       return;
     }
 
-    let result = yield N.models.forum.ExcludedSections.findOne()
+    let result = await N.models.forum.ExcludedSections.findOne()
                           .where('user').equals(env.user_info.user_id)
                           .lean(true);
 

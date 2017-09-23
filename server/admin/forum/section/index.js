@@ -9,15 +9,15 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
 
-  N.wire.before(apiPath, function* sections_fetch(env) {
-    env.data.sections = yield N.models.forum.Section
+  N.wire.before(apiPath, async function sections_fetch(env) {
+    env.data.sections = await N.models.forum.Section
                                   .find()
                                   .sort('display_order')
                                   .lean(true);
   });
 
 
-  N.wire.before(apiPath, function* moderators_fetch(env) {
+  N.wire.before(apiPath, async function moderators_fetch(env) {
     let SectionModeratorStore = N.settings.getStore('section_moderator');
 
     if (!SectionModeratorStore) {
@@ -30,7 +30,7 @@ module.exports = function (N, apiPath) {
     // Register section's moderators for `users_join` hooks.
     env.data.users = env.data.users || [];
 
-    yield Promise.map(env.data.sections, section => {
+    await Promise.map(env.data.sections, section => {
       section.own_moderator_list = [];
 
       return SectionModeratorStore.getModeratorsInfo(section._id).then(moderators => {

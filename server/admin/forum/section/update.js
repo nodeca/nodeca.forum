@@ -27,14 +27,14 @@ module.exports = function (N, apiPath) {
     is_excludable:  { type: 'boolean',          required: false }
   });
 
-  N.wire.on(apiPath, function* section_update(env) {
+  N.wire.on(apiPath, async function section_update(env) {
     var SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     if (!SectionUsergroupStore) {
       throw { code: N.io.APP_ERROR, message: 'Settings store `section_usergroup` is not registered.' };
     }
 
-    let section = yield N.models.forum.Section.findById(env.params._id);
+    let section = await N.models.forum.Section.findById(env.params._id);
 
     env.data.section = section;
 
@@ -52,7 +52,7 @@ module.exports = function (N, apiPath) {
     if (section.isModified('parent') || !_.has(env.params, 'display_order')) {
 
       // This is the most simple way to find max value of a field in Mongo.
-      let result = yield N.models.forum.Section
+      let result = await N.models.forum.Section
                             .find({ parent: section.parent })
                             .select('display_order')
                             .sort('-display_order')
@@ -62,6 +62,6 @@ module.exports = function (N, apiPath) {
       section.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
     }
 
-    yield section.save();
+    await section.save();
   });
 };

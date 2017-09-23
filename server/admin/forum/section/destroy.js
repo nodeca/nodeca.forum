@@ -9,14 +9,14 @@ module.exports = function (N, apiPath) {
     _id: { format: 'mongo', required: true }
   });
 
-  N.wire.on(apiPath, function* section_destroy(env) {
-    let section = yield N.models.forum.Section.findById(env.params._id);
+  N.wire.on(apiPath, async function section_destroy(env) {
+    let section = await N.models.forum.Section.findById(env.params._id);
 
     // If section is already deleted or not exists - OK.
     if (!section) return;
 
     // Count children of ection to destroy.
-    let childrenCount = yield N.models.forum.Section.count({ parent: section._id });
+    let childrenCount = await N.models.forum.Section.count({ parent: section._id });
 
     // Fail if there are any child sections.
     if (childrenCount !== 0) {
@@ -24,7 +24,7 @@ module.exports = function (N, apiPath) {
     }
 
     // Count user posts of section to destroy.
-    let postsCount = yield N.models.forum.Post.count({ section: section._id });
+    let postsCount = await N.models.forum.Post.count({ section: section._id });
 
     // Fail if some sections contain user posts.
     if (postsCount !== 0) {
@@ -32,6 +32,6 @@ module.exports = function (N, apiPath) {
     }
 
     // All ok. Destroy section.
-    yield section.remove();
+    await section.remove();
   });
 };

@@ -10,7 +10,7 @@ module.exports = function (N, apiPath) {
     usergroup_id: { format: 'mongo', required: true }
   });
 
-  N.wire.on(apiPath, function* group_permissions_destroy(env) {
+  N.wire.on(apiPath, async function group_permissions_destroy(env) {
     let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     if (!SectionUsergroupStore) {
@@ -20,6 +20,6 @@ module.exports = function (N, apiPath) {
       };
     }
 
-    yield SectionUsergroupStore.removePermissions(env.params.section_id, env.params.usergroup_id);
+    await SectionUsergroupStore.removePermissions(env.params.section_id, env.params.usergroup_id);
   });
 };

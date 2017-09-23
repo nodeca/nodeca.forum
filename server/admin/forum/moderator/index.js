@@ -21,8 +21,8 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function* sections_fetch(env) {
-    let sections = yield N.models.forum.Section
+  N.wire.before(apiPath, async function sections_fetch(env) {
+    let sections = await N.models.forum.Section
                             .find()
                             .lean(true);
 
@@ -37,14 +37,14 @@ module.exports = function (N, apiPath) {
 
   // Fetch moderators map `user_id` => `array of section info`.
   //
-  N.wire.on(apiPath, function* moderator_index(env) {
+  N.wire.on(apiPath, async function moderator_index(env) {
     let SectionModeratorStore = N.settings.getStore('section_moderator'),
         sectionsByModerator = {};
 
     for (let i = 0; i < env.data.sections.length; i++) {
       let section = env.data.sections[i];
 
-      let moderators = yield SectionModeratorStore.getModeratorsInfo(section._id);
+      let moderators = await SectionModeratorStore.getModeratorsInfo(section._id);
 
       for (let j = 0; j < moderators.length; j++) {
         let moderator = moderators[j];

@@ -2,7 +2,6 @@
 
 
 const _        = require('lodash');
-const Promise  = require('bluebird');
 const Mongoose = require('mongoose');
 const memoize  = require('promise-memoize');
 const Schema   = Mongoose.Schema;
@@ -126,30 +125,31 @@ module.exports = function (N, collectionName) {
 
   // Update all inherited settings (permissions) for subsections.
   //
-  Section.post('save', function (section) {
+  async function __update_inherited(id) {
+    let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
+    if (SectionUsergroupStore) {
+      await SectionUsergroupStore.updateInherited(id);
+    } else {
+      N.logger.error('Settings store `section_usergroup` is not registered.');
+    }
+
+    let SectionModeratorStore = N.settings.getStore('section_moderator');
+
+    if (SectionModeratorStore) {
+      await SectionModeratorStore.updateInherited(id);
+    } else {
+      N.logger.error('Settings store `section_moderator` is not registered.');
+    }
+  }
+
+  Section.post('save', function (section) {
     // Nothing to do if parent is not changed.
     if (!section.__isParentModified__) {
       return;
     }
 
-    Promise.coroutine(function* () {
-      let SectionUsergroupStore = N.settings.getStore('section_usergroup');
-
-      if (SectionUsergroupStore) {
-        yield SectionUsergroupStore.updateInherited(section._id);
-      } else {
-        N.logger.error('Settings store `section_usergroup` is not registered.');
-      }
-
-      let SectionModeratorStore = N.settings.getStore('section_moderator');
-
-      if (SectionModeratorStore) {
-        yield SectionModeratorStore.updateInherited(section._id);
-      } else {
-        N.logger.error('Settings store `section_moderator` is not registered.');
-      }
-    })().catch(err => N.logger.error(err));
+    __update_inherited(section._id).catch(err => N.logger.error(err));
   });
 
 

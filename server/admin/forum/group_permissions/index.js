@@ -21,23 +21,23 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.before(apiPath, function* usergroup_fetch(env) {
-    env.data.usergroups = yield N.models.users.UserGroup
+  N.wire.before(apiPath, async function usergroup_fetch(env) {
+    env.data.usergroups = await N.models.users.UserGroup
                                     .find()
                                     .sort('_id')
                                     .lean(true);
   });
 
 
-  N.wire.before(apiPath, function* section_fetch(env) {
-    env.data.sections = yield N.models.forum.Section
+  N.wire.before(apiPath, async function section_fetch(env) {
+    env.data.sections = await N.models.forum.Section
                                   .find()
                                   .sort('display_order')
                                   .lean(true);
   });
 
 
-  N.wire.on(apiPath, function* group_permissions_index(env) {
+  N.wire.on(apiPath, async function group_permissions_index(env) {
     let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     // Set localized name for each usergroup.
@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
       for (let j = 0; j < env.data.usergroups.length; j++) {
         let usergroup = env.data.usergroups[j];
 
-        let settings = yield SectionUsergroupStore.get(
+        let settings = await SectionUsergroupStore.get(
           SectionUsergroupStore.keys,
           { section_id: section._id, usergroup_ids: [ usergroup._id ] },
           { skipCache: true, extended: true }

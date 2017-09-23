@@ -159,12 +159,12 @@ module.exports = function (N, collectionName) {
   //
   // - topicID - id of topic to update
   //
-  Topic.statics.updateCache = Promise.coroutine(function* (topicID) {
+  Topic.statics.updateCache = async function (topicID) {
     let statuses = N.models.forum.Post.statuses;
     let updateData = {};
 
     // Find last post
-    let post = yield N.models.forum.Post.findOne()
+    let post = await N.models.forum.Post.findOne()
                         .where('topic').equals(topicID)
                         .or([ { st: statuses.VISIBLE }, { st: statuses.HB } ])
                         .sort('-hid')
@@ -187,7 +187,7 @@ module.exports = function (N, collectionName) {
     // If last post hellbanned - find visible one
     if (post.st === statuses.HB) {
       // Find last visible post
-      let post_visible = yield N.models.forum.Post.findOne()
+      let post_visible = await N.models.forum.Post.findOne()
                                   .where('topic').equals(topicID)
                                   .where('st').equals(statuses.VISIBLE)
                                   .sort('-hid')
@@ -202,7 +202,7 @@ module.exports = function (N, collectionName) {
       }
     }
 
-    let count = yield Promise.map([ statuses.VISIBLE, statuses.HB ],
+    let count = await Promise.map([ statuses.VISIBLE, statuses.HB ],
                           st => N.models.forum.Post
                                     .where('topic').equals(topicID)
                                     .where('st').equals(st)
@@ -214,8 +214,8 @@ module.exports = function (N, collectionName) {
     // Hellbanned post count
     updateData['cache_hb.post_count'] = count[0] + count[1];
 
-    yield N.models.forum.Topic.update({ _id: topicID }, updateData);
-  });
+    await N.models.forum.Topic.update({ _id: topicID }, updateData);
+  };
 
 
   N.wire.on('init:models', function emit_init_Topic() {

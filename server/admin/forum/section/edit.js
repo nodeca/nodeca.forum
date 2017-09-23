@@ -14,8 +14,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch current section
   //
-  N.wire.before(apiPath, function* section_edit_fetch_current(env) {
-    let currentSection = yield N.models.forum.Section.findById(env.params._id).lean(true);
+  N.wire.before(apiPath, async function section_edit_fetch_current(env) {
+    let currentSection = await N.models.forum.Section.findById(env.params._id).lean(true);
 
     if (!currentSection) throw N.io.NOT_FOUND;
 
@@ -25,18 +25,18 @@ module.exports = function (N, apiPath) {
 
   // Fetch sections tree & remove current leaf to avoid circular dependency
   //
-  N.wire.on(apiPath, function* fetch_data(env) {
-    let allSections = yield N.models.forum.Section.getChildren();
+  N.wire.on(apiPath, async function fetch_data(env) {
+    let allSections = await N.models.forum.Section.getChildren();
 
     // exclude current section
     env.data.allowed_parents = _.filter(allSections, section => !section._id.equals(env.params._id));
   });
 
 
-  N.wire.after(apiPath, function* fill_parents_path(env) {
+  N.wire.after(apiPath, async function fill_parents_path(env) {
     let _ids = env.data.allowed_parents.map(s => s._id);
 
-    let sections = yield N.models.forum.Section.find()
+    let sections = await N.models.forum.Section.find()
       .where('_id').in(_ids)
       .select('_id title')
       .lean(true);

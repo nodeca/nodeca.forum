@@ -13,21 +13,21 @@ module.exports = function (N, apiPath) {
 
   // fetch sections tree
   //
-  N.wire.before(apiPath, function* section_new(env) {
-    env.data.allowed_parents = yield N.models.forum.Section.getChildren();
+  N.wire.before(apiPath, async function section_new(env) {
+    env.data.allowed_parents = await N.models.forum.Section.getChildren();
   });
 
 
   // Prepare data
   //
-  N.wire.on(apiPath, function* section_new(env) {
+  N.wire.on(apiPath, async function section_new(env) {
 
     let _ids = env.data.allowed_parents.map(function (s) { return s._id; });
 
     env.res.allowed_parents = [];
 
     // Add title to sections
-    let sections = yield N.models.forum.Section
+    let sections = await N.models.forum.Section
       .find({ _id: { $in: _ids } })
       .select('_id title')
       .lean(true);

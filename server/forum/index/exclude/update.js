@@ -22,8 +22,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch sections
   //
-  N.wire.before(apiPath, function* fetch_sections(env) {
-    env.data.sections = yield N.models.forum.Section.find()
+  N.wire.before(apiPath, async function fetch_sections(env) {
+    env.data.sections = await N.models.forum.Section.find()
                                   .where('_id').in(env.params.sections_ids)
                                   .where('is_excludable').equals(true)
                                   .lean(true);
@@ -32,10 +32,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user has an access to this sections
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { sections: env.data.sections, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     access_env.data.access_read.forEach(access => {
       if (!access) throw N.io.NOT_FOUND;
@@ -45,8 +45,8 @@ module.exports = function (N, apiPath) {
 
   // Save excluded sections
   //
-  N.wire.on(apiPath, function* save_excluded_sections(env) {
-    yield N.models.forum.ExcludedSections.update(
+  N.wire.on(apiPath, async function save_excluded_sections(env) {
+    await N.models.forum.ExcludedSections.update(
       { user: env.user_info.user_id },
       { excluded_sections: _.map(env.data.sections, '_id') || [] },
       { upsert: true }

@@ -17,8 +17,8 @@ module.exports = function (N, apiPath) {
 
   // Fill list of sections excluded by user
   //
-  N.wire.on(apiPath, function* fill_excluded_list(env) {
-    let result = yield N.models.forum.ExcludedSections.findOne()
+  N.wire.on(apiPath, async function fill_excluded_list(env) {
+    let result = await N.models.forum.ExcludedSections.findOne()
                           .where('user').equals(env.user_info.user_id)
                           .lean(true);
 
@@ -28,7 +28,7 @@ module.exports = function (N, apiPath) {
 
   // Fill sections tree by subcall
   //
-  N.wire.after(apiPath, function* fill_sections_tree(env) {
-    yield N.wire.emit('internal:forum.sections_tree', env);
+  N.wire.after(apiPath, async function fill_sections_tree(env) {
+    await N.wire.emit('internal:forum.sections_tree', env);
   });
 };

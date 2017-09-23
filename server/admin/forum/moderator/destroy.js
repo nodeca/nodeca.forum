@@ -10,7 +10,7 @@ module.exports = function (N, apiPath) {
     user_id:    { format: 'mongo', required: true }
   });
 
-  N.wire.on(apiPath, function* moderator_destroy(env) {
+  N.wire.on(apiPath, async function moderator_destroy(env) {
     let SectionModeratorStore = N.settings.getStore('section_moderator');
 
     if (!SectionModeratorStore) {
@@ -20,6 +20,6 @@ module.exports = function (N, apiPath) {
       };
     }
 
-    yield SectionModeratorStore.removeModerator(env.params.section_id, env.params.user_id);
+    await SectionModeratorStore.removeModerator(env.params.section_id, env.params.user_id);
   });
 };

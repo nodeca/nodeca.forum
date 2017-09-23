@@ -26,7 +26,7 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  N.wire.on(apiPath, function* group_permissions_update(env) {
+  N.wire.on(apiPath, async function group_permissions_update(env) {
     let SectionUsergroupStore = N.settings.getStore('section_usergroup');
 
     if (!SectionUsergroupStore) {
@@ -37,20 +37,20 @@ module.exports = function (N, apiPath) {
     }
 
     // Fetch forum section just to ensure it exists.
-    let section = yield N.models.forum.Section.findById(env.params.section_id)
+    let section = await N.models.forum.Section.findById(env.params.section_id)
                                               .lean(true);
     if (!section) {
       throw N.io.NOT_FOUND;
     }
 
     // Fetch usergroup just to ensure it exists.
-    let usergroup = yield N.models.users.UserGroup.findById(env.params.usergroup_id)
+    let usergroup = await N.models.users.UserGroup.findById(env.params.usergroup_id)
                                                   .lean(true);
     if (!usergroup) {
       throw N.io.NOT_FOUND;
     }
 
-    yield SectionUsergroupStore.set(
+    await SectionUsergroupStore.set(
       env.params.settings,
       { section_id: section._id, usergroup_id: usergroup._id }
     );

@@ -19,20 +19,20 @@ module.exports = function (N, apiPath) {
 
   // set parent and display order to sections
   //
-  N.wire.on(apiPath, function* section_update(env) {
+  N.wire.on(apiPath, async function section_update(env) {
 
-    let section = yield N.models.forum.Section
+    let section = await N.models.forum.Section
                             .findById(env.params._id)
                             .select('parent display_order');
 
     section.parent = env.params.parent;
-    yield section.save();
+    await section.save();
   });
 
 
   // set display order to sibling sections
   //
-  N.wire.after(apiPath, function* update_display_orders(env) {
+  N.wire.after(apiPath, async function update_display_orders(env) {
 
     var _ids = env.params.sibling_order;
 
@@ -41,13 +41,13 @@ module.exports = function (N, apiPath) {
 
     _.forEach(_ids, (value, index) => { siblingOrder[value] = index; });
 
-    let sections = yield N.models.forum.Section
+    let sections = await N.models.forum.Section
                             .find({ _id: { $in: _ids } })
                             .select('display_order');
 
     // for each sibling find proper section and set `display_order` to it
     sections.forEach(section => { section.display_order = siblingOrder[section._id]; });
 
-    yield Promise.map(sections, section => section.save());
+    await Promise.map(sections, section => section.save());
   });
 };

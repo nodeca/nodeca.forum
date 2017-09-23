@@ -26,7 +26,7 @@ module.exports = function (N, apiPath) {
     }
   });
 
-  N.wire.on(apiPath, function* moderator_update(env) {
+  N.wire.on(apiPath, async function moderator_update(env) {
     let SectionModeratorStore = N.settings.getStore('section_moderator');
 
     if (!SectionModeratorStore) {
@@ -37,18 +37,18 @@ module.exports = function (N, apiPath) {
     }
 
     // Fetch forum section just to ensure it exists.
-    let section = yield N.models.forum.Section
+    let section = await N.models.forum.Section
                             .findById(env.params.section_id)
                             .lean(true);
     if (!section) throw N.io.NOT_FOUND;
 
       // Fetch usergroup just to ensure it exists.
-    let user = yield N.models.users.User
+    let user = await N.models.users.User
                           .findById(env.params.user_id)
                           .lean(true);
     if (!user) throw N.io.NOT_FOUND;
 
-    yield SectionModeratorStore.set(
+    await SectionModeratorStore.set(
       env.params.settings,
       { section_id: section._id, user_id: user._id }
     );

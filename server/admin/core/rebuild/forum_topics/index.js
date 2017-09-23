@@ -5,8 +5,8 @@
 
 
 module.exports = function (N) {
-  N.wire.after('server:admin.core.rebuild', { priority: 40 }, function* rebuild_forum_topics_widget(env) {
-    let task = yield N.queue.getTask('forum_topics_rebuild');
+  N.wire.after('server:admin.core.rebuild', { priority: 40 }, async function rebuild_forum_topics_widget(env) {
+    let task = await N.queue.getTask('forum_topics_rebuild');
     let task_info = {};
 
     if (task && task.state !== 'finished') {
