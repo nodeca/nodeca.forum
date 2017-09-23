@@ -18,8 +18,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    let post = yield N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
+  N.wire.before(apiPath, async function fetch_post(env) {
+    let post = await N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
 
     if (!post) throw N.io.NOT_FOUND;
 
@@ -29,8 +29,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
 
     if (!topic) throw N.io.NOT_FOUND;
 
@@ -40,14 +40,14 @@ module.exports = function (N, apiPath) {
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
       posts: env.data.post,
       user_info: env.user_info,
       preload: [ env.data.topic ]
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -55,7 +55,7 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
     // We can't delete first port. Topic operation should be requested instead
@@ -66,7 +66,7 @@ module.exports = function (N, apiPath) {
     // Check moderator permissions
 
     if (env.params.as_moderator) {
-      let settings = yield env.extras.settings.fetch([
+      let settings = await env.extras.settings.fetch([
         'forum_mod_can_delete_topics',
         'forum_mod_can_hard_delete_topics'
       ]);
@@ -92,7 +92,7 @@ module.exports = function (N, apiPath) {
       throw N.io.FORBIDDEN;
     }
 
-    let forum_edit_max_time = yield env.extras.settings.fetch('forum_edit_max_time');
+    let forum_edit_max_time = await env.extras.settings.fetch('forum_edit_max_time');
 
     if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
       throw {
@@ -105,7 +105,7 @@ module.exports = function (N, apiPath) {
 
   // Remove post
   //
-  N.wire.on(apiPath, function* delete_post(env) {
+  N.wire.on(apiPath, async function delete_post(env) {
     let statuses = N.models.forum.Post.statuses;
     let post = env.data.post;
     let update = {
@@ -119,21 +119,21 @@ module.exports = function (N, apiPath) {
       update.del_reason = env.params.reason;
     }
 
-    yield N.models.forum.Post.update({ _id: post._id }, update);
+    await N.models.forum.Post.update({ _id: post._id }, update);
   });
 
 
   // Update topic counters
   //
-  N.wire.after(apiPath, function* update_topic(env) {
-    yield N.models.forum.Topic.updateCache(env.data.topic._id);
+  N.wire.after(apiPath, async function update_topic(env) {
+    await N.models.forum.Topic.updateCache(env.data.topic._id);
   });
 
 
   // Remove votes
   //
-  N.wire.after(apiPath, function* remove_votes(env) {
-    yield N.models.users.Vote.collection.update(
+  N.wire.after(apiPath, async function remove_votes(env) {
+    await N.models.users.Vote.collection.update(
       { 'for': env.data.post._id },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } },
@@ -144,23 +144,23 @@ module.exports = function (N, apiPath) {
 
   // Increment topic version to invalidate old post count cache
   //
-  N.wire.after(apiPath, function* remove_old_post_count_cache(env) {
-    yield N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: { version: 1 } });
+  N.wire.after(apiPath, async function remove_old_post_count_cache(env) {
+    await N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: { version: 1 } });
   });
 
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
-    yield N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+    await N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
   });
 
 
   // Update section counters
   //
-  N.wire.after(apiPath, function* update_section(env) {
-    yield N.models.forum.Section.updateCache(env.data.topic.section);
+  N.wire.after(apiPath, async function update_section(env) {
+    await N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
   // TODO: log moderator actions

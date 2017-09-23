@@ -35,8 +35,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section info
   //
-  N.wire.before(apiPath, function* fetch_section_info(env) {
-    let section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_section_info(env) {
+    let section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
     if (!section.is_enabled) throw N.io.NOT_FOUND;
@@ -50,10 +50,10 @@ module.exports = function (N, apiPath) {
 
   // Check permission to reply in this section
   //
-  N.wire.before(apiPath, function* check_can_reply(env) {
+  N.wire.before(apiPath, async function check_can_reply(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    let forum_can_reply = yield env.extras.settings.fetch('forum_can_reply');
+    let forum_can_reply = await env.extras.settings.fetch('forum_can_reply');
 
     if (!forum_can_reply) throw N.io.NOT_FOUND;
   });
@@ -68,8 +68,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic info
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
 
     if (!topic) throw N.io.NOT_FOUND;
 
@@ -79,10 +79,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user can see this topic
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -90,10 +90,10 @@ module.exports = function (N, apiPath) {
 
   // Fetch parent post
   //
-  N.wire.before(apiPath, function* fetch_parent_post(env) {
+  N.wire.before(apiPath, async function fetch_parent_post(env) {
     if (!env.params.parent_post_id) return;
 
-    let post = yield N.models.forum.Post.findOne({ _id: env.params.parent_post_id }).lean(true);
+    let post = await N.models.forum.Post.findOne({ _id: env.params.parent_post_id }).lean(true);
 
     if (!post) {
       throw {
@@ -110,7 +110,7 @@ module.exports = function (N, apiPath) {
       preload: [ env.data.topic ]
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     if (!access_env.data.access_read) {
       throw {
@@ -123,8 +123,8 @@ module.exports = function (N, apiPath) {
 
   // Prepare parse options
   //
-  N.wire.before(apiPath, function* prepare_options(env) {
-    let settings = yield N.settings.getByCategory(
+  N.wire.before(apiPath, async function prepare_options(env) {
+    let settings = await N.settings.getByCategory(
       'forum_posts_markup',
       { usergroup_ids: env.user_info.usergroups },
       { alias: true });
@@ -148,8 +148,8 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.on(apiPath, function* parse_text(env) {
-    env.data.parse_result = yield N.parser.md2html({
+  N.wire.on(apiPath, async function parse_text(env) {
+    env.data.parse_result = await N.parser.md2html({
       text: env.params.txt,
       attachments: env.params.attach,
       options: env.data.parse_options,
@@ -160,8 +160,8 @@ module.exports = function (N, apiPath) {
 
   // Check post length
   //
-  N.wire.after(apiPath, function* check_post_length(env) {
-    let min_length = yield env.extras.settings.fetch('forum_post_min_length');
+  N.wire.after(apiPath, async function check_post_length(env) {
+    let min_length = await env.extras.settings.fetch('forum_post_min_length');
 
     if (env.data.parse_result.text_length < min_length) {
       throw {
@@ -174,8 +174,8 @@ module.exports = function (N, apiPath) {
 
   // Limit an amount of images in the post
   //
-  N.wire.after(apiPath, function* check_images_count(env) {
-    let max_images = yield env.extras.settings.fetch('forum_post_max_images');
+  N.wire.after(apiPath, async function check_images_count(env) {
+    let max_images = await env.extras.settings.fetch('forum_post_max_images');
 
     if (max_images <= 0) return;
 
@@ -195,8 +195,8 @@ module.exports = function (N, apiPath) {
 
   // Limit an amount of emoticons in the post
   //
-  N.wire.after(apiPath, function* check_emoji_count(env) {
-    let max_emojis = yield env.extras.settings.fetch('forum_post_max_emojis');
+  N.wire.after(apiPath, async function check_emoji_count(env) {
+    let max_emojis = await env.extras.settings.fetch('forum_post_max_emojis');
 
     if (max_emojis < 0) return;
 
@@ -211,7 +211,7 @@ module.exports = function (N, apiPath) {
 
   // Save new post
   //
-  N.wire.after(apiPath, function* save_new_post(env) {
+  N.wire.after(apiPath, async function save_new_post(env) {
     let statuses = N.models.forum.Post.statuses;
     let post = new N.models.forum.Post();
 
@@ -241,7 +241,7 @@ module.exports = function (N, apiPath) {
     post.section = env.data.topic.section;
     post.user    = env.user_info.user_id;
 
-    yield post.save();
+    await post.save();
 
     env.data.new_post = post;
   });
@@ -249,38 +249,38 @@ module.exports = function (N, apiPath) {
 
   // Schedule image size fetch
   //
-  N.wire.after(apiPath, function* fill_image_info(env) {
-    yield N.queue.forum_post_images_fetch(env.data.new_post._id).postpone();
+  N.wire.after(apiPath, async function fill_image_info(env) {
+    await N.queue.forum_post_images_fetch(env.data.new_post._id).postpone();
   });
 
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
-    yield N.queue.forum_posts_search_update_by_ids([ env.data.new_post._id ]).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+    await N.queue.forum_posts_search_update_by_ids([ env.data.new_post._id ]).postpone();
   });
 
 
   // Update topic counters
   //
-  N.wire.after(apiPath, function* update_topic(env) {
-    yield N.models.forum.Topic.updateCache(env.data.topic._id);
+  N.wire.after(apiPath, async function update_topic(env) {
+    await N.models.forum.Topic.updateCache(env.data.topic._id);
   });
 
 
   // Update section counters
   //
-  N.wire.after(apiPath, function* update_section(env) {
-    yield N.models.forum.Section.updateCache(env.data.topic.section);
+  N.wire.after(apiPath, async function update_section(env) {
+    await N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
 
   // Set marker position
   //
-  N.wire.after(apiPath, function* set_marker_pos(env) {
+  N.wire.after(apiPath, async function set_marker_pos(env) {
     // TODO: set max position only if added post just after last read
-    yield N.models.users.Marker.setPos(
+    await N.models.users.Marker.setPos(
       env.user_info.user_id,
       env.data.topic._id,
       env.data.new_post.hid,
@@ -304,10 +304,10 @@ module.exports = function (N, apiPath) {
 
   // Add reply notification for parent post owner
   //
-  N.wire.after(apiPath, function* add_reply_notification(env) {
+  N.wire.after(apiPath, async function add_reply_notification(env) {
     if (!env.data.new_post.to) return;
 
-    let ignore_data = yield N.models.users.Ignore.findOne()
+    let ignore_data = await N.models.users.Ignore.findOne()
                                .where('from').equals(env.data.new_post.to_user)
                                .where('to').equals(env.user_info.user_id)
                                .select('from to -_id')
@@ -315,7 +315,7 @@ module.exports = function (N, apiPath) {
 
     if (ignore_data) return;
 
-    yield N.wire.emit('internal:users.notify', {
+    await N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
       to: env.data.new_post.to_user,
       type: 'FORUM_REPLY'
@@ -325,8 +325,8 @@ module.exports = function (N, apiPath) {
 
   // Add new post notification for subscribers
   //
-  N.wire.after(apiPath, function* add_new_post_notification(env) {
-    let subscriptions = yield N.models.users.Subscription.find()
+  N.wire.after(apiPath, async function add_new_post_notification(env) {
+    let subscriptions = await N.models.users.Subscription.find()
       .where('to').equals(env.data.topic._id)
       .where('type').equals(N.models.users.Subscription.types.WATCHING)
       .lean(true);
@@ -336,7 +336,7 @@ module.exports = function (N, apiPath) {
     let subscribed_users = _.map(subscriptions, 'user');
 
     let ignore = _.keyBy(
-      yield N.models.users.Ignore.find()
+      await N.models.users.Ignore.find()
                 .where('from').in(subscribed_users)
                 .where('to').equals(env.user_info.user_id)
                 .select('from to -_id')
@@ -348,7 +348,7 @@ module.exports = function (N, apiPath) {
 
     if (!subscribed_users.length) return;
 
-    yield N.wire.emit('internal:users.notify', {
+    await N.wire.emit('internal:users.notify', {
       src: env.data.new_post._id,
       to: subscribed_users,
       type: 'FORUM_NEW_POST'
@@ -358,7 +358,7 @@ module.exports = function (N, apiPath) {
 
   // Mark user as active
   //
-  N.wire.after(apiPath, function* set_active_flag(env) {
-    yield N.wire.emit('internal:users.mark_user_active', env);
+  N.wire.after(apiPath, async function set_active_flag(env) {
+    await N.wire.emit('internal:users.mark_user_active', env);
   });
 };

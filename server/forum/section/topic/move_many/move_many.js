@@ -19,11 +19,11 @@ module.exports = function (N, apiPath) {
 
   // Fetch sections
   //
-  N.wire.before(apiPath, function* fetch_sections(env) {
-    env.data.section_from = yield N.models.forum.Section.findOne({ hid: env.params.section_hid_from }).lean(true);
+  N.wire.before(apiPath, async function fetch_sections(env) {
+    env.data.section_from = await N.models.forum.Section.findOne({ hid: env.params.section_hid_from }).lean(true);
     if (!env.data.section_from) throw N.io.NOT_FOUND;
 
-    env.data.section_to = yield N.models.forum.Section.findOne({ hid: env.params.section_hid_to }).lean(true);
+    env.data.section_to = await N.models.forum.Section.findOne({ hid: env.params.section_hid_to }).lean(true);
     if (!env.data.section_to) throw N.io.NOT_FOUND;
 
     // Can not move to category. Should never happens - restricted on client
@@ -33,10 +33,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user has an access to this section
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { sections: [ env.data.section_from, env.data.section_to ], user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     access_env.data.access_read.forEach(access => {
       if (!access) throw N.io.NOT_FOUND;
@@ -46,10 +46,10 @@ module.exports = function (N, apiPath) {
 
   // Check permission to delete topic from source section
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.section_from._id;
 
-    let forum_mod_can_delete_topics = yield env.extras.settings.fetch('forum_mod_can_delete_topics');
+    let forum_mod_can_delete_topics = await env.extras.settings.fetch('forum_mod_can_delete_topics');
 
     if (!forum_mod_can_delete_topics) throw N.io.FORBIDDEN;
   });
@@ -57,8 +57,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topics
   //
-  N.wire.before(apiPath, function* fetch_topics(env) {
-    env.data.topics = yield N.models.forum.Topic.find()
+  N.wire.before(apiPath, async function fetch_topics(env) {
+    env.data.topics = await N.models.forum.Topic.find()
                                 .where('hid').in(env.params.topics_hids)
                                 .where('section').equals(env.data.section_from._id)
                                 .select('_id')
@@ -70,7 +70,7 @@ module.exports = function (N, apiPath) {
 
   // Move topics
   //
-  N.wire.on(apiPath, function* move_topics(env) {
+  N.wire.on(apiPath, async function move_topics(env) {
     let bulk = N.models.forum.Topic.collection.initializeUnorderedBulkOp();
 
     env.data.topics.forEach(topic => {
@@ -79,22 +79,22 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    yield bulk.execute();
+    await bulk.execute();
   });
 
 
   // Update sections counters
   //
-  N.wire.after(apiPath, function* update_sections(env) {
-    yield N.models.forum.Section.updateCache(env.data.section_from._id);
-    yield N.models.forum.Section.updateCache(env.data.section_to._id);
+  N.wire.after(apiPath, async function update_sections(env) {
+    await N.models.forum.Section.updateCache(env.data.section_from._id);
+    await N.models.forum.Section.updateCache(env.data.section_to._id);
   });
 
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_with_posts(env.data.topics.map(t => t._id)).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_with_posts(env.data.topics.map(t => t._id)).postpone();
   });
 
   // TODO: log moderator actions

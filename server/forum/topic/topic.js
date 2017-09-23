@@ -80,13 +80,13 @@ module.exports = function (N, apiPath) {
 
   // Fill subscription type
   //
-  N.wire.after(apiPath, function* fill_subscription(env) {
+  N.wire.after(apiPath, async function fill_subscription(env) {
     if (!env.user_info.is_member) {
       env.res.subscription = null;
       return;
     }
 
-    let subscription = yield N.models.users.Subscription
+    let subscription = await N.models.users.Subscription
                           .findOne({ user: env.user_info.user_id, to: env.data.topic._id })
                           .lean(true);
 
@@ -96,8 +96,8 @@ module.exports = function (N, apiPath) {
 
   // Fill `env.data.pagination` structure
   //
-  N.wire.after(apiPath, function* fetch_pagination(env) {
-    let posts_per_page = yield env.extras.settings.fetch('posts_per_page');
+  N.wire.after(apiPath, async function fetch_pagination(env) {
+    let posts_per_page = await env.extras.settings.fetch('posts_per_page');
 
     let post_count = (env.data.settings.can_see_hellbanned || env.user_info.hb) ?
                      env.data.topic.cache_hb.post_count : env.data.topic.cache.post_count;
@@ -125,7 +125,7 @@ module.exports = function (N, apiPath) {
     // Both id builders used in this controller return hids,
     // so we use hids to utilize index.
     //
-    let current_post_number = yield N.models.forum.PostCountCache.getCount(
+    let current_post_number = await N.models.forum.PostCountCache.getCount(
       env.data.topic._id,
       env.data.topic.version,
       // `env.data.posts_hids` could not be empty, but we should avoid exception in all cases.
@@ -183,12 +183,12 @@ module.exports = function (N, apiPath) {
 
   // Fill breadcrumbs info
   //
-  N.wire.after(apiPath, function* fill_topic_breadcrumbs(env) {
-    let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
+  N.wire.after(apiPath, async function fill_topic_breadcrumbs(env) {
+    let parents = await N.models.forum.Section.getParentList(env.data.section._id);
 
     // add current section
     parents.push(env.data.section._id);
-    yield N.wire.emit('internal:forum.breadcrumbs_fill', { env, parents });
+    await N.wire.emit('internal:forum.breadcrumbs_fill', { env, parents });
   });
 
 
@@ -290,28 +290,28 @@ module.exports = function (N, apiPath) {
 
   // Add "similar topics" block
   //
-  N.wire.after(apiPath, function* fill_similar_topics(env) {
+  N.wire.after(apiPath, async function fill_similar_topics(env) {
     let data = { topic_id: env.data.topic._id };
 
     try {
-      yield N.wire.emit('internal:forum.topic_similar', data);
+      await N.wire.emit('internal:forum.topic_similar', data);
     } catch (__) {
       // if similar topics can't be fetched, just show empty result
       return;
     }
 
     if (data.results && data.results.length > 0) {
-      let topics = yield N.models.forum.Topic.find()
+      let topics = await N.models.forum.Topic.find()
                              .where('_id').in(_.map(data.results, 'topic_id'))
                              .lean(true);
 
-      let sections = yield N.models.forum.Section.find()
+      let sections = await N.models.forum.Section.find()
                                .where('_id').in(_.uniq(_.map(topics, 'section').map(String)))
                                .lean(true);
 
       let access_env = { params: { topics, user_info: env.user_info, preload: sections } };
 
-      yield N.wire.emit('internal:forum.access.topic', access_env);
+      await N.wire.emit('internal:forum.access.topic', access_env);
 
       let is_topic_visible = {};
 
@@ -319,7 +319,7 @@ module.exports = function (N, apiPath) {
         is_topic_visible[topic._id] = access_env.data.access_read[idx];
       });
 
-      let topics_by_id   = _.keyBy(yield sanitize_topic(N, topics, env.user_info), '_id');
+      let topics_by_id   = _.keyBy(await sanitize_topic(N, topics, env.user_info), '_id');
       let sections_by_id = _.keyBy(sections, '_id'); // not sanitized because only hid is used
 
       env.res.similar_topics = data.results.filter(result => is_topic_visible[result.topic_id])

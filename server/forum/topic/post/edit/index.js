@@ -13,8 +13,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    let post = yield N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
+  N.wire.before(apiPath, async function fetch_post(env) {
+    let post = await N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
 
     if (!post) throw N.io.NOT_FOUND;
 
@@ -24,15 +24,15 @@ module.exports = function (N, apiPath) {
 
   // Fetch post params
   //
-  N.wire.before(apiPath, function* fetch_post_params(env) {
-    env.data.post_params = yield N.models.core.MessageParams.getParams(env.data.post.params_ref);
+  N.wire.before(apiPath, async function fetch_post_params(env) {
+    env.data.post_params = await N.models.core.MessageParams.getParams(env.data.post.params_ref);
   });
 
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
 
     if (!topic) throw N.io.NOT_FOUND;
 
@@ -42,8 +42,8 @@ module.exports = function (N, apiPath) {
 
   // Check section flags
   //
-  N.wire.before(apiPath, function* check_section_flags(env) {
-    let section = yield N.models.forum.Section.findOne({ _id: env.data.topic.section }).lean(true);
+  N.wire.before(apiPath, async function check_section_flags(env) {
+    let section = await N.models.forum.Section.findOne({ _id: env.data.topic.section }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
     if (!section.is_enabled) throw N.io.NOT_FOUND;
@@ -55,14 +55,14 @@ module.exports = function (N, apiPath) {
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
       posts: env.data.post,
       user_info: env.user_info,
       preload: [ env.data.topic ]
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -70,10 +70,10 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    let forum_mod_can_edit_posts = yield env.extras.settings.fetch('forum_mod_can_edit_posts');
+    let forum_mod_can_edit_posts = await env.extras.settings.fetch('forum_mod_can_edit_posts');
 
     if (forum_mod_can_edit_posts && env.params.as_moderator) {
       return;
@@ -83,7 +83,7 @@ module.exports = function (N, apiPath) {
       throw N.io.FORBIDDEN;
     }
 
-    let forum_edit_max_time = yield env.extras.settings.fetch('forum_edit_max_time');
+    let forum_edit_max_time = await env.extras.settings.fetch('forum_edit_max_time');
 
     if (forum_edit_max_time !== 0 && env.data.post.ts < Date.now() - forum_edit_max_time * 60 * 1000) {
       throw {
@@ -96,13 +96,13 @@ module.exports = function (N, apiPath) {
 
   // Fetch attachments info
   //
-  N.wire.before(apiPath, function* fetch_attachments(env) {
+  N.wire.before(apiPath, async function fetch_attachments(env) {
     if (!env.data.post.attach || !env.data.post.attach.length) {
       env.data.attachments = [];
       return;
     }
 
-    let attachments = yield N.models.users.MediaInfo.find()
+    let attachments = await N.models.users.MediaInfo.find()
                                 .where('media_id').in(env.data.post.attach)
                                 .select('media_id file_name type')
                                 .lean(true);

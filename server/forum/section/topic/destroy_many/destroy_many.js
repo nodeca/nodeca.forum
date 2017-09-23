@@ -23,18 +23,18 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    env.data.section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    env.data.section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
     if (!env.data.section) throw N.io.NOT_FOUND;
   });
 
 
   // Check if user has an access to this section
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { sections: env.data.section, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -42,11 +42,11 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
     // Check moderator permissions
-    let settings = yield env.extras.settings.fetch([
+    let settings = await env.extras.settings.fetch([
       'forum_mod_can_delete_topics',
       'forum_mod_can_hard_delete_topics'
     ]);
@@ -63,8 +63,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topics
   //
-  N.wire.before(apiPath, function* fetch_topics(env) {
-    env.data.topics = yield N.models.forum.Topic.find()
+  N.wire.before(apiPath, async function fetch_topics(env) {
+    env.data.topics = await N.models.forum.Topic.find()
                                 .where('hid').in(env.params.topics_hids)
                                 .where('section').equals(env.data.section._id)
                                 .where('st').in(N.models.forum.Topic.statuses.LIST_DELETABLE)
@@ -77,7 +77,7 @@ module.exports = function (N, apiPath) {
 
   // Remove topics
   //
-  N.wire.on(apiPath, function* delete_topics(env) {
+  N.wire.on(apiPath, async function delete_topics(env) {
     let statuses = N.models.forum.Topic.statuses;
     let bulk = N.models.forum.Topic.collection.initializeUnorderedBulkOp();
 
@@ -96,23 +96,23 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    yield bulk.execute();
+    await bulk.execute();
   });
 
 
   // Remove votes
   //
-  N.wire.after(apiPath, function* remove_votes(env) {
+  N.wire.after(apiPath, async function remove_votes(env) {
     let statuses = N.models.forum.Post.statuses;
 
     // IDs list can be very large for big topics, but this should work
-    let posts = yield N.models.forum.Post.find()
+    let posts = await N.models.forum.Post.find()
                           .where('topic').in(_.map(env.data.topics, '_id'))
                           .where('st').in([ statuses.VISIBLE, statuses.HB ])
                           .select('_id')
                           .lean(true);
 
-    yield N.models.users.Vote.collection.update(
+    await N.models.users.Vote.collection.update(
       { 'for': { $in: _.map(posts, '_id') } },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } },
@@ -123,15 +123,15 @@ module.exports = function (N, apiPath) {
 
   // Update section counters
   //
-  N.wire.after(apiPath, function* update_section(env) {
-    yield N.models.forum.Section.updateCache(env.data.section._id);
+  N.wire.after(apiPath, async function update_section(env) {
+    await N.models.forum.Section.updateCache(env.data.section._id);
   });
 
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_with_posts(env.data.topics.map(t => t._id)).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_with_posts(env.data.topics.map(t => t._id)).postpone();
   });
 
   // TODO: log moderator actions

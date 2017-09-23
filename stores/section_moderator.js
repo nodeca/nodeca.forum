@@ -52,7 +52,7 @@ module.exports = function (N) {
     // will be returned instead. Such values have the lowest priority, so
     // other stores can take advance.
     //
-    get: Promise.coroutine(function* (keys, params, options) {
+    async get(keys, params, options) {
       if (!params.section_id) {
         throw '`section_id` parameter is required for getting settings from `section_moderator` store.';
       }
@@ -62,7 +62,7 @@ module.exports = function (N) {
       }
 
       let fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
-      let section_settings = yield fetch(params.section_id);
+      let section_settings = await fetch(params.section_id);
 
       if (!section_settings) throw `'section_moderator' store for forum section ${params.section_id} does not exist.`;
 
@@ -97,14 +97,14 @@ module.exports = function (N) {
       });
 
       return results;
-    }),
+    },
 
     //
     // params:
     //   section_id - ObjectId
     //   user_id  - ObjectId
     //
-    set: Promise.coroutine(function* (settings, params) {
+    async set(settings, params) {
       if (!params.section_id) {
         throw '`section_id` parameter is required for saving settings into `section_moderator` store.';
       }
@@ -113,7 +113,7 @@ module.exports = function (N) {
         throw '`user_id` parameter required for saving settings into `section_moderator` store.';
       }
 
-      let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: params.section_id });
+      let section_settings = await N.models.forum.SectionModeratorStore.findOne({ section_id: params.section_id });
 
       if (!section_settings) {
         throw `'section_moderator' store for forum section ${params.section_id} does not exist.`;
@@ -145,9 +145,9 @@ module.exports = function (N) {
 
       section_settings.markModified('data');
 
-      yield section_settings.save();
-      yield this.updateInherited(params.section_id);
-    })
+      await section_settings.save();
+      await this.updateInherited(params.section_id);
+    }
   });
 
 
@@ -165,8 +165,8 @@ module.exports = function (N) {
   //     { ... }
   //   ]
   //
-  SectionModeratorStore.getModeratorsInfo = Promise.coroutine(function* getModeratorsInfo(sectionId) {
-    let section_settings = yield N.models.forum.SectionModeratorStore
+  SectionModeratorStore.getModeratorsInfo = async function getModeratorsInfo(sectionId) {
+    let section_settings = await N.models.forum.SectionModeratorStore
                                     .findOne({ section_id: sectionId })
                                     .lean(true);
 
@@ -191,16 +191,16 @@ module.exports = function (N) {
 
     // Sort moderators by ObjectId.
     return _.sortBy(result, moderator => String(moderator._id));
-  });
+  };
 
 
   // Update inherited setting on all sections.
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionModeratorStore.updateInherited = Promise.coroutine(function* updateInherited(sectionId) {
-    let allSections = yield N.models.forum.Section.find({}).select('_id parent moderators');
-    let allSettings = yield N.models.forum.SectionModeratorStore.find({});
+  SectionModeratorStore.updateInherited = async function updateInherited(sectionId) {
+    let allSections = await N.models.forum.Section.find({}).select('_id parent moderators');
+    let allSettings = await N.models.forum.SectionModeratorStore.find({});
 
 
     // Get section from allSections array by its id
@@ -324,7 +324,7 @@ module.exports = function (N) {
       sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
     }
 
-    yield Promise.map(sectionsToUpdate, section => {
+    await Promise.map(sectionsToUpdate, section => {
       let section_settings = getSettingsBySectionId(section._id);
 
       if (!section_settings) {
@@ -372,13 +372,13 @@ module.exports = function (N) {
 
       return section_settings.save();
     });
-  });
+  };
 
 
   // Remove single moderator entry at section.
   //
-  SectionModeratorStore.removeModerator = Promise.coroutine(function* removeModerator(sectionId, userId) {
-    let section_settings = yield N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId });
+  SectionModeratorStore.removeModerator = async function removeModerator(sectionId, userId) {
+    let section_settings = await N.models.forum.SectionModeratorStore.findOne({ section_id: sectionId });
 
     if (!section_settings) {
       throw `Forum section ${sectionId} does not exist.`;
@@ -391,9 +391,9 @@ module.exports = function (N) {
     delete section_settings.data[userId];
     section_settings.markModified('data');
 
-    yield section_settings.save();
-    yield this.updateInherited(sectionId);
-  });
+    await section_settings.save();
+    await this.updateInherited(sectionId);
+  };
 
 
   return SectionModeratorStore;

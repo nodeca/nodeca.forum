@@ -19,8 +19,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_section(env) {
-    env.data.section = yield N.models.forum.Section
+  N.wire.before(apiPath, async function fetch_section(env) {
+    env.data.section = await N.models.forum.Section
                                 .findOne({ hid: env.params.section_hid })
                                 .lean(true);
 
@@ -30,10 +30,10 @@ module.exports = function (N, apiPath) {
 
   // Subcall forum.access.section
   //
-  N.wire.before(apiPath, function* subcall_section(env) {
+  N.wire.before(apiPath, async function subcall_section(env) {
     var access_env = { params: { sections: env.data.section, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -41,7 +41,7 @@ module.exports = function (N, apiPath) {
 
   // Return a list of section moderators
   //
-  N.wire.on(apiPath, function* get_moderators(env) {
+  N.wire.on(apiPath, async function get_moderators(env) {
     let SectionModeratorStore = N.settings.getStore('section_moderator');
 
     if (!SectionModeratorStore) {
@@ -51,7 +51,7 @@ module.exports = function (N, apiPath) {
       };
     }
 
-    env.res.moderators = (yield SectionModeratorStore.getModeratorsInfo(env.data.section._id))
+    env.res.moderators = (await SectionModeratorStore.getModeratorsInfo(env.data.section._id))
                              .filter(moderator => moderator.visible)
                              .map(moderator => moderator._id);
 

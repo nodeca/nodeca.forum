@@ -32,7 +32,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.on(apiPath, function* search_execute(env) {
+  N.wire.on(apiPath, async function search_execute(env) {
     // there are no tabs for search inside topic,
     // so only one content type possible
     env.params.type = 'forum_posts';
@@ -58,7 +58,7 @@ module.exports = function (N, apiPath) {
         }
       };
 
-      yield N.wire.emit('internal:search.' + env.params.type, search_env);
+      await N.wire.emit('internal:search.' + env.params.type, search_env);
 
       env.res.results = search_env.results;
       env.res.reached_end = search_env.reached_end;

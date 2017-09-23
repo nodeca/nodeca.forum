@@ -32,7 +32,7 @@ module.exports = function (N, apiPath) {
     N.models.forum.Section.findById(id).lean(true).exec(), { maxAge: 60000 });
 
 
-  const buildTopicsIdsAndGetOffset = Promise.coroutine(function* (env) {
+  async function buildTopicsIdsAndGetOffset(env) {
     let prev = false, next = false;
 
     if (env.params.$query) {
@@ -51,7 +51,7 @@ module.exports = function (N, apiPath) {
     let results = [];
 
     if (env.params.topic_hid) {
-      current_topic = yield N.models.forum.Topic.findOne({
+      current_topic = await N.models.forum.Topic.findOne({
         section: env.data.section._id,
         hid:     env.params.topic_hid,
         st:      { $in: statuses }
@@ -65,25 +65,25 @@ module.exports = function (N, apiPath) {
 
     if (!limit_direction || prev) {
       env.data.select_topics_before = env.data.topics_per_page;
-      yield buildTopicIdsBefore(env);
+      await buildTopicIdsBefore(env);
       results = env.data.topics_ids.slice(0).concat(results);
     }
 
     if (!limit_direction || next) {
       env.data.select_topics_after = env.data.topics_per_page;
-      yield buildTopicIdsAfter(env);
+      await buildTopicIdsAfter(env);
       results = results.concat(env.data.topics_ids);
     }
 
     env.data.topics_ids = results;
-  });
+  }
 
   // Subcall forum.topic_list
   //
-  N.wire.on(apiPath, function* subcall_topic_list(env) {
+  N.wire.on(apiPath, async function subcall_topic_list(env) {
     env.data.section_hid         = env.params.section_hid;
     env.data.build_topics_ids    = buildTopicsIdsAndGetOffset;
-    env.data.topics_per_page     = yield env.extras.settings.fetch('topics_per_page');
+    env.data.topics_per_page     = await env.extras.settings.fetch('topics_per_page');
 
     return N.wire.emit('internal:forum.topic_list', env);
   });
@@ -91,13 +91,13 @@ module.exports = function (N, apiPath) {
 
   // Fetch pagination
   //
-  N.wire.after(apiPath, function* fetch_pagination(env) {
+  N.wire.after(apiPath, async function fetch_pagination(env) {
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
     //
     // Count total amount of visible topics in the section
     //
-    let counters_by_status = yield Promise.map(
+    let counters_by_status = await Promise.map(
       statuses,
       st => N.models.forum.Topic
                 .where('section').equals(env.data.section._id)
@@ -107,7 +107,7 @@ module.exports = function (N, apiPath) {
 
     let pinned_count = env.data.topics_visible_statuses.indexOf(N.models.forum.Topic.statuses.PINNED) === -1 ?
                        0 :
-                       yield N.models.forum.Topic
+                       await N.models.forum.Topic
                                .where('section').equals(env.data.section._id)
                                .where('st').equals(N.models.forum.Topic.statuses.PINNED)
                                .count();
@@ -124,7 +124,7 @@ module.exports = function (N, apiPath) {
       let cache        = env.user_info.hb ? 'cache_hb' : 'cache';
       let last_post_id = env.data.topics[0][cache].last_post;
 
-      let counters_by_status = yield Promise.map(
+      let counters_by_status = await Promise.map(
         statuses,
         st => N.models.forum.Topic
                   .where(`${cache}.last_post`).gt(last_post_id)
@@ -153,13 +153,13 @@ module.exports = function (N, apiPath) {
 
   // Fill subscription type
   //
-  N.wire.after(apiPath, function* fill_subscription(env) {
+  N.wire.after(apiPath, async function fill_subscription(env) {
     if (!env.user_info.is_member) {
       env.res.subscription = null;
       return;
     }
 
-    let subscription = yield N.models.users.Subscription
+    let subscription = await N.models.users.Subscription
                                 .findOne({ user: env.user_info.user_id, to: env.data.section._id })
                                 .lean(true);
 
@@ -169,24 +169,24 @@ module.exports = function (N, apiPath) {
 
   // Fill breadcrumbs info
   //
-  N.wire.after(apiPath, function* fill_topic_breadcrumbs(env) {
+  N.wire.after(apiPath, async function fill_topic_breadcrumbs(env) {
 
     if (!env.data.section) return;
 
-    let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
+    let parents = await N.models.forum.Section.getParentList(env.data.section._id);
 
-    yield N.wire.emit('internal:forum.breadcrumbs_fill', { env, parents });
+    await N.wire.emit('internal:forum.breadcrumbs_fill', { env, parents });
   });
 
 
   // Get parent section
   //
-  N.wire.after(apiPath, function* fill_parent_hid(env) {
-    let parents = yield N.models.forum.Section.getParentList(env.data.section._id);
+  N.wire.after(apiPath, async function fill_parent_hid(env) {
+    let parents = await N.models.forum.Section.getParentList(env.data.section._id);
 
     if (!parents.length) return;
 
-    let section = yield fetchSection(parents[parents.length - 1]);
+    let section = await fetchSection(parents[parents.length - 1]);
 
     if (!section) return;
 
@@ -209,7 +209,7 @@ module.exports = function (N, apiPath) {
 
   // Fill 'prev' and 'next' links and meta tags
   //
-  N.wire.after(apiPath, function* fill_prev_next(env) {
+  N.wire.after(apiPath, async function fill_prev_next(env) {
     env.res.head = env.res.head || {};
 
     let cache    = env.user_info.hb ? 'cache_hb' : 'cache';
@@ -221,7 +221,7 @@ module.exports = function (N, apiPath) {
     if (env.data.topics.length > 0) {
       let last_post_id = env.data.topics[env.data.topics.length - 1][cache].last_post;
 
-      let topic_data = yield N.models.forum.Topic.findOne()
+      let topic_data = await N.models.forum.Topic.findOne()
                                  .where(`${cache}.last_post`).lt(last_post_id)
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
@@ -246,7 +246,7 @@ module.exports = function (N, apiPath) {
 
       let last_post_id = env.data.topics[0][cache].last_post;
 
-      let topic_data = yield N.models.forum.Topic.findOne()
+      let topic_data = await N.models.forum.Topic.findOne()
                                  .where(`${cache}.last_post`).gt(last_post_id)
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
@@ -266,7 +266,7 @@ module.exports = function (N, apiPath) {
     // Fetch last topic for the "move to bottom" button
     //
     if (env.data.topics.length > 0) {
-      let topic_data = yield N.models.forum.Topic.findOne()
+      let topic_data = await N.models.forum.Topic.findOne()
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
                                  .select('hid')

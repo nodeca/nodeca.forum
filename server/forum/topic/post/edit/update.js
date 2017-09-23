@@ -37,15 +37,15 @@ module.exports = function (N, apiPath) {
 
   // Check attachments owner
   //
-  N.wire.before(apiPath, function* attachments_check_owner(env) {
-    yield N.wire.emit('internal:users.attachments_check_owner', env);
+  N.wire.before(apiPath, async function attachments_check_owner(env) {
+    await N.wire.emit('internal:users.attachments_check_owner', env);
   });
 
 
   // Prepare parse options
   //
-  N.wire.before(apiPath, function* prepare_options(env) {
-    let settings = yield N.settings.getByCategory(
+  N.wire.before(apiPath, async function prepare_options(env) {
+    let settings = await N.settings.getByCategory(
       'forum_posts_markup',
       { usergroup_ids: env.user_info.usergroups },
       { alias: true }
@@ -70,8 +70,8 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.on(apiPath, function* parse_text(env) {
-    env.data.parse_result = yield N.parser.md2html({
+  N.wire.on(apiPath, async function parse_text(env) {
+    env.data.parse_result = await N.parser.md2html({
       text: env.params.txt,
       attachments: env.params.attach,
       options: env.data.parse_options,
@@ -82,8 +82,8 @@ module.exports = function (N, apiPath) {
 
   // Check post length
   //
-  N.wire.after(apiPath, function* check_post_length(env) {
-    let min_length = yield env.extras.settings.fetch('forum_post_min_length');
+  N.wire.after(apiPath, async function check_post_length(env) {
+    let min_length = await env.extras.settings.fetch('forum_post_min_length');
 
     if (env.data.parse_result.text_length < min_length) {
       throw {
@@ -96,8 +96,8 @@ module.exports = function (N, apiPath) {
 
   // Limit an amount of images in the post
   //
-  N.wire.after(apiPath, function* check_images_count(env) {
-    let max_images = yield env.extras.settings.fetch('forum_post_max_images');
+  N.wire.after(apiPath, async function check_images_count(env) {
+    let max_images = await env.extras.settings.fetch('forum_post_max_images');
 
     if (max_images <= 0) return;
 
@@ -117,8 +117,8 @@ module.exports = function (N, apiPath) {
 
   // Limit an amount of emoticons in the post
   //
-  N.wire.after(apiPath, function* check_emoji_count(env) {
-    let max_emojis = yield env.extras.settings.fetch('forum_post_max_emojis');
+  N.wire.after(apiPath, async function check_emoji_count(env) {
+    let max_emojis = await env.extras.settings.fetch('forum_post_max_emojis');
 
     if (max_emojis < 0) return;
 
@@ -133,9 +133,9 @@ module.exports = function (N, apiPath) {
 
   // Update post
   //
-  N.wire.after(apiPath, function* post_update(env) {
+  N.wire.after(apiPath, async function post_update(env) {
     // save post using model to trigger 'post' hooks (e.g. param_ref update)
-    let post = yield N.models.forum.Post
+    let post = await N.models.forum.Post
         .findOne({ _id: env.data.post._id })
         .lean(false);
 
@@ -149,7 +149,7 @@ module.exports = function (N, apiPath) {
     post.imports      = env.data.parse_result.imports;
     post.import_users = env.data.parse_result.import_users;
 
-    env.data.post_new = yield post.save();
+    env.data.post_new = await post.save();
   });
 
 
@@ -226,15 +226,15 @@ module.exports = function (N, apiPath) {
 
   // Schedule image size fetch
   //
-  N.wire.after(apiPath, function* fill_image_info(env) {
-    yield N.queue.forum_post_images_fetch(env.data.post._id).postpone();
+  N.wire.after(apiPath, async function fill_image_info(env) {
+    await N.queue.forum_post_images_fetch(env.data.post._id).postpone();
   });
 
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
   });
 
 
@@ -245,10 +245,10 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.after(apiPath, function* fetch_post(env) {
+  N.wire.after(apiPath, async function fetch_post(env) {
     env.data.topic_hid = env.data.topic.hid;
     env.data.build_posts_ids = buildPostIds;
 
-    yield N.wire.emit('internal:forum.post_list', env);
+    await N.wire.emit('internal:forum.post_list', env);
   });
 };

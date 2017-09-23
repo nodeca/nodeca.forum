@@ -11,7 +11,7 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
+  N.wire.before(apiPath, async function fetch_topic(env) {
     var statuses = N.models.forum.Topic.statuses;
     var query = { hid: env.params.topic_hid };
 
@@ -21,7 +21,7 @@ module.exports = function (N, apiPath) {
       query.st = { $in: statuses.LIST_VISIBLE };
     }
 
-    env.data.topic = yield N.models.forum.Topic
+    env.data.topic = await N.models.forum.Topic
                               .findOne(query)
                               .lean(true);
 
@@ -31,10 +31,10 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    let forum_mod_can_pin_topic = yield env.extras.settings.fetch('forum_mod_can_pin_topic');
+    let forum_mod_can_pin_topic = await env.extras.settings.fetch('forum_mod_can_pin_topic');
 
     if (!forum_mod_can_pin_topic) throw N.io.FORBIDDEN;
   });
@@ -42,13 +42,13 @@ module.exports = function (N, apiPath) {
 
   // Pin/unpin topic
   //
-  N.wire.on(apiPath, function* pin_topic(env) {
+  N.wire.on(apiPath, async function pin_topic(env) {
     var statuses = N.models.forum.Topic.statuses;
     var topic = env.data.topic;
 
     // Pin topic
     if (!env.params.unpin) {
-      yield N.models.forum.Topic.update(
+      await N.models.forum.Topic.update(
         { _id: topic._id },
         { st: statuses.PINNED, ste: topic.st }
       );
@@ -58,7 +58,7 @@ module.exports = function (N, apiPath) {
     }
 
     // Unpin topic
-    yield N.models.forum.Topic.update(
+    await N.models.forum.Topic.update(
       { _id: topic._id },
       { st: topic.ste, $unset: { ste: 1 } }
     );

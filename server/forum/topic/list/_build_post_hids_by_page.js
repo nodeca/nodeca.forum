@@ -21,7 +21,6 @@
 
 
 const _       = require('lodash');
-const Promise = require('bluebird');
 
 
 module.exports = function (N) {
@@ -29,9 +28,9 @@ module.exports = function (N) {
   // Shortcut
   const Post = N.models.forum.Post;
 
-  return Promise.coroutine(function* buildPostHids(env) {
+  return async function buildPostHids(env) {
 
-    let posts_per_page = yield env.extras.settings.fetch('posts_per_page');
+    let posts_per_page = await env.extras.settings.fetch('posts_per_page');
 
     // Posts with this statuses are counted on page (others are shown, but not counted)
     let countable_statuses = [ Post.statuses.VISIBLE ];
@@ -52,7 +51,7 @@ module.exports = function (N) {
     // - calculate range for countable posts
     // - select visible posts (ids) in this range
 
-    let countable = yield Post.find()
+    let countable = await Post.find()
                               .where('topic').equals(env.data.topic._id)
                               .where('st').in(countable_statuses)
                               .select('hid -_id')
@@ -76,10 +75,10 @@ module.exports = function (N) {
       query.lt(countable[countable.length - 1].hid);
     }
 
-    let posts = yield query.select('hid -_id')
+    let posts = await query.select('hid -_id')
                            .sort('hid')
                            .lean(true);
 
     env.data.posts_hids = _.map(posts, 'hid');
-  });
+  };
 };

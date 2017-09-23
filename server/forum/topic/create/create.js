@@ -35,8 +35,8 @@ module.exports = function (N, apiPath) {
 
   // Check title length
   //
-  N.wire.before(apiPath, function* check_title_length(env) {
-    let min_length = yield env.extras.settings.fetch('forum_topic_title_min_length');
+  N.wire.before(apiPath, async function check_title_length(env) {
+    let min_length = await env.extras.settings.fetch('forum_topic_title_min_length');
 
     if (charcount(env.params.title.trim()) < min_length) {
       throw {
@@ -49,8 +49,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section info
   //
-  N.wire.before(apiPath, function* fetch_section_info(env) {
-    let section = yield N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_section_info(env) {
+    let section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
     if (!section.is_enabled) throw N.io.NOT_FOUND;
@@ -67,10 +67,10 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    let canStartTopics = yield env.extras.settings.fetch('forum_can_start_topics');
+    let canStartTopics = await env.extras.settings.fetch('forum_can_start_topics');
 
     if (!canStartTopics) throw N.io.FORBIDDEN;
   });
@@ -85,8 +85,8 @@ module.exports = function (N, apiPath) {
 
   // Prepare parse options
   //
-  N.wire.before(apiPath, function* prepare_options(env) {
-    let settings = yield N.settings.getByCategory(
+  N.wire.before(apiPath, async function prepare_options(env) {
+    let settings = await N.settings.getByCategory(
       'forum_posts_markup',
       { usergroup_ids: env.user_info.usergroups },
       { alias: true });
@@ -110,8 +110,8 @@ module.exports = function (N, apiPath) {
 
   // Parse user input to HTML
   //
-  N.wire.on(apiPath, function* parse_text(env) {
-    env.data.parse_result = yield N.parser.md2html({
+  N.wire.on(apiPath, async function parse_text(env) {
+    env.data.parse_result = await N.parser.md2html({
       text: env.params.txt,
       attachments: env.params.attach,
       options: env.data.parse_options,
@@ -122,8 +122,8 @@ module.exports = function (N, apiPath) {
 
   // Check post length
   //
-  N.wire.after(apiPath, function* check_post_length(env) {
-    let min_length = yield env.extras.settings.fetch('forum_post_min_length');
+  N.wire.after(apiPath, async function check_post_length(env) {
+    let min_length = await env.extras.settings.fetch('forum_post_min_length');
 
     if (env.data.parse_result.text_length < min_length) {
       throw {
@@ -136,8 +136,8 @@ module.exports = function (N, apiPath) {
 
   // Limit an amount of images in the post
   //
-  N.wire.after(apiPath, function* check_images_count(env) {
-    let max_images = yield env.extras.settings.fetch('forum_post_max_images');
+  N.wire.after(apiPath, async function check_images_count(env) {
+    let max_images = await env.extras.settings.fetch('forum_post_max_images');
 
     if (max_images <= 0) return;
 
@@ -157,8 +157,8 @@ module.exports = function (N, apiPath) {
 
   // Limit an amount of emoticons in the post
   //
-  N.wire.after(apiPath, function* check_emoji_count(env) {
-    let max_emojis = yield env.extras.settings.fetch('forum_post_max_emojis');
+  N.wire.after(apiPath, async function check_emoji_count(env) {
+    let max_emojis = await env.extras.settings.fetch('forum_post_max_emojis');
 
     if (max_emojis < 0) return;
 
@@ -173,7 +173,7 @@ module.exports = function (N, apiPath) {
 
   // Create new topic
   //
-  N.wire.after(apiPath, function* create_topic(env) {
+  N.wire.after(apiPath, async function create_topic(env) {
     let topic = new N.models.forum.Topic();
     let post = new N.models.forum.Post();
 
@@ -225,12 +225,12 @@ module.exports = function (N, apiPath) {
 
     _.assign(topic.cache_hb, topic.cache);
 
-    yield topic.save();
+    await topic.save();
 
     post.topic = topic._id;
     post.section = topic.section;
 
-    yield post.save();
+    await post.save();
 
     env.res.topic_hid = topic.hid;
     env.res.post_hid = post.hid;
@@ -239,29 +239,29 @@ module.exports = function (N, apiPath) {
 
   // Schedule image size fetch
   //
-  N.wire.after(apiPath, function* fill_image_info(env) {
-    yield N.queue.forum_post_images_fetch(env.data.new_post._id).postpone();
+  N.wire.after(apiPath, async function fill_image_info(env) {
+    await N.queue.forum_post_images_fetch(env.data.new_post._id).postpone();
   });
 
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_with_posts([ env.data.new_topic._id ]).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_with_posts([ env.data.new_topic._id ]).postpone();
   });
 
 
   // Update section counters
   //
-  N.wire.after(apiPath, function* update_section(env) {
-    yield N.models.forum.Section.updateCache(env.data.new_topic.section);
+  N.wire.after(apiPath, async function update_section(env) {
+    await N.models.forum.Section.updateCache(env.data.new_topic.section);
   });
 
 
   // Add new topic notification for subscribers
   //
-  N.wire.after(apiPath, function* add_new_post_notification(env) {
-    let subscriptions = yield N.models.users.Subscription.find()
+  N.wire.after(apiPath, async function add_new_post_notification(env) {
+    let subscriptions = await N.models.users.Subscription.find()
       .where('to').equals(env.data.section._id)
       .where('type').equals(N.models.users.Subscription.types.WATCHING)
       .lean(true);
@@ -271,7 +271,7 @@ module.exports = function (N, apiPath) {
     let subscribed_users = _.map(subscriptions, 'user');
 
     let ignore = _.keyBy(
-      yield N.models.users.Ignore.find()
+      await N.models.users.Ignore.find()
                 .where('from').in(subscribed_users)
                 .where('to').equals(env.user_info.user_id)
                 .select('from to -_id')
@@ -283,7 +283,7 @@ module.exports = function (N, apiPath) {
 
     if (!subscribed_users.length) return;
 
-    yield N.wire.emit('internal:users.notify', {
+    await N.wire.emit('internal:users.notify', {
       src: env.data.new_topic._id,
       to: subscribed_users,
       type: 'FORUM_NEW_TOPIC'
@@ -293,7 +293,7 @@ module.exports = function (N, apiPath) {
 
   // Mark user as active
   //
-  N.wire.after(apiPath, function* set_active_flag(env) {
-    yield N.wire.emit('internal:users.mark_user_active', env);
+  N.wire.after(apiPath, async function set_active_flag(env) {
+    await N.wire.emit('internal:users.mark_user_active', env);
   });
 };

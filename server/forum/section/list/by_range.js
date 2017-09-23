@@ -57,7 +57,7 @@ module.exports = function (N, apiPath) {
 
   // Fill 'prev' and 'next' links and meta tags
   //
-  N.wire.after(apiPath, function* fill_prev_next(env) {
+  N.wire.after(apiPath, async function fill_prev_next(env) {
     env.res.head = env.res.head || {};
 
     let cache    = env.user_info.hb ? 'cache_hb' : 'cache';
@@ -69,7 +69,7 @@ module.exports = function (N, apiPath) {
     if (env.params.after > 0 && env.data.topics.length > 0) {
       let last_post_id = env.data.topics[env.data.topics.length - 1][cache].last_post;
 
-      let topic_data = yield N.models.forum.Topic.findOne()
+      let topic_data = await N.models.forum.Topic.findOne()
                                  .where(`${cache}.last_post`).lt(last_post_id)
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
@@ -94,7 +94,7 @@ module.exports = function (N, apiPath) {
 
       let last_post_id = env.data.topics[0][cache].last_post;
 
-      let topic_data = yield N.models.forum.Topic.findOne()
+      let topic_data = await N.models.forum.Topic.findOne()
                                  .where(`${cache}.last_post`).gt(last_post_id)
                                  .where('section').equals(env.data.section._id)
                                  .where('st').in(statuses)
@@ -114,15 +114,15 @@ module.exports = function (N, apiPath) {
 
   // Fetch pagination
   //
-  N.wire.after(apiPath, function* fetch_pagination(env) {
-    let topics_per_page = yield env.extras.settings.fetch('topics_per_page');
+  N.wire.after(apiPath, async function fetch_pagination(env) {
+    let topics_per_page = await env.extras.settings.fetch('topics_per_page');
 
     let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
 
     //
     // Count total amount of visible topics in the section
     //
-    let counters_by_status = yield Promise.map(
+    let counters_by_status = await Promise.map(
       statuses,
       st => N.models.forum.Topic
                 .where('section').equals(env.data.section._id)
@@ -132,7 +132,7 @@ module.exports = function (N, apiPath) {
 
     let pinned_count = env.data.topics_visible_statuses.indexOf(N.models.forum.Topic.statuses.PINNED) === -1 ?
                        0 :
-                       yield N.models.forum.Topic
+                       await N.models.forum.Topic
                                .where('section').equals(env.data.section._id)
                                .where('st').equals(N.models.forum.Topic.statuses.PINNED)
                                .count();
@@ -149,7 +149,7 @@ module.exports = function (N, apiPath) {
       let cache        = env.user_info.hb ? 'cache_hb' : 'cache';
       let last_post_id = env.data.topics[0][cache].last_post;
 
-      let counters_by_status = yield Promise.map(
+      let counters_by_status = await Promise.map(
         statuses,
         st => N.models.forum.Topic
                   .where(`${cache}.last_post`).gt(last_post_id)

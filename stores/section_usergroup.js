@@ -52,7 +52,7 @@ module.exports = function (N) {
     // values will be returned instead. Such values have the lowest priority,
     // so other stores can take advance.
     //
-    get: Promise.coroutine(function* (keys, params, options) {
+    async get(keys, params, options) {
       if (!params.section_id) {
         throw '`section_id` parameter is required for getting settings from `section_usergroup` store.';
       }
@@ -63,7 +63,7 @@ module.exports = function (N) {
       }
 
       let fetch = options.skipCache ? fetchSectionSettings : fetchSectionSettingsCached;
-      let section_settings = yield fetch(params.section_id);
+      let section_settings = await fetch(params.section_id);
       let results = {};
 
       if (!section_settings) {
@@ -106,14 +106,14 @@ module.exports = function (N) {
       });
 
       return results;
-    }),
+    },
 
     //
     // params:
     //   section_id     - ObjectId
     //   usergroup_id - ObjectId
     //
-    set: Promise.coroutine(function* (settings, params) {
+    async set(settings, params) {
       var self = this;
 
       if (!params.section_id) {
@@ -124,7 +124,7 @@ module.exports = function (N) {
         throw '`usergroup_id` parameter required for saving settings into `section_usergroup` store.';
       }
 
-      let section_settings = yield N.models.forum.SectionUsergroupStore.findOne({ section_id: params.section_id });
+      let section_settings = await N.models.forum.SectionUsergroupStore.findOne({ section_id: params.section_id });
 
       if (!section_settings) {
         throw `'section_usergroup' store for forum section ${params.section_id} does not exist.`;
@@ -150,19 +150,19 @@ module.exports = function (N) {
       section_settings.data[params.usergroup_id] = usergroup_settings;
       section_settings.markModified('data');
 
-      yield section_settings.save();
-      yield self.updateInherited(params.section_id);
-    })
+      await section_settings.save();
+      await self.updateInherited(params.section_id);
+    }
   });
 
   // Update inherited setting on all sections.
   //
   // `sectionId` is optional. If omitted - update all sections.
   //
-  SectionUsergroupStore.updateInherited = Promise.coroutine(function* updateInherited(sectionId) {
+  SectionUsergroupStore.updateInherited = async function updateInherited(sectionId) {
     let self = this;
-    let allSections = yield N.models.forum.Section.find({}).select('_id parent').lean(true);
-    let allSettings = yield N.models.forum.SectionUsergroupStore.find({});
+    let allSections = await N.models.forum.Section.find({}).select('_id parent').lean(true);
+    let allSettings = await N.models.forum.SectionUsergroupStore.find({});
 
 
     // Get section from allSections array by its id
@@ -259,7 +259,7 @@ module.exports = function (N) {
     }
 
     // Fetch list of all existent usergroup ids.
-    let usergroups = yield N.models.users.UserGroup.find({}, '_id', { lean: true });
+    let usergroups = await N.models.users.UserGroup.find({}, '_id', { lean: true });
 
 
     function updateOne(section) {
@@ -302,30 +302,30 @@ module.exports = function (N) {
     }
 
 
-    yield Promise.map(sectionsToUpdate, updateOne);
-  });
+    await Promise.map(sectionsToUpdate, updateOne);
+  };
 
 
   // Remove all overriden usergroup settings at specific section.
   //
   /*eslint-disable max-len*/
-  SectionUsergroupStore.removePermissions = Promise.coroutine(function* removePermissions(sectionId, usergroupId) {
-    let section_settings = yield N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId });
+  SectionUsergroupStore.removePermissions = async function removePermissions(sectionId, usergroupId) {
+    let section_settings = await N.models.forum.SectionUsergroupStore.findOne({ section_id: sectionId });
 
     if (!section_settings) return;
 
     delete section_settings.data[usergroupId];
     section_settings.markModified('data');
 
-    yield section_settings.save();
-    yield this.updateInherited(sectionId);
-  });
+    await section_settings.save();
+    await this.updateInherited(sectionId);
+  };
 
 
   // Remove all setting entries for specific usergroup.
   //
-  SectionUsergroupStore.removeUsergroup = Promise.coroutine(function* removeUsergroup(usergroupId) {
-    let sections = yield N.models.forum.SectionUsergroupStore.find({});
+  SectionUsergroupStore.removeUsergroup = async function removeUsergroup(usergroupId) {
+    let sections = await N.models.forum.SectionUsergroupStore.find({});
 
     sections.map(section_settings => {
       let usergroup_settings = section_settings.data[usergroupId];
@@ -337,7 +337,7 @@ module.exports = function (N) {
 
       return section_settings.save();
     });
-  });
+  };
 
 
   return SectionUsergroupStore;

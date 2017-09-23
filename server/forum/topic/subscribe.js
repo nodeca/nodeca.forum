@@ -32,8 +32,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    env.data.topic = yield N.models.forum.Topic
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    env.data.topic = await N.models.forum.Topic
                               .findOne({ hid: env.params.topic_hid })
                               .lean(true);
 
@@ -42,10 +42,10 @@ module.exports = function (N, apiPath) {
 
   // Subcall forum.access.topic
   //
-  N.wire.before(apiPath, function* subcall_topic(env) {
+  N.wire.before(apiPath, async function subcall_topic(env) {
     var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -53,9 +53,9 @@ module.exports = function (N, apiPath) {
 
   // Add/remove subscription
   //
-  N.wire.on(apiPath, function* subscription_add_remove(env) {
+  N.wire.on(apiPath, async function subscription_add_remove(env) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
-    yield N.models.users.Subscription.update(
+    await N.models.users.Subscription.update(
       { user: env.user_info.user_id, to: env.data.topic._id },
       {
         type: env.params.type,

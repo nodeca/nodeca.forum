@@ -28,8 +28,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_section(env) {
-    let section = yield N.models.forum.Section
+  N.wire.before(apiPath, async function fetch_section(env) {
+    let section = await N.models.forum.Section
                             .findOne({ hid: _.toFinite(env.params.$query.hid) })
                             .lean(true);
 
@@ -41,10 +41,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user can view this section
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { sections: env.data.section, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });

@@ -21,8 +21,8 @@ module.exports = function (N, apiPath) {
 
   // Check title length
   //
-  N.wire.before(apiPath, function* check_title_length(env) {
-    let min_length = yield env.extras.settings.fetch('forum_topic_title_min_length');
+  N.wire.before(apiPath, async function check_title_length(env) {
+    let min_length = await env.extras.settings.fetch('forum_topic_title_min_length');
 
     if (charcount(env.params.title.trim()) < min_length) {
       // Real check is done on the client, no need to care about details here
@@ -33,10 +33,10 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
+  N.wire.before(apiPath, async function fetch_topic(env) {
     let statuses = N.models.forum.Topic.statuses;
 
-    let topic = yield N.models.forum.Topic
+    let topic = await N.models.forum.Topic
                           .findOne({ hid: env.params.topic_hid })
                           .lean(true);
 
@@ -53,8 +53,8 @@ module.exports = function (N, apiPath) {
 
   // Check section writeble
   //
-  N.wire.before(apiPath, function* check_section_writeble(env) {
-    let section = yield N.models.forum.Section.findOne({ _id: env.data.topic.section }).lean(true);
+  N.wire.before(apiPath, async function check_section_writeble(env) {
+    let section = await N.models.forum.Section.findOne({ _id: env.data.topic.section }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
 
@@ -65,10 +65,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user can view this topic
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     var access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -76,10 +76,10 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    let forum_mod_can_edit_titles = yield env.extras.settings.fetch('forum_mod_can_edit_titles');
+    let forum_mod_can_edit_titles = await env.extras.settings.fetch('forum_mod_can_edit_titles');
 
     // Permit as moderator
     if (forum_mod_can_edit_titles && env.params.as_moderator) return;
@@ -89,7 +89,7 @@ module.exports = function (N, apiPath) {
       throw N.io.FORBIDDEN;
     }
 
-    let forum_edit_max_time = yield env.extras.settings.fetch('forum_edit_max_time');
+    let forum_edit_max_time = await env.extras.settings.fetch('forum_edit_max_time');
 
     // Check, that topic created not more than 30 minutes ago
     if (forum_edit_max_time !== 0 && env.data.topic.cache.first_ts < Date.now() - forum_edit_max_time * 60 * 1000) {
@@ -100,8 +100,8 @@ module.exports = function (N, apiPath) {
 
   // Update topic title
   //
-  N.wire.on(apiPath, function* update_topic(env) {
-    yield N.models.forum.Topic.update(
+  N.wire.on(apiPath, async function update_topic(env) {
+    await N.models.forum.Topic.update(
       { _id: env.data.topic._id },
       { title: env.params.title.trim() });
   });
@@ -185,8 +185,8 @@ module.exports = function (N, apiPath) {
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
   });
 
 

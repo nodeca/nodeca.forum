@@ -38,8 +38,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    env.data.post = yield N.models.forum.Post.findOne()
+  N.wire.before(apiPath, async function fetch_post(env) {
+    env.data.post = await N.models.forum.Post.findOne()
                               .where('_id').equals(env.params.post_id)
                               .lean(true);
 
@@ -49,8 +49,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    env.data.topic = yield N.models.forum.Topic.findOne()
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    env.data.topic = await N.models.forum.Topic.findOne()
                               .where('_id').equals(env.data.post.topic)
                               .lean(true);
 
@@ -60,19 +60,19 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    let forum_mod_can_add_infractions = yield env.extras.settings.fetch('forum_mod_can_add_infractions');
+    let forum_mod_can_add_infractions = await env.extras.settings.fetch('forum_mod_can_add_infractions');
 
     if (!forum_mod_can_add_infractions) throw N.io.FORBIDDEN;
 
-    let user_info = yield userInfo(N, env.data.post.user);
+    let user_info = await userInfo(N, env.data.post.user);
     let params = {
       user_id: user_info.user_id,
       usergroup_ids: user_info.usergroups
     };
-    let cannot_receive_infractions = yield N.settings.get('cannot_receive_infractions', params, {});
+    let cannot_receive_infractions = await N.settings.get('cannot_receive_infractions', params, {});
 
     if (cannot_receive_infractions) throw { code: N.io.CLIENT_ERROR, message: env.t('err_perm_receive') };
   });
@@ -80,8 +80,8 @@ module.exports = function (N, apiPath) {
 
   // Check infraction already exists
   //
-  N.wire.before(apiPath, function* check_exists(env) {
-    let infraction = yield N.models.users.Infraction.findOne()
+  N.wire.before(apiPath, async function check_exists(env) {
+    let infraction = await N.models.users.Infraction.findOne()
                               .where('src').equals(env.data.post._id)
                               .where('exists').equals(true)
                               .lean(true);
@@ -92,7 +92,7 @@ module.exports = function (N, apiPath) {
 
   // Save infraction
   //
-  N.wire.on(apiPath, function* add_infraction(env) {
+  N.wire.on(apiPath, async function add_infraction(env) {
     let reason = env.params.reason;
 
     if (env.params.type !== 'custom') {
@@ -115,6 +115,6 @@ module.exports = function (N, apiPath) {
       infraction.expire = new Date(Date.now() + (env.params.expire * 24 * 60 * 60 * 1000));
     }
 
-    yield infraction.save();
+    await infraction.save();
   });
 };

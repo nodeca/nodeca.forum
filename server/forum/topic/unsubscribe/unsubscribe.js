@@ -19,15 +19,15 @@ module.exports = function (N, apiPath) {
 
   // Redirect guests to login page
   //
-  N.wire.before(apiPath, function* force_login_guest(env) {
-    yield N.wire.emit('internal:users.force_login_guest', env);
+  N.wire.before(apiPath, async function force_login_guest(env) {
+    await N.wire.emit('internal:users.force_login_guest', env);
   });
 
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield N.models.forum.Topic
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic
                           .findOne({ hid: env.params.topic_hid })
                           .lean(true);
     if (!topic) throw N.io.NOT_FOUND;
@@ -38,8 +38,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_section(env) {
-    let section = yield N.models.forum.Section
+  N.wire.before(apiPath, async function fetch_section(env) {
+    let section = await N.models.forum.Section
                             .findOne({ _id: env.data.topic.section })
                             .lean(true);
     if (!section) throw N.io.NOT_FOUND;
@@ -50,10 +50,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user can view this topic
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -61,8 +61,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch subscription
   //
-  N.wire.before(apiPath, function* fetch_subscription(env) {
-    env.data.subscription = yield N.models.users.Subscription
+  N.wire.before(apiPath, async function fetch_subscription(env) {
+    env.data.subscription = await N.models.users.Subscription
                                       .findOne({ user: env.user_info.user_id, to: env.data.topic._id })
                                       .lean(true);
   });
@@ -70,7 +70,7 @@ module.exports = function (N, apiPath) {
 
   // Update subscription type
   //
-  N.wire.on(apiPath, function* update_subscription_type(env) {
+  N.wire.on(apiPath, async function update_subscription_type(env) {
     // Shortcut
     let Subscription = N.models.users.Subscription;
 
@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
     env.res.subscription = updatedType;
 
     // Update with `upsert` to avoid duplicates
-    yield Subscription.update(
+    await Subscription.update(
       { user: env.user_info.user_id, to: env.data.topic._id },
       { type: updatedType, to_type: N.shared.content_type.FORUM_TOPIC },
       { upsert: true }
@@ -103,15 +103,15 @@ module.exports = function (N, apiPath) {
 
   // Fill section
   //
-  N.wire.after(apiPath, function* fill_section(env) {
-    env.res.section = yield sanitize_section(N, env.data.section, env.user_info);
+  N.wire.after(apiPath, async function fill_section(env) {
+    env.res.section = await sanitize_section(N, env.data.section, env.user_info);
   });
 
 
   // Fill topic
   //
-  N.wire.after(apiPath, function* fill_topic(env) {
-    env.res.topic = yield sanitize_topic(N, env.data.topic, env.user_info);
+  N.wire.after(apiPath, async function fill_topic(env) {
+    env.res.topic = await sanitize_topic(N, env.data.topic, env.user_info);
   });
 
 

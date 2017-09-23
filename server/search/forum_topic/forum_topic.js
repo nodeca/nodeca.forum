@@ -27,8 +27,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield N.models.forum.Topic
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic
                           .findOne({ hid: _.toFinite(env.params.$query.hid) })
                           .lean(true);
 
@@ -40,10 +40,10 @@ module.exports = function (N, apiPath) {
 
   // Check if user can view this topic
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });

@@ -18,8 +18,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    env.data.post = yield N.models.forum.Post
+  N.wire.before(apiPath, async function fetch_post(env) {
+    env.data.post = await N.models.forum.Post
                               .findOne({ _id: env.params.post_id })
                               .lean(true);
 
@@ -29,8 +29,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    env.data.topic = yield N.models.forum.Topic
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    env.data.topic = await N.models.forum.Topic
                               .findOne({ _id: env.data.post.topic })
                               .lean(true);
 
@@ -40,8 +40,8 @@ module.exports = function (N, apiPath) {
 
   // Check section flags
   //
-  N.wire.before(apiPath, function* check_section_flags(env) {
-    let section = yield N.models.forum.Section
+  N.wire.before(apiPath, async function check_section_flags(env) {
+    let section = await N.models.forum.Section
                             .findOne({ _id: env.data.topic.section })
                             .select('is_enabled is_votable is_writable')
                             .lean(true);
@@ -59,14 +59,14 @@ module.exports = function (N, apiPath) {
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
       posts: env.data.post,
       user_info: env.user_info,
       preload: [ env.data.topic ]
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -74,12 +74,12 @@ module.exports = function (N, apiPath) {
 
   // Check topic permissions
   //
-  N.wire.before(apiPath, function* check_topic_permissions(env) {
+  N.wire.before(apiPath, async function check_topic_permissions(env) {
     let topic = env.data.topic;
 
     env.extras.settings.params.section_id = topic.section;
 
-    let can_vote = yield env.extras.settings.fetch('can_vote');
+    let can_vote = await env.extras.settings.fetch('can_vote');
 
     if (!can_vote) throw N.io.FORBIDDEN;
   });
@@ -87,9 +87,9 @@ module.exports = function (N, apiPath) {
 
   // Check post permissions
   //
-  N.wire.before(apiPath, function* check_post_permissions(env) {
+  N.wire.before(apiPath, async function check_post_permissions(env) {
     let post = env.data.post;
-    let votes_add_max_time = yield env.extras.settings.fetch('votes_add_max_time');
+    let votes_add_max_time = await env.extras.settings.fetch('votes_add_max_time');
 
     // Check is own post
     if (post.user.equals(env.user_info.user_id)) {
@@ -111,18 +111,18 @@ module.exports = function (N, apiPath) {
 
   // Remove previous vote if exists
   //
-  N.wire.before(apiPath, function* remove_votes(env) {
-    yield N.models.users.Vote.remove(
+  N.wire.before(apiPath, async function remove_votes(env) {
+    await N.models.users.Vote.remove(
       { 'for': env.params.post_id, from: env.user_info.user_id });
   });
 
 
   // Add vote
   //
-  N.wire.on(apiPath, function* add_vote(env) {
+  N.wire.on(apiPath, async function add_vote(env) {
     if (env.params.value === 0) return;
 
-    yield N.models.users.Vote.update(
+    await N.models.users.Vote.update(
       { 'for': env.params.post_id, from: env.user_info.user_id },
       {
         to: env.data.post.user,
@@ -136,8 +136,8 @@ module.exports = function (N, apiPath) {
 
   // Update post
   //
-  N.wire.after(apiPath, function* update_post(env) {
-    let result = yield N.models.users.Vote.aggregate([
+  N.wire.after(apiPath, async function update_post(env) {
+    let result = await N.models.users.Vote.aggregate([
       { $match: { 'for': env.data.post._id } },
       {
         $group: {
@@ -149,13 +149,13 @@ module.exports = function (N, apiPath) {
       { $project: { _id: false, votes: true, votes_hb: true } }
     ]).exec();
 
-    yield N.models.forum.Post.update({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 });
+    await N.models.forum.Post.update({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 });
   });
 
 
   // Mark user as active
   //
-  N.wire.after(apiPath, function* set_active_flag(env) {
-    yield N.wire.emit('internal:users.mark_user_active', env);
+  N.wire.after(apiPath, async function set_active_flag(env) {
+    await N.wire.emit('internal:users.mark_user_active', env);
   });
 };

@@ -25,7 +25,6 @@
 
 
 const _       = require('lodash');
-const Promise = require('bluebird');
 
 
 module.exports = function (N) {
@@ -34,7 +33,7 @@ module.exports = function (N) {
   const Topic = N.models.forum.Topic;
 
 
-  return Promise.coroutine(function* buildTopicIds(env) {
+  return async function buildTopicIds(env) {
     env.data.topics_ids = [];
 
     let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
@@ -48,7 +47,7 @@ module.exports = function (N) {
         query = query.where(lookup_key).lt(env.data.select_topics_start);
       }
 
-      let results = yield query
+      let results = await query
                             .where('section').equals(env.data.section._id)
                             .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
                             .select('_id')
@@ -58,5 +57,5 @@ module.exports = function (N) {
 
       env.data.topics_ids = _.map(results, '_id');
     }
-  });
+  };
 };

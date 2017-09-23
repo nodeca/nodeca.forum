@@ -25,7 +25,6 @@
 
 
 const _       = require('lodash');
-const Promise = require('bluebird');
 
 
 module.exports = function (N) {
@@ -33,7 +32,7 @@ module.exports = function (N) {
   // Shortcut
   const Topic = N.models.forum.Topic;
 
-  return Promise.coroutine(function* buildTopicsIds(env) {
+  return async function buildTopicsIds(env) {
     env.data.topics_ids = [];
 
     let lookup_key = env.user_info.hb ? 'cache_hb.last_post' : 'cache.last_post';
@@ -47,7 +46,7 @@ module.exports = function (N) {
         query = query.where(lookup_key).gt(env.data.select_topics_start);
       }
 
-      let results = yield query
+      let results = await query
                             .where('section').equals(env.data.section._id)
                             .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
                             .select('_id')
@@ -66,7 +65,7 @@ module.exports = function (N) {
     if (env.data.topics_ids.length < env.data.select_topics_before &&
         env.data.topics_visible_statuses.indexOf(Topic.statuses.PINNED) !== -1) {
 
-      let topics = yield Topic.find()
+      let topics = await Topic.find()
                               .where('section').equals(env.data.section._id)
                               .where('st').equals(Topic.statuses.PINNED)
                               .select('_id')
@@ -76,5 +75,5 @@ module.exports = function (N) {
       // Put pinned topics IDs to start of `env.data.topics_ids`
       env.data.topics_ids = _.map(topics, '_id').concat(env.data.topics_ids);
     }
-  });
+  };
 };

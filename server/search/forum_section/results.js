@@ -34,7 +34,7 @@ module.exports = function (N, apiPath) {
   });
 
 
-  N.wire.on(apiPath, function* search_execute(env) {
+  N.wire.on(apiPath, async function search_execute(env) {
     let menu = _.get(N.config, 'search.forum_section.menu', {});
     let content_types = Object.keys(menu)
                          .sort((a, b) => (menu[a].priority || 100) - (menu[b].priority || 100));
@@ -72,7 +72,7 @@ module.exports = function (N, apiPath) {
         }
       };
 
-      yield N.wire.emit('internal:search.' + env.params.type, search_env);
+      await N.wire.emit('internal:search.' + env.params.type, search_env);
 
       env.res.results = search_env.results;
       env.res.reached_end = search_env.reached_end;
@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
 
       let other_tabs = _.without(content_types, env.params.type);
 
-      yield Promise.map(other_tabs, Promise.coroutine(function* (type) {
+      await Promise.map(other_tabs, async function (type) {
         let search_env = {
           params: {
             user_info:   env.user_info,
@@ -106,10 +106,10 @@ module.exports = function (N, apiPath) {
           }
         };
 
-        yield N.wire.emit('internal:search.' + type, search_env);
+        await N.wire.emit('internal:search.' + type, search_env);
 
         counts[type] = search_env.count;
-      }));
+      });
 
       env.res.tabs = content_types.map(type => ({
         type,

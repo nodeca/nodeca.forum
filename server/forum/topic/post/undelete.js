@@ -15,8 +15,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    let post = yield N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
+  N.wire.before(apiPath, async function fetch_post(env) {
+    let post = await N.models.forum.Post.findOne({ _id: env.params.post_id }).lean(true);
 
     if (!post) throw N.io.NOT_FOUND;
 
@@ -26,8 +26,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic.findOne({ _id: env.data.post.topic }).lean(true);
 
     if (!topic) throw N.io.NOT_FOUND;
 
@@ -37,7 +37,7 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
+  N.wire.before(apiPath, async function check_permissions(env) {
     let statuses = N.models.forum.Post.statuses;
 
     env.extras.settings.params.section_id = env.data.topic.section;
@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
       throw N.io.FORBIDDEN;
     }
 
-    let settings = yield env.extras.settings.fetch([
+    let settings = await env.extras.settings.fetch([
       'forum_mod_can_delete_topics',
       'forum_mod_can_see_hard_deleted_topics'
     ]);
@@ -67,7 +67,7 @@ module.exports = function (N, apiPath) {
 
   // Undelete post
   //
-  N.wire.on(apiPath, function* undelete_post(env) {
+  N.wire.on(apiPath, async function undelete_post(env) {
     let post = env.data.post;
 
     let update = {
@@ -76,21 +76,21 @@ module.exports = function (N, apiPath) {
 
     _.assign(update, post.prev_st);
 
-    yield N.models.forum.Post.update({ _id: post._id }, update);
+    await N.models.forum.Post.update({ _id: post._id }, update);
   });
 
 
   // Update topic counters
   //
-  N.wire.after(apiPath, function* update_topic(env) {
-    yield N.models.forum.Topic.updateCache(env.data.topic._id);
+  N.wire.after(apiPath, async function update_topic(env) {
+    await N.models.forum.Topic.updateCache(env.data.topic._id);
   });
 
 
   // Restore votes
   //
-  N.wire.after(apiPath, function* restore_votes(env) {
-    yield N.models.users.Vote.collection.update(
+  N.wire.after(apiPath, async function restore_votes(env) {
+    await N.models.users.Vote.collection.update(
       { 'for': env.data.post._id },
       // Just move vote `backup` field back to `value` field
       { $rename: { backup: 'value' } },
@@ -101,16 +101,16 @@ module.exports = function (N, apiPath) {
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
-    yield N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+    await N.queue.forum_posts_search_update_by_ids([ env.data.post._id ]).postpone();
   });
 
 
   // Update section counters
   //
-  N.wire.after(apiPath, function* update_section(env) {
-    yield N.models.forum.Section.updateCache(env.data.topic.section);
+  N.wire.after(apiPath, async function update_section(env) {
+    await N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
   // TODO: log moderator actions

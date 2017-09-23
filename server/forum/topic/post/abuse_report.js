@@ -20,8 +20,8 @@ module.exports = function (N, apiPath) {
 
   // Check permissions
   //
-  N.wire.before(apiPath, function* check_permissions(env) {
-    let can_report_abuse = yield env.extras.settings.fetch('can_report_abuse');
+  N.wire.before(apiPath, async function check_permissions(env) {
+    let can_report_abuse = await env.extras.settings.fetch('can_report_abuse');
 
     if (!can_report_abuse) throw N.io.FORBIDDEN;
   });
@@ -29,8 +29,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    env.data.post = yield N.models.forum.Post
+  N.wire.before(apiPath, async function fetch_post(env) {
+    env.data.post = await N.models.forum.Post
       .findOne({ _id: env.params.post_id })
       .lean(true);
 
@@ -40,13 +40,13 @@ module.exports = function (N, apiPath) {
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
       posts: env.data.post,
       user_info: env.user_info
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -54,10 +54,10 @@ module.exports = function (N, apiPath) {
 
   // Send abuse report
   //
-  N.wire.on(apiPath, function* send_report_subcall(env) {
+  N.wire.on(apiPath, async function send_report_subcall(env) {
     env.data.message = env.params.message;
 
-    let params = yield N.models.core.MessageParams.getParams(env.data.post.params_ref);
+    let params = await N.models.core.MessageParams.getParams(env.data.post.params_ref);
 
     // enable markup used in templates (even if it's disabled in forum)
     params.link  = true;
@@ -68,16 +68,16 @@ module.exports = function (N, apiPath) {
       type: N.shared.content_type.FORUM_POST,
       text: env.params.message,
       from: env.user_info.user_id,
-      params_ref: yield N.models.core.MessageParams.setParams(params)
+      params_ref: await N.models.core.MessageParams.setParams(params)
     });
 
-    yield N.wire.emit('internal:common.abuse_report', { report });
+    await N.wire.emit('internal:common.abuse_report', { report });
   });
 
 
   // Mark user as active
   //
-  N.wire.after(apiPath, function* set_active_flag(env) {
-    yield N.wire.emit('internal:users.mark_user_active', env);
+  N.wire.after(apiPath, async function set_active_flag(env) {
+    await N.wire.emit('internal:users.mark_user_active', env);
   });
 };

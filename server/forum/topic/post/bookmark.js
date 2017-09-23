@@ -18,8 +18,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch post
   //
-  N.wire.before(apiPath, function* fetch_post(env) {
-    env.data.post = yield N.models.forum.Post
+  N.wire.before(apiPath, async function fetch_post(env) {
+    env.data.post = await N.models.forum.Post
                               .findOne({ _id: env.params.post_id })
                               .lean(true);
     if (!env.data.post) throw N.io.NOT_FOUND;
@@ -28,8 +28,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    env.data.topic = yield N.models.forum.Topic
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    env.data.topic = await N.models.forum.Topic
                               .findOne({ _id: env.data.post.topic })
                               .lean(true);
     if (!env.data.topic) throw N.io.NOT_FOUND;
@@ -38,14 +38,14 @@ module.exports = function (N, apiPath) {
 
   // Check if user can see this post
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
       posts: env.data.post,
       user_info: env.user_info,
       preload: [ env.data.topic ]
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -53,11 +53,11 @@ module.exports = function (N, apiPath) {
 
   // Add/remove bookmark
   //
-  N.wire.on(apiPath, function* bookmark_add_remove(env) {
+  N.wire.on(apiPath, async function bookmark_add_remove(env) {
 
     // If `env.params.remove` - remove bookmark
     if (env.params.remove) {
-      yield N.models.forum.PostBookmark.remove(
+      await N.models.forum.PostBookmark.remove(
         { user: env.user_info.user_id, post_id: env.params.post_id });
 
       return;
@@ -67,17 +67,17 @@ module.exports = function (N, apiPath) {
     let data = { user: env.user_info.user_id, post_id: env.params.post_id };
 
     // Use `findOneAndUpdate` with `upsert` to avoid duplicates in case of multi click
-    yield N.models.forum.PostBookmark.findOneAndUpdate(data, data, { upsert: true });
+    await N.models.forum.PostBookmark.findOneAndUpdate(data, data, { upsert: true });
   });
 
 
   // Update post, fill count
   //
-  N.wire.after(apiPath, function* update_post(env) {
-    let count = yield N.models.forum.PostBookmark.count({ post_id: env.params.post_id });
+  N.wire.after(apiPath, async function update_post(env) {
+    let count = await N.models.forum.PostBookmark.count({ post_id: env.params.post_id });
 
     env.res.count = count;
 
-    yield N.models.forum.Post.update({ _id: env.params.post_id }, { bookmarks: count });
+    await N.models.forum.Post.update({ _id: env.params.post_id }, { bookmarks: count });
   });
 };

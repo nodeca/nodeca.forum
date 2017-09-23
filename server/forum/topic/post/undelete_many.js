@@ -21,18 +21,18 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    env.data.topic = yield N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    env.data.topic = await N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
     if (!env.data.topic) throw N.io.NOT_FOUND;
   });
 
 
   // Check if user has an access to this topic
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: { topics: env.data.topic, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
 
@@ -47,11 +47,11 @@ module.exports = function (N, apiPath) {
 
   // Fetch posts & check permissions
   //
-  N.wire.before(apiPath, function* fetch_posts(env) {
+  N.wire.before(apiPath, async function fetch_posts(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
     // Fetch moderator permissions
-    let settings = yield env.extras.settings.fetch([
+    let settings = await env.extras.settings.fetch([
       'forum_mod_can_delete_topics',
       'forum_mod_can_hard_delete_topics'
     ]);
@@ -70,7 +70,7 @@ module.exports = function (N, apiPath) {
       throw N.io.FORBIDDEN;
     }
 
-    env.data.posts = yield N.models.forum.Post.find()
+    env.data.posts = await N.models.forum.Post.find()
                               .where('_id').in(env.params.posts_ids)
                               .where('topic').equals(env.data.topic._id)
                               .where('st').in(st)
@@ -83,7 +83,7 @@ module.exports = function (N, apiPath) {
 
   // Undelete posts
   //
-  N.wire.on(apiPath, function* undelete_posts(env) {
+  N.wire.on(apiPath, async function undelete_posts(env) {
     let bulk = N.models.forum.Post.collection.initializeUnorderedBulkOp();
 
     env.data.posts.forEach(post => {
@@ -93,14 +93,14 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    yield bulk.execute();
+    await bulk.execute();
   });
 
 
   // Restore votes
   //
-  N.wire.after(apiPath, function* remove_votes(env) {
-    yield N.models.users.Vote.collection.update(
+  N.wire.after(apiPath, async function remove_votes(env) {
+    await N.models.users.Vote.collection.update(
       { 'for': { $in: _.map(env.data.posts, '_id') } },
       // Just move vote `backup` field back to `value` field
       { $rename: { backup: 'value' } },
@@ -111,17 +111,17 @@ module.exports = function (N, apiPath) {
 
   // Schedule search index update
   //
-  N.wire.after(apiPath, function* add_search_index(env) {
-    yield N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
-    yield N.queue.forum_posts_search_update_by_ids(env.data.posts.map(p => p._id)).postpone();
+  N.wire.after(apiPath, async function add_search_index(env) {
+    await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+    await N.queue.forum_posts_search_update_by_ids(env.data.posts.map(p => p._id)).postpone();
   });
 
 
   // Update cache
   //
-  N.wire.after(apiPath, function* update_cache(env) {
-    yield N.models.forum.Topic.updateCache(env.data.topic._id);
-    yield N.models.forum.Section.updateCache(env.data.topic.section);
+  N.wire.after(apiPath, async function update_cache(env) {
+    await N.models.forum.Topic.updateCache(env.data.topic._id);
+    await N.models.forum.Section.updateCache(env.data.topic.section);
   });
 
   // TODO: log moderator actions

@@ -24,7 +24,6 @@
 
 
 const _       = require('lodash');
-const Promise = require('bluebird');
 
 
 module.exports = function (N) {
@@ -108,15 +107,15 @@ module.exports = function (N) {
       });
   }
 
-  return Promise.coroutine(function* buildPostHids(env) {
-    let results = yield Promise.all([ select_visible_before(env), select_visible_after(env) ]);
+  return async function buildPostHids(env) {
+    let results = await Promise.all([ select_visible_before(env), select_visible_after(env) ]);
 
     let select_from = results[0] !== null ? results[0] : env.params.post_hid - 1;
     let select_to   = results[1] !== null ? results[1] : env.params.post_hid + 1;
 
     // select posts from the range calculated above
     // (post with hid=env.params.post_hid is always selected)
-    let posts = yield Post.find()
+    let posts = await Post.find()
                           .where('topic').equals(env.data.topic._id)
                           .where('st').in(env.data.posts_visible_statuses)
                           .where('hid').gt(select_from)
@@ -126,5 +125,5 @@ module.exports = function (N) {
                           .lean(true);
 
     env.data.posts_hids = _.map(posts, 'hid');
-  });
+  };
 };

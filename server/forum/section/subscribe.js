@@ -32,8 +32,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_section(env) {
-    env.data.section = yield N.models.forum.Section
+  N.wire.before(apiPath, async function fetch_section(env) {
+    env.data.section = await N.models.forum.Section
                                 .findOne({ hid: env.params.section_hid })
                                 .lean(true);
 
@@ -43,10 +43,10 @@ module.exports = function (N, apiPath) {
 
   // Subcall forum.access.section
   //
-  N.wire.before(apiPath, function* subcall_section(env) {
+  N.wire.before(apiPath, async function subcall_section(env) {
     var access_env = { params: { sections: env.data.section, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -54,9 +54,9 @@ module.exports = function (N, apiPath) {
 
   // Add/remove subscription
   //
-  N.wire.on(apiPath, function* subscription_add_remove(env) {
+  N.wire.on(apiPath, async function subscription_add_remove(env) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
-    yield N.models.users.Subscription.update(
+    await N.models.users.Subscription.update(
       { user: env.user_info.user_id, to: env.data.section._id },
       { type: env.params.type, to_type: N.shared.content_type.FORUM_SECTION },
       { upsert: true });
