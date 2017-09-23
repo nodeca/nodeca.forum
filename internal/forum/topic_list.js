@@ -42,8 +42,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_section(env) {
-    let section = yield Section.findOne({ hid: env.data.section_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_section(env) {
+    let section = await Section.findOne({ hid: env.data.section_hid }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
     if (!section.is_enabled) throw N.io.NOT_FOUND;
@@ -54,10 +54,10 @@ module.exports = function (N, apiPath) {
 
   // Fetch and fill permissions
   //
-  N.wire.before(apiPath, function* fetch_and_fill_permissions(env) {
+  N.wire.before(apiPath, async function fetch_and_fill_permissions(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    env.res.settings = env.data.settings = yield env.extras.settings.fetch(fields.settings);
+    env.res.settings = env.data.settings = await env.extras.settings.fetch(fields.settings);
   });
 
 
@@ -91,16 +91,16 @@ module.exports = function (N, apiPath) {
 
   // Get topics ids
   //
-  N.wire.before(apiPath, function* get_topics_ids(env) {
-    yield env.data.build_topics_ids(env);
+  N.wire.before(apiPath, async function get_topics_ids(env) {
+    await env.data.build_topics_ids(env);
   });
 
 
   // Fetch and sort topics
   //
-  N.wire.on(apiPath, function* fetch_and_sort_topics(env) {
+  N.wire.on(apiPath, async function fetch_and_sort_topics(env) {
 
-    let topics = yield Topic.find()
+    let topics = await Topic.find()
                         .where('_id').in(env.data.topics_ids)
                         .where('st').in(env.data.topics_visible_statuses)
                         .where('section').equals(env.data.section._id)
@@ -122,10 +122,10 @@ module.exports = function (N, apiPath) {
 
   // Fill bookmarks
   //
-  N.wire.after(apiPath, function* fill_bookmarks(env) {
+  N.wire.after(apiPath, async function fill_bookmarks(env) {
     let postIds = env.data.topics.map(topic => topic.cache.first_post);
 
-    let bookmarks = yield N.models.forum.PostBookmark.find()
+    let bookmarks = await N.models.forum.PostBookmark.find()
                               .where('user').equals(env.user_info.user_id)
                               .where('post_id').in(postIds)
                               .lean(true);
@@ -136,13 +136,13 @@ module.exports = function (N, apiPath) {
 
   // Fill subscriptions for section topics
   //
-  N.wire.after(apiPath, function* fill_subscriptions(env) {
+  N.wire.after(apiPath, async function fill_subscriptions(env) {
     if (!env.user_info.is_member) {
       env.res.subscriptions = [];
       return;
     }
 
-    let subscriptions = yield N.models.users.Subscription.find()
+    let subscriptions = await N.models.users.Subscription.find()
                           .where('user').equals(env.user_info.user_id)
                           .where('to').in(env.data.topics_ids)
                           .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
@@ -154,7 +154,7 @@ module.exports = function (N, apiPath) {
 
   // Fill `isNew`, `next` and `position` markers
   //
-  N.wire.after(apiPath, function* fill_read_marks(env) {
+  N.wire.after(apiPath, async function fill_read_marks(env) {
     let data = [];
 
     env.data.topics.forEach(topic => {
@@ -166,7 +166,7 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    env.res.read_marks = yield N.models.users.Marker.info(env.user_info.user_id, data);
+    env.res.read_marks = await N.models.users.Marker.info(env.user_info.user_id, data);
   });
 
 
@@ -188,11 +188,11 @@ module.exports = function (N, apiPath) {
 
   // Check if any users are ignored
   //
-  N.wire.after(apiPath, function* check_ignores(env) {
+  N.wire.after(apiPath, async function check_ignores(env) {
     let users = env.data.topics.map(topic => topic.cache.first_user).filter(Boolean);
 
     // don't fetch `_id` to load all data from composite index
-    let ignored = yield N.models.users.Ignore.find()
+    let ignored = await N.models.users.Ignore.find()
                             .where('from').equals(env.user_info.user_id)
                             .where('to').in(users)
                             .select('from to -_id')
@@ -208,8 +208,8 @@ module.exports = function (N, apiPath) {
 
   // Sanitize and fill topics
   //
-  N.wire.after(apiPath, function* topics_sanitize_and_fill(env) {
-    env.res.topics  = yield sanitize_topic(N, env.data.topics, env.user_info);
-    env.res.section = yield sanitize_section(N, env.data.section, env.user_info);
+  N.wire.after(apiPath, async function topics_sanitize_and_fill(env) {
+    env.res.topics  = await sanitize_topic(N, env.data.topics, env.user_info);
+    env.res.section = await sanitize_section(N, env.data.section, env.user_info);
   });
 };

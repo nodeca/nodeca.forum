@@ -11,7 +11,6 @@
  */
 
 const _         = require('lodash');
-const Promise   = require('bluebird');
 const charlatan = require('charlatan');
 const ObjectId  = require('mongoose').Types.ObjectId;
 
@@ -56,7 +55,7 @@ let users = [];
 let postDay = 0;
 
 
-const createPost = Promise.coroutine(function* (topic, previous_posts) {
+async function createPost(topic, previous_posts) {
   // 50% posts won't have any reply information, 25% posts will be
   // answers to the previous post, 12.5% posts will be answers to the
   // 2nd last post and so on.
@@ -67,9 +66,9 @@ const createPost = Promise.coroutine(function* (topic, previous_posts) {
   let md = charlatan.Lorem.paragraphs(charlatan.Helpers.rand(5, 1)).join('\n\n');
   let user = users[charlatan.Helpers.rand(USER_COUNT)];
 
-  let options = yield settings.getByCategory('forum_posts_markup', { usergroup_ids: user.usergroups }, { alias: true });
+  let options = await settings.getByCategory('forum_posts_markup', { usergroup_ids: user.usergroups }, { alias: true });
 
-  let result = yield parser.md2html({
+  let result = await parser.md2html({
     text: md,
     attachments: [],
     options
@@ -113,14 +112,14 @@ const createPost = Promise.coroutine(function* (topic, previous_posts) {
   // specifying params in constructor doesn't work 'cause params is not in the model
   post.params = options;
 
-  yield post.save();
-  yield User.update({ _id: post.user }, { $inc: { post_count: 1 } });
+  await post.save();
+  await User.update({ _id: post.user }, { $inc: { post_count: 1 } });
 
   return post;
-});
+}
 
 
-const addVotes = Promise.coroutine(function* (post) {
+async function addVotes(post) {
   let votes = 0;
 
   for (let i = charlatan.Helpers.rand(MAX_VOTES); i > 0; i--) {
@@ -137,14 +136,14 @@ const addVotes = Promise.coroutine(function* (post) {
 
     votes += value;
 
-    yield vote.save();
+    await vote.save();
   }
 
-  yield post.update({ votes });
-});
+  await post.update({ votes });
+}
 
 
-const createTopic = Promise.coroutine(function* (section, post_count) {
+async function createTopic(section, post_count) {
   let first_post;
   let last_post;
 
@@ -162,12 +161,12 @@ const createTopic = Promise.coroutine(function* (section, post_count) {
   // Save topic to the database before creating posts,
   // it's needed because of Post model hooks
   //
-  yield topic.save();
+  await topic.save();
 
   let posts = [];
 
   for (let i = 0; i < post_count; i++) {
-    var post = yield createPost(topic, posts);
+    var post = await createPost(topic, posts);
 
     if (!first_post) {
       first_post = post;
@@ -177,7 +176,7 @@ const createTopic = Promise.coroutine(function* (section, post_count) {
 
     posts.push(post);
 
-    yield addVotes(post);
+    await addVotes(post);
   }
 
   topic.cache.post_count    = post_count;
@@ -195,11 +194,11 @@ const createTopic = Promise.coroutine(function* (section, post_count) {
 
   // Update cache for this topic
   //
-  yield topic.save();
-});
+  await topic.save();
+}
 
 
-const createSection = Promise.coroutine(function* (category, sub_section_deep) {
+async function createSection(category, sub_section_deep) {
   let section = new Section({
     title: charlatan.Lorem.sentence(charlatan.Helpers.rand(5, 3)).slice(0, -1),
     description: charlatan.Lorem.sentence(),
@@ -212,7 +211,7 @@ const createSection = Promise.coroutine(function* (category, sub_section_deep) {
     }
   });
 
-  yield section.save();
+  await section.save();
 
   // add sub-sections
   if (!sub_section_deep || charlatan.Helpers.rand(3) === 2) {
@@ -220,14 +219,14 @@ const createSection = Promise.coroutine(function* (category, sub_section_deep) {
   }
 
   for (let i = charlatan.Helpers.rand(MAX_SUB_SECTION_COUNT); i > 0; i--) {
-    yield createSection(section, sub_section_deep - 1);
+    await createSection(section, sub_section_deep - 1);
   }
-});
+}
 
 
-const createUsers = Promise.coroutine(function* () {
+async function createUsers() {
   let userGroupsByName = {};
-  let groups = yield UserGroup.find().select('_id short_name');
+  let groups = await UserGroup.find().select('_id short_name');
 
   // collect usergroups
   groups.forEach(function (group) {
@@ -246,15 +245,15 @@ const createUsers = Promise.coroutine(function* () {
       active:     true
     });
 
-    yield user.save();
+    await user.save();
 
     // add user to store
     users.push(user);
   }
-});
+}
 
 
-let createSections = Promise.coroutine(function* () {
+async function createSections() {
   for (let i = 0; i < CATEGORY_COUNT; i++) {
     let category = new Category({
       title: charlatan.Lorem.sentence(charlatan.Helpers.rand(5, 3)).slice(0, -1),
@@ -264,17 +263,17 @@ let createSections = Promise.coroutine(function* () {
       is_category: true
     });
 
-    yield category.save();
+    await category.save();
 
     // create sections
     for (let j = 0; j < SECTION_COUNT; j++) {
-      yield createSection(category, SUB_SECTION_DEEP);
+      await createSection(category, SUB_SECTION_DEEP);
     }
   }
-});
+}
 
 
-const updateSectionStat = Promise.coroutine(function* (section) {
+async function updateSectionStat(section) {
   let topicCount;
   let postCount;
 
@@ -283,11 +282,11 @@ const updateSectionStat = Promise.coroutine(function* (section) {
   //
   Section.getChildren.clear();
 
-  yield Section.updateCache(section._id);
+  await Section.updateCache(section._id);
 
-  let sections = yield Section.getChildren(section._id, -1);
+  let sections = await Section.getChildren(section._id, -1);
 
-  let sum = yield Topic.aggregate(
+  let sum = await Topic.aggregate(
     {
       $match: {
         section: { $in: _.map(sections.concat([ section ]), '_id') }
@@ -317,12 +316,12 @@ const updateSectionStat = Promise.coroutine(function* (section) {
   section.cache_hb.post_count = postCount;
   section.cache_hb.topic_count = topicCount;
 
-  yield section.save();
-});
+  await section.save();
+}
 
 
-const createTopics = Promise.coroutine(function* () {
-  let sections = yield Section.find({ is_category: false })
+async function createTopics() {
+  let sections = await Section.find({ is_category: false })
                               .select('_id cache')
                               .sort({ hid: -1 })
                               .skip(1);
@@ -331,41 +330,41 @@ const createTopics = Promise.coroutine(function* () {
     let section = sections[i];
 
     // create topic with single post
-    yield createTopic(section, 1);
-    yield updateSectionStat(section);
+    await createTopic(section, 1);
+    await updateSectionStat(section);
   }
-});
+}
 
 
-const fillBigSection = Promise.coroutine(function* () {
-  let section = yield Section.findOne({ is_category: false })
+async function fillBigSection() {
+  let section = await Section.findOne({ is_category: false })
                              .sort({ hid: 1 });
 
   for (let i = 0; i < TOPIC_COUNT_IN_BIG_SECTION; i++) {
-    yield createTopic(section, 1);
+    await createTopic(section, 1);
   }
 
-  yield updateSectionStat(section);
-});
+  await updateSectionStat(section);
+}
 
 
-const addBigTopic = Promise.coroutine(function* () {
-  let section = yield Section.findOne({ is_category: false })
+async function addBigTopic() {
+  let section = await Section.findOne({ is_category: false })
                              .sort({ hid: 1 });
 
-  yield createTopic(section, POST_COUNT_IN_BIG_TOPIC);
-  yield updateSectionStat(section);
-});
+  await createTopic(section, POST_COUNT_IN_BIG_TOPIC);
+  await updateSectionStat(section);
+}
 
 
-const addModerators = Promise.coroutine(function* () {
+async function addModerators() {
   let SectionModeratorStore = settings.getStore('section_moderator');
 
   if (!SectionModeratorStore) {
     throw new Error('Settings store `section_moderator` is not registered.');
   }
 
-  let sections = yield Section.find({ is_category: false }).select('_id');
+  let sections = await Section.find({ is_category: false }).select('_id');
 
   for (let i = 0; i < sections.length; i++) {
     let section = sections[i];
@@ -373,16 +372,16 @@ const addModerators = Promise.coroutine(function* () {
     for (let j = charlatan.Helpers.rand(MAX_MODERATOR_COUNT); j > 0; j--) {
       let user = users[charlatan.Helpers.rand(USER_COUNT)];
 
-      yield SectionModeratorStore.set(
+      await SectionModeratorStore.set(
         { forum_mod_visible: { value: true } },
         { section_id: section._id, user_id: user._id }
       );
     }
   }
-});
+}
 
 
-module.exports = Promise.coroutine(function* (N) {
+module.exports = async function (N) {
   Category  = N.models.forum.Section;
   Section   = N.models.forum.Section;
   Topic     = N.models.forum.Topic;
@@ -394,10 +393,10 @@ module.exports = Promise.coroutine(function* (N) {
   parser    = N.parser;
   shared    = N.shared;
 
-  yield createUsers();
-  yield createSections();
-  yield createTopics();
-  yield fillBigSection();
-  yield addBigTopic();
-  yield addModerators();
-});
+  await createUsers();
+  await createSections();
+  await createTopics();
+  await fillBigSection();
+  await addBigTopic();
+  await addModerators();
+};

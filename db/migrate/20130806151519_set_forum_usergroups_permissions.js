@@ -1,17 +1,14 @@
 'use strict';
 
 
-const Promise = require('bluebird');
-
-
-module.exports.up = Promise.coroutine(function* (N) {
+module.exports.up = async function (N) {
   let usergroupStore = N.settings.getStore('usergroup');
 
   // add usergroup settings for admin
 
-  let adminGroupId = yield N.models.users.UserGroup.findIdByName('administrators');
+  let adminGroupId = await N.models.users.UserGroup.findIdByName('administrators');
 
-  yield usergroupStore.set({
+  await usergroupStore.set({
     forum_can_reply: { value: true },
     forum_can_start_topics: { value: true },
     forum_can_close_topic: { value: true },
@@ -28,9 +25,9 @@ module.exports.up = Promise.coroutine(function* (N) {
 
   // add usergroup settings for member
 
-  let memberGroupId = yield N.models.users.UserGroup.findIdByName('members');
+  let memberGroupId = await N.models.users.UserGroup.findIdByName('members');
 
-  yield usergroupStore.set({
+  await usergroupStore.set({
     forum_can_reply: { value: true },
     forum_can_start_topics: { value: true }
   }, { usergroup_id: memberGroupId });
@@ -40,9 +37,9 @@ module.exports.up = Promise.coroutine(function* (N) {
   // note: it is a modifier group added to users in addition to their
   //       existing usergroups, thus we should turn "force" flag on
 
-  let violatorsGroupId = yield N.models.users.UserGroup.findIdByName('violators');
+  let violatorsGroupId = await N.models.users.UserGroup.findIdByName('violators');
 
-  yield usergroupStore.set({
+  await usergroupStore.set({
     forum_can_reply: { value: false, force: true },
     forum_can_start_topics: { value: false, force: true },
     forum_edit_max_time: { value: 0, force: true },
@@ -51,9 +48,9 @@ module.exports.up = Promise.coroutine(function* (N) {
 
   // add usergroup settings for banned
 
-  let bannedGroupId = yield N.models.users.UserGroup.findIdByName('banned');
+  let bannedGroupId = await N.models.users.UserGroup.findIdByName('banned');
 
-  yield usergroupStore.set({
+  await usergroupStore.set({
     forum_edit_max_time: { value: 0 }
   }, { usergroup_id: bannedGroupId });
-});
+};

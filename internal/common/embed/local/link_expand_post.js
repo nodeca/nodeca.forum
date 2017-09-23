@@ -7,7 +7,7 @@ const render = require('nodeca.core/lib/system/render/common');
 
 
 module.exports = function (N) {
-  N.wire.on('internal:common.embed.local', function* embed_post(data) {
+  N.wire.on('internal:common.embed.local', async function embed_post(data) {
     if (data.html) return;
 
     let match = N.router.matchAll(data.url).reduce(
@@ -17,17 +17,17 @@ module.exports = function (N) {
 
     if (!match) return;
 
-    let topic = yield N.models.forum.Topic
+    let topic = await N.models.forum.Topic
                           .findOne({ hid: match.params.topic_hid })
                           .lean(true);
     if (!topic) return;
 
-    let post = yield N.models.forum.Post
+    let post = await N.models.forum.Post
                         .findOne({ topic: topic._id, hid: match.params.post_hid })
                         .lean(true);
     if (!post) return;
 
-    let user = yield N.models.users.User
+    let user = await N.models.users.User
                         .findOne({ _id: post.user, exists: true })
                         .lean(true);
 
@@ -35,7 +35,7 @@ module.exports = function (N) {
       topic, post, user };
 
     if (data.type === 'block') {
-      let preview_data = yield N.parser.md2preview({ text: post.md, limit: 500 });
+      let preview_data = await N.parser.md2preview({ text: post.md, limit: 500 });
 
       locals.html = preview_data.preview;
       data.html = render(N, 'common.blocks.markup.quote', locals, {});

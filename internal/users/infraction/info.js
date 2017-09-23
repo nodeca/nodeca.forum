@@ -17,7 +17,7 @@ const _ = require('lodash');
 
 module.exports = function (N, apiPath) {
 
-  N.wire.on(apiPath, function* fetch_infraction_info(info_env) {
+  N.wire.on(apiPath, async function fetch_infraction_info(info_env) {
     let posts_ids = _.map(info_env.infractions.filter(i => i.src_type === N.shared.content_type.FORUM_POST), 'src');
 
     if (!posts_ids.length) return;
@@ -25,19 +25,19 @@ module.exports = function (N, apiPath) {
 
     // Fetch posts
     //
-    let posts = yield N.models.forum.Post.find()
+    let posts = await N.models.forum.Post.find()
                           .where('_id').in(posts_ids)
                           .lean(true);
 
     // Fetch topics
     //
-    let topics = yield N.models.forum.Topic.find()
+    let topics = await N.models.forum.Topic.find()
                           .where('_id').in(_.map(posts, 'topic'))
                           .lean(true);
 
     // Fetch sections
     //
-    let sections = yield N.models.forum.Section.find()
+    let sections = await N.models.forum.Section.find()
                             .where('_id').in(_.map(topics, 'section'))
                             .lean(true);
 
@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
       preload: [].concat(topics).concat(sections)
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     posts = posts.filter((__, idx) => access_env.data.access_read[idx]);
 

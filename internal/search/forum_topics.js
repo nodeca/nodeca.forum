@@ -31,7 +31,7 @@ module.exports = function (N, apiPath) {
 
   // Send sql query to sphinx, get a response
   //
-  N.wire.on(apiPath, function* execute_search(locals) {
+  N.wire.on(apiPath, async function execute_search(locals) {
     locals.sandbox = locals.sandbox || {};
 
     let query  = 'SELECT object_id FROM forum_topics WHERE MATCH(?) AND public=1';
@@ -61,7 +61,7 @@ module.exports = function (N, apiPath) {
 
     let reached_end = false;
 
-    let [ results, count ] = yield N.search.execute([
+    let [ results, count ] = await N.search.execute([
       [ query, params ],
       "SHOW META LIKE 'total_found'"
     ]);
@@ -74,7 +74,7 @@ module.exports = function (N, apiPath) {
       }
 
       let topics = _.keyBy(
-        yield N.models.forum.Topic.find()
+        await N.models.forum.Topic.find()
                   .where('_id').in(_.map(results, 'object_id'))
                   .lean(true),
         '_id'
@@ -83,7 +83,7 @@ module.exports = function (N, apiPath) {
       // copy topics preserving order
       locals.sandbox.topics = results.map(result => topics[result.object_id]).filter(Boolean);
 
-      locals.sandbox.sections = yield N.models.forum.Section.find()
+      locals.sandbox.sections = await N.models.forum.Section.find()
                                           .where('_id')
                                           .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
                                           .lean(true);
@@ -99,7 +99,7 @@ module.exports = function (N, apiPath) {
 
   // Check permissions for each topic
   //
-  N.wire.on(apiPath, function* check_permissions(locals) {
+  N.wire.on(apiPath, async function check_permissions(locals) {
     if (!locals.sandbox.topics.length) return;
 
     let access_env = { params: {
@@ -108,7 +108,7 @@ module.exports = function (N, apiPath) {
       preload: locals.sandbox.sections
     } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     let sections_by_id = _.keyBy(locals.sandbox.sections, '_id');
     let sections_used = {};
@@ -131,11 +131,11 @@ module.exports = function (N, apiPath) {
 
   // Sanitize results
   //
-  N.wire.on(apiPath, function* sanitize(locals) {
+  N.wire.on(apiPath, async function sanitize(locals) {
     if (!locals.sandbox.topics.length) return;
 
-    locals.sandbox.topics   = yield sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
-    locals.sandbox.sections = yield sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
+    locals.sandbox.topics   = await sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
+    locals.sandbox.sections = await sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
   });
 
 

@@ -32,7 +32,7 @@ module.exports = function (N, apiPath) {
 
   // data = { env, parents }
   // parents - array of forums ids to show in breadcrumbs
-  N.wire.on(apiPath, function* internal_breadcrumbs_fill(data) {
+  N.wire.on(apiPath, async function internal_breadcrumbs_fill(data) {
     let env     = data.env;
     let parents = data.parents;
 
@@ -45,7 +45,7 @@ module.exports = function (N, apiPath) {
     // no parents - we are on the root
     if (_.isEmpty(parents)) return;
 
-    let parentsInfo = yield fetchSectionsInfo(parents);
+    let parentsInfo = await fetchSectionsInfo(parents);
 
     let bc_list = parentsInfo.slice(); // clone result to keep cache safe
 

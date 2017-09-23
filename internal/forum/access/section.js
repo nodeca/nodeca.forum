@@ -29,14 +29,14 @@ module.exports = function (N, apiPath) {
   //////////////////////////////////////////////////////////////////////////
   // Hook for the "get permissions by url" feature, used in snippets
   //
-  N.wire.on('internal:common.access', function* check_section_access(access_env) {
+  N.wire.on('internal:common.access', async function check_section_access(access_env) {
     let match = N.router.matchAll(access_env.params.url).reduce(function (acc, match) {
       return match.meta.methods.get === 'forum.section' ? match : acc;
     }, null);
 
     if (!match) return;
 
-    let result = yield N.models.forum.Section.findOne()
+    let result = await N.models.forum.Section.findOne()
                            .where('hid').equals(match.params.section_hid)
                            .select('_id is_enabled')
                            .lean(true);
@@ -45,7 +45,7 @@ module.exports = function (N, apiPath) {
 
     let access_env_sub = { params: { sections: result, user_info: access_env.params.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env_sub);
+    await N.wire.emit('internal:forum.access.section', access_env_sub);
 
     access_env.data.access_read = access_env_sub.data.access_read;
   });
@@ -80,9 +80,9 @@ module.exports = function (N, apiPath) {
 
   // Fetch user user_info if it's not present already
   //
-  N.wire.before(apiPath, function* fetch_usergroups(locals) {
+  N.wire.before(apiPath, async function fetch_usergroups(locals) {
     if (ObjectId.isValid(String(locals.params.user_info))) {
-      locals.data.user_info = yield userInfo(N, locals.params.user_info);
+      locals.data.user_info = await userInfo(N, locals.params.user_info);
       return;
     }
 
@@ -93,14 +93,14 @@ module.exports = function (N, apiPath) {
 
   // Fetch sections if it's not present already
   //
-  N.wire.before(apiPath, function* fetch_sections(locals) {
+  N.wire.before(apiPath, async function fetch_sections(locals) {
     let ids = locals.data.section_ids
                   .filter((__, i) => locals.data.access_read[i] !== false)
                   .filter(id => !locals.cache[id]);
 
     if (!ids.length) return;
 
-    let result = yield N.models.forum.Section
+    let result = await N.models.forum.Section
                            .find()
                            .where('_id').in(ids)
                            .select('_id is_enabled')
@@ -119,7 +119,7 @@ module.exports = function (N, apiPath) {
 
   // Check section permissions
   //
-  N.wire.on(apiPath, function* check_section_access(locals) {
+  N.wire.on(apiPath, async function check_section_access(locals) {
 
     function check(section, i) {
       if (locals.data.access_read[i] === false) return Promise.resolve();
@@ -143,7 +143,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    yield Promise.map(locals.data.section_ids, (id, i) => check(locals.cache[id], i));
+    await Promise.map(locals.data.section_ids, (id, i) => check(locals.cache[id], i));
   });
 
 

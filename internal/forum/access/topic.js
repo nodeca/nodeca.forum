@@ -55,9 +55,9 @@ module.exports = function (N, apiPath) {
 
   // Fetch user user_info if it's not present already
   //
-  N.wire.before(apiPath, function* fetch_usergroups(locals) {
+  N.wire.before(apiPath, async function fetch_usergroups(locals) {
     if (ObjectId.isValid(String(locals.params.user_info))) {
-      locals.data.user_info = yield userInfo(N, locals.params.user_info);
+      locals.data.user_info = await userInfo(N, locals.params.user_info);
       return;
     }
 
@@ -68,7 +68,7 @@ module.exports = function (N, apiPath) {
 
   // Check sections permission
   //
-  N.wire.before(apiPath, function* check_sections(locals) {
+  N.wire.before(apiPath, async function check_sections(locals) {
     let sections = _.uniq(
       locals.data.topic_ids
           .filter((__, i) => locals.data.access_read[i] !== false)
@@ -79,7 +79,7 @@ module.exports = function (N, apiPath) {
       params: { sections, user_info: locals.data.user_info },
       cache: locals.cache
     };
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     // section_id -> access
     let sections_access = {};
@@ -96,7 +96,7 @@ module.exports = function (N, apiPath) {
 
   // Check topic and section permissions
   //
-  N.wire.on(apiPath, function* check_topic_access(locals) {
+  N.wire.on(apiPath, async function check_topic_access(locals) {
     let Topic = N.models.forum.Topic;
     let setting_names = [
       'can_see_hellbanned',
@@ -149,7 +149,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    yield Promise.map(locals.data.topic_ids, (id, i) => check(locals.cache[id], i));
+    await Promise.map(locals.data.topic_ids, (id, i) => check(locals.cache[id], i));
   });
 
 

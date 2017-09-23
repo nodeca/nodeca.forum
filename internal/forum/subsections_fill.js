@@ -74,11 +74,11 @@ module.exports = function (N, apiPath) {
 
   // Get subsections tree in flat style (id, level) & filter visibility
   //
-  N.wire.before(apiPath, function* fetch_subsections_tree_info(env) {
+  N.wire.before(apiPath, async function fetch_subsections_tree_info(env) {
 
     // - get all sections for index (to be able check excluded by user)
     // - get 2 levels [0,1] for section
-    let subsections = yield N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
+    let subsections = await N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
                                                                env.data.section ? 2 : -1);
 
     // sections order is always fixed, no needs to sort.
@@ -87,7 +87,7 @@ module.exports = function (N, apiPath) {
     // groups should be sorted, to avoid cache duplication
     let g_ids = env.user_info.usergroups.sort();
 
-    let visibility = yield filterVisibility(s_ids, g_ids);
+    let visibility = await filterVisibility(s_ids, g_ids);
 
     env.data.subsections_info = _.filter(subsections, s => visibility[s._id]);
   });
@@ -120,11 +120,11 @@ module.exports = function (N, apiPath) {
 
   // Fetch subsections data and add `level` property
   //
-  N.wire.on(apiPath, function* subsections_fetch_visible(env) {
+  N.wire.on(apiPath, async function subsections_fetch_visible(env) {
     let _ids = env.data.subsections_info.map(s => s._id);
     env.data.subsections = [];
 
-    let sections = yield N.models.forum.Section.find()
+    let sections = await N.models.forum.Section.find()
                             .where('_id').in(_ids)
                             .lean(true);
 
@@ -142,8 +142,8 @@ module.exports = function (N, apiPath) {
 
   // Sanitize subsections
   //
-  N.wire.after(apiPath, function* subsections_sanitize(env) {
-    env.data.subsections = yield sanitize_section(N, env.data.subsections, env.user_info);
+  N.wire.after(apiPath, async function subsections_sanitize(env) {
+    env.data.subsections = await sanitize_section(N, env.data.subsections, env.user_info);
   });
 
 

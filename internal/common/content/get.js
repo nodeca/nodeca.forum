@@ -6,7 +6,7 @@
 
 module.exports = function (N, apiPath) {
 
-  N.wire.on(apiPath, function* get_post_contents(data) {
+  N.wire.on(apiPath, async function get_post_contents(data) {
     if (data.html) return;
 
     let match = N.router.matchAll(data.url).reduce(
@@ -16,12 +16,12 @@ module.exports = function (N, apiPath) {
 
     if (!match) return;
 
-    let topic = yield N.models.forum.Topic
+    let topic = await N.models.forum.Topic
                           .findOne({ hid: match.params.topic_hid })
                           .lean(true);
     if (!topic) return;
 
-    let post = yield N.models.forum.Post
+    let post = await N.models.forum.Post
                         .findOne({ topic: topic._id, hid: match.params.post_hid })
                         .lean(true);
 

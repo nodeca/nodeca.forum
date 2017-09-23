@@ -29,20 +29,20 @@ module.exports = function (N, apiPath) {
   //////////////////////////////////////////////////////////////////////////
   // Hook for the "get permissions by url" feature, used in snippets
   //
-  N.wire.on('internal:common.access', function* check_post_access(access_env) {
+  N.wire.on('internal:common.access', async function check_post_access(access_env) {
     let match = N.router.matchAll(access_env.params.url).reduce(
       (acc, match) => match.meta.methods.get === 'forum.topic' && (match.params.post_hid ? match : acc),
       null);
 
     if (!match) return;
 
-    let topic = yield N.models.forum.Topic.findOne()
+    let topic = await N.models.forum.Topic.findOne()
                           .where('hid').equals(match.params.topic_hid)
                           .lean(true);
 
     if (!topic) return;
 
-    let post = yield N.models.forum.Post.findOne()
+    let post = await N.models.forum.Post.findOne()
                          .where('topic').equals(topic._id)
                          .where('hid').equals(match.params.post_hid)
                          .lean(true);
@@ -57,7 +57,7 @@ module.exports = function (N, apiPath) {
       }
     };
 
-    yield N.wire.emit('internal:forum.access.post', access_env_sub);
+    await N.wire.emit('internal:forum.access.post', access_env_sub);
 
     access_env.data.access_read = access_env_sub.data.access_read;
   });
@@ -92,9 +92,9 @@ module.exports = function (N, apiPath) {
 
   // Fetch user user_info if it's not present already
   //
-  N.wire.before(apiPath, function* fetch_usergroups(locals) {
+  N.wire.before(apiPath, async function fetch_usergroups(locals) {
     if (ObjectId.isValid(String(locals.params.user_info))) {
-      locals.data.user_info = yield userInfo(N, locals.params.user_info);
+      locals.data.user_info = await userInfo(N, locals.params.user_info);
       return;
     }
 
@@ -105,7 +105,7 @@ module.exports = function (N, apiPath) {
 
   // Fetch topics for all posts into cache
   //
-  N.wire.before(apiPath, function* fetch_topics(locals) {
+  N.wire.before(apiPath, async function fetch_topics(locals) {
     // select all topic ids that belong to posts we need to check access to
     let ids = locals.data.post_ids
                   .filter((__, i) => locals.data.access_read[i] !== false)
@@ -114,7 +114,7 @@ module.exports = function (N, apiPath) {
 
     if (!ids.length) return;
 
-    let result = yield N.models.forum.Topic
+    let result = await N.models.forum.Topic
                            .find()
                            .where('_id').in(ids)
                            .lean(true);
@@ -129,7 +129,7 @@ module.exports = function (N, apiPath) {
 
   // Check topic permissions
   //
-  N.wire.before(apiPath, function* check_topics(locals) {
+  N.wire.before(apiPath, async function check_topics(locals) {
     let topics = _.uniq(
       locals.data.post_ids
           .filter((__, i) => locals.data.access_read[i] !== false)
@@ -140,7 +140,7 @@ module.exports = function (N, apiPath) {
       params: { topics, user_info: locals.data.user_info },
       cache: locals.cache
     };
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     // topic_id -> access
     let topics_access = {};
@@ -157,14 +157,14 @@ module.exports = function (N, apiPath) {
 
   // Check post permissions
   //
-  N.wire.on(apiPath, function* check_post_access(locals) {
+  N.wire.on(apiPath, async function check_post_access(locals) {
     let Post = N.models.forum.Post;
     let params = {
       user_id: locals.data.user_info.user_id,
       usergroup_ids: locals.data.user_info.usergroups
     };
 
-    let can_see_hellbanned = yield N.settings.get('can_see_hellbanned', params, {});
+    let can_see_hellbanned = await N.settings.get('can_see_hellbanned', params, {});
 
     locals.data.post_ids.forEach((id, i) => {
       if (locals.data.access_read[i] === false) return; // continue

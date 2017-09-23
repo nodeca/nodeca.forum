@@ -34,7 +34,7 @@ module.exports = function (N, apiPath) {
 
   // Send sql query to sphinx, get a response
   //
-  N.wire.on(apiPath, function* execute_search(locals) {
+  N.wire.on(apiPath, async function execute_search(locals) {
     locals.sandbox = locals.sandbox || {};
 
     let query  = 'SELECT object_id FROM forum_posts WHERE MATCH(?) AND public=1';
@@ -69,7 +69,7 @@ module.exports = function (N, apiPath) {
 
     let reached_end = false;
 
-    let [ results, count ] = yield N.search.execute([
+    let [ results, count ] = await N.search.execute([
       [ query, params ],
       "SHOW META LIKE 'total_found'"
     ]);
@@ -82,7 +82,7 @@ module.exports = function (N, apiPath) {
       }
 
       let posts = _.keyBy(
-        yield N.models.forum.Post.find()
+        await N.models.forum.Post.find()
                   .where('_id').in(_.map(results, 'object_id'))
                   .lean(true),
         '_id'
@@ -91,12 +91,12 @@ module.exports = function (N, apiPath) {
       // copy posts preserving order
       locals.sandbox.posts = results.map(result => posts[result.object_id]).filter(Boolean);
 
-      locals.sandbox.topics = yield N.models.forum.Topic.find()
+      locals.sandbox.topics = await N.models.forum.Topic.find()
                                         .where('_id')
                                         .in(_.uniq(locals.sandbox.posts.map(post => String(post.topic))))
                                         .lean(true);
 
-      locals.sandbox.sections = yield N.models.forum.Section.find()
+      locals.sandbox.sections = await N.models.forum.Section.find()
                                           .where('_id')
                                           .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
                                           .lean(true);
@@ -113,7 +113,7 @@ module.exports = function (N, apiPath) {
 
   // Check permissions for each post
   //
-  N.wire.on(apiPath, function* check_permissions(locals) {
+  N.wire.on(apiPath, async function check_permissions(locals) {
     if (!locals.sandbox.posts.length) return;
 
     let topics_by_id   = _.keyBy(locals.sandbox.topics, '_id');
@@ -128,7 +128,7 @@ module.exports = function (N, apiPath) {
       preload: [].concat(locals.sandbox.topics).concat(locals.sandbox.sections)
     } };
 
-    yield N.wire.emit('internal:forum.access.post', access_env);
+    await N.wire.emit('internal:forum.access.post', access_env);
 
     locals.sandbox.posts = locals.sandbox.posts.filter((post, idx) => {
       let topic = topics_by_id[post.topic];
@@ -153,12 +153,12 @@ module.exports = function (N, apiPath) {
 
   // Sanitize results
   //
-  N.wire.on(apiPath, function* sanitize(locals) {
+  N.wire.on(apiPath, async function sanitize(locals) {
     if (!locals.sandbox.posts.length) return;
 
-    locals.sandbox.posts    = yield sanitize_post(N, locals.sandbox.posts, locals.params.user_info);
-    locals.sandbox.topics   = yield sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
-    locals.sandbox.sections = yield sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
+    locals.sandbox.posts    = await sanitize_post(N, locals.sandbox.posts, locals.params.user_info);
+    locals.sandbox.topics   = await sanitize_topic(N, locals.sandbox.topics, locals.params.user_info);
+    locals.sandbox.sections = await sanitize_section(N, locals.sandbox.sections, locals.params.user_info);
   });
 
 
@@ -202,7 +202,7 @@ module.exports = function (N, apiPath) {
 
   // Generate snippets for each post
   //
-  N.wire.on(apiPath, function* generate_snippets(locals) {
+  N.wire.on(apiPath, async function generate_snippets(locals) {
     if (!locals.results.length) return;
 
     let htmls = locals.results.map(result => result.post.html);
@@ -221,7 +221,7 @@ module.exports = function (N, apiPath) {
 
     let args = htmls.concat([ sphinx_escape(locals.params.query) ]);
 
-    let snippets = yield N.search.execute(query, args);
+    let snippets = await N.search.execute(query, args);
 
     locals.results.forEach((result, i) => {
       result.post.html = snippets[i].snippet;

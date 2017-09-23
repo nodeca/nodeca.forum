@@ -24,8 +24,8 @@ module.exports = function (N, apiPath) {
 
   // Check if results are already available from cache
   //
-  N.wire.before(apiPath, function* fetch_cache(locals) {
-    let cache = yield N.models.forum.TopicSimilarCache.findOne()
+  N.wire.before(apiPath, async function fetch_cache(locals) {
+    let cache = await N.models.forum.TopicSimilarCache.findOne()
                           .where('topic').equals(locals.topic_id)
                           .lean(true);
 
@@ -43,10 +43,10 @@ module.exports = function (N, apiPath) {
 
   // Execute sphinxql query to find similar topics
   //
-  N.wire.on(apiPath, function* find_similar_topics(locals) {
+  N.wire.on(apiPath, async function find_similar_topics(locals) {
     if (locals.cached) return;
 
-    let topic = yield N.models.forum.Topic.findOne()
+    let topic = await N.models.forum.Topic.findOne()
                           .where('_id').equals(locals.topic_id)
                           .lean(true);
 
@@ -57,7 +57,7 @@ module.exports = function (N, apiPath) {
     //let ranker = '(sum(lcs*user_weight)*1000 + bm25) * interval(post_count,4)';
     let ranker = 'bm25 * interval(post_count,4)';
 
-    let results = yield N.search.execute(
+    let results = await N.search.execute(
       `
         SELECT object_id, WEIGHT() as weight
         FROM forum_topics
@@ -80,10 +80,10 @@ module.exports = function (N, apiPath) {
 
   // Write results to cache
   //
-  N.wire.after(apiPath, function* write_cache(locals) {
+  N.wire.after(apiPath, async function write_cache(locals) {
     if (locals.cached) return;
 
-    yield N.models.forum.TopicSimilarCache.update({
+    await N.models.forum.TopicSimilarCache.update({
       topic: locals.topic_id
     }, {
       $set: {

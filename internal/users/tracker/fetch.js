@@ -11,7 +11,7 @@ const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 module.exports = function (N, apiPath) {
 
-  N.wire.on(apiPath, function* tracker_fetch_topics(env) {
+  N.wire.on(apiPath, async function tracker_fetch_topics(env) {
     let topic_subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
     let sect_subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_SECTION });
 
@@ -21,7 +21,7 @@ module.exports = function (N, apiPath) {
     let topics = [];
 
     if (topic_subs.length !== 0) {
-      topics = yield N.models.forum.Topic.find()
+      topics = await N.models.forum.Topic.find()
                         .where('_id').in(_.map(topic_subs, 'to'))
                         .lean(true);
     }
@@ -30,14 +30,14 @@ module.exports = function (N, apiPath) {
     // Fetch topics by section subscriptions
     //
     if (sect_subs.length !== 0) {
-      let cuts = yield N.models.users.Marker.cuts(env.user_info.user_id, _.map(sect_subs, 'to'));
+      let cuts = await N.models.users.Marker.cuts(env.user_info.user_id, _.map(sect_subs, 'to'));
       let queryParts = [];
 
       _.forEach(cuts, (cutTs, id) => {
         queryParts.push({ $and: [ { section: id }, { _id: { $gt: new ObjectId(Math.round(cutTs / 1000)) } } ] });
       });
 
-      topics = topics.concat(yield N.models.forum.Topic.find({ $or: queryParts }).lean(true) || []);
+      topics = topics.concat(await N.models.forum.Topic.find({ $or: queryParts }).lean(true) || []);
       topics = _.uniqBy(topics, topic => String(topic._id));
     }
 
@@ -51,7 +51,7 @@ module.exports = function (N, apiPath) {
       lastPostTs: topic.cache.last_ts
     }));
 
-    let read_marks = yield N.models.users.Marker.info(env.user_info.user_id, data);
+    let read_marks = await N.models.users.Marker.info(env.user_info.user_id, data);
 
 
     // Filter new and unread topics
@@ -65,7 +65,7 @@ module.exports = function (N, apiPath) {
 
 
     // Fetch sections
-    let sections = yield N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
+    let sections = await N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
 
 
     // Check permissions subcall
@@ -76,7 +76,7 @@ module.exports = function (N, apiPath) {
       preload: sections
     } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     topics = topics.reduce((acc, topic, i) => {
       if (access_env.data.access_read[i]) {
@@ -100,7 +100,7 @@ module.exports = function (N, apiPath) {
     let first_users = topics.map(topic => _.get(topic, 'cache.first_user')).filter(Boolean);
 
     let ignored = _.keyBy(
-      yield N.models.users.Ignore.find()
+      await N.models.users.Ignore.find()
                 .where('from').equals(env.user_info.user_id)
                 .where('to').in(first_users)
                 .select('from to -_id')
@@ -128,10 +128,10 @@ module.exports = function (N, apiPath) {
     });
 
     // Sanitize topics
-    topics = yield sanitize_topic(N, topics, env.user_info);
+    topics = await sanitize_topic(N, topics, env.user_info);
 
     // Sanitize sections
-    sections = yield sanitize_section(N, sections, env.user_info);
+    sections = await sanitize_section(N, sections, env.user_info);
 
     env.res.forum_topics = _.keyBy(topics, '_id');
     env.res.forum_sections = _.keyBy(sections, '_id');

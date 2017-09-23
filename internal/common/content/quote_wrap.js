@@ -9,7 +9,7 @@ var render = require('nodeca.core/lib/system/render/common');
 
 module.exports = function (N, apiPath) {
 
-  N.wire.on(apiPath, function* generate_quote_wrapper(data) {
+  N.wire.on(apiPath, async function generate_quote_wrapper(data) {
     if (data.html) return;
 
     var match = N.router.matchAll(data.url).reduce(function (acc, match) {
@@ -18,17 +18,17 @@ module.exports = function (N, apiPath) {
 
     if (!match) return;
 
-    let topic = yield N.models.forum.Topic
+    let topic = await N.models.forum.Topic
                           .findOne({ hid: match.params.topic_hid })
                           .lean(true);
     if (!topic) return;
 
-    let post = yield N.models.forum.Post
+    let post = await N.models.forum.Post
                         .findOne({ topic: topic._id, hid: match.params.post_hid })
                         .lean(true);
     if (!post) return;
 
-    let user = yield N.models.users.User
+    let user = await N.models.users.User
                         .findOne({ _id: post.user, exists: true })
                         .lean(true);
 

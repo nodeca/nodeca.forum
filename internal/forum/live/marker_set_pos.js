@@ -20,15 +20,15 @@ var validate = require('is-my-json-valid')({
 
 
 module.exports = function (N) {
-  N.wire.on('internal.live.post:private.forum.marker_set_pos', function* set_scroll_position(data) {
+  N.wire.on('internal.live.post:private.forum.marker_set_pos', async function set_scroll_position(data) {
     if (!validate(data.message.data)) throw N.io.BAD_REQUEST;
     data.allowed = true;
 
-    let user_info = yield data.getUserInfo();
+    let user_info = await data.getUserInfo();
 
     if (!user_info) return;
 
-    yield N.models.users.Marker.setPos(
+    await N.models.users.Marker.setPos(
       user_info.user_id,
       data.message.data.content_id,
       data.message.data.position,

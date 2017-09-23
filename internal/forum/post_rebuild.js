@@ -8,13 +8,13 @@ const _ = require('lodash');
 
 module.exports = function (N, apiPath) {
 
-  N.wire.on(apiPath, function* rebuild_post(post_id) {
-    let post = yield N.models.forum.Post.findById(post_id);
+  N.wire.on(apiPath, async function rebuild_post(post_id) {
+    let post = await N.models.forum.Post.findById(post_id);
 
     if (!post) return;
 
-    let params = yield N.models.core.MessageParams.getParams(post.params_ref);
-    let result = yield N.parser.md2html({
+    let params = await N.models.core.MessageParams.getParams(post.params_ref);
+    let result = await N.parser.md2html({
       text:         post.md,
       attachments:  post.attach,
       options:      params,
@@ -36,6 +36,6 @@ module.exports = function (N, apiPath) {
       }
     });
 
-    yield N.models.forum.Post.update({ _id: post._id }, updateData);
+    await N.models.forum.Post.update({ _id: post._id }, updateData);
   });
 };

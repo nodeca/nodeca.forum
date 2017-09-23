@@ -10,14 +10,14 @@ const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 module.exports = function (N) {
 
-  N.wire.on('internal:users.subscriptions.fetch', function* subscriptions_fetch_topics(env) {
+  N.wire.on('internal:users.subscriptions.fetch', async function subscriptions_fetch_topics(env) {
     let subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
 
     // Fetch topics
-    let topics = yield N.models.forum.Topic.find().where('_id').in(_.map(subs, 'to')).lean(true);
+    let topics = await N.models.forum.Topic.find().where('_id').in(_.map(subs, 'to')).lean(true);
 
     // Fetch sections
-    let sections = yield N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
+    let sections = await N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
 
     // Check permissions subcall
     //
@@ -27,7 +27,7 @@ module.exports = function (N) {
       preload: sections
     } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     topics = topics.reduce(function (acc, topic, i) {
       if (access_env.data.access_read[i]) {
@@ -39,10 +39,10 @@ module.exports = function (N) {
 
 
     // Sanitize topics
-    topics = yield sanitize_topic(N, topics, env.user_info);
+    topics = await sanitize_topic(N, topics, env.user_info);
 
     // Sanitize sections
-    sections = yield sanitize_section(N, sections, env.user_info);
+    sections = await sanitize_section(N, sections, env.user_info);
 
     topics = _.keyBy(topics, '_id');
     sections = _.keyBy(sections, '_id');

@@ -47,8 +47,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch topic
   //
-  N.wire.before(apiPath, function* fetch_topic(env) {
-    let topic = yield Topic.findOne({ hid: env.data.topic_hid }).lean(true);
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await Topic.findOne({ hid: env.data.topic_hid }).lean(true);
 
     if (!topic) throw N.io.NOT_FOUND;
 
@@ -58,8 +58,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, function* fetch_section(env) {
-    let section = yield Section.findOne({ _id: env.data.topic.section }).lean(true);
+  N.wire.before(apiPath, async function fetch_section(env) {
+    let section = await Section.findOne({ _id: env.data.topic.section }).lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
     if (!section.is_enabled) throw N.io.NOT_FOUND;
@@ -70,23 +70,23 @@ module.exports = function (N, apiPath) {
 
   // Fetch and fill permissions
   //
-  N.wire.before(apiPath, function* fetch_and_fill_permissions(env) {
+  N.wire.before(apiPath, async function fetch_and_fill_permissions(env) {
     env.extras.settings.params.section_id = env.data.section._id;
 
-    env.res.settings = env.data.settings = yield env.extras.settings.fetch(fields.settings);
+    env.res.settings = env.data.settings = await env.extras.settings.fetch(fields.settings);
   });
 
 
   // Check access permissions
   //
-  N.wire.before(apiPath, function* check_access(env) {
+  N.wire.before(apiPath, async function check_access(env) {
     let access_env = { params: {
       topics: env.data.topic,
       user_info: env.user_info,
       preload: [ env.data.section ]
     } };
 
-    yield N.wire.emit('internal:forum.access.topic', access_env);
+    await N.wire.emit('internal:forum.access.topic', access_env);
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
@@ -115,17 +115,17 @@ module.exports = function (N, apiPath) {
 
   // Get posts ids
   //
-  N.wire.before(apiPath, function* get_posts_ids(env) {
-    yield env.data.build_posts_ids(env);
+  N.wire.before(apiPath, async function get_posts_ids(env) {
+    await env.data.build_posts_ids(env);
   });
 
 
   // Fetch posts
   //
-  N.wire.on(apiPath, function* fetch_posts(env) {
+  N.wire.on(apiPath, async function fetch_posts(env) {
     let by_hid = !!env.data.posts_hids;
 
-    let posts = yield Post.find()
+    let posts = await Post.find()
                         .where(by_hid ? 'hid' : '_id').in(env.data[by_hid ? 'posts_hids' : 'posts_ids'])
                         .where('st').in(env.data.posts_visible_statuses)
                         .where('topic').equals(env.data.topic._id)
@@ -161,8 +161,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch and fill bookmarks
   //
-  N.wire.after(apiPath, function* fetch_and_fill_bookmarks(env) {
-    let bookmarks = yield N.models.forum.PostBookmark.find()
+  N.wire.after(apiPath, async function fetch_and_fill_bookmarks(env) {
+    let bookmarks = await N.models.forum.PostBookmark.find()
                             .where('user').equals(env.user_info.user_id)
                             .where('post_id').in(env.data.posts_ids)
                             .lean(true);
@@ -177,8 +177,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch and fill votes
   //
-  N.wire.after(apiPath, function* fetch_and_fill_votes(env) {
-    let votes = yield N.models.users.Vote.find()
+  N.wire.after(apiPath, async function fetch_and_fill_votes(env) {
+    let votes = await N.models.users.Vote.find()
                           .where('from').equals(env.user_info.user_id)
                           .where('for').in(env.data.posts_ids)
                           .where('value').in([ 1, -1 ])
@@ -198,17 +198,17 @@ module.exports = function (N, apiPath) {
 
   // Fetch infractions
   //
-  N.wire.after(apiPath, function* fetch_infractions(env) {
+  N.wire.after(apiPath, async function fetch_infractions(env) {
     env.extras.settings.params.section_id = env.data.topic.section;
 
-    let settings = yield env.extras.settings.fetch([
+    let settings = await env.extras.settings.fetch([
       'forum_mod_can_add_infractions',
       'can_see_infractions'
     ]);
 
     if (!settings.can_see_infractions && !settings.forum_mod_can_add_infractions) return;
 
-    let infractions = yield N.models.users.Infraction.find()
+    let infractions = await N.models.users.Infraction.find()
                                 .where('src').in(env.data.posts_ids)
                                 .where('exists').equals(true)
                                 .select('src points ts')
@@ -249,11 +249,11 @@ module.exports = function (N, apiPath) {
 
   // Check if any users are ignored
   //
-  N.wire.after(apiPath, function* check_ignores(env) {
+  N.wire.after(apiPath, async function check_ignores(env) {
     let users = env.data.posts.map(post => post.user).filter(Boolean);
 
     // don't fetch `_id` to load all data from composite index
-    let ignored = yield N.models.users.Ignore.find()
+    let ignored = await N.models.users.Ignore.find()
                             .where('from').equals(env.user_info.user_id)
                             .where('to').in(users)
                             .select('from to -_id')
@@ -269,9 +269,9 @@ module.exports = function (N, apiPath) {
 
   // Sanitize and fill posts
   //
-  N.wire.after(apiPath, function* posts_sanitize_and_fill(env) {
-    env.res.posts   = yield sanitize_post(N, env.data.posts, env.user_info);
-    env.res.topic   = yield sanitize_topic(N, env.data.topic, env.user_info);
-    env.res.section = yield sanitize_section(N, env.data.section, env.user_info);
+  N.wire.after(apiPath, async function posts_sanitize_and_fill(env) {
+    env.res.posts   = await sanitize_post(N, env.data.posts, env.user_info);
+    env.res.topic   = await sanitize_topic(N, env.data.topic, env.user_info);
+    env.res.section = await sanitize_section(N, env.data.section, env.user_info);
   });
 };

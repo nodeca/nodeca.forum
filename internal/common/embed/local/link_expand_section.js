@@ -9,7 +9,7 @@ var render = require('nodeca.core/lib/system/render/common');
 
 module.exports = function (N) {
 
-  N.wire.on('internal:common.embed.local', function* embed_section(data) {
+  N.wire.on('internal:common.embed.local', async function embed_section(data) {
     if (data.html) return;
 
     if (data.type !== 'inline') return;
@@ -21,7 +21,7 @@ module.exports = function (N) {
 
     if (!match) return;
 
-    let section = yield N.models.forum.Section
+    let section = await N.models.forum.Section
                             .findOne({ hid: match.params.hid })
                             .lean(true);
     if (section) {

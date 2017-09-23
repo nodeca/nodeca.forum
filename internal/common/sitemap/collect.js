@@ -12,14 +12,14 @@ const userInfo = require('nodeca.users/lib/user_info');
 
 module.exports = function (N, apiPath) {
 
-  N.wire.on(apiPath, function* get_forum_sitemap(data) {
-    let user_info      = yield userInfo(N, null);
-    let posts_per_page = yield N.settings.get('posts_per_page');
-    let sections       = yield N.models.forum.Section.find().sort('hid').lean(true);
+  N.wire.on(apiPath, async function get_forum_sitemap(data) {
+    let user_info      = await userInfo(N, null);
+    let posts_per_page = await N.settings.get('posts_per_page');
+    let sections       = await N.models.forum.Section.find().sort('hid').lean(true);
 
     let access_env = { params: { sections, user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     let visible_sections = sections.filter((section, idx) =>
       !!access_env.data.access_read[idx]

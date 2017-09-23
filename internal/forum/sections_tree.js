@@ -9,8 +9,8 @@ module.exports = function (N, apiPath) {
 
   // Fetch sections
   //
-  N.wire.before(apiPath, function* sections_fetch(env) {
-    env.data.sections = yield N.models.forum.Section
+  N.wire.before(apiPath, async function sections_fetch(env) {
+    env.data.sections = await N.models.forum.Section
                                   .find()
                                   .sort('display_order')
                                   .select('_id hid title parent is_category is_enabled is_excludable')
@@ -20,10 +20,10 @@ module.exports = function (N, apiPath) {
 
   // Filter sections by access
   //
-  N.wire.before(apiPath, function* filter_access(env) {
+  N.wire.before(apiPath, async function filter_access(env) {
     let access_env = { params: { sections: env.data.sections, user_info: env.user_info } };
 
-    yield N.wire.emit('internal:forum.access.section', access_env);
+    await N.wire.emit('internal:forum.access.section', access_env);
 
     env.data.sections = env.data.sections.reduce((acc, section, i) => {
       if (access_env.data.access_read[i]) {
