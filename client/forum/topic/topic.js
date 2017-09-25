@@ -1616,8 +1616,13 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
     let hid     = $(`#post${post_id}`).data('post-hid');
     let href    = $(`#post${post_id} .forum-post__link`).attr('href');
 
-    if (title && hid) params.title = `Re: #${hid}, ${title}`;
-    if (href)  params.text = `${href}\n\n`;
+    if (title && hid && href) {
+      if (hid === 1) {
+        params.text = `Re: [${title}](${href})\n\n`;
+      } else {
+        params.text = `Re: [#${hid}, ${title}](${href})\n\n`;
+      }
+    }
   });
 });
 
