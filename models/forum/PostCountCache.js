@@ -4,7 +4,6 @@
 
 
 const _        = require('lodash');
-const Promise  = require('bluebird');
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
 
@@ -51,14 +50,15 @@ module.exports = function (N, collectionName) {
       countable_statuses.push(Post.statuses.HB);
     }
 
-    let counters = await Promise.map(
-      countable_statuses,
-      st => Post.find()
-                .where('topic').equals(src)
-                .where('st').equals(st)
-                .where('hid').lt(hid)
-                .where('hid').gte(cut_from)
-                .count()
+    let counters = await Promise.all(
+      countable_statuses.map(st =>
+        Post.find()
+            .where('topic').equals(src)
+            .where('st').equals(st)
+            .where('hid').lt(hid)
+            .where('hid').gte(cut_from)
+            .count()
+      )
     );
 
     return _.sum(counters);

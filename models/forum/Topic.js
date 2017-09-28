@@ -2,7 +2,6 @@
 
 
 const _        = require('lodash');
-const Promise  = require('bluebird');
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
 
@@ -202,11 +201,14 @@ module.exports = function (N, collectionName) {
       }
     }
 
-    let count = await Promise.map([ statuses.VISIBLE, statuses.HB ],
-                          st => N.models.forum.Post
-                                    .where('topic').equals(topicID)
-                                    .where('st').equals(st)
-                                    .count());
+    let count = await Promise.all(
+                        [ statuses.VISIBLE, statuses.HB ].map(st =>
+                          N.models.forum.Post
+                              .where('topic').equals(topicID)
+                              .where('st').equals(st)
+                              .count()
+                        )
+                      );
 
     // Visible post count
     updateData['cache.post_count'] = count[0];

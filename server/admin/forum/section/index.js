@@ -2,8 +2,6 @@
 //
 'use strict';
 
-const Promise = require('bluebird');
-
 
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
@@ -30,7 +28,7 @@ module.exports = function (N, apiPath) {
     // Register section's moderators for `users_join` hooks.
     env.data.users = env.data.users || [];
 
-    await Promise.map(env.data.sections, section => {
+    await Promise.all(env.data.sections.map(section => {
       section.own_moderator_list = [];
 
       return SectionModeratorStore.getModeratorsInfo(section._id).then(moderators => {
@@ -42,7 +40,7 @@ module.exports = function (N, apiPath) {
           }
         });
       });
-    });
+    }));
   });
 
 

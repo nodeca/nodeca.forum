@@ -4,7 +4,6 @@
 
 
 const _         = require('lodash');
-const Promise   = require('bluebird');
 const render    = require('nodeca.core/lib/system/render/common');
 const user_info = require('nodeca.users/lib/user_info');
 
@@ -69,7 +68,7 @@ module.exports = function (N) {
 
     // Filter users by access
     //
-    await Promise.map(local_env.to.slice(), user_id => {
+    await Promise.all(local_env.to.slice().map(user_id => {
       let access_env = { params: {
         posts: post,
         user_info: users_info[user_id],
@@ -82,7 +81,7 @@ module.exports = function (N) {
             local_env.to = _.without(local_env.to, user_id);
           }
         });
-    });
+    }));
 
     // Render messages
     //

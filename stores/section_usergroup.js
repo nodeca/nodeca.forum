@@ -15,7 +15,6 @@
 
 
 const _        = require('lodash');
-const Promise  = require('bluebird');
 const memoize  = require('promise-memoize');
 
 
@@ -302,7 +301,7 @@ module.exports = function (N) {
     }
 
 
-    await Promise.map(sectionsToUpdate, updateOne);
+    await Promise.all(sectionsToUpdate.map(updateOne));
   };
 
 

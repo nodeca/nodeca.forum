@@ -3,8 +3,7 @@
 
 'use strict';
 
-const _       = require('lodash');
-const Promise = require('bluebird');
+const _  = require('lodash');
 
 const sort_types   = [ 'date', 'rel' ];
 const period_types = [ '0', '7', '30', '365' ];
@@ -93,7 +92,7 @@ module.exports = function (N, apiPath) {
 
       let other_tabs = _.without(content_types, env.params.type);
 
-      await Promise.map(other_tabs, async function (type) {
+      await Promise.all(other_tabs.map(async type => {
         let search_env = {
           params: {
             user_info:   env.user_info,
@@ -109,7 +108,7 @@ module.exports = function (N, apiPath) {
         await N.wire.emit('internal:search.' + type, search_env);
 
         counts[type] = search_env.count;
-      });
+      }));
 
       env.res.tabs = content_types.map(type => ({
         type,

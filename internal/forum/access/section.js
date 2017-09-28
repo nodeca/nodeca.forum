@@ -19,7 +19,6 @@
 
 
 const _        = require('lodash');
-const Promise  = require('bluebird');
 const ObjectId = require('mongoose').Types.ObjectId;
 const userInfo = require('nodeca.users/lib/user_info');
 
@@ -143,7 +142,7 @@ module.exports = function (N, apiPath) {
         });
     }
 
-    await Promise.map(locals.data.section_ids, (id, i) => check(locals.cache[id], i));
+    await Promise.all(locals.data.section_ids.map((id, i) => check(locals.cache[id], i)));
   });
 
 

@@ -15,7 +15,6 @@
 
 
 const _        = require('lodash');
-const Promise  = require('bluebird');
 const memoize  = require('promise-memoize');
 
 
@@ -324,7 +323,7 @@ module.exports = function (N) {
       sectionsToUpdate = [ section ].concat(selectSectionDescendants(section._id));
     }
 
-    await Promise.map(sectionsToUpdate, section => {
+    await Promise.all(sectionsToUpdate.map(section => {
       let section_settings = getSettingsBySectionId(section._id);
 
       if (!section_settings) {
@@ -371,7 +370,7 @@ module.exports = function (N) {
       });
 
       return section_settings.save();
-    });
+    }));
   };
 
 
