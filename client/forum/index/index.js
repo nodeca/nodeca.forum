@@ -64,9 +64,14 @@ N.wire.on('navigate.done:' + module.apiPath, function restore_category_collapse_
     collapsed_categories = c || {};
 
     for (let hid of Object.keys(collapsed_categories)) {
-      // manually toggle classes to avoid triggering bootstrap animation
-      $(`#cat_box_${Number(hid)}`).addClass('collapsed');
+      // - manually toggle classes to avoid triggering bootstrap animation
+      // - set temporary class to disable opacity transitions
+      $(`#cat_box_${Number(hid)}`).addClass('collapsed no-animation');
       $(`#cat_list_${Number(hid)}`).removeClass('show');
+      // remove transitions blocker on next tick
+      setTimeout(() => {
+        $(`#cat_box_${Number(hid)}`).removeClass('no-animation');
+      }, 0);
     }
 
     // Remember collapse state when user clicks on a category
