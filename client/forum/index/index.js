@@ -1,7 +1,8 @@
 'use strict';
 
 
-const _ = require('lodash');
+const _    = require('lodash');
+const _bag = require('bagjs');
 
 
 // Scroll to the element, so it would be positioned in the viewport
@@ -29,7 +30,61 @@ function scrollIntoView(el, coef) {
 /////////////////////////////////////////////////////////////////////
 // init on page load
 //
-N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
+let bag;
+let collapsed_categories;
+
+N.wire.once('navigate.done:' + module.apiPath, function init_bagjs() {
+  bag = _bag({ prefix: 'nodeca', stores: [ 'localstorage' ] });
+});
+
+// 'hide.bs.collapse' event handler, stores category state in bag.js
+function on_category_collapse_hide(event) {
+  let bag_key = `forum_index_collapse_${N.runtime.user_hid}`;
+  let hid = $(event.target).data('category-hid');
+
+  collapsed_categories[hid] = true;
+  bag.set(bag_key, collapsed_categories).catch(() => {});
+}
+
+// 'show.bs.collapse' event handler, stores category state in bag.js
+function on_category_collapse_show(event) {
+  let bag_key = `forum_index_collapse_${N.runtime.user_hid}`;
+  let hid = $(event.target).data('category-hid');
+
+  delete collapsed_categories[hid];
+  bag.set(bag_key, collapsed_categories).catch(() => {});
+}
+
+N.wire.on('navigate.done:' + module.apiPath, function restore_category_collapse_state() {
+  let bag_key = `forum_index_collapse_${N.runtime.user_hid}`;
+
+  return bag.get(bag_key).catch(() => {}).then(c => {
+    // Collapse categories that were previously collapsed on last page load
+    //
+    collapsed_categories = c || {};
+
+    for (let hid of Object.keys(collapsed_categories)) {
+      // manually toggle classes to avoid triggering bootstrap animation
+      $(`#cat_box_${Number(hid)}`).addClass('collapsed');
+      $(`#cat_list_${Number(hid)}`).removeClass('show');
+    }
+
+    // Remember collapse state when user clicks on a category
+    //
+    $('.forum-category__content')
+      .on('hide.bs.collapse', on_category_collapse_hide)
+      .on('show.bs.collapse', on_category_collapse_show);
+  });
+});
+
+N.wire.on('navigate.exit:' + module.apiPath, function remove_collapse_handlers() {
+  $('.forum-category__content')
+    .off('hide.bs.collapse', on_category_collapse_hide)
+    .off('show.bs.collapse', on_category_collapse_show);
+});
+
+
+N.wire.on('navigate.done:' + module.apiPath, function scroll_to_anchor(data) {
   var anchor = data.anchor || '';
 
   if (anchor.match(/^#cat\d+$/)) {
