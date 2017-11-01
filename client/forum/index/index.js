@@ -90,10 +90,10 @@ N.wire.on('navigate.exit:' + module.apiPath, function remove_collapse_handlers()
 
 
 N.wire.on('navigate.done:' + module.apiPath, function scroll_to_anchor(data) {
-  var anchor = data.anchor || '';
+  let anchor = data.anchor || '';
 
   if (anchor.match(/^#cat\d+$/)) {
-    var el = $('.forum-section' + anchor);
+    let el = $('.forum-section' + anchor);
 
     if (el.length) {
       // override automatic scroll to an anchor in the navigator
@@ -105,6 +105,21 @@ N.wire.on('navigate.done:' + module.apiPath, function scroll_to_anchor(data) {
       //
       scrollIntoView(el, 0.3);
       el.addClass('forum-section__m-highlight');
+
+      // Undo category collapse above
+      //
+      let hid = el.closest('.forum-category__content').data('category-hid');
+
+      if ($(`#cat_box_${Number(hid)}`).hasClass('collapsed')) {
+        // - manually toggle classes to avoid triggering bootstrap animation
+        // - set temporary class to disable opacity transitions
+        $(`#cat_box_${Number(hid)}`).addClass('no-animation').removeClass('collapsed');
+        $(`#cat_list_${Number(hid)}`).addClass('show');
+        // remove transitions blocker on next tick
+        setTimeout(() => {
+          $(`#cat_box_${Number(hid)}`).removeClass('no-animation');
+        }, 0);
+      }
 
       return;
     }
