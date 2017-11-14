@@ -127,7 +127,7 @@ each post, post_idx in self.posts
             )
               a.btn.forum-post__action(
                 title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'datetime') })
-                href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions'
+                href=self.link_to('users.member', { user_hid: user && user.hid }) + '#infraction' + infraction._id
               )
                 span.icon.icon-infraction
 
@@ -384,7 +384,7 @@ each post, post_idx in self.posts
             )
               a.btn.forum-post__action(
                 title=self.t('infraction_title', { points: infraction.points, date: self.date(infraction.ts, 'datetime') })
-                href=self.link_to('users.member', { user_hid: user.hid }) + '#member-infractions'
+                href=self.link_to('users.member', { user_hid: user && user.hid }) + '#infraction' + infraction._id
               )
                 span.icon.icon-infraction
 
