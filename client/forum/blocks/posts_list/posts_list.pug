@@ -112,10 +112,9 @@ each post, post_idx in self.posts
       .forum-post__content
         .forum-post__message.markup !{post.html}
 
-        - var tail = self.partial('@forum.blocks.posts_list.attachments', { post: post, user: user });
-        if tail
+        if post.tail && post.tail.length
           .forum-post__tail.markup-tail
-            !=tail
+            != self.partial('@users.blocks.attachments', { message: post })
 
       footer.forum-post__controls
         ul.forum-post__controls-blk
