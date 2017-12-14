@@ -6,7 +6,7 @@
 // - params.topic_hid
 // - params.section_hid
 // - params.sort
-// - params.days
+// - params.period
 // - params.skip
 // - params.limit
 // - params.user_info

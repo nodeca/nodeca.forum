@@ -5,7 +5,7 @@
 // - params.query
 // - params.section_hid
 // - params.sort
-// - params.days
+// - params.period
 // - params.skip
 // - params.limit
 // - params.user_info
