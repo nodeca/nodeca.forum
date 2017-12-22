@@ -62,7 +62,7 @@ module.exports = function (N, apiPath) {
 
       env.res.results = search_env.results;
       env.res.reached_end = search_env.reached_end;
-      env.data.users = (env.res.users || []).concat(search_env.users);
+      env.data.users = (env.data.users || []).concat(search_env.users);
     } else {
       env.res.results = [];
       env.res.reached_end = true;
