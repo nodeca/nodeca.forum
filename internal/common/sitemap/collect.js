@@ -5,7 +5,7 @@
 
 const from2    = require('from2');
 const multi    = require('multistream');
-const pump     = require('pump');
+const pumpify  = require('pumpify');
 const through2 = require('through2');
 const userInfo = require('nodeca.users/lib/user_info');
 
@@ -42,7 +42,7 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    let topic_stream = pump(
+    let topic_stream = pumpify.obj(
       N.models.forum.Topic.collection.find({
         section:  { $in: visible_sections.map(section => section._id) },
         st:       { $in: N.models.forum.Topic.statuses.LIST_VISIBLE }
