@@ -2,24 +2,24 @@
 - var section = self.forum_sections[(topic || {}).section];
 
 if topic && section
-  li.user-subscriptions-item
-    .row
-      .col-sm-9
-        h2.user-subscriptions-item__title
-          a.user-subscriptions-item__title-link(href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid }))=topic.title
-        .user-subscriptions-item__desc
-          a.user-subscriptions-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
-      .col-sm-3
-        button(
-          title=self.t('delete_subscription')
-          data-on-click='users.subscriptions:delete'
-          data-subscription=self.item
-          data-block-name=self.block_name
-        ).user-subscriptions-item__btn-delete.btn.btn-secondary.btn-sm.btn-square.icon.icon-x.float-right
-        button(
-          title=self.t('edit_subscription')
-          data-on-click='users.subscriptions:update'
-          data-subscription=self.item
-          data-block-name=self.block_name
-          class=self.icon(self.item.type)
-        ).user-subscriptions-item__btn-edit.btn.btn-secondary.btn-sm.btn-square.icon.float-right
+  .user-subscriptions-item
+    .user-subscriptions-item__content
+      h2.user-subscriptions-item__title
+        a.user-subscriptions-item__title-link(href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid }))=topic.title
+      .user-subscriptions-item__desc
+        a.user-subscriptions-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
+
+    .user-subscriptions-item__controls
+      button.user-subscriptions-item__btn-edit.btn.btn-secondary.btn-sm.btn-square.icon(
+        title=self.t('edit_subscription')
+        data-on-click='users.subscriptions:update'
+        data-subscription=self.item
+        data-block-name=self.block_name
+        class=self.icon(self.item.type)
+      )
+      button.user-subscriptions-item__btn-delete.btn.btn-secondary.btn-sm.btn-square.icon.icon-x(
+        title=self.t('delete_subscription')
+        data-on-click='users.subscriptions:delete'
+        data-subscription=self.item
+        data-block-name=self.block_name
+      )

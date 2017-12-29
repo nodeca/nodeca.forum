@@ -16,21 +16,21 @@ else
   //- Go to first post in topic
   - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
 
-li.user-tracker-item.user-tracker-item__m-forum-topic(
+.user-tracker-item.user-tracker-item__m-forum-topic(
   class=mark.isNew ? 'user-tracker-item__m-new' : ''
   class=mark.next !== -1 ? 'user-tracker-item__m-unread' : ''
 )
-  .row
-    .col-sm-9
-      h2.user-tracker-item__title
-        a.user-tracker-item__title-link(href=href)=topic.title
-      .user-tracker-item__desc
-        a.user-tracker-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
-    .col-sm-3.d-none.d-sm-block
-      .user-tracker-item__updated
-        != self.timetag(topic.cache.last_ts, 'relative')
-      if user
-        a.user-tracker-item__author._ucard-popover(
-          href=self.link_to('users.member', { user_hid: user.hid })
-          data-user-id=user._id
-        )=user.name
+  .user-tracker-item__content
+    h2.user-tracker-item__title
+      a.user-tracker-item__title-link(href=href)=topic.title
+    .user-tracker-item__desc
+      a.user-tracker-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
+
+  .user-tracker-item__controls
+    .user-tracker-item__updated
+      != self.timetag(topic.cache.last_ts, 'relative')
+    if user
+      a.user-tracker-item__author._ucard-popover(
+        href=self.link_to('users.member', { user_hid: user.hid })
+        data-user-id=user._id
+      )=user.name
