@@ -10,14 +10,14 @@ if topic && section
         a.user-subscriptions-item__desc-link(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
 
     .user-subscriptions-item__controls
-      button.user-subscriptions-item__btn-edit.btn.btn-secondary.btn-sm.btn-square.icon(
+      button.user-subscriptions-item__btn-edit.btn.btn-outline-secondary.btn-sm.btn-square.icon.d-none.d-sm-inline-block(
         title=self.t('edit_subscription')
         data-on-click='users.subscriptions:update'
         data-subscription=self.item
         data-block-name=self.block_name
         class=self.icon(self.item.type)
       )
-      button.user-subscriptions-item__btn-delete.btn.btn-secondary.btn-sm.btn-square.icon.icon-x(
+      button.user-subscriptions-item__btn-delete.btn.btn-outline-secondary.btn-sm.btn-square.icon.icon-x(
         title=self.t('delete_subscription')
         data-on-click='users.subscriptions:delete'
         data-subscription=self.item
