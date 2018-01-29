@@ -96,6 +96,7 @@ module.exports = function (N, apiPath) {
     locals.src_text = params.data.post.md;
     locals.src_html = params.data.post.html;
     locals.recipients = _.values(params.recipients);
+    locals.auto_reported = params.report.auto_reported;
 
     if (author) locals.author = author;
 

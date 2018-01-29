@@ -1,5 +1,5 @@
 p
-  if self.author
+  if !self.auto_reported
     - var profile_name = pug.escape(self.author.user_name);
     - var profile_url = pug.escape(self.link_to('users.member', { user_hid: self.author.user_hid }));
     !=self.t('header', { url: '<a href="' + profile_url + '">' + profile_name + '</a>' })

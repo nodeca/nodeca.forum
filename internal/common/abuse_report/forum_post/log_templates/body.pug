@@ -1,4 +1,4 @@
-if self.author
+if !self.auto_reported
   - var profile_name = self.author.user_name;
   - var profile_url = self.link_to('users.member', { user_hid: self.author.user_hid });
   =self.t('header', { url: '[' + profile_name + '](' + profile_url + ')' })

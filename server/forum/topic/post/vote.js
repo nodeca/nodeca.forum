@@ -153,6 +153,58 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Create auto report after too many downvotes
+  //
+  N.wire.after(apiPath, async function auto_report(env) {
+    // only run this code when user downvotes
+    if (env.params.value >= 0) return;
+
+    let votes_auto_report = await env.extras.settings.fetch('votes_auto_report');
+
+    if (votes_auto_report <= 0) return;
+
+    let downvote_count = await N.models.users.Vote
+                                   .where('for').equals(env.data.post._id)
+                                   .where('value').lt(0)
+                                   .where('hb').ne(true)
+                                   .count();
+
+    if (downvote_count < votes_auto_report) return;
+
+    // check if report already exists
+    let exists = await N.models.core.AbuseReport.findOne()
+                           .where('src').equals(env.data.post._id)
+                           .where('type').equals(N.shared.content_type.FORUM_POST)
+                           .where('auto_reported').equals(true)
+                           .select('_id')
+                           .lean(true);
+
+    if (exists) return;
+
+    let bot = await N.models.users.User.findOne()
+                        .where('hid').equals(N.config.bots.default_bot_hid)
+                        .select('_id')
+                        .lean(true);
+
+    let params = await N.models.core.MessageParams.getParams(env.data.post.params_ref);
+
+    // enable markup used in templates (even if it's disabled in forum)
+    params.link  = true;
+    params.quote = true;
+
+    let report = new N.models.core.AbuseReport({
+      src: env.data.post._id,
+      type: N.shared.content_type.FORUM_POST,
+      text: env.t('auto_abuse_report_text'),
+      from: bot._id,
+      auto_reported: true,
+      params_ref: await N.models.core.MessageParams.setParams(params)
+    });
+
+    await N.wire.emit('internal:common.abuse_report', { report });
+  });
+
+
   // Mark user as active
   //
   N.wire.after(apiPath, async function set_active_flag(env) {
