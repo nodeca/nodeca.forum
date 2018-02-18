@@ -286,7 +286,7 @@ async function updateSectionStat(section) {
 
   let sections = await Section.getChildren(section._id, -1);
 
-  let sum = await Topic.aggregate(
+  let sum = await Topic.aggregate([
     {
       $match: {
         section: { $in: _.map(sections.concat([ section ]), '_id') }
@@ -299,7 +299,7 @@ async function updateSectionStat(section) {
         post_count: { $sum: '$cache.post_count' }
       }
     }
-  ).exec();
+  ]).exec();
 
   if (sum && sum[0]) {
     postCount  = sum[0].post_count;
