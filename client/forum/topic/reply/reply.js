@@ -82,7 +82,6 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
       $editor.find('.mdedit-btn__submit').addClass('disabled');
 
       let params = {
-        section_hid:              data.section_hid,
         topic_hid:                data.topic_hid,
         txt:                      N.MDEdit.text(),
         attach:                   _.map(N.MDEdit.attachments(), 'media_id'),

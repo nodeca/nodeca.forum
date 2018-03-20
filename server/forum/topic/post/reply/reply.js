@@ -12,7 +12,6 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     topic_hid:                { type: 'integer', required: true },
     parent_post_id:           { format: 'mongo' },
-    section_hid:              { type: 'integer', required: true },
     txt:                      { type: 'string', required: true },
     attach:                   {
       type: 'array',
@@ -33,10 +32,22 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fetch topic info
+  //
+  N.wire.before(apiPath, async function fetch_topic(env) {
+    let topic = await N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
+
+    if (!topic) throw N.io.NOT_FOUND;
+
+    env.data.topic = topic;
+  });
+
+
   // Fetch section info
   //
   N.wire.before(apiPath, async function fetch_section_info(env) {
-    let section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
+    let section = await N.models.forum.Section.findById(env.data.topic.section)
+                            .lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
     if (!section.is_enabled) throw N.io.NOT_FOUND;
@@ -63,17 +74,6 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, function attachments_check_owner(env) {
     return N.wire.emit('internal:users.attachments_check_owner', env);
-  });
-
-
-  // Fetch topic info
-  //
-  N.wire.before(apiPath, async function fetch_topic(env) {
-    let topic = await N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
-
-    if (!topic) throw N.io.NOT_FOUND;
-
-    env.data.topic = topic;
   });
 
 
@@ -295,8 +295,8 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function process_response(env) {
     env.res.redirect_url = N.router.linkTo('forum.topic', {
-      section_hid: env.params.section_hid,
-      topic_hid: env.params.topic_hid,
+      section_hid: env.data.section.hid,
+      topic_hid: env.data.topic.hid,
       post_hid: env.data.new_post.hid
     });
   });
