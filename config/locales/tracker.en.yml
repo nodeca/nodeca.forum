@@ -1,6 +1,10 @@
 i18n:
   en-US:
     users:
+      tracker:
+        menu:
+          forum_topic: Forum
+
       subscriptions:
         forum_topic: Forum topics
         forum_section: Forum sections

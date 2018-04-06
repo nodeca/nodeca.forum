@@ -1,4 +1,9 @@
 users:
+  tracker:
+    menu:
+      forum_topic:
+        priority: 10
+
   subscriptions:
     forum_topic:
       to_type: FORUM_TOPIC
