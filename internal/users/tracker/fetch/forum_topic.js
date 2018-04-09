@@ -1,5 +1,21 @@
 // Fetch topics for tracker
 //
+// In:
+//
+//  - params.user_info
+//  - params.subscriptions
+//  - params.start (optional) - last last_ts from previous page
+//  - params.limit - max number of topics, 0 means return count only
+//
+// Out:
+//  - count
+//  - items - { type, last_ts, id }
+//  - next  - last last_ts (contents of params.start for the next page),
+//            null if last page
+//  - users - merged with env.data.users
+//  - res   - misc data (specific to template, merged with env.res)
+//
+
 'use strict';
 
 
@@ -17,6 +33,15 @@ module.exports = function (N, apiPath) {
     let topic_subs = _.filter(locals.params.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
     let sect_subs = _.filter(locals.params.subscriptions, { to_type: N.shared.content_type.FORUM_SECTION });
 
+    let content_read_marks_expire = await N.settings.get('content_read_marks_expire');
+    let min_cut = new Date(Date.now() - (content_read_marks_expire * 24 * 60 * 60 * 1000));
+
+    let can_see_hellbanned = await N.settings.get('can_see_hellbanned', {
+      user_id: locals.params.user_info.user_id,
+      usergroup_ids: locals.params.user_info.usergroups
+    }, {});
+
+    let cache = locals.params.user_info.hb || can_see_hellbanned ? 'cache_hb' : 'cache';
 
     // Fetch topics by topic subscriptions
     //
@@ -25,6 +50,7 @@ module.exports = function (N, apiPath) {
     if (topic_subs.length !== 0) {
       topics = await N.models.forum.Topic.find()
                         .where('_id').in(_.map(topic_subs, 'to'))
+                        .where(cache + '.last_ts').gt(min_cut)
                         .lean(true);
     }
 
@@ -36,7 +62,7 @@ module.exports = function (N, apiPath) {
       let queryParts = [];
 
       _.forEach(cuts, (cutTs, id) => {
-        queryParts.push({ $and: [ { section: id }, { _id: { $gt: new ObjectId(Math.round(cutTs / 1000)) } } ] });
+        queryParts.push({ section: id, _id: { $gt: new ObjectId(Math.round(cutTs / 1000)) } });
       });
 
       topics = topics.concat(await N.models.forum.Topic.find({ $or: queryParts }).lean(true) || []);
@@ -49,22 +75,15 @@ module.exports = function (N, apiPath) {
     let data = topics.map(topic => ({
       categoryId: topic.section,
       contentId: topic._id,
-      lastPostNumber: topic.last_post_counter,
-      lastPostTs: topic.cache.last_ts
+      lastPostNumber: topic[cache].last_post_hid,
+      lastPostTs: topic[cache].last_ts
     }));
 
     let read_marks = await N.models.users.Marker.info(locals.params.user_info.user_id, data);
 
 
     // Filter new and unread topics
-    topics = topics.reduce((acc, topic) => {
-      if (read_marks[topic._id].isNew || read_marks[topic._id].next !== -1) {
-        acc.push(topic);
-      }
-
-      return acc;
-    }, []);
-
+    topics = topics.filter(topic => read_marks[topic._id].isNew || read_marks[topic._id].next !== -1);
 
     // Fetch sections
     let sections = await N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
@@ -80,26 +99,14 @@ module.exports = function (N, apiPath) {
 
     await N.wire.emit('internal:forum.access.topic', access_env);
 
-    topics = topics.reduce((acc, topic, i) => {
-      if (access_env.data.access_read[i]) {
-        acc.push(topic);
-      }
+    topics = topics.filter((__, idx) => access_env.data.access_read[idx]);
 
-      return acc;
-    }, []);
-
-
-    // Collect user ids
-    //
-    locals.users = locals.users || [];
-    locals.users = locals.users.concat(_.map(topics, 'cache.last_user'));
-    locals.users = locals.users.concat(_.map(topics, 'cache.first_user'));
 
     // Remove topics created by ignored users (except for subscribed ones)
     //
     let topic_subs_by_id = _.keyBy(topic_subs, 'to');
 
-    let first_users = topics.map(topic => _.get(topic, 'cache.first_user')).filter(Boolean);
+    let first_users = topics.map(topic => _.get(topic, cache + '.first_user')).filter(Boolean);
 
     let ignored = _.keyBy(
       await N.models.users.Ignore.find()
@@ -112,7 +119,7 @@ module.exports = function (N, apiPath) {
 
     topics = topics.filter(topic => {
       // Topic starter is ignored, and topic is not subscribed to
-      if (ignored[_.get(topic, 'cache.first_user')] &&
+      if (ignored[_.get(topic, cache + '.first_user')] &&
           !topic_subs_by_id[topic._id]) {
 
         return false;
@@ -120,8 +127,8 @@ module.exports = function (N, apiPath) {
 
       // Last poster is ignored, and there is only one unread message
       // (topic still shows up if ignored user leaves multiple messages)
-      if (ignored[_.get(topic, 'cache.last_user')] &&
-          read_marks[topic._id].position >= _.get(topic, 'cache.last_post_hid') - 1) {
+      if (ignored[_.get(topic, cache + '.last_user')] &&
+          read_marks[topic._id].position >= _.get(topic, cache + '.last_post_hid') - 1) {
 
         return false;
       }
@@ -129,27 +136,60 @@ module.exports = function (N, apiPath) {
       return true;
     });
 
-    // Sanitize topics
-    topics = await sanitize_topic(N, topics, locals.params.user_info);
-
-    // Sanitize sections
-    sections = await sanitize_section(N, sections, locals.params.user_info);
-
-    locals.res.forum_topics = _.keyBy(topics, '_id');
-    locals.res.forum_sections = _.keyBy(sections, '_id');
-    locals.res.read_marks = _.assign(locals.res.read_marks || {}, read_marks);
 
     let items = [];
 
     topics.forEach(topic => {
       items.push({
         type: 'forum_topic',
-        last_ts: topic.cache.last_ts,
-        id: topic._id
+        last_ts: topic[cache].last_ts,
+        id: String(topic._id)
       });
     });
 
-    locals.res.items = _.orderBy(items, 'last_ts', 'desc');
-    locals.count = locals.res.items.length;
+    locals.count = items.length;
+
+    if (locals.params.limit > 0) {
+      if (locals.params.start) items = items.filter(item => item.last_ts.valueOf() < locals.params.start);
+
+      let items_sorted = _.orderBy(items, 'last_ts', 'desc');
+      let items_on_page = items_sorted.slice(0, locals.params.limit);
+
+      locals.items = items_on_page;
+      locals.next = items_sorted.length > items_on_page.length ?
+                    items_on_page[items_on_page.length - 1].last_ts.valueOf() :
+                    null;
+
+      // Filter only topics that are on this page
+      //
+      let topic_ids = new Set();
+      for (let { id } of items_on_page) topic_ids.add(id);
+      topics = topics.filter(topic => topic_ids.has(String(topic._id)));
+
+      // Sanitize topics
+      //
+      topics = await sanitize_topic(N, topics, locals.params.user_info);
+      locals.res.forum_topics = _.keyBy(topics, '_id');
+
+      // Filter only sections with topics on this page
+      //
+      let section_ids = new Set();
+      for (let { section } of topics) section_ids.add(section.toString());
+      sections = sections.filter(section => section_ids.has(section._id.toString()));
+
+      // Sanitize sections
+      //
+      sections = await sanitize_section(N, sections, locals.params.user_info);
+      locals.res.forum_sections = _.keyBy(sections, '_id');
+
+      // Collect user ids
+      //
+      locals.users = locals.users || [];
+      locals.users = locals.users.concat(_.map(topics, cache + '.last_user'));
+      locals.users = locals.users.concat(_.map(topics, cache + '.first_user'));
+
+      locals.res.read_marks = {};
+      for (let id of topic_ids) locals.res.read_marks[id] = read_marks[id];
+    }
   });
 };
