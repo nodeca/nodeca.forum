@@ -129,35 +129,22 @@ module.exports = function (N, collectionName) {
 
   // Set 'hid' for the new post.
   //
-  Post.pre('save', function (callback) {
-    if (!this.isNew) {
-      callback();
-      return;
-    }
+  Post.pre('save', async function () {
+    if (!this.isNew) return;
 
-    let self = this;
-
-    N.models.forum.Topic.findByIdAndUpdate(
-      self.topic,
+    let topic = await N.models.forum.Topic.findByIdAndUpdate(
+      this.topic,
       { $inc: { last_post_counter: 1 } },
-      { 'new': true },
-      (err, topic) => {
-        if (err) {
-          callback(err);
-          return;
-        }
-
-        self.hid = topic.last_post_counter;
-
-        callback();
-      }
+      { 'new': true }
     );
+
+    this.hid = topic.last_post_counter;
   });
 
 
   // Remove empty "imports" and "import_users" fields
   //
-  Post.pre('save', function (callback) {
+  Post.pre('save', function () {
     if (this.imports && this.imports.length === 0) {
       /*eslint-disable no-undefined*/
       this.imports = undefined;
@@ -167,25 +154,19 @@ module.exports = function (N, collectionName) {
       /*eslint-disable no-undefined*/
       this.import_users = undefined;
     }
-
-    callback();
   });
 
 
   // Store parser options separately and save reference to them
   //
-  Post.pre('save', function (callback) {
-    if (!this.params) {
-      callback();
-      return;
-    }
+  Post.pre('save', async function () {
+    if (!this.params) return;
 
-    N.models.core.MessageParams.setParams(this.params)
-      .then(id => {
-        this.params = undefined;
-        this.params_ref = id;
-      })
-      .asCallback(callback);
+    let id = await N.models.core.MessageParams.setParams(this.params);
+
+    /*eslint-disable no-undefined*/
+    this.params = undefined;
+    this.params_ref = id;
   });
 
 

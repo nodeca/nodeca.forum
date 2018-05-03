@@ -80,47 +80,29 @@ module.exports = function (N, collectionName) {
 
   // Compute `parent_list` and `level` fields before save.
   //
-  Section.pre('save', function (next) {
+  Section.pre('save', function () {
     // Record modified state of `parent` field for post hook.
     // Always assume true for unsaved models.
     this.__isParentModified__ = this.isModified('parent') || this.isNew;
-
-    next();
   });
 
   // Remove empty "parent" field
   //
-  Section.pre('save', function (callback) {
+  Section.pre('save', function () {
     /*eslint-disable no-undefined*/
     if (this.parent === null) this.parent = undefined;
-
-    callback();
   });
 
   // Set 'hid' for the new section.
   // This hook should always be the last one to avoid counter increment on error
-  Section.pre('save', function (callback) {
-    if (!this.isNew) {
-      callback();
-      return;
-    }
+  Section.pre('save', async function () {
+    if (!this.isNew) return;
 
-    if (this.hid) {
-      // hid is already defined when this section was created, used in vbconvert;
-      // it's caller responsibility to increase Increment accordingly
-      callback();
-      return;
-    }
+    // hid is already defined when this section was created, used in vbconvert;
+    // it's caller responsibility to increase Increment accordingly
+    if (this.hid) return;
 
-    N.models.core.Increment.next('section', (err, value) => {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      this.hid = value;
-      callback();
-    });
+    this.hid = await N.models.core.Increment.next('section');
   });
 
   // Update all inherited settings (permissions) for subsections.

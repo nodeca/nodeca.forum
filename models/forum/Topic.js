@@ -129,28 +129,14 @@ module.exports = function (N, collectionName) {
 
   // Set 'hid' for the new topic.
   // This hook should always be the last one to avoid counter increment on error
-  Topic.pre('save', function (callback) {
-    if (!this.isNew) {
-      callback();
-      return;
-    }
+  Topic.pre('save', async function () {
+    if (!this.isNew) return;
 
-    if (this.hid) {
-      // hid is already defined when this topic was created, used in vbconvert;
-      // it's caller responsibility to increase Increment accordingly
-      callback();
-      return;
-    }
+    // hid is already defined when this topic was created, used in vbconvert;
+    // it's caller responsibility to increase Increment accordingly
+    if (this.hid) return;
 
-    N.models.core.Increment.next('topic', (err, value) => {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      this.hid = value;
-      callback();
-    });
+    this.hid = await N.models.core.Increment.next('topic');
   });
 
 

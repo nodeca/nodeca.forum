@@ -43,14 +43,11 @@ module.exports = function (N, collectionName) {
   N.wire.before('init:models.forum.Section', function setup_section_tracking_for_moderator_store(schema) {
     // When a section is created, add a store document for it
     //
-    schema.pre('save', function (callback) {
-      if (!this.isNew) {
-        callback();
-        return;
-      }
+    schema.pre('save', function () {
+      if (!this.isNew) return;
 
-      var store = new N.models.forum.SectionModeratorStore({ section_id: this._id });
-      store.save(callback);
+      let store = new N.models.forum.SectionModeratorStore({ section_id: this._id });
+      return store.save();
     });
 
     // When a section is removed, delete a relevant store document
