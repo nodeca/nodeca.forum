@@ -6,7 +6,7 @@
 //- - appending next page posts via autoload or "more" button
 
 //- show many operations checkbox
-- var many_ops_permitted = self.settings.forum_mod_can_delete_topics || self.settings.forum_mod_can_close_topic;
+- var multiselect_allowed = self.settings.forum_mod_can_delete_topics || self.settings.forum_mod_can_close_topic;
 
 each topic, idx in self.topics
   //- skip topics created by ignored users
@@ -107,7 +107,7 @@ each topic, idx in self.topics
       span.icon.icon-views.icon-space-after
       = self.number_short(views)
 
-    if many_ops_permitted
+    if multiselect_allowed
       label.forum-topicline__select.forum-topicline__cell(title=self.t('multiselect_hint'))
         input.forum-topicline__select-cb(
           type='checkbox'

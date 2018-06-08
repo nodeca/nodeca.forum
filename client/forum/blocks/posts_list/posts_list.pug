@@ -8,7 +8,7 @@
 - var post_counter = self.pagination ? self.pagination.chunk_offset : 0;
 
 //- show many operations checkbox
-- var many_ops_permitted = self.settings.forum_mod_can_delete_topics;
+- var multiselect_allowed = self.settings.forum_mod_can_delete_topics;
 
 each post, post_idx in self.posts
   - var user = self.users[post.user];
@@ -94,7 +94,7 @@ each post, post_idx in self.posts
             a.forum-post__link(href=_post_anchor)
               != self.timetag(post.ts, 'relative')
 
-        if many_ops_permitted
+        if multiselect_allowed
           label.forum-post__select(title=self.t('multiselect_hint'))
             input.forum-post__select-cb(
               type='checkbox'
@@ -345,7 +345,7 @@ each post, post_idx in self.posts
             a.forum-post__link(href=_post_anchor)
               != self.timetag(post.ts, 'relative')
 
-        if many_ops_permitted
+        if multiselect_allowed
           label.forum-post__select(title=self.t('multiselect_hint'))
             input.forum-post__select-cb(
               type='checkbox'
