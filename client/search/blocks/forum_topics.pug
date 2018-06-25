@@ -12,23 +12,21 @@ if self.results.length
         )= result.section.title
 
       ul.search-result__stat
+        li.search-result__stat-item
+          != self.timetag(result.topic.cache.last_ts, 'relative')
+
         li.search-result__stat-item.d-none.d-sm-inline-block
           a.search-result__stat-link(
             href=self.link_to('forum.section', { section_hid: result.section.hid })
           )= result.section.title
 
-        //-
-          li.search-result__stat-item
-            - var user = self.users[result.topic.cache.first_user]
-            if user
-              img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
-              a.search-result__stat-link._ucard-popover(
-                href=self.link_to('users.member', { user_hid: user.hid })
-                data-user-id=result.topic.cache.first_user
-              )= user.nick
-
         li.search-result__stat-item
-          != self.timetag(result.topic.cache.last_ts, 'relative')
+          - var user = self.users[result.topic.cache.first_user]
+          if user
+            a.search-result__stat-link._ucard-popover(
+              href=self.link_to('users.member', { user_hid: user.hid })
+              data-user-id=result.topic.cache.first_user
+            )= user.nick
 
         li.search-result__stat-item
           = self.t('replies', result.topic.cache.post_count - 1)

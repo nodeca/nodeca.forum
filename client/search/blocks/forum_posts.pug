@@ -13,18 +13,17 @@ if self.results.length
           )= result.section.title
 
         ul.search-result__stat
+          li.search-result__stat-item
+            != self.timetag(result.post.ts, 'relative')
+
           li.search-result__stat-item.search-result__m-stat-parent.d-none.d-sm-inline-block
             a.search-result__stat-link(
               href=self.link_to('forum.section', { section_hid: result.section.hid })
             )= result.section.title
 
           li.search-result__stat-item
-            != self.timetag(result.post.ts, 'relative')
-
-          li.search-result__stat-item
             - var user = self.users[result.post.user]
             if user
-              img.search-result__stat-avatar(alt=user.name)&attributes(self.avatar(user, 'sm'))
               a.search-result__stat-link._ucard-popover(
                 href=self.link_to('users.member', { user_hid: user.hid })
                 data-user-id=result.post.user
