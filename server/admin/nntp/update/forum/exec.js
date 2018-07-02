@@ -7,8 +7,7 @@
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id:    { format: 'mongo', required: true },
-    name:   { type: 'string',  required: true },
-    source: { format: 'mongo' }
+    name:   { type: 'string',  required: true }
   });
 
 
