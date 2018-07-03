@@ -44,26 +44,13 @@ module.exports = function (N, apiPath) {
       }
     }
 
-
-    // Find and set free `hid` value for new section. (not `_id`!)
-
-    // This is the most simple way to find max value of a field in Mongo.
+    // Find and set free `display_order` value in the end of siblings list.
     let result = await N.models.forum.Section
-                          .find()
-                          .select('hid')
-                          .sort('-hid')
+                          .find({ parent: newSection.parent })
+                          .select('display_order')
+                          .sort('-display_order')
                           .limit(1)
                           .lean(true);
-
-    newSection.hid = _.isEmpty(result) ? 1 : result[0].hid + 1;
-
-    // Find and set free `display_order` value in the end of siblings list.
-    result = await N.models.forum.Section
-                      .find({ parent: newSection.parent })
-                      .select('display_order')
-                      .sort('-display_order')
-                      .limit(1)
-                      .lean(true);
 
     newSection.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
 
