@@ -1,7 +1,7 @@
 - var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
 - var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
 - var topicOwnerId = self.topic.cache.first_user
-- var menu_rnd_id = 'rnd' + String(Math.random()).slice(2, 10)
+- var menu_rnd_id = 'rnd' + self.get_label_uid()
 
 - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 
