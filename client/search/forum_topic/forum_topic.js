@@ -35,7 +35,7 @@ let pageState = {};
 N.wire.on('navigate.done:' + module.apiPath, function form_init() {
   return bag.get(OPTIONS_STORE_KEY).then(expanded => {
     if (expanded) $('#search_options').addClass('show');
-  });
+  }).catch(() => {}); // suppress storage errors
 });
 
 // Execute search if it's defined in query
@@ -87,14 +87,13 @@ N.wire.on('navigate.done:' + module.apiPath, function page_init(data) {
 // Toggle form options
 //
 N.wire.on(module.apiPath + ':search_options', function do_options() {
-  return bag.get(OPTIONS_STORE_KEY).then(expanded => {
-    expanded = !expanded;
+  let expanded = !$('#search_options').hasClass('show');
 
-    if (expanded) $('#search_options').collapse('show');
-    else $('#search_options').collapse('hide');
+  if (expanded) $('#search_options').collapse('show');
+  else $('#search_options').collapse('hide');
 
-    return bag.set(OPTIONS_STORE_KEY, expanded);
-  });
+  return bag.set(OPTIONS_STORE_KEY, expanded)
+            .catch(() => {}); // suppress storage errors
 });
 
 
