@@ -75,7 +75,7 @@ function build_diff(history) {
     let text_diff;
 
     if (old_src !== new_src) {
-      text_diff = diff(get_source(old_post), get_source(new_post));
+      text_diff = diff(old_src, new_src);
     }
 
     result.push({

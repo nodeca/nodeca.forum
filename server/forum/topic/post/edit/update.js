@@ -182,7 +182,8 @@ module.exports = function (N, apiPath) {
         md:         orig_post.md,
         tail:       orig_post.tail,
         title:      orig_post.hid <= 1 ? env.data.topic.title : undefined,
-        params_ref: orig_post.params_ref
+        params_ref: orig_post.params_ref,
+        ip:         env.req.ip
       }).save();
     }
 

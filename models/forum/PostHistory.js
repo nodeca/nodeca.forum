@@ -32,7 +32,10 @@ module.exports = function (N, collectionName) {
     title:      String,
 
     // change time
-    ts:         { type: Date, 'default': Date.now }
+    ts:         { type: Date, 'default': Date.now },
+
+    // ip where this change was made from
+    ip:         String
   }, {
     versionKey: false
   });
