@@ -11,6 +11,15 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check permissions
+  //
+  N.wire.before(apiPath, async function check_permissions(env) {
+    let can_see_history = await env.extras.settings.fetch('can_see_history');
+
+    if (!can_see_history) throw N.io.FORBIDDEN;
+  });
+
+
   // Fetch post
   //
   N.wire.before(apiPath, async function fetch_post(env) {

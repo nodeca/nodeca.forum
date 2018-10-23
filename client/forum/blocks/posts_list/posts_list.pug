@@ -81,7 +81,7 @@ each post, post_idx in self.posts
                   img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
                   = _reply_to_user.nick
 
-            if post.edit_count
+            if self.settings.can_see_history && post.edit_count
               a.forum-post__history.icon.icon-history.icon-space-after(
                 href='#'
                 title=self.t('last_edited', { date: self.date(post.last_edit_ts, 'datetime') })
@@ -332,7 +332,7 @@ each post, post_idx in self.posts
                   img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
                   = _reply_to_user.nick
 
-            if post.edit_count
+            if self.settings.can_see_history && post.edit_count
               a.forum-post__history.icon.icon-history.icon-space-after(
                 href='#'
                 title=self.t('last_edited', { date: self.date(post.last_edit_ts, 'datetime') })
