@@ -1,9 +1,10 @@
 @import "nodeca.core/client/common/_variables"
 
-.post-history-dlg__entry
+.forum-post-history-entry
+  overflow-wrap break-word
   margin-bottom 2rem
 
-.post-history-dlg__meta
+.forum-post-history-entry__meta
   display flex
   padding .375rem .75rem
   margin-bottom .5rem
@@ -12,18 +13,35 @@
   border-radius 3px
   line-height 1.1em
 
-.post-history-dlg__meta-author
+.forum-post-history-entry__icon-task
+.forum-post-history-entry__icon-moderator
+  font-weight bold
+  color #c97971
+  margin-right .375rem
+  display none
+
+.forum-post-history-entry__m-task .forum-post-history-entry__icon-task
+.forum-post-history-entry__m-moderator .forum-post-history-entry__icon-moderator
+  display inline
+
+.forum-post-history-entry__meta-author
   flex 1 1 0%
 
-.post-history-dlg__meta-author-link
+.forum-post-history-entry__meta-author-link
   color inherit
 
-.post-history-dlg__meta-ts
+.forum-post-history-entry__meta-ts
   white-space nowrap
   font-size $font-size-xs
   align-self flex-end
   padding-left 1rem
 
-.post-history-dlg__title
+.forum-post-history-entry__title
   font-size $font-size-lg
   margin-bottom .5rem
+
+.forum-post-history-entry__diff
+  margin-bottom .5rem
+
+.forum-post-history-entry__actions
+  color $body-color-secondary

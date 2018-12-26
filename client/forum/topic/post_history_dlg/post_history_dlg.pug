@@ -1,25 +1,61 @@
+- var roles = '$$ JSON.stringify(N.models.forum.PostHistory.roles) $$'
+
 .modal.fade(tabindex='-1', role='dialog', aria-hidden='true')
   .modal-dialog.modal-lg
     .modal-content
       .modal-header
         h4.modal-title= self.t('title')
         button.close(type='button', tabindex='-1', data-dismiss='modal') &times;
-      .modal-body.post-history-dlg__content
+      .modal-body.forum-post-history-dlg__content
         each entry in self.entries.reverse()
           - var user = self.users[entry.user];
 
-          .post-history-dlg__entry
-            .post-history-dlg__meta
-              .post-history-dlg__meta-author
+          .forum-post-history-entry(
+            class=entry.role === roles.USER ? 'forum-post-history-entry__m-user' : ''
+            class=entry.role === roles.MODERATOR ? 'forum-post-history-entry__m-moderator' : ''
+            class=entry.role === roles.TASK ? 'forum-post-history-entry__m-task' : ''
+          )
+            .forum-post-history-entry__meta
+              .forum-post-history-entry__meta-author
+                span.forum-post-history-entry__icon-task(
+                  title=self.t('role_task')
+                )= '*'
+                span.forum-post-history-entry__icon-moderator(
+                  title=self.t('role_moderator')
+                )= '*'
                 if user
-                  a.post-history-dlg__meta-author-link(href=self.link_to('users.member', { user_hid: user.hid }))
+                  a.forum-post-history-entry__meta-author-link(href=self.link_to('users.member', { user_hid: user.hid }))
                     = user.nick
-              .post-history-dlg__meta-ts!= self.timetag(entry.ts, 'relative')
+              .forum-post-history-entry__meta-ts!= self.timetag(entry.ts, 'relative')
 
             if entry.title_diff
-              .post-history-dlg__title
+              .forum-post-history-entry__title
                 != entry.title_diff
 
             if entry.text_diff
-              .post-history-dlg__diff
+              .forum-post-history-entry__diff
                 != entry.text_diff
+
+            if entry.actions && entry.actions.length > 0
+              .forum-post-history-entry__actions
+                each d in entry.actions
+                  - var key = d[0], value = d[1], new_value = d[2];
+                  .forum-post-history-entry__action-item
+                    case key
+                      when 'topic_move'
+                        .diff-line
+                          - var old_section = self.sections[value] || {};
+                          - var old_link = self.link_to('forum.section', { section_hid: old_section.hid });
+                          - var new_section = self.sections[new_value] || {};
+                          - var new_link = self.link_to('forum.section', { section_hid: new_section.hid });
+                          != self.t('action_topic_move', { old_title: old_section.title, old_link: old_link, new_title: new_section.title, new_link: new_link })
+                      when 'topic_delete'
+                      when 'topic_hard_delete'
+                      when 'post_delete'
+                      when 'post_hard_delete'
+                        .diff-line
+                          = self.t('action_' + key)
+                          if value
+                            = ' ' + self.t('del_reason', { text: value })
+                      default
+                        .diff-line= self.t('action_' + key)

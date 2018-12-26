@@ -127,7 +127,28 @@ module.exports = function (N, apiPath) {
 
     env.res.topic = { st: update.st };
 
-    await N.models.forum.Topic.update({ _id: topic._id }, update);
+    env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
+      { _id: topic._id },
+      update,
+      { 'new': true }
+    );
+  });
+
+
+  // Save old version in history
+  //
+  N.wire.after(apiPath, function save_history(env) {
+    return N.models.forum.PostHistory.add(
+      {
+        old_topic: env.data.topic,
+        new_topic: env.data.new_topic
+      },
+      {
+        user: env.user_info.user_id,
+        role: N.models.forum.PostHistory.roles[env.params.as_moderator ? 'MODERATOR' : 'USER'],
+        ip:   env.req.ip
+      }
+    );
   });
 
 
@@ -162,6 +183,4 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_section(env) {
     await N.models.forum.Section.updateCache(env.data.topic.section);
   });
-
-  // TODO: log moderator actions
 };

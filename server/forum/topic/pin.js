@@ -48,9 +48,10 @@ module.exports = function (N, apiPath) {
 
     // Pin topic
     if (!env.params.unpin) {
-      await N.models.forum.Topic.update(
+      env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
         { _id: topic._id },
-        { st: statuses.PINNED, ste: topic.st }
+        { st: statuses.PINNED, ste: topic.st },
+        { 'new': true }
       );
 
       env.res.topic = { st: statuses.PINNED, ste: topic.st };
@@ -58,13 +59,29 @@ module.exports = function (N, apiPath) {
     }
 
     // Unpin topic
-    await N.models.forum.Topic.update(
+    env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: topic._id },
-      { st: topic.ste, $unset: { ste: 1 } }
+      { st: topic.ste, $unset: { ste: 1 } },
+      { 'new': true }
     );
 
     env.res.topic = { st: topic.ste };
   });
 
-  // TODO: log moderator actions
+
+  // Save old version in history
+  //
+  N.wire.after(apiPath, function save_history(env) {
+    return N.models.forum.PostHistory.add(
+      {
+        old_topic: env.data.topic,
+        new_topic: env.data.new_topic
+      },
+      {
+        user: env.user_info.user_id,
+        role: N.models.forum.PostHistory.roles.MODERATOR,
+        ip:   env.req.ip
+      }
+    );
+  });
 };

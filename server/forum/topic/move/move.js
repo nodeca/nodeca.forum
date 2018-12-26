@@ -88,9 +88,27 @@ module.exports = function (N, apiPath) {
   // Move topic
   //
   N.wire.on(apiPath, async function move_topic(env) {
-    await N.models.forum.Topic.update(
+    env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: env.data.topic._id },
-      { $set: { section: env.data.section_to._id } }
+      { $set: { section: env.data.section_to._id } },
+      { 'new': true }
+    );
+  });
+
+
+  // Save old version in history
+  //
+  N.wire.after(apiPath, function save_history(env) {
+    return N.models.forum.PostHistory.add(
+      {
+        old_topic: env.data.topic,
+        new_topic: env.data.new_topic
+      },
+      {
+        user: env.user_info.user_id,
+        role: N.models.forum.PostHistory.roles.MODERATOR,
+        ip:   env.req.ip
+      }
     );
   });
 
@@ -108,6 +126,4 @@ module.exports = function (N, apiPath) {
     await N.models.forum.Section.updateCache(env.data.section_from._id);
     await N.models.forum.Section.updateCache(env.data.section_to._id);
   });
-
-  // TODO: log moderator actions
 };

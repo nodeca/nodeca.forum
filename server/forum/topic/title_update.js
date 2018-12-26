@@ -5,10 +5,6 @@
 
 const charcount = require('charcount');
 
-// If same user edits the same post within 5 minutes, all changes
-// made within that period will be squashed into one diff.
-const HISTORY_GRACE_PERIOD = 5 * 60 * 1000;
-
 
 module.exports = function (N, apiPath) {
 
@@ -101,85 +97,27 @@ module.exports = function (N, apiPath) {
   // Update topic title
   //
   N.wire.on(apiPath, async function update_topic(env) {
-    await N.models.forum.Topic.update(
+    env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: env.data.topic._id },
-      { title: env.params.title.trim() });
+      { title: env.params.title.trim() },
+      { 'new': true }
+    );
   });
 
 
-  // Save old version in post history
+  // Save old version in history
   //
-  // NOTE: code is the same as in forum.topic.post.update (changes marked)
-  //
-  N.wire.after(apiPath, async function save_post_history(env) {
-    // post fetch differs in forum.topic.post.update
-    let orig_post = await N.models.forum.Post.findOne({
-      topic: env.data.topic._id,
-      hid:   1
-    }).lean(true);
-    let new_post = orig_post;
-
-    if (!orig_post) return;
-
-    let last_entry = await N.models.forum.PostHistory.findOne({
-      post: orig_post._id
-    }).sort('-_id').lean(true);
-
-    let last_update_time = last_entry ? last_entry.ts   : orig_post.ts;
-    let last_update_user = last_entry ? last_entry.user : orig_post.user;
-    let now = new Date();
-
-    // if the same user edits the same post within grace period, history won't be changed
-    if (!(last_update_time > now - HISTORY_GRACE_PERIOD &&
-          last_update_time < now &&
-          String(last_update_user) === String(env.user_info.user_id))) {
-
-      /* eslint-disable no-undefined */
-      last_entry = await new N.models.forum.PostHistory({
-        post:       orig_post._id,
-        user:       env.user_info.user_id,
-        md:         orig_post.md,
-        tail:       orig_post.tail,
-        title:      orig_post.hid <= 1 ? env.data.topic.title : undefined,
-        params_ref: orig_post.params_ref,
-        ip:         env.req.ip
-      }).save();
-    }
-
-    // if the next history entry would be the same as the last one
-    // (e.g. user saves post without changes or reverts change within 5 min),
-    // remove redundant history entry
-    if (last_entry) {
-      let last_post_str = JSON.stringify({
-        post:       last_entry.post,
-        user:       last_entry.user,
-        md:         last_entry.md,
-        tail:       last_entry.tail,
-        title:      last_entry.title,
-        params_ref: last_entry.params_ref
-      });
-
-      let next_post_str = JSON.stringify({
-        post:       new_post._id,
-        user:       env.user_info.user_id,
-        md:         new_post.md,
-        tail:       new_post.tail,
-        // title is calculated differently in forum.topic.post.update
-        title:      env.params.title.trim(),
-        params_ref: new_post.params_ref
-      });
-
-      if (last_post_str === next_post_str) {
-        await N.models.forum.PostHistory.remove({ _id: last_entry._id });
+  N.wire.after(apiPath, function save_history(env) {
+    return N.models.forum.PostHistory.add(
+      {
+        old_topic: env.data.topic,
+        new_topic: env.data.new_topic
+      },
+      {
+        user: env.user_info.user_id,
+        role: N.models.forum.PostHistory.roles[env.params.as_moderator ? 'MODERATOR' : 'USER'],
+        ip:   env.req.ip
       }
-    }
-
-    await N.models.forum.Post.update(
-      { _id: orig_post._id },
-      { $set: {
-        last_edit_ts: new Date(),
-        edit_count: await N.models.forum.PostHistory.count({ post: orig_post._id })
-      } }
     );
   });
 
@@ -189,7 +127,4 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function add_search_index(env) {
     await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
   });
-
-
-  // TODO: log moderator actions
 };

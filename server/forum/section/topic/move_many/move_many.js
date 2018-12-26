@@ -61,7 +61,6 @@ module.exports = function (N, apiPath) {
     env.data.topics = await N.models.forum.Topic.find()
                                 .where('hid').in(env.params.topics_hids)
                                 .where('section').equals(env.data.section_from._id)
-                                .select('_id')
                                 .lean(true);
 
     if (!env.data.topics.length) throw N.io.NOT_FOUND;
@@ -71,15 +70,36 @@ module.exports = function (N, apiPath) {
   // Move topics
   //
   N.wire.on(apiPath, async function move_topics(env) {
+    env.data.changes = [];
+
     let bulk = N.models.forum.Topic.collection.initializeUnorderedBulkOp();
 
     env.data.topics.forEach(topic => {
+      env.data.changes.push({
+        old_topic: topic,
+        new_topic: Object.assign({}, topic, { section: env.data.section_to._id })
+      });
+
       bulk.find({ _id: topic._id }).updateOne({
         $set: { section: env.data.section_to._id }
       });
     });
 
     await bulk.execute();
+  });
+
+
+  // Save old version in history
+  //
+  N.wire.after(apiPath, function save_history(env) {
+    return N.models.forum.PostHistory.add(
+      env.data.changes,
+      {
+        user: env.user_info.user_id,
+        role: N.models.forum.PostHistory.roles.MODERATOR,
+        ip:   env.req.ip
+      }
+    );
   });
 
 
@@ -96,6 +116,4 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function add_search_index(env) {
     await N.queue.forum_topics_search_update_with_posts(env.data.topics.map(t => t._id)).postpone();
   });
-
-  // TODO: log moderator actions
 };

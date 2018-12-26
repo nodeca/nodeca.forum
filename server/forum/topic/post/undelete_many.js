@@ -6,6 +6,30 @@
 const _ = require('lodash');
 
 
+// apply $set and $unset operations on an object
+function mongo_apply(object, ops) {
+  let result = Object.assign({}, object);
+
+  for (let [ k, v ]  of Object.entries(ops)) {
+    if (k === '$set') {
+      Object.assign(result, v);
+      continue;
+    }
+
+    if (k === '$unset') {
+      for (let delete_key of Object.keys(v)) {
+        delete result[delete_key];
+      }
+      continue;
+    }
+
+    result[k] = v;
+  }
+
+  return result;
+}
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -36,7 +60,7 @@ module.exports = function (N, apiPath) {
 
     if (!access_env.data.access_read) throw N.io.NOT_FOUND;
 
-    // We can't delete first port. Topic operation should be requested instead
+    // We can't delete first post. Topic operation should be requested instead
     env.params.posts_ids.forEach(postId => {
       if (String(env.data.topic.cache.first_post) === postId) {
         throw N.io.BAD_REQUEST;
@@ -74,7 +98,6 @@ module.exports = function (N, apiPath) {
                               .where('_id').in(env.params.posts_ids)
                               .where('topic').equals(env.data.topic._id)
                               .where('st').in(st)
-                              .select('_id prev_st')
                               .lean(true);
 
     if (!env.data.posts.length) throw { code: N.io.CLIENT_ERROR, message: env.t('err_no_posts') };
@@ -84,16 +107,41 @@ module.exports = function (N, apiPath) {
   // Undelete posts
   //
   N.wire.on(apiPath, async function undelete_posts(env) {
+    env.data.changes = [];
+
     let bulk = N.models.forum.Post.collection.initializeUnorderedBulkOp();
 
     env.data.posts.forEach(post => {
-      bulk.find({ _id: post._id }).updateOne({
+      let update = {
         $set: post.prev_st,
         $unset: { del_reason: 1, prev_st: 1, del_by: 1 }
+      };
+
+      env.data.changes.push({
+        old_topic: env.data.topic,
+        new_topic: env.data.topic,
+        old_post:  post,
+        new_post:  mongo_apply(post, update)
       });
+
+      bulk.find({ _id: post._id }).updateOne(update);
     });
 
     await bulk.execute();
+  });
+
+
+  // Save old version in history
+  //
+  N.wire.after(apiPath, function save_history(env) {
+    return N.models.forum.PostHistory.add(
+      env.data.changes,
+      {
+        user: env.user_info.user_id,
+        role: N.models.forum.PostHistory.roles.MODERATOR,
+        ip:   env.req.ip
+      }
+    );
   });
 
 
@@ -123,6 +171,4 @@ module.exports = function (N, apiPath) {
     await N.models.forum.Topic.updateCache(env.data.topic._id);
     await N.models.forum.Section.updateCache(env.data.topic.section);
   });
-
-  // TODO: log moderator actions
 };
