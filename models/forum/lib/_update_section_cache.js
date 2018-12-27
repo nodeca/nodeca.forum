@@ -115,8 +115,8 @@ module.exports = function (N) {
 
     let Section = N.models.forum.Section;
 
-    let data1 = await __fill_cache_from_subsections();
-    let data2 = await __fill_cache_from_own_topics();
+    let data1 = await __fill_cache_from_subsections(sectionID);
+    let data2 = await __fill_cache_from_own_topics(sectionID);
     let source;
     let updateData = {};
 

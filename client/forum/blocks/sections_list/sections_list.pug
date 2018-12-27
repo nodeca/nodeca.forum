@@ -4,8 +4,6 @@
 
 .forum-sections
   each section in self.subsections
-    - var last_topic = section.cache.last_topic_hid
-    - var last_user = self.users[section.cache.last_user]
     - var last_ts = section.cache.last_ts
     .forum-section(id='cat' + section.hid)
 
