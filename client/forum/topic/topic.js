@@ -330,7 +330,6 @@ function reset_loading_placeholders() {
 }
 
 
-//
 // Refresh first post in this topic if it is visible,
 // used if we need to re-render edit counter after title change, closing, etc.
 //

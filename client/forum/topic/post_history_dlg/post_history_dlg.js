@@ -3,7 +3,6 @@
 'use strict';
 
 
-const _             = require('lodash');
 const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 const postStatuses  = '$$ JSON.stringify(N.models.forum.Post.statuses) $$';
 
@@ -38,77 +37,128 @@ function get_source(post) {
 }
 
 
+function has_status(status_set, st) {
+  return status_set.st === st || status_set.ste === st;
+}
+
+
 // Detect changes in topic statuses
 //
-function get_topic_status_actions(old_statuses, new_statuses, new_revision) {
-  let added_st = _.difference(new_statuses, old_statuses).map(st => {
-    switch (st) {
-      case topicStatuses.DELETED:
-        return [ 'topic_delete', new_revision.topic.del_reason ];
+// Input:
+//  - old_topic - topic object before changes
+//  - new_topic - topic object after changes
+//
+// Output: an array of actions that turn old_topic into new_topic
+//
+// Example: if old_topic={st:OPEN}, new_topic={st:CLOSED}
+// means user has closed this topic
+//
+// Because subsequent changes are merged, it may output multiple actions,
+// e.g. if old_topic={st:OPEN}, new_topic={st:PINNED,ste:CLOSED},
+// actions should be pin and close
+//
+// If either old or new state is deleted, we also need to check prev_st
+// for that state to account for merges, e.g.
+// old_topic={st:OPEN}, new_topic={st:DELETED,prev_st:{st:CLOSED}} means
+// that topic was first closed than deleted
+//
+// In some cases only prev_st may be changed, e.g.
+// old_topic={st:DELETED,prev_st:{st:OPEN}}, new_topic={st:DELETED,prev_st:{st:CLOSED}},
+// so we assume that user restored, closed, then deleted topic
+//
+// It is also possible that st, ste and prev_st are all the same,
+// but del_reason is changed (so topic was restored then deleted with a different reason).
+//
+function get_topic_status_actions(new_topic, old_topic = {}) {
+  let old_st = { st: old_topic.st, ste: old_topic.ste };
+  let new_st = { st: new_topic.st, ste: new_topic.ste };
+  let old_is_deleted = false;
+  let new_is_deleted = false;
+  let result = [];
 
-      case topicStatuses.DELETED_HARD:
-        return [ 'topic_hard_delete', new_revision.topic.del_reason ];
+  if (has_status(old_st, topicStatuses.DELETED) || has_status(old_st, topicStatuses.DELETED_HARD)) {
+    old_st = old_topic.prev_st;
+    old_is_deleted = true;
+  }
 
-      case topicStatuses.PINNED:
-        return [ 'topic_pin' ];
+  if (has_status(new_st, topicStatuses.DELETED) || has_status(new_st, topicStatuses.DELETED_HARD)) {
+    new_st = new_topic.prev_st;
+    new_is_deleted = true;
+  }
 
-      case topicStatuses.CLOSED:
-        return [ 'topic_close' ];
+  if (!has_status(old_st, topicStatuses.PINNED) && has_status(new_st, topicStatuses.PINNED)) {
+    result.push([ 'topic_pin' ]);
+  }
 
-      default: // no message
-        return null;
+  if (!has_status(old_st, topicStatuses.CLOSED) && has_status(new_st, topicStatuses.CLOSED)) {
+    result.push([ 'topic_close' ]);
+  }
+
+  if (has_status(old_st, topicStatuses.PINNED) && !has_status(new_st, topicStatuses.PINNED)) {
+    result.push([ 'topic_unpin' ]);
+  }
+
+  if (has_status(old_st, topicStatuses.CLOSED) && !has_status(new_st, topicStatuses.CLOSED)) {
+    result.push([ 'topic_open' ]);
+  }
+
+  if (old_is_deleted || new_is_deleted) {
+    if (old_topic.st !== new_topic.st || old_topic.del_reason !== new_topic.del_reason || result.length > 0) {
+      if (old_is_deleted) {
+        result.unshift([ 'topic_undelete' ]);
+      }
+
+      if (new_is_deleted) {
+        /* eslint-disable max-depth */
+        if (new_topic.st === topicStatuses.DELETED_HARD) {
+          result.push([ 'topic_hard_delete', new_topic.del_reason ]);
+        } else {
+          result.push([ 'topic_delete', new_topic.del_reason ]);
+        }
+      }
     }
-  });
+  }
 
-  let removed_st = _.difference(old_statuses, new_statuses).map(st => {
-    switch (st) {
-      case topicStatuses.DELETED:
-      case topicStatuses.DELETED_HARD:
-        return [ 'topic_undelete' ];
-
-      case topicStatuses.PINNED:
-        return [ 'topic_unpin' ];
-
-      case topicStatuses.CLOSED:
-        return [ 'topic_open' ];
-
-      default: // no message
-        return null;
-    }
-  });
-
-  return added_st.concat(removed_st).filter(Boolean);
+  return result;
 }
 
 
 // Detect changes in post statuses
 //
-function get_post_status_actions(old_statuses, new_statuses, new_revision) {
-  let added_st = _.difference(new_statuses, old_statuses).map(st => {
-    switch (st) {
-      case postStatuses.DELETED:
-        return [ 'post_delete', new_revision.post.del_reason ];
+function get_post_status_actions(new_post, old_post = {}) {
+  let old_st = { st: old_post.st, ste: old_post.ste };
+  let new_st = { st: new_post.st, ste: new_post.ste };
+  let old_is_deleted = false;
+  let new_is_deleted = false;
+  let result = [];
 
-      case postStatuses.DELETED_HARD:
-        return [ 'post_hard_delete', new_revision.post.del_reason ];
+  if (has_status(old_st, postStatuses.DELETED) || has_status(old_st, postStatuses.DELETED_HARD)) {
+    old_st = old_post.prev_st;
+    old_is_deleted = true;
+  }
 
-      default: // no message
-        return null;
+  if (has_status(new_st, postStatuses.DELETED) || has_status(new_st, postStatuses.DELETED_HARD)) {
+    new_st = new_post.prev_st;
+    new_is_deleted = true;
+  }
+
+  if (old_is_deleted || new_is_deleted) {
+    if (old_post.st !== new_post.st || old_post.del_reason !== new_post.del_reason || result.length > 0) {
+      if (old_is_deleted) {
+        result.unshift([ 'post_undelete' ]);
+      }
+
+      if (new_is_deleted) {
+        if (new_post.st === postStatuses.DELETED_HARD) {
+          result.push([ 'post_hard_delete', new_post.del_reason ]);
+        } else {
+          result.push([ 'post_delete', new_post.del_reason ]);
+        }
+      }
     }
-  });
+  }
 
-  let removed_st = _.difference(old_statuses, new_statuses).map(st => {
-    switch (st) {
-      case postStatuses.DELETED:
-      case postStatuses.DELETED_HARD:
-        return [ 'post_undelete' ];
-
-      default: // no message
-        return null;
-    }
-  });
-
-  return added_st.concat(removed_st).filter(Boolean);
+  return result;
 }
 
 
@@ -136,24 +186,10 @@ function build_diff(history) {
   let actions = [];
 
   if (history[0].topic) {
-    let new_topic_statuses = [
-      history[0].topic.st,
-      history[0].topic.ste,
-      history[0].topic.prev_st && history[0].topic.prev_st.st,
-      history[0].topic.prev_st && history[0].topic.prev_st.ste
-    ].filter(st => !_.isNil(st));
-
-    actions = actions.concat(get_topic_status_actions([], new_topic_statuses, history[0]));
+    actions = actions.concat(get_topic_status_actions(history[0].topic));
   }
 
-  let new_post_statuses = [
-    history[0].post.st,
-    history[0].post.ste,
-    history[0].post.prev_st && history[0].post.prev_st.st,
-    history[0].post.prev_st && history[0].post.prev_st.ste
-  ].filter(st => !_.isNil(st));
-
-  actions = actions.concat(get_post_status_actions([], new_post_statuses, history[0]));
+  actions = actions.concat(get_post_status_actions(history[0].post));
 
   // Get first version for this post (no actual diff)
   result.push({
@@ -189,59 +225,10 @@ function build_diff(history) {
         actions.push([ 'topic_move', old_revision.topic.section, new_revision.topic.section ]);
       }
 
-      let old_topic_statuses = [
-        old_revision.topic.st,
-        old_revision.topic.ste,
-        old_revision.topic.prev_st && old_revision.topic.prev_st.st,
-        old_revision.topic.prev_st && old_revision.topic.prev_st.ste
-      ].filter(st => !_.isNil(st));
-
-      let new_topic_statuses = [
-        new_revision.topic.st,
-        new_revision.topic.ste,
-        new_revision.topic.prev_st && new_revision.topic.prev_st.st,
-        new_revision.topic.prev_st && new_revision.topic.prev_st.ste
-      ].filter(st => !_.isNil(st));
-
-      actions = actions.concat(get_topic_status_actions(old_topic_statuses, new_topic_statuses, new_revision));
-
-      // user restores deleted topic and deletes it again with different reason
-      /* eslint-disable max-depth */
-      if (old_revision.topic.st === new_revision.topic.st) {
-        if (new_revision.topic.st === topicStatuses.DELETED || new_revision.topic.st === topicStatuses.DELETED_HARD) {
-          if (new_revision.topic.del_reason !== old_revision.topic.del_reason) {
-            actions.push([ 'topic_undelete' ]);
-            actions.push([ 'topic_delete', new_revision.topic.del_reason ]);
-          }
-        }
-      }
+      actions = actions.concat(get_topic_status_actions(new_revision.topic, old_revision.topic));
     }
 
-    let old_post_statuses = [
-      old_revision.post.st,
-      old_revision.post.ste,
-      old_revision.post.prev_st && old_revision.post.prev_st.st,
-      old_revision.post.prev_st && old_revision.post.prev_st.ste
-    ].filter(st => !_.isNil(st));
-
-    let new_post_statuses = [
-      new_revision.post.st,
-      new_revision.post.ste,
-      new_revision.post.prev_st && new_revision.post.prev_st.st,
-      new_revision.post.prev_st && new_revision.post.prev_st.ste
-    ].filter(st => !_.isNil(st));
-
-    actions = actions.concat(get_post_status_actions(old_post_statuses, new_post_statuses, new_revision));
-
-    // user restores deleted post and deletes it again with different reason
-    if (old_revision.post.st === new_revision.post.st) {
-      if (new_revision.post.st === postStatuses.DELETED || new_revision.post.st === postStatuses.DELETED_HARD) {
-        if (new_revision.post.del_reason !== old_revision.post.del_reason) {
-          actions.push([ 'post_undelete' ]);
-          actions.push([ 'post_delete', new_revision.post.del_reason ]);
-        }
-      }
-    }
+    actions = actions.concat(get_post_status_actions(new_revision.post, old_revision.post));
 
     result.push({
       user:       new_revision.meta.user,

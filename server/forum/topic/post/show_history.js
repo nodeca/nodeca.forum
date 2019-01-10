@@ -4,8 +4,8 @@
 'use strict';
 
 
-const _                   = require('lodash');
-const sanitize_section    = require('nodeca.market/lib/sanitizers/section');
+const _                = require('lodash');
+const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 
 module.exports = function (N, apiPath) {
