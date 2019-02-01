@@ -33,8 +33,11 @@ module.exports = function (N, apiPath) {
 
   // Check attachments owner
   //
-  N.wire.before(apiPath, async function attachments_check_owner(env) {
-    await N.wire.emit('internal:users.attachments_check_owner', env);
+  N.wire.before(apiPath, function attachments_check_owner(env) {
+    return N.wire.emit('internal:users.attachments_check_owner', {
+      attachments: env.params.attach,
+      user_id: env.data.post.user
+    });
   });
 
 
