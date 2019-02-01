@@ -59,6 +59,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data) {
       };
 
       post = {
+        user_id:     postData.user_id,
         md:          postData.md,
         attachments: postData.attachments
       };
@@ -71,6 +72,9 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data) {
 N.wire.on(module.apiPath + ':begin', function show_editor(data) {
   let $editor = N.MDEdit.show({
     text: post.md,
+    // hide attachment button when moderators edit posts created by others
+    // (note: editing their own posts as moderators will still show normal toolbar)
+    toolbar: post.user_id !== N.runtime.user_id ? 'as_moderator' : 'default',
     attachments: post.attachments
   });
 
