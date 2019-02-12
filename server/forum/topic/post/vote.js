@@ -112,7 +112,7 @@ module.exports = function (N, apiPath) {
   // Remove previous vote if exists
   //
   N.wire.before(apiPath, async function remove_votes(env) {
-    await N.models.users.Vote.remove(
+    await N.models.users.Vote.deleteOne(
       { 'for': env.params.post_id, from: env.user_info.user_id });
   });
 
@@ -122,7 +122,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function add_vote(env) {
     if (env.params.value === 0) return;
 
-    await N.models.users.Vote.update(
+    await N.models.users.Vote.updateOne(
       { 'for': env.params.post_id, from: env.user_info.user_id },
       {
         to: env.data.post.user,
@@ -149,7 +149,7 @@ module.exports = function (N, apiPath) {
       { $project: { _id: false, votes: true, votes_hb: true } }
     ]).exec();
 
-    await N.models.forum.Post.update({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 });
+    await N.models.forum.Post.updateOne({ _id: env.data.post._id }, result[0] || { votes: 0, votes_hb: 0 });
   });
 
 
@@ -167,7 +167,7 @@ module.exports = function (N, apiPath) {
                                    .where('for').equals(env.data.post._id)
                                    .where('value').lt(0)
                                    .where('hb').ne(true)
-                                   .count();
+                                   .countDocuments();
 
     if (downvote_count < votes_auto_report) return;
 

@@ -77,10 +77,9 @@ module.exports = function (N, apiPath) {
   // Update section for all posts in moved topic
   //
   N.wire.on(apiPath, async function update_section(env) {
-    await N.models.forum.Post.update(
+    await N.models.forum.Post.updateMany(
       { topic: env.data.topic._id },
-      { $set: { section: env.data.section_to._id } },
-      { multi: true }
+      { $set: { section: env.data.section_to._id } }
     );
   });
 

@@ -83,7 +83,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function write_cache(locals) {
     if (locals.cached) return;
 
-    await N.models.forum.TopicSimilarCache.update({
+    await N.models.forum.TopicSimilarCache.updateOne({
       topic: locals.topic_id
     }, {
       $set: {

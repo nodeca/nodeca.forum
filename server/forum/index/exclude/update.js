@@ -46,7 +46,7 @@ module.exports = function (N, apiPath) {
   // Save excluded sections
   //
   N.wire.on(apiPath, async function save_excluded_sections(env) {
-    await N.models.forum.ExcludedSections.update(
+    await N.models.forum.ExcludedSections.updateOne(
       { user: env.user_info.user_id },
       { excluded_sections: _.map(env.data.sections, '_id') || [] },
       { upsert: true }

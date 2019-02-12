@@ -56,7 +56,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, async function subscription_add_remove(env) {
     // Use `update` with `upsert` to avoid duplicates in case of multi click
-    await N.models.users.Subscription.update(
+    await N.models.users.Subscription.updateOne(
       { user: env.user_info.user_id, to: env.data.section._id },
       { type: env.params.type, to_type: N.shared.content_type.FORUM_SECTION },
       { upsert: true });

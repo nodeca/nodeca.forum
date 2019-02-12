@@ -167,11 +167,10 @@ module.exports = function (N, apiPath) {
   // Remove votes
   //
   N.wire.after(apiPath, async function remove_votes(env) {
-    await N.models.users.Vote.collection.update(
+    await N.models.users.Vote.updateMany(
       { 'for': { $in: _.map(env.data.posts, '_id') } },
       // Just move vote `value` field to `backup` field
-      { $rename: { value: 'backup' } },
-      { multi: true }
+      { $rename: { value: 'backup' } }
     );
   });
 
@@ -179,7 +178,7 @@ module.exports = function (N, apiPath) {
   // Increment topic version to invalidate old post count cache
   //
   N.wire.after(apiPath, async function remove_old_post_count_cache(env) {
-    await N.models.forum.Topic.update({ _id: env.data.topic._id }, { $inc: { version: 1 } });
+    await N.models.forum.Topic.updateOne({ _id: env.data.topic._id }, { $inc: { version: 1 } });
   });
 
 

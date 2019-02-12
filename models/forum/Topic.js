@@ -192,7 +192,7 @@ module.exports = function (N, collectionName) {
                           N.models.forum.Post
                               .where('topic').equals(topicID)
                               .where('st').equals(st)
-                              .count()
+                              .countDocuments()
                         )
                       );
 
@@ -202,7 +202,7 @@ module.exports = function (N, collectionName) {
     // Hellbanned post count
     updateData['cache_hb.post_count'] = count[0] + count[1];
 
-    await N.models.forum.Topic.update({ _id: topicID }, updateData);
+    await N.models.forum.Topic.updateOne({ _id: topicID }, updateData);
   };
 
 

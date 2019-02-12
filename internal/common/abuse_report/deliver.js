@@ -77,7 +77,7 @@ module.exports = function (N, apiPath) {
 
       // If topic not exists - delete invalid ref
       if (!topic) {
-        await N.models.forum.AbuseReportRef.remove({ _id: report_ref._id });
+        await N.models.forum.AbuseReportRef.deleteOne({ _id: report_ref._id });
       }
     }
 

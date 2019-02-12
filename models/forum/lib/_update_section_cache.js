@@ -138,7 +138,7 @@ module.exports = function (N) {
     updateData['cache_hb.last_user']        = source.cache_hb.last_user || null;
     updateData['cache_hb.last_ts']          = source.cache_hb.last_ts || null;
 
-    await Section.update({ _id: sectionID }, updateData);
+    await Section.updateOne({ _id: sectionID }, updateData);
 
     let list = await Section.getParentList(sectionID);
 

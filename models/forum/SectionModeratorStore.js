@@ -53,7 +53,7 @@ module.exports = function (N, collectionName) {
     // When a section is removed, delete a relevant store document
     //
     schema.post('remove', function (section) {
-      N.models.forum.SectionModeratorStore.remove({ section_id: section._id }, function (err) {
+      N.models.forum.SectionModeratorStore.deleteOne({ section_id: section._id }, function (err) {
         if (err) {
           N.logger.error('After %s section is removed, cannot remove related settings: %s', section._id, err);
         }

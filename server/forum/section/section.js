@@ -101,7 +101,7 @@ module.exports = function (N, apiPath) {
         N.models.forum.Topic
             .where('section').equals(env.data.section._id)
             .where('st').equals(st)
-            .count()
+            .countDocuments()
       )
     );
 
@@ -110,7 +110,7 @@ module.exports = function (N, apiPath) {
                        await N.models.forum.Topic
                                .where('section').equals(env.data.section._id)
                                .where('st').equals(N.models.forum.Topic.statuses.PINNED)
-                               .count();
+                               .countDocuments();
 
     let topic_count = _.sum(counters_by_status) + pinned_count;
 
@@ -130,7 +130,7 @@ module.exports = function (N, apiPath) {
               .where(`${cache}.last_post`).gt(last_post_id)
               .where('section').equals(env.data.section._id)
               .where('st').equals(st)
-              .count()
+              .countDocuments()
         )
       );
 
