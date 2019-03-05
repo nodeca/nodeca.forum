@@ -58,7 +58,7 @@ module.exports = function (N, apiPath) {
     // Create new post
     let post = new N.models.forum.Post();
 
-    post.html   = (await N.parser.md2html({ text: body, attachments: [], options })).html;
+    post.html   = (await N.parser.md2html({ text: body, options })).html;
     post.md     = body;
     post.st     = N.models.forum.Post.statuses.VISIBLE;
     post.user   = bot._id;

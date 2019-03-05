@@ -15,26 +15,3 @@ html
 
     .nntp-art-content
       .markup!= self.body
-
-      if self.post.tail && self.post.tail.length
-        .markup-tail
-          ul.thumb-grid.thumb-grid__m-tight
-            each media in self.post.tail
-              - var href = self.link_to('users.media', { user_hid: self.user.hid, media_id: media.media_id })
-
-              li.thumb-grid__item
-                - var mType = media.type & ~mTypes.MASK_DELETED
-
-                if mType === mTypes.IMAGE
-                  - var imageUrl = self.link_to('core.gridfs', { bucket: media.media_id + '_sm' })
-                  a.attach.attach-img.thumb(href=href)
-                    img.thumb__image(src=imageUrl)
-
-                else if mType === mTypes.BINARY
-                  a.attach.attach-bin.thumb(href=href)
-                    .thumb__content= media.file_name
-
-                else if mType === mTypes.MEDIALINK
-                  .attach.attach-media.thumb
-                    a.thumb__inner(href=href)
-                      img.thumb__image(src=media.medialink_meta.thumb)

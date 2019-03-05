@@ -139,8 +139,7 @@ module.exports = function (N, apiPath) {
       'ste',
       'del_reason',
       'del_by',
-      'prev_st',
-      'tail'
+      'prev_st'
     ]);
   }
 

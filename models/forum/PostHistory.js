@@ -6,7 +6,6 @@
 
 const _              = require('lodash');
 const Mongoose       = require('mongoose');
-const AttachmentInfo = require('./_AttachmentInfo');
 const Schema         = Mongoose.Schema;
 
 // If same user edits the same post within 5 minutes, all changes
@@ -47,8 +46,7 @@ module.exports = function (N, collectionName) {
       st:  Number,
       ste: Number
     },
-    params_ref: Schema.ObjectId,
-    tail:       [ AttachmentInfo ]
+    params_ref: Schema.ObjectId
   };
 
 

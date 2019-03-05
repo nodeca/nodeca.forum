@@ -59,9 +59,8 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data) {
       };
 
       post = {
-        user_id:     postData.user_id,
-        md:          postData.md,
-        attachments: postData.attachments
+        user_id: postData.user_id,
+        md:      postData.md
       };
     });
 });
@@ -74,8 +73,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
     text: post.md,
     // hide attachment button when moderators edit posts created by others
     // (note: editing their own posts as moderators will still show normal toolbar)
-    toolbar: post.user_id !== N.runtime.user_id ? 'as_moderator' : 'default',
-    attachments: post.attachments
+    toolbar: post.user_id !== N.runtime.user_id ? 'as_moderator' : 'default'
   });
 
   updateOptions();
@@ -102,7 +100,6 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
         as_moderator:             data.as_moderator,
         post_id:                  data.post_id,
         txt:                      N.MDEdit.text(),
-        attach:                   _.map(N.MDEdit.attachments(), 'media_id'),
         option_no_mlinks:         options.user_settings.no_mlinks,
         option_no_emojis:         options.user_settings.no_emojis,
         option_no_quote_collapse: options.user_settings.no_quote_collapse

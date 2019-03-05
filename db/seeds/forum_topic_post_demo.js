@@ -70,7 +70,6 @@ async function createPost(topic, previous_posts) {
 
   let result = await parser.md2html({
     text: md,
-    attachments: [],
     options
   });
 

@@ -14,12 +14,6 @@ module.exports = function (N, apiPath) {
     section_hid:              { type: 'integer', required: true },
     title:                    { type: 'string', required: true },
     txt:                      { type: 'string', required: true },
-    attach:                   {
-      type: 'array',
-      required: true,
-      uniqueItems: true,
-      items: { format: 'mongo', required: true }
-    },
     option_no_mlinks:         { type: 'boolean', required: true },
     option_no_emojis:         { type: 'boolean', required: true },
     option_no_quote_collapse: { type: 'boolean', required: true }
@@ -76,16 +70,6 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check attachments owner
-  //
-  N.wire.before(apiPath, function attachments_check_owner(env) {
-    return N.wire.emit('internal:users.attachments_check_owner', {
-      attachments: env.params.attach,
-      user_id: env.user_info.user_id
-    });
-  });
-
-
   // Prepare parse options
   //
   N.wire.before(apiPath, async function prepare_options(env) {
@@ -116,7 +100,6 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function parse_text(env) {
     env.data.parse_result = await N.parser.md2html({
       text: env.params.txt,
-      attachments: env.params.attach,
       options: env.data.parse_options,
       user_info: env.user_info
     });
@@ -147,9 +130,8 @@ module.exports = function (N, apiPath) {
     let ast         = $.parse(env.data.parse_result.html);
     let images      = ast.find('.image').length;
     let attachments = ast.find('.attach').length;
-    let tail        = env.data.parse_result.tail.length;
 
-    if (images + attachments + tail > max_images) {
+    if (images + attachments > max_images) {
       throw {
         code: N.io.CLIENT_ERROR,
         message: env.t('err_too_many_images', max_images)
@@ -186,8 +168,6 @@ module.exports = function (N, apiPath) {
     // Fill post data
     post.user = env.user_info.user_id;
     post.ts = Date.now();
-    post.attach = env.params.attach;
-    post.tail = env.data.parse_result.tail;
     post.html = env.data.parse_result.html;
     post.md = env.params.txt;
     post.ip = env.req.ip;
