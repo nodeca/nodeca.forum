@@ -16,17 +16,16 @@
             class=entry.role === roles.TASK ? 'forum-post-history-entry__m-task' : ''
           )
             .forum-post-history-entry__meta
-              .forum-post-history-entry__meta-author
-                span.forum-post-history-entry__icon-task(
-                  title=self.t('role_task')
-                )= '*'
-                span.forum-post-history-entry__icon-moderator(
-                  title=self.t('role_moderator')
-                )= '*'
-                if user
-                  a.forum-post-history-entry__meta-author-link(href=self.link_to('users.member', { user_hid: user.hid }))
-                    = user.nick
-              .forum-post-history-entry__meta-ts!= self.timetag(entry.ts, 'relative')
+              span.forum-post-history-entry__meta-ts!= self.timetag(entry.ts, 'relative')
+              if user
+                a.forum-post-history-entry__meta-author-link(href=self.link_to('users.member', { user_hid: user.hid }))
+                  = user.nick
+              span.forum-post-history-entry__icon-task(
+                title=self.t('role_task')
+              )= '*'
+              span.forum-post-history-entry__icon-moderator(
+                title=self.t('role_moderator')
+              )= '*'
 
             if entry.title_diff
               .forum-post-history-entry__title
