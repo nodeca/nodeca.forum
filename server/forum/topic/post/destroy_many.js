@@ -130,10 +130,8 @@ module.exports = function (N, apiPath) {
       };
 
       env.data.changes.push({
-        old_topic: env.data.topic,
-        new_topic: env.data.topic,
-        old_post:  post,
-        new_post:  mongo_apply(post, update)
+        old_post: post,
+        new_post: mongo_apply(post, update)
       });
 
       bulk.find({ _id: post._id }).updateOne(update);

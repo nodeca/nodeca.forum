@@ -147,29 +147,72 @@ module.exports = function (N, apiPath) {
   // Fetch and return post edit history
   //
   N.wire.on(apiPath, async function get_post_history(env) {
-    let history = await N.models.forum.PostHistory.find()
-                            .where('post').equals(env.data.post._id)
-                            .sort('_id')
-                            .lean(true);
+    let post_history = await N.models.forum.PostHistory.find()
+                                 .where('post').equals(env.data.post._id)
+                                 .sort('_id')
+                                 .lean(true);
 
-    let history_meta = [ {
+    let post_history_meta = [ {
       user: env.data.post.user,
       ts:   env.data.post.ts,
       role: N.models.forum.PostHistory.roles.USER
     } ].concat(
-      _.map(history, i => ({ user: i.user, ts: i.ts, role: i.role }))
+      _.map(post_history, i => ({ user: i.user, ts: i.ts, role: i.role }))
     );
 
-    let history_topics = _.map(history, 'topic_data')
-                          .concat([ env.data.post.hid <= 1 ? env.data.topic : null ])
-                          .map(sanitize_topic);
+    let post_history_data = _.map(post_history, 'post_data')
+                             .concat([ env.data.post ])
+                             .map(sanitize_post);
 
-    let history_posts = _.map(history, 'post_data')
-                         .concat([ env.data.post ])
-                         .map(sanitize_post);
+    let history = _.zip(post_history_meta, post_history_data)
+                   .map(([ meta, post ]) => ({ meta, post }));
 
-    env.res.history = _.zip(history_meta, history_topics, history_posts)
-                       .map(([ meta, topic, post ]) => ({ meta, topic, post }));
+    if (env.data.post.hid === 1) {
+      let topic_history = await N.models.forum.TopicHistory.find()
+                                     .where('topic').equals(env.data.topic._id)
+                                     .sort('_id')
+                                     .lean(true);
+
+      let topic_history_meta = [ {
+        user: env.data.post.user,
+        ts:   env.data.post.ts,
+        role: N.models.forum.TopicHistory.roles.USER
+      } ].concat(
+        _.map(topic_history, i => ({ user: i.user, ts: i.ts, role: i.role }))
+      );
+
+      let topic_history_data = _.map(topic_history, 'topic_data')
+                                .concat([ env.data.topic ])
+                                .map(sanitize_topic);
+
+      let topic_history_merged = _.zip(topic_history_meta, topic_history_data)
+                                  .map(([ meta, topic ]) => ({ meta, topic }));
+
+      let first_rec = topic_history_merged.shift();
+
+      history[0].topic = first_rec.topic;
+      history = history.concat(topic_history_merged);
+    }
+
+    history = history.sort((a, b) => a.meta.ts > b.meta.ts);
+
+    let prev_topic = history[0].topic, prev_post = history[0].post;
+
+    for (let i = 1; i < history.length; i++) {
+      if (history[i].topic) {
+        prev_topic = history[i].topic;
+      } else {
+        history[i].topic = prev_topic;
+      }
+
+      if (history[i].post) {
+        prev_post = history[i].post;
+      } else {
+        history[i].post = prev_post;
+      }
+    }
+
+    env.res.history = history;
 
     env.data.users = (env.data.users || []).concat(_.map(env.res.history, 'meta.user'));
   });

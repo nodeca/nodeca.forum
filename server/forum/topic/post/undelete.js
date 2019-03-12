@@ -89,10 +89,8 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, function save_history(env) {
     return N.models.forum.PostHistory.add(
       {
-        old_topic: env.data.topic,
-        new_topic: env.data.topic,
-        old_post:  env.data.post,
-        new_post:  env.data.new_post
+        old_post: env.data.post,
+        new_post: env.data.new_post
       },
       {
         user: env.user_info.user_id,

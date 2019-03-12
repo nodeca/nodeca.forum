@@ -93,11 +93,11 @@ module.exports = function (N, apiPath) {
   // Save old version in history
   //
   N.wire.after(apiPath, function save_history(env) {
-    return N.models.forum.PostHistory.add(
+    return N.models.forum.TopicHistory.add(
       env.data.changes,
       {
         user: env.user_info.user_id,
-        role: N.models.forum.PostHistory.roles.MODERATOR,
+        role: N.models.forum.TopicHistory.roles.MODERATOR,
         ip:   env.req.ip
       }
     );

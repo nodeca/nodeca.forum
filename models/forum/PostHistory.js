@@ -4,9 +4,9 @@
 'use strict';
 
 
-const _              = require('lodash');
-const Mongoose       = require('mongoose');
-const Schema         = Mongoose.Schema;
+const _        = require('lodash');
+const Mongoose = require('mongoose');
+const Schema   = Mongoose.Schema;
 
 // If same user edits the same post within 5 minutes, all changes
 // made within that period will be squashed into one diff.
@@ -23,19 +23,6 @@ let roles = {
 module.exports = function (N, collectionName) {
 
   // list of properties we want to track
-  let topicSchema = {
-    title:      String,
-    section:    Schema.ObjectId,
-    st:         Number,
-    ste:        Number,
-    del_reason: String,
-    del_by:     Schema.ObjectId,
-    prev_st: {
-      st:  Number,
-      ste: Number
-    }
-  };
-
   let postSchema = {
     md:         String,
     st:         Number,
@@ -61,8 +48,6 @@ module.exports = function (N, collectionName) {
     role: Number,
 
     // old information before changes were made;
-    // topic_data is only available for 1st post in each topic, null otherwise
-    topic_data: topicSchema,
     post_data:  postSchema
   }, {
     versionKey: false
@@ -98,9 +83,7 @@ module.exports = function (N, collectionName) {
    * Params:
    *
    * - changes (Array)    - each item is an object describing changes to a single post
-   *   - old_topic (Object) - topic version before updates (1st post only)
    *   - old_post  (Object) - post version before updates
-   *   - new_topic (Object) - topic version after updates (1st post only)
    *   - new_post  (Object) - post version after updates
    * - meta (Object)      - metadata for this change
    *   - user (ObjectId)    - who made those changes
@@ -136,28 +119,6 @@ module.exports = function (N, collectionName) {
     meta = Object.assign({}, meta);
     if (!meta.ts) meta.ts = new Date();
     if (!meta.ip) meta.ip = '127.0.0.1'; // for TASK
-
-    //
-    // Fetch first post of each topic if it isn't passed in params,
-    // it's used for topic-only changes (pin, close, etc.)
-    //
-    let incomplete_topic_ids = _.map(changes.filter(c => !c.old_post && !c.new_post), 'new_topic._id');
-
-    if (incomplete_topic_ids.length > 0) {
-      let first_posts = _.keyBy(
-        await N.models.forum.Post.find()
-                  .where('topic').in(incomplete_topic_ids)
-                  .where('hid').equals(1)
-                  .lean(true),
-        'topic'
-      );
-
-      for (let c of changes) {
-        if (!c.old_post && !c.new_post) {
-          c.old_post = c.new_post = first_posts[c.new_topic._id];
-        }
-      }
-    }
 
     //
     // Select all history ids first, used for:
@@ -200,15 +161,12 @@ module.exports = function (N, collectionName) {
 
     let bulk_history = N.models.forum.PostHistory.collection.initializeUnorderedBulkOp();
 
-    /* eslint-disable no-undefined */
     for (let { old_post, new_post, old_topic, new_topic } of changes) {
       let prev = last_history_entry[new_post._id];
-      let old_topic_data = new_post.hid <= 1 ? getDataBySchema(old_topic, topicSchema) : undefined;
-      let old_post_data = getDataBySchema(old_post, postSchema);
-      let old_data_str = JSON.stringify([ old_topic_data, old_post_data ]);
-      let new_topic_data = new_post.hid <= 1 ? getDataBySchema(new_topic, topicSchema) : undefined;
-      let new_post_data = getDataBySchema(new_post, postSchema);
-      let new_data_str = JSON.stringify([ new_topic_data, new_post_data ]);
+      let old_data = getDataBySchema(old_post, postSchema);
+      let old_data_str = JSON.stringify(old_data);
+      let new_data = getDataBySchema(new_post, postSchema);
+      let new_data_str = JSON.stringify(new_data);
 
       // stop if no changes were made (shouldn't normally happen)
       if (old_data_str === new_data_str) continue;
@@ -227,9 +185,8 @@ module.exports = function (N, collectionName) {
           prev.role === meta.role &&
           prev.ts > meta.ts - HISTORY_GRACE_PERIOD && prev.ts <= meta.ts) {
 
-        let prev_topic_data = new_post.hid <= 1 ? getDataBySchema(prev.topic_data, topicSchema) : undefined;
-        let prev_post_data = getDataBySchema(prev.post_data, postSchema); // sort keys
-        let prev_data_str = JSON.stringify([ prev_topic_data, prev_post_data ]);
+        let prev_data = getDataBySchema(prev.post_data, postSchema); // sort keys
+        let prev_data_str = JSON.stringify(prev_data);
 
         if (prev_data_str === new_data_str) {
           //
@@ -272,13 +229,12 @@ module.exports = function (N, collectionName) {
       history[new_post._id].count++;
 
       bulk_history.insert({
-        post:       new_post._id,
-        user:       meta.user,
-        ts:         meta.ts,
-        ip:         meta.ip,
-        role:       meta.role,
-        topic_data: old_topic_data,
-        post_data:  old_post_data
+        post:      new_post._id,
+        user:      meta.user,
+        ts:        meta.ts,
+        ip:        meta.ip,
+        role:      meta.role,
+        post_data: old_data
       });
     }
 

@@ -74,6 +74,12 @@ module.exports = function (N, collectionName) {
     // Incremented when remove post from topic
     version:        Number,
 
+    // An amount of edits made for this topic
+    edit_count:     Number,
+
+    // Time when this topic was last edited (null if no edits)
+    last_edit_ts:   Date,
+
     // State (normal, closed, soft-deleted, hard-deleted, hellbanned,...)
     // constants should be defined globally
     st:             Number,
