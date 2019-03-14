@@ -1,9 +1,9 @@
-// Popup dialog to show post history
+// Popup dialog to show topic history
 //
 'use strict';
 
 
-const postStatuses  = '$$ JSON.stringify(N.models.forum.Post.statuses) $$';
+const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
 
 let $dialog;
 
@@ -13,16 +13,6 @@ let $dialog;
 N.wire.before(module.apiPath, function load_deps() {
   return N.loader.loadAssets('vendor.diff');
 });
-
-
-// Make post text into diffable string
-//
-function get_source(post) {
-  let result = post.md;
-
-  // make sure source ends with newline
-  return result.replace(/\n?$/, '\n');
-}
 
 
 function has_status(status_set, st) {
@@ -57,35 +47,51 @@ function has_status(status_set, st) {
 // It is also possible that st, ste and prev_st are all the same,
 // but del_reason is changed (so topic was restored then deleted with a different reason).
 //
-function get_status_actions(new_post, old_post = {}) {
-  let old_st = { st: old_post.st, ste: old_post.ste };
-  let new_st = { st: new_post.st, ste: new_post.ste };
+function get_status_actions(new_topic, old_topic = {}) {
+  let old_st = { st: old_topic.st, ste: old_topic.ste };
+  let new_st = { st: new_topic.st, ste: new_topic.ste };
   let old_is_deleted = false;
   let new_is_deleted = false;
   let result = [];
 
-  if (has_status(old_st, postStatuses.DELETED) || has_status(old_st, postStatuses.DELETED_HARD)) {
-    old_st = old_post.prev_st;
+  if (has_status(old_st, topicStatuses.DELETED) || has_status(old_st, topicStatuses.DELETED_HARD)) {
+    old_st = old_topic.prev_st;
     old_is_deleted = true;
   }
 
-  if (has_status(new_st, postStatuses.DELETED) || has_status(new_st, postStatuses.DELETED_HARD)) {
-    new_st = new_post.prev_st;
+  if (has_status(new_st, topicStatuses.DELETED) || has_status(new_st, topicStatuses.DELETED_HARD)) {
+    new_st = new_topic.prev_st;
     new_is_deleted = true;
   }
 
+  if (!has_status(old_st, topicStatuses.PINNED) && has_status(new_st, topicStatuses.PINNED)) {
+    result.push([ 'pin' ]);
+  }
+
+  if (!has_status(old_st, topicStatuses.CLOSED) && has_status(new_st, topicStatuses.CLOSED)) {
+    result.push([ 'close' ]);
+  }
+
+  if (has_status(old_st, topicStatuses.PINNED) && !has_status(new_st, topicStatuses.PINNED)) {
+    result.push([ 'unpin' ]);
+  }
+
+  if (has_status(old_st, topicStatuses.CLOSED) && !has_status(new_st, topicStatuses.CLOSED)) {
+    result.push([ 'open' ]);
+  }
+
   if (old_is_deleted || new_is_deleted) {
-    if (old_post.st !== new_post.st || old_post.del_reason !== new_post.del_reason || result.length > 0) {
+    if (old_topic.st !== new_topic.st || old_topic.del_reason !== new_topic.del_reason || result.length > 0) {
       if (old_is_deleted) {
         result.unshift([ 'undelete' ]);
       }
 
-      /* eslint-disable max-depth */
       if (new_is_deleted) {
-        if (new_post.st === postStatuses.DELETED_HARD) {
-          result.push([ 'hard_delete', new_post.del_reason ]);
+        /* eslint-disable max-depth */
+        if (new_topic.st === topicStatuses.DELETED_HARD) {
+          result.push([ 'hard_delete', new_topic.del_reason ]);
         } else {
-          result.push([ 'delete', new_post.del_reason ]);
+          result.push([ 'delete', new_topic.del_reason ]);
         }
       }
     }
@@ -100,12 +106,10 @@ function get_status_actions(new_post, old_post = {}) {
 // Output: array of diff descriptions (user, timestamp, html diff, etc.)
 //
 function build_diff(history) {
-  const { diff } = require('nodeca.core/client/vendor/diff/diff');
+  const { diff_line } = require('nodeca.core/client/vendor/diff/diff');
 
   let result = [];
-
-  let initial_src = get_source(history[0].post);
-  let text_diff = diff(initial_src, initial_src);
+  let title_diff = diff_line(history[0].topic.title, history[0].topic.title);
 
   //
   // Detect changes in topic or post statuses squashed with first changeset
@@ -113,37 +117,39 @@ function build_diff(history) {
   //
   let actions = [];
 
-  actions = actions.concat(get_status_actions(history[0].post));
+  actions = actions.concat(get_status_actions(history[0].topic));
 
   // Get first version for this post (no actual diff)
   result.push({
     user:       history[0].meta.user,
     ts:         history[0].meta.ts,
     role:       history[0].meta.role,
-    text_diff,
+    title_diff,
     actions
   });
 
   for (let revision = 0; revision < history.length - 1; revision++) {
     let old_revision = history[revision];
     let new_revision = history[revision + 1];
-    let old_src = get_source(old_revision.post);
-    let new_src = get_source(new_revision.post);
-    let text_diff;
+    let title_diff;
 
-    if (old_src !== new_src) {
-      text_diff = diff(old_src, new_src);
+    if (old_revision.topic.title !== new_revision.topic.title) {
+      title_diff = diff_line(old_revision.topic.title, new_revision.topic.title);
     }
 
     let actions = [];
 
-    actions = actions.concat(get_status_actions(new_revision.post, old_revision.post));
+    if (old_revision.topic.section !== new_revision.topic.section) {
+      actions.push([ 'move', old_revision.topic.section, new_revision.topic.section ]);
+    }
+
+    actions = actions.concat(get_status_actions(new_revision.topic, old_revision.topic));
 
     result.push({
       user:       new_revision.meta.user,
       ts:         new_revision.meta.ts,
       role:       new_revision.meta.role,
-      text_diff,
+      title_diff,
       actions
     });
   }

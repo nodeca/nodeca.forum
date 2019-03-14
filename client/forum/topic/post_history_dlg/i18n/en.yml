@@ -2,15 +2,7 @@ en-US:
   title: History
   role_task: This action was performed automatically
   role_moderator: This action was performed by a moderator
-  action_topic_move: 'Topic moved from <a href="#{old_link}" target="_blank">#{old_title}</a> to <a href="#{new_link}" target="_blank">#{new_title}</a>'
-  action_topic_open: Topic opened
-  action_topic_close: Topic closed
-  action_topic_pin: Topic pinned
-  action_topic_unpin: Topic unpinned
-  action_topic_delete: Topic deleted
-  action_topic_hard_delete: Topic hard deleted
-  action_topic_undelete: Topic restored
-  action_post_delete: Post deleted
-  action_post_hard_delete: Post hard deleted
-  action_post_undelete: Post restored
+  action_delete: Post deleted
+  action_hard_delete: Post hard deleted
+  action_undelete: Post restored
   del_reason: "(#{text})"

@@ -61,7 +61,7 @@ if items.length > 0 && items[items.length - 1] === 'header'
 if items.length > 0 && items[items.length - 1] === 'divider'
   - items.pop()
 
-if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0
+if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0 && self.topic.edit_count > 0
   - items.push('mod_history')
 
 if self.selected_cnt
@@ -131,9 +131,10 @@ if self.selected_cnt
               .dropdown-header= self.t('mod_actions')
 
             when 'mod_history'
-              //- TODO
-              button.dropdown-item.disabled(
+              button.dropdown-item(
                 type='button'
+                data-on-click='forum.topic:topic_history'
+                data-topic-id=self.topic._id
               )= self.t('history')
 
             when 'post_add'

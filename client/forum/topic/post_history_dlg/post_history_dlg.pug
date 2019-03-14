@@ -27,10 +27,6 @@
                 title=self.t('role_moderator')
               )= '*'
 
-            if entry.title_diff
-              .forum-post-history-entry__title
-                != entry.title_diff
-
             if entry.text_diff
               .forum-post-history-entry__diff
                 != entry.text_diff
@@ -41,17 +37,8 @@
                   - var key = d[0], value = d[1], new_value = d[2];
                   .forum-post-history-entry__action-item
                     case key
-                      when 'topic_move'
-                        .diff-line
-                          - var old_section = self.sections[value] || {};
-                          - var old_link = self.link_to('forum.section', { section_hid: old_section.hid });
-                          - var new_section = self.sections[new_value] || {};
-                          - var new_link = self.link_to('forum.section', { section_hid: new_section.hid });
-                          != self.t('action_topic_move', { old_title: old_section.title, old_link: old_link, new_title: new_section.title, new_link: new_link })
-                      when 'topic_delete'
-                      when 'topic_hard_delete'
-                      when 'post_delete'
-                      when 'post_hard_delete'
+                      when 'delete'
+                      when 'hard_delete'
                         .diff-line
                           = self.t('action_' + key)
                           if value

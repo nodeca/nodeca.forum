@@ -1,0 +1,42 @@
+@import "nodeca.core/client/common/_variables"
+
+.forum-topic-history-entry
+  overflow-wrap break-word
+  margin-bottom 2rem
+
+.forum-topic-history-entry + .forum-topic-history-entry
+  border-top 1px solid $decorator-color
+  padding-top .5rem
+
+.forum-topic-history-entry__meta
+  padding 0 .2rem
+  margin .5rem 0
+  font-size $font-size-sm
+  color $body-color-secondary + 20%
+
+.forum-topic-history-entry__icon-task
+.forum-topic-history-entry__icon-moderator
+  font-weight bold
+  color #c97971
+  margin-left .375rem
+  display none
+
+.forum-topic-history-entry__m-task .forum-topic-history-entry__icon-task
+.forum-topic-history-entry__m-moderator .forum-topic-history-entry__icon-moderator
+  display inline
+
+.forum-topic-history-entry__meta-ts:after
+  content ', '
+
+.forum-topic-history-entry__meta-author-link
+  color inherit
+
+.forum-topic-history-entry__title
+  font-size $font-size-lg
+  margin-bottom .5rem
+
+.forum-topic-history-entry__diff
+  margin-bottom .5rem
+
+.forum-topic-history-entry__actions
+  color $body-color + 50%
