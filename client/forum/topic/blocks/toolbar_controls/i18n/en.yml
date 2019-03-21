@@ -5,7 +5,7 @@ en-US:
   pin: Pin
   unpin: Unpin
   move: Move
-  history: History
+  history: History (#{count})
   delete: Delete
   undelete: Undelete
   post_add: Add reply

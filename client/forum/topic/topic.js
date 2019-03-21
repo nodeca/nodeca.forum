@@ -330,38 +330,6 @@ function reset_loading_placeholders() {
 }
 
 
-// Refresh first post in this topic if it is visible,
-// used if we need to re-render edit counter after title change, closing, etc.
-//
-function reload_first_post() {
-  let hid = topicState.top_marker;
-  if (hid && hid > 1) return Promise.resolve();
-
-  let post = $('.forum-post:first');
-  if (post.data('post-hid') !== 1) return Promise.resolve();
-
-  let postId = post.data('post-id');
-
-  return Promise.resolve()
-    .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
-    .then(res => {
-      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-      if (topicState.selected_posts.indexOf(postId) !== -1) {
-        $result
-          .addClass('forum-post__m-selected')
-          .find('.forum-post__select-cb').prop('checked', true);
-      }
-
-      return N.wire.emit('navigate.update', {
-        $: $result,
-        locals: res,
-        $replace: $(`#post${postId}`)
-      });
-    });
-}
-
-
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Display confirmation when answering in an inactive topic
@@ -493,14 +461,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         N.runtime.page_data.topic.st = res.topic.st;
         N.runtime.page_data.topic.ste = res.topic.ste;
+        N.runtime.page_data.topic.edit_count = res.topic.edit_count;
       })
       .then(updateTopicState)
       .then(() => {
         if (unpin) return N.wire.emit('notify.info', t('unpin_topic_done'));
         return N.wire.emit('notify.info', t('pin_topic_done'));
-      })
-      // refresh edit counter for the first post if able
-      .then(() => reload_first_post());
+      });
   });
 
 
@@ -540,14 +507,13 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         N.runtime.page_data.topic.st = res.topic.st;
         N.runtime.page_data.topic.ste = res.topic.ste;
+        N.runtime.page_data.topic.edit_count = res.topic.edit_count;
       })
       .then(updateTopicState)
       .then(() => {
         if (params.reopen) return N.wire.emit('notify.info', t('open_topic_done'));
         return N.wire.emit('notify.info', t('close_topic_done'));
-      })
-      // refresh edit counter for the first post if able
-      .then(() => reload_first_post());
+      });
   });
 
 
@@ -575,14 +541,16 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           as_moderator: data.$this.data('as-moderator') || false,
           topic_hid: data.$this.data('topic-hid'),
           title: value
-        }).then(() => {
+        }).then(res => {
           $title.text(value);
 
           // update title in navbar
           $('.navbar-alt__title').text(value);
 
-          // refresh edit counter for the first post if able
-          return reload_first_post();
+          N.runtime.page_data.topic.edit_count = res.topic.edit_count;
+
+          // refresh edit counter
+          return updateTopicState();
         });
       }
     };
@@ -601,11 +569,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         N.runtime.page_data.topic.st = res.topic.st;
         N.runtime.page_data.topic.ste = res.topic.ste;
+        N.runtime.page_data.topic.edit_count = res.topic.edit_count;
       })
       .then(updateTopicState)
-      .then(() => N.wire.emit('notify.info', t('undelete_topic_done')))
-      // refresh edit counter for the first post if able
-      .then(() => reload_first_post());
+      .then(() => N.wire.emit('notify.info', t('undelete_topic_done')));
   });
 
 

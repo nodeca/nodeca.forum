@@ -3,6 +3,10 @@
 
 'use strict';
 
+
+const sanitize_topic = require('nodeca.forum/lib/sanitizers/topic');
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -75,8 +79,6 @@ module.exports = function (N, apiPath) {
       delete res.ste;
     }
 
-    env.res.topic = res;
-
     env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: topic._id },
       update,
@@ -99,5 +101,16 @@ module.exports = function (N, apiPath) {
         ip:   env.req.ip
       }
     );
+  });
+
+
+  // Return changed topic info
+  //
+  N.wire.after(apiPath, async function return_topic(env) {
+    let topic = await N.models.forum.Topic.findById(env.data.topic._id).lean(true);
+
+    if (!topic) throw N.io.NOT_FOUND;
+
+    env.res.topic = await sanitize_topic(N, topic, env.user_info);
   });
 };

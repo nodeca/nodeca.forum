@@ -3,7 +3,9 @@
 
 'use strict';
 
+
 const charcount = require('charcount');
+const sanitize_topic = require('nodeca.forum/lib/sanitizers/topic');
 
 
 module.exports = function (N, apiPath) {
@@ -126,5 +128,16 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function add_search_index(env) {
     await N.queue.forum_topics_search_update_by_ids([ env.data.topic._id ]).postpone();
+  });
+
+
+  // Return changed topic info
+  //
+  N.wire.after(apiPath, async function return_topic(env) {
+    let topic = await N.models.forum.Topic.findById(env.data.topic._id).lean(true);
+
+    if (!topic) throw N.io.NOT_FOUND;
+
+    env.res.topic = await sanitize_topic(N, topic, env.user_info);
   });
 };

@@ -27,6 +27,9 @@ if topicOwnerId === self.runtime.user_id
     if self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED
       - items.push('open')
 
+if self.topic.edit_count > 0
+  - items.push('history')
+
 if items.length > 0
   - items.push('divider')
 
@@ -60,9 +63,6 @@ if items.length > 0 && items[items.length - 1] === 'header'
 //- If last item is devider - remove it
 if items.length > 0 && items[items.length - 1] === 'divider'
   - items.pop()
-
-if items.length > 0 && items[items.length - 1].indexOf('mod_') === 0 && self.topic.edit_count > 0
-  - items.push('mod_history')
 
 if self.selected_cnt
   if items.length > 0
@@ -130,12 +130,12 @@ if self.selected_cnt
             when 'header'
               .dropdown-header= self.t('mod_actions')
 
-            when 'mod_history'
+            when 'history'
               button.dropdown-item(
                 type='button'
                 data-on-click='forum.topic:topic_history'
                 data-topic-id=self.topic._id
-              )= self.t('history')
+              )= self.t('history', self.topic.edit_count)
 
             when 'post_add'
               button.dropdown-item.d-sm-none(

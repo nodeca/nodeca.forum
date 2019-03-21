@@ -5,6 +5,9 @@
 const _ = require('lodash');
 
 
+const sanitize_topic = require('nodeca.forum/lib/sanitizers/topic');
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -125,8 +128,6 @@ module.exports = function (N, apiPath) {
       update.del_reason = env.params.reason;
     }
 
-    env.res.topic = { st: update.st };
-
     env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: topic._id },
       update,
@@ -181,5 +182,16 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function update_section(env) {
     await N.models.forum.Section.updateCache(env.data.topic.section);
+  });
+
+
+  // Return changed topic info
+  //
+  N.wire.after(apiPath, async function return_topic(env) {
+    let topic = await N.models.forum.Topic.findById(env.data.topic._id).lean(true);
+
+    if (!topic) throw N.io.NOT_FOUND;
+
+    env.res.topic = await sanitize_topic(N, topic, env.user_info);
   });
 };
