@@ -136,6 +136,16 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Change topic status in all posts
+  //
+  N.wire.after(apiPath, function change_topic_status_in_posts(env) {
+    return N.models.forum.Post.updateMany(
+      { topic: { $in: _.map(env.data.topics, '_id') } },
+      { $set: { topic_exists: true } }
+    );
+  });
+
+
   // Restore votes
   //
   N.wire.after(apiPath, async function remove_votes(env) {
