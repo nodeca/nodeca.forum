@@ -259,6 +259,16 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Update user counters
+  //
+  N.wire.after(apiPath, async function update_user(env) {
+    await N.models.forum.UserPostCount.inc(env.user_info.user_id, {
+      section_id: env.data.topic.section,
+      is_hb: env.user_info.hb
+    });
+  });
+
+
   // Set marker position
   //
   N.wire.after(apiPath, async function set_marker_pos(env) {

@@ -47,7 +47,7 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, async function fetch_topic(env) {
+  N.wire.before(apiPath, async function fetch_section(env) {
     env.data.section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
     if (!env.data.section) throw N.io.NOT_FOUND;
   });
@@ -180,6 +180,36 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function update_section(env) {
     await N.models.forum.Section.updateCache(env.data.section._id);
+  });
+
+
+  // Update user topic counters
+  //
+  N.wire.after(apiPath, async function update_user_topics(env) {
+    let users = _.map(env.data.topics, 'cache.first_user');
+
+    await N.models.forum.UserTopicCount.recount(
+      _.uniq(users.map(String))
+       .map(user_id => [ user_id, env.data.section._id ])
+    );
+  });
+
+
+  // Update user post counters
+  //
+  N.wire.after(apiPath, async function update_user_topics(env) {
+    let users = _.map(
+      await N.models.forum.Post.find()
+                .where('topic').in(_.map(env.data.topics, '_id'))
+                .select('user')
+                .lean(true),
+      'user'
+    );
+
+    await N.models.forum.UserPostCount.recount(
+      _.uniq(users.map(String))
+       .map(user_id => [ user_id, env.data.section._id ])
+    );
   });
 
 

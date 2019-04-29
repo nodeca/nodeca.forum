@@ -100,6 +100,8 @@ module.exports = function (N, apiPath) {
         topic.save(),
         report_ref.save()
       ]);
+
+      await N.models.forum.UserTopicCount.inc(bot._id, { section_id: topic.section, is_hb: false });
     }
 
     post.topic   = topic._id;
@@ -112,6 +114,8 @@ module.exports = function (N, apiPath) {
       N.models.forum.Topic.updateCache(topic._id),
       N.models.forum.Section.updateCache(section._id)
     ]);
+
+    await N.models.forum.UserPostCount.inc(bot._id, { section_id: topic.section, is_hb: false });
 
     await N.queue.forum_topics_search_update_with_posts([ topic._id ]).postpone();
 

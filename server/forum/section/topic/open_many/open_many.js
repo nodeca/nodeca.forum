@@ -18,7 +18,7 @@ module.exports = function (N, apiPath) {
 
   // Fetch section
   //
-  N.wire.before(apiPath, async function fetch_topic(env) {
+  N.wire.before(apiPath, async function fetch_section(env) {
     env.data.section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
     if (!env.data.section) throw N.io.NOT_FOUND;
   });

@@ -3,6 +3,9 @@
 'use strict';
 
 
+const _ = require('lodash');
+
+
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -108,6 +111,40 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_sections(env) {
     await N.models.forum.Section.updateCache(env.data.section_from._id);
     await N.models.forum.Section.updateCache(env.data.section_to._id);
+  });
+
+
+  // Update user topic counters
+  //
+  N.wire.after(apiPath, async function update_user_topics(env) {
+    let users = _.map(env.data.topics, 'cache.first_user');
+
+    users = _.uniq(users.map(String));
+
+    await N.models.forum.UserTopicCount.recount(
+      [].concat(users.map(user_id => [ user_id, env.data.section_from._id ]))
+        .concat(users.map(user_id => [ user_id, env.data.section_to._id ]))
+    );
+  });
+
+
+  // Update user post counters
+  //
+  N.wire.after(apiPath, async function update_user_topics(env) {
+    let users = _.map(
+      await N.models.forum.Post.find()
+                .where('topic').in(_.map(env.data.topics, '_id'))
+                .select('user')
+                .lean(true),
+      'user'
+    );
+
+    users = _.uniq(users.map(String));
+
+    await N.models.forum.UserPostCount.recount(
+      [].concat(users.map(user_id => [ user_id, env.data.section_from._id ]))
+        .concat(users.map(user_id => [ user_id, env.data.section_to._id ]))
+    );
   });
 
 

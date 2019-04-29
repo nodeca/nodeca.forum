@@ -19,6 +19,8 @@ let Category;
 let Section;
 let Topic;
 let Post;
+let UserTopicCount;
+let UserPostCount;
 let User;
 let Vote;
 let UserGroup;
@@ -112,7 +114,6 @@ async function createPost(topic, previous_posts) {
   post.params = options;
 
   await post.save();
-  await User.updateOne({ _id: post.user }, { $inc: { post_count: 1 } });
 
   return post;
 }
@@ -138,7 +139,7 @@ async function addVotes(post) {
     await vote.save();
   }
 
-  await post.update({ votes });
+  await post.updateOne({ votes });
 }
 
 
@@ -380,17 +381,25 @@ async function addModerators() {
 }
 
 
+async function updateUserCounters() {
+  await UserTopicCount.recount(users.map(user => [ user._id ]));
+  await UserPostCount.recount(users.map(user => [ user._id ]));
+}
+
+
 module.exports = async function (N) {
-  Category  = N.models.forum.Section;
-  Section   = N.models.forum.Section;
-  Topic     = N.models.forum.Topic;
-  Post      = N.models.forum.Post;
-  User      = N.models.users.User;
-  UserGroup = N.models.users.UserGroup;
-  Vote      = N.models.users.Vote;
-  settings  = N.settings;
-  parser    = N.parser;
-  shared    = N.shared;
+  Category       = N.models.forum.Section;
+  Section        = N.models.forum.Section;
+  Topic          = N.models.forum.Topic;
+  Post           = N.models.forum.Post;
+  UserPostCount  = N.models.forum.UserPostCount;
+  UserTopicCount = N.models.forum.UserTopicCount;
+  User           = N.models.users.User;
+  UserGroup      = N.models.users.UserGroup;
+  Vote           = N.models.users.Vote;
+  settings       = N.settings;
+  parser         = N.parser;
+  shared         = N.shared;
 
   await createUsers();
   await createSections();
@@ -398,4 +407,5 @@ module.exports = async function (N) {
   await fillBigSection();
   await addBigTopic();
   await addModerators();
+  await updateUserCounters();
 };

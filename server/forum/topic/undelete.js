@@ -128,6 +128,26 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Update user counters
+  //
+  N.wire.after(apiPath, async function update_user(env) {
+    await N.models.forum.UserTopicCount.recount(env.data.topic.cache.first_user, env.data.topic.section);
+
+    let users = _.map(
+      await N.models.forum.Post.find()
+                .where('topic').equals(env.data.topic._id)
+                .select('user')
+                .lean(true),
+      'user'
+    );
+
+    await N.models.forum.UserPostCount.recount(
+      _.uniq(users.map(String))
+       .map(user_id => [ user_id, env.data.topic.section ])
+    );
+  });
+
+
   // Return changed topic info
   //
   N.wire.after(apiPath, async function return_topic(env) {

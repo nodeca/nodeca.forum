@@ -193,4 +193,16 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_section(env) {
     await N.models.forum.Section.updateCache(env.data.topic.section);
   });
+
+
+  // Update user counters
+  //
+  N.wire.after(apiPath, async function update_user(env) {
+    let users = _.map(env.data.posts, 'user');
+
+    await N.models.forum.UserPostCount.recount(
+      _.uniq(users.map(String))
+       .map(user_id => [ user_id, env.data.topic.section ])
+    );
+  });
 };

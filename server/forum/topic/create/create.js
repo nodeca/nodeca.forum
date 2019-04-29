@@ -241,6 +241,21 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Update user counters
+  //
+  N.wire.after(apiPath, async function update_user(env) {
+    await N.models.forum.UserTopicCount.inc(env.user_info.user_id, {
+      section_id: env.data.new_topic.section,
+      is_hb: env.user_info.hb
+    });
+
+    await N.models.forum.UserPostCount.inc(env.user_info.user_id, {
+      section_id: env.data.new_topic.section,
+      is_hb: env.user_info.hb
+    });
+  });
+
+
   // Add new topic notification for subscribers
   //
   N.wire.after(apiPath, async function add_new_post_notification(env) {

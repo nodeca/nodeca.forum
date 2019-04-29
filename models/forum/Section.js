@@ -239,6 +239,26 @@ module.exports = function (N, collectionName) {
     });
   };
 
+
+  // Returns list of all sections user can view
+  //
+  // Used in:
+  //  - N.models.forum.UserTopicCount
+  //  - N.models.forum.UserPostCount
+  //
+  Section.statics.getVisibleSections = memoize(function (g_ids) {
+    return getSectionsTree().then(sections => {
+      sections = _.without(Object.keys(sections), 'root');
+
+      let access_env = { params: { sections, user_info: { usergroups: g_ids } } };
+
+      return N.wire.emit('internal:forum.access.section', access_env).then(() =>
+        sections.filter((section, i) => access_env.data.access_read[i])
+      );
+    });
+  }, { maxAge: 60000 });
+
+
   // Provide a possibility to clear section tree cache (used in seeds)
   //
   Section.statics.getChildren.clear = () => getSectionsTree.clear();

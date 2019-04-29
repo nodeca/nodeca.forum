@@ -125,6 +125,9 @@ module.exports = function (N, collectionName) {
   // lookup _id by hid (for routing)
   Topic.index({ hid: 1 });
 
+  // - count all topics from a user in a given section
+  Topic.index({ 'cache.first_user': 1, section: 1, st: 1 });
+
 
   ////////////////////////////////////////////////////////////////////////////////
 
