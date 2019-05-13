@@ -53,7 +53,7 @@ module.exports = function (N, collectionName) {
 
     return section_ids
       .map(section_id => (data[current_user_info.hb ? 'value_hb' : 'value'] || {})[section_id] || 0)
-      .reduce((a, b) => a + b);
+      .reduce((a, b) => a + b, 0);
   };
 
 
