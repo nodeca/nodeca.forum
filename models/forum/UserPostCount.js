@@ -4,6 +4,7 @@
 'use strict';
 
 
+const _        = require('lodash');
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
 
@@ -30,7 +31,7 @@ module.exports = function (N, collectionName) {
    *
    * Params:
    *
-   *  - user_id (ObjectId)
+   *  - user_id (ObjectId or Array)
    *  - current_user_info (Object) - same as env.user_info
    *
    * Returns a Number (number of posts made in all sections visible by
@@ -40,20 +41,43 @@ module.exports = function (N, collectionName) {
    * background recount.
    */
   UserPostCount.statics.get = async function get(user_id, current_user_info) {
-    let data = await N.models.forum.UserPostCount.findOne()
-                         .where('user').equals(user_id)
-                         .lean(true);
+    let is_bulk = true;
 
-    if (!data) {
-      await N.wire.emit('internal:users.activity.recount', [ [ 'forum_posts', { user_id } ] ]);
-      return 0;
+    if (!Array.isArray(user_id)) {
+      is_bulk = false;
+      user_id = [ user_id ];
     }
 
+    let data = _.keyBy(
+      await N.models.forum.UserPostCount.find()
+                .where('user').in(user_id)
+                .lean(true),
+      'user'
+    );
+
+    let users_need_recount = [];
     let section_ids = await N.models.forum.Section.getVisibleSections(current_user_info.usergroups);
 
-    return section_ids
-      .map(section_id => (data[current_user_info.hb ? 'value_hb' : 'value'] || {})[section_id] || 0)
-      .reduce((a, b) => a + b, 0);
+    let result = user_id.map(u => {
+      let d = data[u];
+
+      if (!d) {
+        users_need_recount.push(u);
+        return 0;
+      }
+
+      return section_ids
+               .map(section_id => (d[current_user_info.hb ? 'value_hb' : 'value'] || {})[section_id] || 0)
+               .reduce((a, b) => a + b, 0);
+    });
+
+    if (users_need_recount.length > 0) {
+      await N.wire.emit('internal:users.activity.recount',
+        users_need_recount.map(u => [ 'forum_posts', { user_id: u } ])
+      );
+    }
+
+    return is_bulk ? result : result[0];
   };
 
 
@@ -114,9 +138,10 @@ module.exports = function (N, collectionName) {
       bulk_data = [ [ user_id, section_id ] ];
     }
 
+    /* eslint-disable no-undefined */
     await N.wire.emit('internal:users.activity.recount', bulk_data.map(([ user_id, section_id ]) => ([
       'forum_posts',
-      { user_id, section_id: (section_id || null) }
+      { user_id, section_id: (section_id || undefined) }
     ])));
   };
 
