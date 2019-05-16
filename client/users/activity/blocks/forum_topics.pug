@@ -1,0 +1,27 @@
+if self.results.length
+
+  each result in self.results
+    .users-activity-item
+      a.users-activity-item__title(
+        href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid })
+      )= result.topic.title
+
+      .users-activity-item__stat-narrow.d-sm-none
+        a.users-activity-item__stat-link(
+          href=self.link_to('forum.section', { section_hid: result.section.hid })
+        )= result.section.title
+
+      ul.users-activity-item__stat
+        li.users-activity-item__stat-item
+          != self.timetag(result.topic.cache.last_ts, 'relative')
+
+        li.users-activity-item__stat-item.d-none.d-sm-inline-block
+          a.users-activity-item__stat-link(
+            href=self.link_to('forum.section', { section_hid: result.section.hid })
+          )= result.section.title
+
+        li.users-activity-item__stat-item
+          = self.t('replies', result.topic.cache.post_count - 1)
+
+else
+  .users-activity__empty= self.t('not_found')

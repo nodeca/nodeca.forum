@@ -1,0 +1,4 @@
+en-US:
+  forum_topics:
+    replies: "#{count} ((reply|replies))"
+    not_found: This user didn't create any topics yet.

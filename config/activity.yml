@@ -1,0 +1,8 @@
+users:
+  activity:
+    menu:
+      forum_topics:
+        priority: 10
+
+      forum_posts:
+        priority: 20
