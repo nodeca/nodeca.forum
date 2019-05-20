@@ -3,8 +3,10 @@
 // In:
 //
 // - params.user_id
-// - params.limit
 // - params.user_info
+// - params.start - starting point (topic id, optional, default: most recent one)
+// - params.before - number of visible topics fetched before start
+// - params.after - number of visible topics fetched after start
 //
 // Out:
 //
@@ -22,22 +24,98 @@ const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 module.exports = function (N, apiPath) {
 
-  // Return number of items found
+  // Separate method used to return number of items
   //
   N.wire.on(apiPath + ':count', async function activity_forum_topics_count(locals) {
     locals.count = await N.models.forum.UserTopicCount.get(locals.params.user_id, locals.params.user_info);
   });
 
 
+  // Initialize internal state
+  //
+  N.wire.before(apiPath, { priority: -20 }, async function init_activity_env(locals) {
+    locals.sandbox = {};
+
+    // get visible sections
+    locals.sandbox.visible_sections = await N.models.forum.Section.getVisibleSections(
+      locals.params.user_info.usergroups
+    );
+
+    // get visible statuses
+    locals.sandbox.countable_statuses = N.models.forum.Topic.statuses.LIST_VISIBLE.slice(0);
+
+    // NOTE: do not count deleted topics, since permissions may be different
+    //       for different sections, depending on usergroup and moderator
+    //       permissions; deleted topics will be checked and filtered out later
+    if (locals.params.user_info.hb) locals.sandbox.countable_statuses.push(N.models.forum.Topic.statuses.HB);
+  });
+
+
+  // Find first visible topic
+  //
+  N.wire.before(apiPath, { parallel: true }, async function find_topic_range_before(locals) {
+    if (!locals.params.before) return;
+
+    let first_topic = await N.models.forum.Topic.findOne()
+                               .where('cache.first_user').equals(locals.params.user_id)
+                               .where('section').in(locals.sandbox.visible_sections)
+                               .where('st').in(locals.sandbox.countable_statuses)
+                               .skip(locals.params.before)
+                               .sort('-_id')
+                               .select('_id')
+                               .lean(true);
+    if (!first_topic) {
+      locals.sandbox.first_id = null;
+      return;
+    }
+
+    locals.sandbox.first_id = first_topic._id;
+  });
+
+
+  // Find last visible topic
+  //
+  N.wire.before(apiPath, { parallel: true }, async function find_topic_range_after(locals) {
+    if (!locals.params.after) return;
+
+    let last_topic = await N.models.forum.Topic.findOne()
+                               .where('cache.last_user').equals(locals.params.user_id)
+                               .where('section').in(locals.sandbox.visible_sections)
+                               .where('st').in(locals.sandbox.countable_statuses)
+                               .skip(locals.params.after)
+                               .sort('_id')
+                               .select('_id')
+                               .lean(true);
+    if (!last_topic) {
+      locals.sandbox.last_id = null;
+      return;
+    }
+
+    locals.sandbox.last_id = last_topic._id;
+  });
+
+
   // Find topics
   //
   N.wire.on(apiPath, async function find_topics(locals) {
-    locals.sandbox = locals.sandbox || {};
+    let query = N.models.forum.Topic.find()
+                    .where('cache.first_user').equals(locals.params.user_id)
+                    .where('section').in(locals.sandbox.visible_sections)
+                    .sort('_id');
 
-    locals.sandbox.topics = await N.models.forum.Topic.find()
-                                      .where('cache.first_user').equals(locals.params.user_id)
-                                      .sort('-_id')
-                                      .lean(true);
+    if (locals.params.before) {
+      query = locals.sandbox.first_id ? query.where('_id').gte(locals.sandbox.first_id) : query;
+    } else {
+      query = locals.params.start ? query.where('_id').gt(locals.params.start) : query;
+    }
+
+    if (locals.params.after) {
+      query = locals.sandbox.last_id ? query.where('_id').lte(locals.sandbox.last_id) : query;
+    } else {
+      query = locals.params.start ? query.where('_id').lt(locals.params.start) : query;
+    }
+
+    locals.sandbox.topics = await query.lean(true);
 
     locals.sandbox.sections = await N.models.forum.Section.find()
                                         .where('_id')

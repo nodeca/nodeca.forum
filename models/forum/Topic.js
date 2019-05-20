@@ -122,14 +122,13 @@ module.exports = function (N, collectionName) {
   Topic.index({ section: 1, st: 1, 'cache.last_post':    -1, _id: 1 });
   Topic.index({ section: 1, st: 1, 'cache_hb.last_post': -1, _id: 1 });
 
-  // find topics to display user activity
-  Topic.index({ 'cache_hb.first_user': 1, _id: -1 });
-
   // lookup _id by hid (for routing)
   Topic.index({ hid: 1 });
 
   // - count all topics from a user in a given section
-  Topic.index({ 'cache.first_user': 1, section: 1, st: 1 });
+  // - display all topics from a given user
+  Topic.index({ 'cache.first_user': 1, section: 1, st: 1, hid: 1 });
+  Topic.index({ 'cache_hb.first_user': 1, section: 1, st: 1, hid: 1 });
 
 
   ////////////////////////////////////////////////////////////////////////////////
