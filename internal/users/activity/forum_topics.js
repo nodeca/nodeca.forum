@@ -10,8 +10,10 @@
 //
 // Out:
 //
-// - results
-// - users
+// - results - array of results, each one is { topic, section }
+// - users - array of user ids needed to fetch
+// - top_marker - previous visible topic (for prefetch)
+// - bottom_marker - next visible topic (for prefetch)
 //
 
 'use strict';
@@ -54,44 +56,62 @@ module.exports = function (N, apiPath) {
   // Find first visible topic
   //
   N.wire.before(apiPath, { parallel: true }, async function find_topic_range_before(locals) {
-    if (!locals.params.before) return;
+    if (!locals.params.before) {
+      locals.sandbox.first_id = locals.params.start;
+      return;
+    }
 
-    let first_topic = await N.models.forum.Topic.findOne()
-                               .where('cache.first_user').equals(locals.params.user_id)
+    let query = N.models.forum.Topic.findOne()
+                               .where('cache.last_user').equals(locals.params.user_id)
                                .where('section').in(locals.sandbox.visible_sections)
                                .where('st').in(locals.sandbox.countable_statuses)
                                .skip(locals.params.before)
-                               .sort('-_id')
-                               .select('_id')
-                               .lean(true);
+                               .sort('_id')
+                               .select('_id');
+
+    if (locals.params.start) {
+      query = query.where('_id').gt(locals.params.start);
+    }
+
+    let first_topic = await query.lean(true);
+
     if (!first_topic) {
       locals.sandbox.first_id = null;
       return;
     }
 
-    locals.sandbox.first_id = first_topic._id;
+    locals.sandbox.first_id = String(first_topic._id);
   });
 
 
   // Find last visible topic
   //
   N.wire.before(apiPath, { parallel: true }, async function find_topic_range_after(locals) {
-    if (!locals.params.after) return;
+    if (!locals.params.after) {
+      locals.sandbox.last_id = locals.params.start;
+      return;
+    }
 
-    let last_topic = await N.models.forum.Topic.findOne()
+    let query = N.models.forum.Topic.findOne()
                                .where('cache.last_user').equals(locals.params.user_id)
                                .where('section').in(locals.sandbox.visible_sections)
                                .where('st').in(locals.sandbox.countable_statuses)
                                .skip(locals.params.after)
-                               .sort('_id')
-                               .select('_id')
-                               .lean(true);
+                               .sort('-_id')
+                               .select('_id');
+
+    if (locals.params.start) {
+      query = query.where('_id').lt(locals.params.start);
+    }
+
+    let last_topic = await query.lean(true);
+
     if (!last_topic) {
       locals.sandbox.last_id = null;
       return;
     }
 
-    locals.sandbox.last_id = last_topic._id;
+    locals.sandbox.last_id = String(last_topic._id);
   });
 
 
@@ -101,18 +121,18 @@ module.exports = function (N, apiPath) {
     let query = N.models.forum.Topic.find()
                     .where('cache.first_user').equals(locals.params.user_id)
                     .where('section').in(locals.sandbox.visible_sections)
-                    .sort('_id');
+                    .sort('-_id');
 
     if (locals.params.before) {
-      query = locals.sandbox.first_id ? query.where('_id').gte(locals.sandbox.first_id) : query;
+      query = locals.sandbox.first_id ? query.where('_id').lt(locals.sandbox.first_id) : query;
     } else {
-      query = locals.params.start ? query.where('_id').gt(locals.params.start) : query;
+      query = locals.params.start ? query.where('_id').lte(locals.params.start) : query;
     }
 
     if (locals.params.after) {
-      query = locals.sandbox.last_id ? query.where('_id').lte(locals.sandbox.last_id) : query;
+      query = locals.sandbox.last_id ? query.where('_id').gt(locals.sandbox.last_id) : query;
     } else {
-      query = locals.params.start ? query.where('_id').lt(locals.params.start) : query;
+      query = locals.params.start ? query.where('_id').gte(locals.params.start) : query;
     }
 
     locals.sandbox.topics = await query.lean(true);
@@ -179,6 +199,9 @@ module.exports = function (N, apiPath) {
 
       locals.results.push({ topic, section });
     });
+
+    locals.top_marker    = locals.sandbox.first_id;
+    locals.bottom_marker = locals.sandbox.last_id;
   });
 
 
