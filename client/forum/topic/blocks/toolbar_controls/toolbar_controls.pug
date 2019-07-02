@@ -157,21 +157,21 @@ if self.selected_cnt
             when 'delete'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.topic_delete'
+                data-on-click='forum.topic:topic_delete'
                 data-topic-hid=self.topic.hid
               )= self.t('delete')
 
             when 'close'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.close'
+                data-on-click='forum.topic:close'
                 data-topic-hid=self.topic.hid
               )= self.t('close')
 
             when 'open'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.close'
+                data-on-click='forum.topic:close'
                 data-topic-hid=self.topic.hid
                 data-reopen='true'
               )= self.t('open')
@@ -179,7 +179,7 @@ if self.selected_cnt
             when 'mod_delete'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.topic_delete'
+                data-on-click='forum.topic:topic_delete'
                 data-topic-hid=self.topic.hid
                 data-as-moderator='true'
               )= self.t('delete')
@@ -187,14 +187,14 @@ if self.selected_cnt
             when 'mod_undelete'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.topic_undelete'
+                data-on-click='forum.topic:topic_undelete'
                 data-topic-hid=self.topic.hid
               )= self.t('undelete')
 
             when 'mod_close'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.close'
+                data-on-click='forum.topic:close'
                 data-topic-hid=self.topic.hid
                 data-as-moderator='true'
               )= self.t('close')
@@ -202,7 +202,7 @@ if self.selected_cnt
             when 'mod_open'
               button.dropdown-item(button.dropdown-item
                 type='button'
-                data-on-click='forum.topic.close'
+                data-on-click='forum.topic:close'
                 data-topic-hid=self.topic.hid
                 data-reopen='true'
                 data-as-moderator='true'
@@ -211,14 +211,14 @@ if self.selected_cnt
             when 'mod_pin'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.pin'
+                data-on-click='forum.topic:pin'
                 data-topic-hid=self.topic.hid
               )=self.t('pin')
 
             when 'mod_unpin'
               button.dropdown-item(
                 type='button'
-                data-on-click='forum.topic.pin'
+                data-on-click='forum.topic:pin'
                 data-topic-hid=self.topic.hid
                 data-unpin='true'
               )=self.t('unpin')

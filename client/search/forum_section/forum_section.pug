@@ -3,13 +3,7 @@
 article#content.search-forum-section
   != self.partial('@common.blocks.navbar.logo_apps')
 
-  .layout__container.container-fluid.space-top._affix(
-    data-affix-bottom={
-      offset:     500,
-      wire_below: 'search.forum_section:load_next',
-      throttle:   100
-    }
-  )
+  .layout__container.container-fluid.space-top
     != self.partial('@users.blocks.announces')
 
     header.page-head

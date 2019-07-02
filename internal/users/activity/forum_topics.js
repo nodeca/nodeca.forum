@@ -12,8 +12,8 @@
 //
 // - results - array of results, each one is { topic, section }
 // - users - array of user ids needed to fetch
-// - top_marker - previous visible topic (for prefetch)
-// - bottom_marker - next visible topic (for prefetch)
+// - reached_top
+// - reached_bottom
 //
 
 'use strict';
@@ -200,8 +200,8 @@ module.exports = function (N, apiPath) {
       locals.results.push({ topic, section });
     });
 
-    locals.top_marker    = locals.sandbox.first_id;
-    locals.bottom_marker = locals.sandbox.last_id;
+    locals.reached_top    = !locals.sandbox.first_id;
+    locals.reached_bottom = !locals.sandbox.last_id;
   });
 
 

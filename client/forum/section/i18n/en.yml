@@ -7,13 +7,13 @@ en-US:
   prev_page: Newer
 
   msg_multiselect: Multiselect on
-  many_topics_deleted: Deleted selected topics
-  many_undelete_confirm: Are you sure want undelete selected topics?
-  many_topics_undeleted: Undeleted selected topics
-  many_close_confirm: Are you sure want close selected topics?
-  many_open_confirm: Are you sure want open selected topics?
-  many_topics_closed: Closed selected topics
-  many_topics_opend: Opend selected topics
-  many_topics_moved: Moved selected topics
+  many_topics_deleted: Selected topics have been deleted
+  many_undelete_confirm: Are you sure you want to restore selected topics?
+  many_topics_undeleted: Selected topics have been restored
+  many_close_confirm: Are you sure you want to close selected topics?
+  many_open_confirm: Are you sure you want to open selected topics?
+  many_topics_closed: Selected topics have been closed
+  many_topics_opened: Selected topics have been opened
+  many_topics_moved: Selected topics have been moved
 
   search_section: in section

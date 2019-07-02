@@ -1,80 +1,164 @@
-// Forum Topic page logic
+// Forum topic page logic
 //
 'use strict';
 
 
-const _             = require('lodash');
-const charcount     = require('charcount');
-const topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
-const postStatuses  = '$$ JSON.stringify(N.models.forum.Post.statuses) $$';
-const bag           = require('bagjs')({ prefix: 'nodeca' });
+const _              = require('lodash');
+const charcount      = require('charcount');
+const topicStatuses  = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
+const bag            = require('bagjs')({ prefix: 'nodeca' });
+const ScrollableList = require('nodeca.core/lib/app/scrollable_list');
 
 
-// Topic state
+// Page state
 //
-// - section_hid:        current section hid
+// - section:            current section
 // - topic_hid:          current topic hid
 // - post_hid:           current post hid
 // - max_post:           hid of the last post in this topic
 // - post_count:         an amount of visible posts in the topic
 // - posts_per_page:     an amount of visible posts per page
 // - topic_last_ts:      last post creation time (used for edit confirmation)
-// - first_post_offset:  total amount of visible posts in the topic before the first displayed post
-// - last_post_offset:   total amount of visible posts in the topic before the last displayed post
-// - prev_loading_start: time when current xhr request for the previous page is started
-// - next_loading_start: time when current xhr request for the next page is started
-// - top_marker:         hid of the top post (for prefetch)
-// - bottom_marker:      hid of the bottom post (for prefetch)
 // - selected_posts:     array of selected posts in current topic
 //
-let topicState = {};
+let pageState = {};
+let scrollable_list;
+let navbar_height;
 
 let $window = $(window);
 
-// height of a space between text content of a post and the next post header
-const TOP_OFFSET = 50;
 
-// whenever there are more than 600 posts, cut off-screen posts down to 400
-const CUT_ITEMS_MAX = 600;
-const CUT_ITEMS_MIN = 400;
+function load(start, direction) {
+  return N.io.rpc('forum.topic.list.by_range', {
+    topic_hid: pageState.topic_hid,
+    post_hid:  start,
+    before:    direction === 'top' ? N.runtime.page_data.pagination.per_page : 0,
+    after:     direction === 'bottom' ? N.runtime.page_data.pagination.per_page : 0
+  }).then(res => {
+    pageState.post_count = res.topic.cache.post_count;
+    pageState.topic_last_ts = res.topic.cache.last_ts;
 
-const navbarHeight = parseInt($('body').css('margin-top'), 10) + parseInt($('body').css('padding-top'), 10);
+    if (res.topic.cache.last_post_hid !== pageState.max_post) {
+      pageState.max_post = res.topic.cache.last_post_hid;
+
+      N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
+        max:         pageState.max_post,
+        link_bottom: N.router.linkTo('forum.topic', {
+          section_hid: pageState.section.hid,
+          topic_hid:   pageState.topic_hid,
+          post_hid:    pageState.max_post
+        })
+      });
+    }
+
+    if (!res.posts || !res.posts.length) return;
+
+    pageState.top_marker = res.posts[0].hid;
+
+    res.pagination = {
+      // used in paginator
+      total:        pageState.post_count,
+      per_page:     N.runtime.page_data.pagination.per_page,
+      chunk_offset: direction === 'top' ?
+                    this.index_offset :
+                    this.index_offset + $('.forum-post').length - 1
+    };
+
+    res.posts_list_before_post = N.runtime.page_data.posts_list_before_post;
+    res.posts_list_after_post  = N.runtime.page_data.posts_list_after_post;
+
+    let reached_end = direction === 'top' ?
+                      !res.posts.length || res.posts[0].hid <= 1 :
+                      !res.posts.length || res.posts[res.posts.length - 1].hid >= pageState.max_post;
+
+    return {
+      $html: $(N.runtime.render('forum.blocks.posts_list', res)),
+      locals: res,
+      offset: res.pagination.chunk_offset,
+      reached_end
+    };
+  }).catch(err => {
+    // Topic moved or deleted, refreshing the page so user can see the error
+    if (err.code === N.io.NOT_FOUND) return N.wire.emit('navigate.reload');
+    throw err;
+  });
+}
+
+
+// Use a separate debouncer that only fires when user stops scrolling,
+// so it's executed a lot less frequently.
+//
+// The reason is that `history.replaceState` is very slow in FF
+// on large pages: https://bugzilla.mozilla.org/show_bug.cgi?id=1250972
+//
+let update_url = _.debounce((item, index, item_offset) => {
+  let newHid = item ?
+               $(item).data('post-hid') :
+               ($('.forum-post:first').data('post-hid') || 1);
+
+  let href;
+  /* eslint-disable no-undefined */
+  let state = {
+    hid:    newHid,
+    offset: item ? item_offset : undefined
+  };
+
+  // save current hid to pageState, and only update url if hid is different,
+  // it protects url like /f1/topic23/page4 from being overwritten instantly
+  if (pageState.post_hid !== newHid) {
+    pageState.post_hid = newHid;
+
+    href = N.router.linkTo('forum.topic', {
+      section_hid:  pageState.section.hid,
+      topic_hid:    pageState.topic_hid,
+      post_hid:     pageState.post_hid
+    });
+  }
+
+  N.wire.emit('navigate.replace', { href, state })
+        .catch(err => N.wire.emit('error', err));
+}, 500);
+
+
+function on_list_scroll(item, index, item_offset) {
+  N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
+    current: item ? $(item).data('post-hid') : ($('.forum-post:first').data('post-hid') || 1)
+  }).catch(err => N.wire.emit('error', err));
+
+  update_url(item, index, item_offset);
+}
 
 
 /////////////////////////////////////////////////////////////////////
-// init on page load and destroy editor on window unload
+// init on page load
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
-  topicState.section            = N.runtime.page_data.section;
-  topicState.topic_hid          = data.params.topic_hid;
-  topicState.post_hid           = data.params.post_hid || 1;
-  topicState.post_count         = N.runtime.page_data.pagination.total;
-  topicState.posts_per_page     = N.runtime.page_data.pagination.per_page;
-  topicState.max_post           = N.runtime.page_data.topic.cache.last_post_hid;
-  topicState.topic_last_ts      = N.runtime.page_data.topic.cache.last_ts;
-  topicState.first_post_offset  = N.runtime.page_data.pagination.chunk_offset;
-  topicState.last_post_offset   = N.runtime.page_data.pagination.chunk_offset + $('.forum-post').length - 1;
-  topicState.top_marker         = $('.forum-topic-root').data('top-marker');
-  topicState.bottom_marker      = $('.forum-topic-root').data('bottom-marker');
-  topicState.prev_loading_start = 0;
-  topicState.next_loading_start = 0;
-  topicState.selected_posts     = [];
+  pageState.section         = N.runtime.page_data.section;
+  pageState.topic_hid       = data.params.topic_hid;
+  pageState.post_hid        = data.params.post_hid || 1;
+  pageState.post_count      = N.runtime.page_data.pagination.total;
+  pageState.posts_per_page  = N.runtime.page_data.pagination.per_page;
+  pageState.max_post        = N.runtime.page_data.topic.cache.last_post_hid;
+  pageState.topic_last_ts   = N.runtime.page_data.topic.cache.last_ts;
+  pageState.selected_posts  = [];
 
-  // disable automatic scroll to an anchor in the navigator
-  data.no_scroll = true;
+  navbar_height = parseInt($('body').css('margin-top'), 10) + parseInt($('body').css('padding-top'), 10);
 
+  // account for some spacing between posts
+  navbar_height += 50;
+
+  let scroll_done = false;
 
   // If user moves to a page (e.g. from a search engine),
   // we should scroll him to the top post on that page
   //
   if (data.params.page && data.params.page > 1) {
-    topicState.post_hid = $('.forum-post:first').data('post-hid');
+    pageState.post_hid = $('.forum-post:first').data('post-hid');
   }
-
 
   // Scroll to a post linked in params (if any)
   //
-  if (data.state && typeof data.state.hid !== 'undefined' && typeof data.state.offset !== 'undefined') {
+  if (!scroll_done && data.state && typeof data.state.hid !== 'undefined' && typeof data.state.offset !== 'undefined') {
     let posts = $('.forum-post');
     let i = _.sortedIndexBy(posts, null, post => {
       if (!post) return data.state.hid;
@@ -84,13 +168,15 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     // `i` is the index of a post with given hid if it exists,
     // otherwise it's a position of the first post with hid more than that
     //
-    if (i >= posts.length) { i = posts.length - 1; }
-    $window.scrollTop($(posts[i]).offset().top - navbarHeight - TOP_OFFSET + data.state.offset);
+    if (i >= posts.length) i = posts.length - 1;
+    $window.scrollTop($(posts[i]).offset().top - navbar_height + data.state.offset);
+    scroll_done = true;
+  }
 
-  } else if (topicState.post_hid > 1) {
+  if (!scroll_done && pageState.post_hid > 1) {
     let posts = $('.forum-post');
     let i = _.sortedIndexBy(posts, null, post => {
-      if (!post) return topicState.post_hid;
+      if (!post) return pageState.post_hid;
       return $(post).data('post-hid');
     });
 
@@ -98,140 +184,49 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
     // otherwise it's a position of the first post with hid more than that
     //
     if (i >= posts.length) { i = posts.length - 1; }
-    $window.scrollTop($(posts[i]).offset().top - navbarHeight - TOP_OFFSET);
+    $window.scrollTop($(posts[i]).offset().top - navbar_height);
     $(posts[i]).addClass('forum-post__m-flash');
+    scroll_done = true;
+  }
 
-  } else {
+  if (!scroll_done) {
     // If user clicks on a link to the first post of the topic,
     // we should scroll to the top.
     //
     $window.scrollTop(0);
+    scroll_done = true;
   }
+
+  // disable automatic scroll to an anchor in the navigator
+  data.no_scroll = true;
+
+  let top_post_hid    = $('.forum-post:first').data('post-hid');
+  let bottom_post_hid = $('.forum-post:last').data('post-hid');
+
+  scrollable_list = new ScrollableList({
+    N,
+    list_selector:               '.forum-postlist',
+    item_selector:               '.forum-post',
+    placeholder_top_selector:    '.forum-topic__loading-prev',
+    placeholder_bottom_selector: '.forum-topic__loading-next',
+    get_content_id:              post => $(post).data('post-hid'),
+    load,
+    reached_top:                 !top_post_hid || top_post_hid <= 1,
+    reached_bottom:              !bottom_post_hid || bottom_post_hid >= pageState.max_post,
+    index_offset:                N.runtime.page_data.pagination.chunk_offset,
+    navbar_height,
+    // whenever there are more than 300 posts, cut off-screen posts down to 200
+    need_gc:                     count => (count > 300 ? count - 200 : 0),
+    on_list_scroll
+  });
 });
 
 
-/////////////////////////////////////////////////////////////////////
-// When user scrolls the page:
-//
-//  1. update progress bar
-//  2. show/hide navbar
-//
-let progressScrollHandler = null;
-
-N.wire.on('navigate.done:' + module.apiPath, function progress_updater_init() {
-  progressScrollHandler = _.debounce(function update_progress_on_scroll() {
-    // If we scroll below page title, show the secondary navbar
-    //
-    let title = document.getElementsByClassName('page-head__title');
-
-    if (title.length && title[0].getBoundingClientRect().bottom > navbarHeight) {
-      $('.navbar').removeClass('navbar__m-secondary');
-    } else {
-      $('.navbar').addClass('navbar__m-secondary');
-    }
-
-    //
-    // Update location and progress bar
-    //
-    let posts         = document.getElementsByClassName('forum-post'),
-        postThreshold = navbarHeight + TOP_OFFSET,
-        currentIdx;
-
-    // Get offset of the first post in the viewport
-    //
-    currentIdx = _.sortedIndexBy(posts, null, post => {
-      if (!post) return postThreshold;
-      return post.getBoundingClientRect().bottom;
-    });
-
-    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
-
-    N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-      current: $(posts[currentIdx]).data('post-hid')
-    }).catch(err => {
-      N.wire.emit('error', err);
-    });
-  }, 100, { maxWait: 100 });
-
-  // avoid executing it on first tick because of initial scrollTop()
-  setTimeout(function () {
-    $window.on('scroll', progressScrollHandler);
-  }, 1);
-
-
-  // execute it once on page load
-  progressScrollHandler();
-});
-
-N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
-  progressScrollHandler.cancel();
-  $window.off('scroll', progressScrollHandler);
-  progressScrollHandler = null;
-});
-
-
-/////////////////////////////////////////////////////////////////////
-// Change URL when user scrolls the page
-//
-// Use a separate debouncer that only fires when user stops scrolling,
-// so it's executed a lot less frequently.
-//
-// The reason is that `history.replaceState` is very slow in FF
-// on large pages: https://bugzilla.mozilla.org/show_bug.cgi?id=1250972
-//
-let locationScrollHandler = null;
-
-N.wire.on('navigate.done:' + module.apiPath, function location_updater_init() {
-  locationScrollHandler = _.debounce(function update_location_on_scroll() {
-    let posts         = document.getElementsByClassName('forum-post'),
-        postThreshold = navbarHeight + TOP_OFFSET,
-        newHid,
-        currentIdx;
-
-    // Get offset of the first post in the viewport
-    //
-    currentIdx = _.sortedIndexBy(posts, null, post => {
-      if (!post) return postThreshold;
-      return post.getBoundingClientRect().bottom;
-    });
-
-    if (currentIdx >= posts.length) { currentIdx = posts.length - 1; }
-
-    newHid = $(posts[currentIdx]).data('post-hid');
-
-    let href = null;
-    let state = {
-      hid:    newHid,
-      offset: postThreshold - posts[currentIdx].getBoundingClientRect().top
-    };
-
-    // save current hid to topicState, and only update url if hid is different,
-    // it protects url like /f1/topic23/page4 from being overwritten instantly
-    if (topicState.post_hid !== newHid) {
-      topicState.post_hid = newHid;
-
-      href = N.router.linkTo('forum.topic', {
-        section_hid:  topicState.section.hid,
-        topic_hid:    topicState.topic_hid,
-        post_hid:     topicState.post_hid
-      });
-    }
-
-    N.wire.emit('navigate.replace', { href, state })
-          .catch(err => N.wire.emit('error', err));
-
-  }, 500);
-
-  // avoid executing it on first tick because of initial scrollTop()
-  setTimeout(function () {
-    $window.on('scroll', locationScrollHandler);
-  }, 1);
-});
-
-N.wire.on('navigate.exit:' + module.apiPath, function scroll_tracker_teardown() {
-  locationScrollHandler.cancel();
-  $window.off('scroll', locationScrollHandler);
-  locationScrollHandler = null;
+N.wire.on('navigate.exit:' + module.apiPath, function page_teardown() {
+  scrollable_list.destroy();
+  scrollable_list = null;
+  update_url.cancel();
+  pageState = {};
 });
 
 
@@ -246,7 +241,7 @@ function updateTopicState() {
       section:      N.runtime.page_data.section,
       settings:     N.runtime.page_data.settings,
       subscription: N.runtime.page_data.subscription,
-      selected_cnt: topicState.selected_posts.length
+      selected_cnt: pageState.selected_posts.length
     }));
 
   let modifiers = {
@@ -278,7 +273,7 @@ function updateTopicState() {
 //
 function delete_topic(as_moderator) {
   let request = {
-    topic_hid: topicState.topic_hid,
+    topic_hid: pageState.topic_hid,
     as_moderator: as_moderator || false
   };
   let params = {
@@ -294,39 +289,8 @@ function delete_topic(as_moderator) {
       return N.io.rpc('forum.topic.destroy', request);
     })
     .then(() =>
-      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: topicState.section.hid } })
+      N.wire.emit('navigate.to', { apiPath: 'forum.section', params: { section_hid: pageState.section.hid } })
     );
-}
-
-
-// Show/hide loading placeholders when new posts are fetched,
-// adjust scroll when adding/removing top placeholder
-//
-function reset_loading_placeholders() {
-  let prev = $('.forum-topic__loading-prev');
-  let next = $('.forum-topic__loading-next');
-
-  // if post with hid=1 is loaded, hide top placeholder
-  if (topicState.top_marker <= 1) {
-    if (!prev.hasClass('d-none')) {
-      $window.scrollTop($window.scrollTop() - prev.outerHeight(true));
-    }
-
-    prev.addClass('d-none');
-  } else {
-    if (prev.hasClass('d-none')) {
-      $window.scrollTop($window.scrollTop() + prev.outerHeight(true));
-    }
-
-    prev.removeClass('d-none');
-  }
-
-  // if post with hid=max is loaded, hide bottom placeholder
-  if (topicState.bottom_marker >= topicState.max_post) {
-    next.addClass('d-none');
-  } else {
-    next.removeClass('d-none');
-  }
 }
 
 
@@ -335,7 +299,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Display confirmation when answering in an inactive topic
   //
   N.wire.before(module.apiPath + ':reply', function old_reply_confirm(data) {
-    let topic_inactive_for_days = Math.floor((Date.now() - new Date(topicState.topic_last_ts)) / (24 * 60 * 60 * 1000));
+    let topic_inactive_for_days = Math.floor((Date.now() - new Date(pageState.topic_last_ts)) / (24 * 60 * 60 * 1000));
 
     if (topic_inactive_for_days >= N.runtime.page_data.settings.forum_reply_old_post_threshold) {
       return N.wire.emit('common.blocks.confirm', {
@@ -359,11 +323,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':reply', function reply(data) {
     return N.wire.emit('forum.topic.reply:begin', {
-      topic_hid: topicState.topic_hid,
+      topic_hid:   pageState.topic_hid,
       topic_title: N.runtime.page_data.topic.title,
-      section_hid: topicState.section.hid,
-      post_id: data.$this.data('post-id'),
-      post_hid: data.$this.data('post-hid')
+      section_hid: pageState.section.hid,
+      post_id:     data.$this.data('post-id'),
+      post_hid:    data.$this.data('post-hid')
     });
   });
 
@@ -385,11 +349,11 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':post_edit', function reply(data) {
     return N.wire.emit('forum.topic.post.edit:begin', {
-      topic_hid: topicState.topic_hid,
-      topic_title: N.runtime.page_data.topic.title,
-      section_hid: topicState.section.hid,
-      post_id: data.$this.data('post-id'),
-      post_hid: data.$this.data('post-hid'),
+      topic_hid:    pageState.topic_hid,
+      topic_title:  N.runtime.page_data.topic.title,
+      section_hid:  pageState.section.hid,
+      post_id:      data.$this.data('post-id'),
+      post_hid:     data.$this.data('post-hid'),
       as_moderator: data.$this.data('as-moderator') || false
     });
   });
@@ -397,8 +361,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Show post IP
   //
-  N.wire.on(module.apiPath + '.post_show_ip', function post_show_ip(data) {
-    return N.wire.emit('forum.topic.ip_info_dlg', { postId: data.$this.data('post-id') });
+  N.wire.on(module.apiPath + ':post_show_ip', function post_show_ip(data) {
+    return N.wire.emit('forum.topic.ip_info_dlg', { post_id: data.$this.data('post-id') });
   });
 
 
@@ -411,7 +375,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return Promise.resolve()
       .then(() => N.wire.emit('users.blocks.add_infraction_dlg', params))
       .then(() => N.io.rpc('forum.topic.post.add_infraction', params))
-      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: pageState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
         let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
@@ -427,15 +391,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Expand deleted or hellbanned post
   //
-  N.wire.on(module.apiPath + '.post_expand', function post_expand(data) {
+  N.wire.on(module.apiPath + ':post_expand', function post_expand(data) {
     let postId = data.$this.data('post-id');
 
     return Promise.resolve()
-      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: pageState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
         let $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
 
-        if (topicState.selected_posts.indexOf(postId) !== -1) {
+        if (pageState.selected_posts.indexOf(postId) !== -1) {
           $result
             .addClass('forum-post__m-selected')
             .find('.forum-post__select-cb').prop('checked', true);
@@ -452,7 +416,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Pin/unpin topic
   //
-  N.wire.on(module.apiPath + '.pin', function topic_pin(data) {
+  N.wire.on(module.apiPath + ':pin', function topic_pin(data) {
     let topicHid = data.$this.data('topic-hid');
     let unpin = data.$this.data('unpin') || false;
 
@@ -475,7 +439,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.on(module.apiPath + ':move', function topic_move(data) {
     let topicHid = data.$this.data('topic-hid');
-    let params = { section_hid_from: topicState.section.hid };
+    let params = { section_hid_from: pageState.section.hid };
 
     return Promise.resolve()
       .then(() => N.wire.emit('forum.topic.topic_move_dlg', params))
@@ -495,7 +459,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Close/open topic handler
   //
-  N.wire.on(module.apiPath + '.close', function topic_close(data) {
+  N.wire.on(module.apiPath + ':close', function topic_close(data) {
     let params = {
       topic_hid: data.$this.data('topic-hid'),
       reopen: data.$this.data('reopen') || false,
@@ -519,7 +483,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Edit title handler
   //
-  N.wire.on(module.apiPath + '.edit_title', function title_edit(data) {
+  N.wire.on(module.apiPath + ':edit_title', function title_edit(data) {
     let forum_topic_title_min_length = N.runtime.page_data.settings.forum_topic_title_min_length;
     let $title = $('.forum-topic-title__text');
     let params = {
@@ -561,7 +525,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Undelete topic handler
   //
-  N.wire.on(module.apiPath + '.topic_undelete', function topic_undelete(data) {
+  N.wire.on(module.apiPath + ':topic_undelete', function topic_undelete(data) {
     let topicHid = data.$this.data('topic-hid');
 
     return Promise.resolve()
@@ -578,10 +542,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Vote post
   //
-  N.wire.on(module.apiPath + '.post_vote', function post_vote(data) {
+  N.wire.on(module.apiPath + ':post_vote', function post_vote(data) {
     let postId = data.$this.data('post-id');
     let value = +data.$this.data('value');
-    let topicHid = topicState.topic_hid;
+    let topicHid = pageState.topic_hid;
 
     return Promise.resolve()
       .then(() => N.io.rpc('forum.topic.post.vote', { post_id: postId, value }))
@@ -600,22 +564,22 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Undelete post handler
   //
-  N.wire.on(module.apiPath + '.post_undelete', function post_undelete(data) {
+  N.wire.on(module.apiPath + ':post_undelete', function post_undelete(data) {
     let postId = data.$this.data('post-id');
 
     return N.io.rpc('forum.topic.post.undelete', { post_id: postId })
-      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: pageState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
         // update progress bar, only relevant if we're undeleting the last post
-        if (res.topic.cache.last_post_hid !== topicState.max_post) {
-          topicState.max_post = res.topic.cache.last_post_hid;
+        if (res.topic.cache.last_post_hid !== pageState.max_post) {
+          pageState.max_post = res.topic.cache.last_post_hid;
 
           N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-            max:         topicState.max_post,
+            max:         pageState.max_post,
             link_bottom: N.router.linkTo('forum.topic', {
-              section_hid: topicState.section.hid,
-              topic_hid:   topicState.topic_hid,
-              post_hid:    topicState.max_post
+              section_hid: pageState.section.hid,
+              topic_hid:   pageState.topic_hid,
+              post_hid:    pageState.max_post
             })
           });
         }
@@ -645,14 +609,14 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Delete topic handler
   //
-  N.wire.on(module.apiPath + '.topic_delete', function topic_delete(data) {
+  N.wire.on(module.apiPath + ':topic_delete', function topic_delete(data) {
     return delete_topic(data.$this.data('as-moderator'));
   });
 
 
   // Delete post handler
   //
-  N.wire.on(module.apiPath + '.post_delete', function post_delete(data) {
+  N.wire.on(module.apiPath + ':post_delete', function post_delete(data) {
     let postId = data.$this.data('post-id');
     let $post = $('#post' + postId);
     let request = {
@@ -671,18 +635,18 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         if (params.reason) request.reason = params.reason;
         return N.io.rpc('forum.topic.post.destroy', request);
       })
-      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: topicState.topic_hid, posts_ids: [ postId ] }))
+      .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: pageState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
         // update progress bar, only relevant if we're deleting the last post
-        if (res.topic.cache.last_post_hid !== topicState.max_post) {
-          topicState.max_post = res.topic.cache.last_post_hid;
+        if (res.topic.cache.last_post_hid !== pageState.max_post) {
+          pageState.max_post = res.topic.cache.last_post_hid;
 
           N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-            max:         topicState.max_post,
+            max:         pageState.max_post,
             link_bottom: N.router.linkTo('forum.topic', {
-              section_hid: topicState.section.hid,
-              topic_hid:   topicState.topic_hid,
-              post_hid:    topicState.max_post
+              section_hid: pageState.section.hid,
+              topic_hid:   pageState.topic_hid,
+              post_hid:    pageState.max_post
             })
           });
         }
@@ -707,7 +671,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
   // Add/remove bookmark
   //
-  N.wire.on(module.apiPath + '.post_bookmark', function post_bookmark(data) {
+  N.wire.on(module.apiPath + ':post_bookmark', function post_bookmark(data) {
     let postId = data.$this.data('post-id');
     let remove = data.$this.data('remove') || false;
     let $post = $('#post' + postId);
@@ -727,10 +691,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // User presses "home" button
   //
   N.wire.on(module.apiPath + ':nav_to_start', function navigate_to_start() {
-    let hid = topicState.top_marker;
-
     // if the first post is already loaded, scroll to the top
-    if (!hid || hid <= 1) {
+    if (scrollable_list.reached_top) {
       $window.scrollTop(0);
       return;
     }
@@ -738,8 +700,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
-        section_hid:  topicState.section.hid,
-        topic_hid:    topicState.topic_hid,
+        section_hid:  pageState.section.hid,
+        topic_hid:    pageState.topic_hid,
         post_hid:     1
       }
     });
@@ -757,8 +719,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
-        section_hid:  topicState.section.hid,
-        topic_hid:    topicState.topic_hid,
+        section_hid:  pageState.section.hid,
+        topic_hid:    pageState.topic_hid,
         post_hid:     post
       }
     });
@@ -768,11 +730,9 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // User presses "end" button
   //
   N.wire.on(module.apiPath + ':nav_to_end', function navigate_to_end() {
-    let hid = topicState.bottom_marker;
-
     // if the last post is already loaded, scroll to the bottom
-    if (!hid || hid >= topicState.max_post) {
-      $window.scrollTop($('.forum-post:last').offset().top - $('.navbar').height());
+    if (scrollable_list.reached_bottom) {
+      $window.scrollTop($('.forum-post:last').offset().top - navbar_height);
       return;
     }
 
@@ -782,370 +742,10 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return N.wire.emit('navigate.to', {
       apiPath: 'forum.topic',
       params: {
-        section_hid:  topicState.section.hid,
-        topic_hid:    topicState.topic_hid,
-        post_hid:     topicState.max_post
+        section_hid:  pageState.section.hid,
+        topic_hid:    pageState.topic_hid,
+        post_hid:     pageState.max_post
       }
-    });
-  });
-
-
-  ///////////////////////////////////////////////////////////////////////////
-  // Whenever we are close to beginning/end of post list, check if we can
-  // load more pages from the server
-  //
-
-  // an amount of posts we try to load when user scrolls to the end of the page
-  const LOAD_POSTS_COUNT = N.runtime.page_data.pagination.per_page;
-
-  // A delay after failed xhr request (delay between successful requests
-  // is set with affix `throttle` argument)
-  //
-  // For example, suppose user continuously scrolls. If server is up, each
-  // subsequent request will be sent each 100 ms. If server goes down, the
-  // interval between request initiations goes up to 2000 ms.
-  //
-  const LOAD_AFTER_ERROR = 2000;
-
-  N.wire.on(module.apiPath + ':load_prev', function load_prev_page() {
-    let now = Date.now();
-
-    // `prev_loading_start` is the last request start time, which is reset to 0 on success
-    //
-    // Thus, successful requests can restart immediately, but failed ones
-    // will have to wait `LOAD_AFTER_ERROR` ms.
-    //
-    if (Math.abs(topicState.prev_loading_start - now) < LOAD_AFTER_ERROR) return;
-
-    topicState.prev_loading_start = now;
-
-    let hid = topicState.top_marker;
-
-    // No posts on the page
-    if (!hid) return;
-
-    // If the first post on the page is hid=1, it's a first page,
-    // so we don't need to load anything
-    //
-    // This is sufficient because post with hid=1 always exists.
-    //
-    if (hid <= 1) return;
-
-    N.io.rpc('forum.topic.list.by_range', {
-      topic_hid: topicState.topic_hid,
-      post_hid:  hid,
-      before:    LOAD_POSTS_COUNT,
-      after:     0
-    }).then(res => {
-      topicState.post_count = res.topic.cache.post_count;
-      topicState.topic_last_ts = res.topic.cache.last_ts;
-
-      if (res.topic.cache.last_post_hid !== topicState.max_post) {
-        topicState.max_post = res.topic.cache.last_post_hid;
-
-        N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-          max:         topicState.max_post,
-          link_bottom: N.router.linkTo('forum.topic', {
-            section_hid: topicState.section.hid,
-            topic_hid:   topicState.topic_hid,
-            post_hid:    topicState.max_post
-          })
-        });
-      }
-
-      if (!res.posts || !res.posts.length) return;
-
-      topicState.top_marker = res.posts[0].hid;
-
-      // recalculate post offset excluding deleted posts and 1 overlapping post
-      for (let post of res.posts) {
-        let visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
-
-        if (visible && post.hid !== hid) topicState.first_post_offset--;
-      }
-
-      reset_loading_placeholders();
-
-      res.pagination = {
-        // used in paginator
-        total:        topicState.post_count,
-        per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: topicState.first_post_offset
-      };
-
-      res.posts_list_before_post = N.runtime.page_data.posts_list_before_post;
-      res.posts_list_after_post  = N.runtime.page_data.posts_list_after_post;
-
-      // render & inject posts list
-      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-      // Cut duplicate post, used to display date intervals properly,
-      // here's an example showing how it works:
-      //
-      //   DOM                + fetched           = result
-      //                    | ...            |  | ...            |
-      //                    +----------------+  +----------------+
-      //                    | before         |  | before         |
-      //                    | post#37        |  | post#37        |
-      //                    | after          |  | after          |
-      // +---------------+  +----------------+  +----------------+
-      // | before        |  | before         |  | before         |
-      // | post#38       |  | post#38  (cut) |  | post#38        |
-      // | after         |  | after          |  | after          |
-      // +---------------+  +----------------+  +----------------+
-      // | before        |                      | before         |
-      // | post#39       |                      | post#39        |
-      // | after         |                      | after          |
-      // +---------------+                      +----------------+
-      // | ...           |                      | ...            |
-      //
-      // Reason for this: we don't have the data to display post intervals
-      //                  for the first post in the DOM.
-      //
-      let idx = $result.index($result.filter('#' + $('.forum-post:first').attr('id')));
-
-      if (idx !== -1) {
-        // cut .forum-post + everything until we find second .forum-post
-        for (idx--; idx > 0; idx--) {
-          let $tag = $($result[idx]);
-
-          if ($tag.hasClass('forum-post__after') || $tag.hasClass('forum-post')) {
-            idx++;
-            break;
-          }
-        }
-
-        $result = $result.slice(0, idx);
-      }
-
-      let old_height = $('.forum-postlist').height();
-      let old_scroll = $window.scrollTop();
-
-      return N.wire.emit('navigate.update', {
-        $: $result,
-        locals: res,
-        $before: $('.forum-postlist > :first')
-      }).then(() => {
-
-        // update scroll so it would point at the same spot as before
-        $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);
-
-        // Update selection state
-        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
-          $(`#post${postId}`)
-            .addClass('forum-post__m-selected')
-            .find('.forum-post__select-cb')
-            .prop('checked', true);
-        });
-
-        //
-        // Limit total amount of posts in DOM
-        //
-        let posts     = document.getElementsByClassName('forum-post');
-        let cut_count = posts.length - CUT_ITEMS_MIN;
-
-        if (cut_count > CUT_ITEMS_MAX - CUT_ITEMS_MIN) {
-          let post = posts[posts.length - cut_count - 1];
-
-          // This condition is a safeguard to prevent infinite loop,
-          // which happens if we remove a post on the screen and trigger
-          // prefetch in the opposite direction (test it with
-          // CUT_ITEMS_MAX=10, CUT_ITEMS_MIN=0)
-          if (post.getBoundingClientRect().top > $window.height() + 600) {
-            let old_length = posts.length;
-
-            $(post).nextAll().remove();
-
-            topicState.bottom_marker = $('.forum-post:last').data('post-hid');
-
-            reset_loading_placeholders();
-
-            topicState.last_post_offset -= old_length - document.getElementsByClassName('forum-post').length;
-          }
-        }
-
-        // reset lock
-        topicState.prev_loading_start = 0;
-      });
-
-    }).catch(err => {
-      if (err.code !== N.io.NOT_FOUND) {
-        N.wire.emit('error', err);
-        return;
-      }
-
-      // Topic moved or deleted, refreshing the page so user could
-      // see the error
-      //
-      N.wire.emit('navigate.reload');
-    });
-  });
-
-  N.wire.on(module.apiPath + ':load_next', function load_next_page() {
-    let now = Date.now();
-
-    // `next_loading_start` is the last request start time, which is reset to 0 on success
-    //
-    // Thus, successful requests can restart immediately, but failed ones
-    // will have to wait `LOAD_AFTER_ERROR` ms.
-    //
-    if (Math.abs(topicState.next_loading_start - now) < LOAD_AFTER_ERROR) return;
-
-    topicState.next_loading_start = now;
-
-    let hid = topicState.bottom_marker;
-
-    // No posts on the page
-    if (!hid) return;
-
-    // If the last post on the page is visible, no need to scroll further.
-    //
-    if (hid >= topicState.max_post) return;
-
-    N.io.rpc('forum.topic.list.by_range', {
-      topic_hid: topicState.topic_hid,
-      post_hid:  hid,
-      before:    0,
-      after:     LOAD_POSTS_COUNT
-    }).then(res => {
-      topicState.post_count = res.topic.cache.post_count;
-      topicState.topic_last_ts = res.topic.cache.last_ts;
-
-      if (res.topic.cache.last_post_hid !== topicState.max_post) {
-        topicState.max_post = res.topic.cache.last_post_hid;
-
-        N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
-          max:         topicState.max_post,
-          link_bottom: N.router.linkTo('forum.topic', {
-            section_hid: topicState.section.hid,
-            topic_hid:   topicState.topic_hid,
-            post_hid:    topicState.max_post
-          })
-        });
-      }
-
-      if (!res.posts || !res.posts.length) return;
-
-      topicState.bottom_marker = res.posts[res.posts.length - 1].hid;
-
-      reset_loading_placeholders();
-
-      res.pagination = {
-        // used in paginator
-        total:        topicState.post_count,
-        per_page:     N.runtime.page_data.pagination.per_page,
-        chunk_offset: topicState.last_post_offset
-      };
-
-      res.posts_list_before_post = N.runtime.page_data.posts_list_before_post;
-      res.posts_list_after_post  = N.runtime.page_data.posts_list_after_post;
-
-      // recalculate post offset excluding deleted posts and 1 overlapping post
-      for (let post of res.posts) {
-        let visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
-
-        if (visible && post.hid !== hid) topicState.last_post_offset++;
-      }
-
-      // render & inject posts list
-      let $result = $(N.runtime.render('forum.blocks.posts_list', res));
-
-      // Cut duplicate post, used to display date intervals properly,
-      // here's an example showing how it works:
-      //
-      //   DOM                + fetched           = result
-      // | ...           |                      | ...            |
-      // +---------------+                      +----------------+
-      // | before        |                      | before         |
-      // | post#37       |                      | post#37        |
-      // | after         |                      | after          |
-      // +---------------+  +----------------+  +----------------+
-      // | before        |  | before         |  | before         |
-      // | post#38       |  | post#38  (cut) |  | post#38        |
-      // | after         |  | after          |  | after          |
-      // +---------------+  +----------------+  +----------------+
-      //                    | before         |  | before         |
-      //                    | post#39        |  | post#39        |
-      //                    | after          |  | after          |
-      //                    +----------------+  +----------------+
-      //                    | ...            |  | ...            |
-      //
-      // Reason for this: we don't have the data to display post intervals
-      //                  for the first post in the DOM.
-      //
-      let idx = $result.index($result.filter('#' + $('.forum-post:last').attr('id')));
-
-      if (idx !== -1) {
-        // cut .forum-post + everything until we find second .forum-post
-        for (idx++; idx < $result.length; idx++) {
-          let $tag = $($result[idx]);
-
-          if ($tag.hasClass('forum-post__before') || $tag.hasClass('forum-post')) {
-            idx--;
-            break;
-          }
-        }
-
-        $result = $result.slice(idx + 1);
-      }
-
-      return N.wire.emit('navigate.update', {
-        $: $result,
-        locals: res,
-        $after: $('.forum-postlist > :last')
-      }).then(() => {
-        // Update selection state
-        _.intersection(topicState.selected_posts, _.map(res.posts, '_id')).forEach(postId => {
-          $(`#post${postId}`)
-            .addClass('forum-post__m-selected')
-            .find('.forum-post__select-cb')
-            .prop('checked', true);
-        });
-
-        //
-        // Limit total amount of posts in DOM
-        //
-        let posts     = document.getElementsByClassName('forum-post');
-        let cut_count = posts.length - CUT_ITEMS_MIN;
-
-        if (cut_count > CUT_ITEMS_MAX - CUT_ITEMS_MIN) {
-          let post = posts[cut_count];
-
-          // This condition is a safeguard to prevent infinite loop,
-          // which happens if we remove a post on the screen and trigger
-          // prefetch in the opposite direction (test it with
-          // CUT_ITEMS_MAX=10, CUT_ITEMS_MIN=0)
-          if (post.getBoundingClientRect().bottom < -600) {
-            let old_height = $('.forum-postlist').height();
-            let old_scroll = $window.scrollTop(); // might change on remove()
-            let old_length = posts.length;
-
-            $(post).prevAll().remove();
-
-            topicState.top_marker = $('.forum-post:first').data('post-hid');
-
-            reset_loading_placeholders();
-
-            // update scroll so it would point at the same spot as before
-            $window.scrollTop(old_scroll + $('.forum-postlist').height() - old_height);
-            topicState.first_post_offset += old_length - document.getElementsByClassName('forum-post').length;
-          }
-        }
-
-        // reset lock
-        topicState.next_loading_start = 0;
-      });
-
-    }).catch(err => {
-      if (err.code !== N.io.NOT_FOUND) {
-        N.wire.emit('error', err);
-        return;
-      }
-
-      // Topic moved or deleted, refreshing the page so user could
-      // see the error
-      //
-      N.wire.emit('navigate.reload');
     });
   });
 });
@@ -1162,11 +762,11 @@ let topicParams;
 // Set `quote__m-local` or `quote__m-outer` class on every quote
 // depending on whether its origin is in the same topic or not.
 //
-function set_quote_modifiers(selector) {
+function set_quote_modifiers(container) {
   // if topicParams is not set, it means we aren't on a topic page
   if (!topicParams) return;
 
-  selector.find('.quote').each(function () {
+  container.find('.quote').each(function () {
     let $tag = $(this);
 
     if ($tag.hasClass('quote__m-local') || $tag.hasClass('quote__m-outer')) {
@@ -1250,7 +850,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
   let lastRead = -1;
 
   scrollPositionTracker = _.debounce(function () {
-    let viewportStart = $window.scrollTop() + navbarHeight;
+    let viewportStart = $window.scrollTop() + navbar_height;
     let viewportEnd = $window.scrollTop() + $window.height();
     let $posts = $('.forum-post');
 
@@ -1285,7 +885,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       // If user reads last visible post in DOM, we mark last
       // loaded post instead
       //
-      read = topicState.bottom_marker;
+      read = pageState.bottom_marker;
     }
 
     // Current scroll (topic hid) position
@@ -1385,9 +985,9 @@ function key_down(event) {
 // Save selected posts + debounced
 //
 function save_selected_posts_immediate() {
-  if (topicState.selected_posts.length) {
+  if (pageState.selected_posts.length) {
     // Expire after 1 day
-    bag.set(selected_posts_key, topicState.selected_posts, 60 * 60 * 24).catch(() => {});
+    bag.set(selected_posts_key, pageState.selected_posts, 60 * 60 * 24).catch(() => {});
   } else {
     bag.remove(selected_posts_key).catch(() => {});
   }
@@ -1395,10 +995,26 @@ function save_selected_posts_immediate() {
 const save_selected_posts = _.debounce(save_selected_posts_immediate, 500);
 
 
+function update_selection_state(container) {
+  pageState.selected_posts.forEach(postId => {
+    container.find(`#post${postId}`).addBack(`#post${postId}`)
+      .addClass('forum-post__m-selected')
+      .find('.forum-post__select-cb')
+      .prop('checked', true);
+  });
+}
+
+N.wire.on('navigate.update', function update_selected_topics(data) {
+  if (!pageState.topic_hid) return; // not on topic page
+
+  update_selection_state(data.$);
+});
+
+
 // Load previously selected posts
 //
 N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_selected_posts() {
-  selected_posts_key = `topic_selected_posts_${N.runtime.user_hid}_${topicState.topic_hid}`;
+  selected_posts_key = `topic_selected_posts_${N.runtime.user_hid}_${pageState.topic_hid}`;
 
   $(document)
     .on('keyup', key_up)
@@ -1408,13 +1024,8 @@ N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_sele
   bag.get(selected_posts_key)
     .then(ids => {
       ids = ids || [];
-      topicState.selected_posts = ids;
-      topicState.selected_posts.forEach(postId => {
-        $(`#post${postId}`)
-          .addClass('forum-post__m-selected')
-          .find('.forum-post__select-cb')
-          .prop('checked', true);
-      });
+      pageState.selected_posts = ids;
+      update_selection_state($(document));
 
       return ids.length ? updateTopicState() : null;
     })
@@ -1431,7 +1042,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
   N.wire.on('forum.topic:post_check', function topic_post_select(data) {
     let postId = data.$this.data('post-id');
 
-    if (data.$this.is(':checked') && topicState.selected_posts.indexOf(postId) === -1) {
+    if (data.$this.is(':checked') && pageState.selected_posts.indexOf(postId) === -1) {
       // Select
       //
       if ($many_select_start) {
@@ -1456,15 +1067,15 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         postsBetween.each(function () {
           let id = $(this).data('post-id');
 
-          if (topicState.selected_posts.indexOf(id) === -1) {
-            topicState.selected_posts.push(id);
+          if (pageState.selected_posts.indexOf(id) === -1) {
+            pageState.selected_posts.push(id);
           }
 
           $(this).find('.forum-post__select-cb').prop('checked', true);
           $(this).addClass('forum-post__m-selected');
         });
 
-        topicState.selected_posts.push(postId);
+        pageState.selected_posts.push(postId);
         $post.addClass('forum-post__m-selected');
 
 
@@ -1475,7 +1086,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
 
         $many_select_start = $post;
         $post.addClass('forum-post__m-selected');
-        topicState.selected_posts.push(postId);
+        pageState.selected_posts.push(postId);
 
         N.wire.emit('notify.info', t('msg_multiselect'));
 
@@ -1484,15 +1095,15 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         // No many select
         //
         data.$this.closest('.forum-post').addClass('forum-post__m-selected');
-        topicState.selected_posts.push(postId);
+        pageState.selected_posts.push(postId);
       }
 
 
-    } else if (!data.$this.is(':checked') && topicState.selected_posts.indexOf(postId) !== -1) {
+    } else if (!data.$this.is(':checked') && pageState.selected_posts.indexOf(postId) !== -1) {
       // Unselect
       //
       data.$this.closest('.forum-post').removeClass('forum-post__m-selected');
-      topicState.selected_posts = _.without(topicState.selected_posts, postId);
+      pageState.selected_posts = _.without(pageState.selected_posts, postId);
     }
 
     save_selected_posts();
@@ -1503,7 +1114,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
   // Unselect all posts
   //
   N.wire.on('forum.topic:posts_unselect', function topic_posts_unselect() {
-    topicState.selected_posts = [];
+    pageState.selected_posts = [];
 
     $('.forum-post__select-cb:checked').each(function () {
       $(this)
@@ -1525,18 +1136,18 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
     return N.wire.emit('navigate.get_page_raw', pageParams).then(() => {
 
       // If first post selected - delete topic
-      if (topicState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
+      if (pageState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
         return Promise.resolve()
           .then(() => N.wire.emit('common.blocks.confirm', t('many_delete_as_topic')))
           .then(() => delete_topic(true))
           .then(() => {
-            topicState.selected_posts = [];
+            pageState.selected_posts = [];
             save_selected_posts();
             // Don't need update topic state, because section page will be opened after `delete_topic()`
           });
       }
 
-      let postsIds = topicState.selected_posts;
+      let postsIds = pageState.selected_posts;
       let params = {
         canDeleteHard: N.runtime.page_data.settings.forum_mod_can_hard_delete_topics
       };
@@ -1545,7 +1156,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
         .then(() => N.wire.emit('forum.topic.posts_delete_many_dlg', params))
         .then(() => {
           let request = {
-            topic_hid: topicState.topic_hid,
+            topic_hid: pageState.topic_hid,
             posts_ids: postsIds,
             method: params.method
           };
@@ -1555,7 +1166,7 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
           return N.io.rpc('forum.topic.post.destroy_many', request);
         })
         .then(() => {
-          topicState.selected_posts = [];
+          pageState.selected_posts = [];
           save_selected_posts_immediate();
 
           return N.wire.emit('notify.info', t('many_posts_deleted'));
@@ -1573,27 +1184,27 @@ N.wire.once('navigate.done:' + module.apiPath, function topic_post_selection_ini
     return N.wire.emit('navigate.get_page_raw', pageParams).then(() => {
 
       // If first post selected - undelete topic
-      if (topicState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
+      if (pageState.selected_posts.indexOf(pageParams.data.topic.cache.first_post) !== -1) {
         return Promise.resolve()
           .then(() => N.wire.emit('common.blocks.confirm', t('many_undelete_as_topic')))
-          .then(() => N.io.rpc('forum.topic.undelete', { topic_hid: topicState.topic_hid }))
+          .then(() => N.io.rpc('forum.topic.undelete', { topic_hid: pageState.topic_hid }))
           .then(() => {
-            topicState.selected_posts = [];
+            pageState.selected_posts = [];
             save_selected_posts_immediate();
             return N.wire.emit('navigate.reload');
           });
       }
 
       let request = {
-        topic_hid: topicState.topic_hid,
-        posts_ids: topicState.selected_posts
+        topic_hid: pageState.topic_hid,
+        posts_ids: pageState.selected_posts
       };
 
       return Promise.resolve()
         .then(() => N.wire.emit('common.blocks.confirm', t('many_undelete_confirm')))
         .then(() => N.io.rpc('forum.topic.post.undelete_many', request))
         .then(() => {
-          topicState.selected_posts = [];
+          pageState.selected_posts = [];
           save_selected_posts_immediate();
         })
         .then(() => N.wire.emit('notify.info', t('many_posts_undeleted')))

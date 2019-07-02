@@ -137,7 +137,7 @@ each post, post_idx in self.posts
               li.forum-post__control-item.forum-post__vote-up
                 button.btn.forum-post__action(
                   title=self.t('vote_up')
-                  data-on-click='forum.topic.post_vote'
+                  data-on-click='forum.topic:post_vote'
                   data-post-id=post._id
                   data-value=self.own_votes[post._id] === 1 ? '0' : '1'
                 )
@@ -146,7 +146,7 @@ each post, post_idx in self.posts
               li.forum-post__control-item.forum-post__vote-down
                 button.btn.forum-post__action(
                   title=self.t('vote_down')
-                  data-on-click='forum.topic.post_vote'
+                  data-on-click='forum.topic:post_vote'
                   data-post-id=post._id
                   data-value=self.own_votes[post._id] === -1 ? '0' : '-1'
                 )
@@ -164,7 +164,7 @@ each post, post_idx in self.posts
 
             li.forum-post__control-item.forum-post__bookmark
               button.btn.forum-post__action.forum-post__bookmark-add(
-                data-on-click='forum.topic.post_bookmark'
+                data-on-click='forum.topic:post_bookmark'
                 data-post-id=post._id
                 title=self.t('bookmark_add')
               )
@@ -172,7 +172,7 @@ each post, post_idx in self.posts
                 span.forum-post__bookmarks-count(data-bm-count=post.bookmarks)
 
               button.btn.forum-post__action.forum-post__bookmark-remove(
-                data-on-click='forum.topic.post_bookmark'
+                data-on-click='forum.topic:post_bookmark'
                 data-post-id=post._id
                 data-remove='true'
                 title=self.t('bookmark_remove')
@@ -192,7 +192,7 @@ each post, post_idx in self.posts
 
             li.forum-post__delete.forum-post__control-item
               button.btn.forum-post__action(
-                data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic:topic_delete' : 'forum.topic:post_delete'
                 data-post-id=post._id
                 data-topic-hid=self.topic.hid
                 title=self.t('delete')
@@ -246,7 +246,7 @@ each post, post_idx in self.posts
                   if self.settings.can_see_ip
                     button.dropdown-item(
                       data-post-id=post._id
-                      data-on-click='forum.topic.post_show_ip'
+                      data-on-click='forum.topic:post_show_ip'
                     )= self.t('ip_info')
 
                   if self.settings.forum_mod_can_edit_posts
@@ -259,14 +259,14 @@ each post, post_idx in self.posts
 
                   if self.settings.forum_mod_can_delete_topics
                     button.dropdown-item.forum-post__delete(
-                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_delete' : 'forum.topic.post_delete'
+                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic:topic_delete' : 'forum.topic:post_delete'
                       data-post-id=post._id
                       data-topic-hid=self.topic.hid
                       data-as-moderator='true'
                     )= self.t('delete')
 
                     button.dropdown-item.forum-post__undelete(
-                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic.topic_undelete' : 'forum.topic.post_undelete'
+                      data-on-click=self.topic.cache.first_post === post._id ? 'forum.topic:topic_undelete' : 'forum.topic:post_undelete'
                       data-post-id=post._id
                       data-topic-hid=self.topic.hid
                     )= self.t('undelete')
@@ -385,7 +385,7 @@ each post, post_idx in self.posts
 
           li.forum-post__control-item
             button.btn.forum-post__action(
-              data-on-click='forum.topic.post_expand'
+              data-on-click='forum.topic:post_expand'
               title=self.t('expand')
               data-post-id=post._id
             )

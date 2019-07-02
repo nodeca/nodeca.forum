@@ -10,8 +10,6 @@ article#content.forum-section-root(
   }
   class=(self.pagination.chunk_offset > 0 ? '' : 'forum-section-root__m-first-page')
   data-last-topic-hid= self.last_topic_hid
-  data-top-marker=     self.topics && self.topics.length > 0 ? self.topics[0].cache.last_post : null
-  data-bottom-marker=  self.topics && self.topics.length > 0 ? self.topics[self.topics.length - 1].cache.last_post : null
 )
 
   -
@@ -64,18 +62,8 @@ article#content.forum-section-root(
         )
           span.icon.icon-loading-placeholder
 
-        .forum-topiclist._affix(
-          data-affix-top={
-            offset:     500,
-            wire_above: 'forum.section:load_prev',
-            throttle:   100
-          }
-          data-affix-bottom={
-            offset:     500,
-            wire_below: 'forum.section:load_next',
-            throttle:   100
-          }
-        )!= self.partial('@forum.blocks.topics_list')
+        .forum-topiclist
+          != self.partial('@forum.blocks.topics_list')
 
         .forum-section__loading-next.nojs-hide(
           class=(self.topics && self.topics.length > 0 && self.topics[self.topics.length - 1].hid === self.last_topic_hid ? 'd-none' : '')

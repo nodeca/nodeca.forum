@@ -19,6 +19,7 @@ else
 .user-tracker-item.user-tracker-item__m-forum-topic(
   class=mark.isNew ? 'user-tracker-item__m-new' : ''
   class=mark.next !== -1 ? 'user-tracker-item__m-unread' : ''
+  data-last-ts=new Date(self.item.last_ts).valueOf()
 )
   .user-tracker-item__content
     h2.user-tracker-item__title

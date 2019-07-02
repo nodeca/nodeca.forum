@@ -1,7 +1,7 @@
 if self.results.length
 
-  each result in self.results
-    article.search-result.search-result__m-with-content
+  each result, idx in self.results
+    article.search-result.search-result__m-with-content(data-offset=idx + self.skip)
       header.search-result__header
         a.search-result__title(
           href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })

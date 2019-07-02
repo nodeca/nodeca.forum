@@ -70,5 +70,6 @@ module.exports = function (N, apiPath) {
 
     env.res.hid  = _.toFinite(env.params.hid);
     env.res.type = env.params.type;
+    env.res.skip = env.params.skip;
   });
 };

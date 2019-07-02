@@ -3,34 +3,44 @@
 
 'use strict';
 
-const _    = require('lodash');
-const bag  = require('bagjs')({ prefix: 'nodeca' });
-
-// A delay after failed xhr request (delay between successful requests
-// is set with affix `throttle` argument)
-//
-// For example, suppose user continuously scrolls. If server is up, each
-// subsequent request will be sent each 100 ms. If server goes down, the
-// interval between request initiations goes up to 2000 ms.
-//
-const LOAD_AFTER_ERROR = 2000;
+const _              = require('lodash');
+const bag            = require('bagjs')({ prefix: 'nodeca' });
+const ScrollableList = require('nodeca.core/lib/app/scrollable_list');
 
 const OPTIONS_STORE_KEY = 'search_form_expanded';
 
 // List of the used key names in query string
 const query_fields = [ 'hid', 'query', 'type', 'sort', 'period' ];
 
-// - search:
+// - search_params:
 //   - hid:              topic hid
 //   - query:            search query
 //   - type:             search type (forum_posts, forum_topics, etc.)
 //   - sort:             sort type (`weight` or `ts`)
 //   - period:           period in days
-// - reached_end:        true if no more results exist below last loaded result
-// - next_loading_start: time when current xhr request for the next page is started
-// - bottom_marker:      offset of the last loaded result
 //
-let pageState = {};
+let search_params = null;
+let scrollable_list = null;
+
+function load(start, direction) {
+  if (direction !== 'bottom') return null;
+  if (!search_params || !search_params.query) return null;
+
+  return N.io.rpc('search.forum_topic.results', _.assign({}, search_params, {
+    skip:   start,
+    limit:  N.runtime.page_data.items_per_page
+  })).then(res => {
+    return {
+      $html: $(N.runtime.render('search.blocks.' + res.type, res)),
+      locals: res,
+      offset: start,
+      reached_end: res.reached_end
+    };
+  }).catch(err => {
+    N.wire.emit('error', err);
+  });
+}
+
 
 N.wire.on('navigate.done:' + module.apiPath, function form_init() {
   return bag.get(OPTIONS_STORE_KEY).then(expanded => {
@@ -41,12 +51,7 @@ N.wire.on('navigate.done:' + module.apiPath, function form_init() {
 // Execute search if it's defined in query
 //
 N.wire.on('navigate.done:' + module.apiPath, function page_init(data) {
-  let parsed = data.params.$query;
-
-  pageState.search             = _.pick(parsed, query_fields);
-  pageState.reached_end        = false;
-  pageState.next_loading_start = 0;
-  pageState.bottom_marker      = 0;
+  search_params = _.pick(data.params.$query, query_fields);
 
   // Don't set cursor on input - too many side effects on mobiles
   /*// Set cursor to input
@@ -57,30 +62,38 @@ N.wire.on('navigate.done:' + module.apiPath, function page_init(data) {
     .focus();*/
 
   // Load results if possible
-  if (pageState.search.query) {
-    pageState.next_loading_start = Date.now();
-
-    let items_per_page = N.runtime.page_data.items_per_page;
-
-    N.io.rpc('search.forum_topic.results', _.assign({}, pageState.search, {
+  if (search_params.query) {
+    N.io.rpc('search.forum_topic.results', _.assign({}, search_params, {
       skip:   0,
-      limit:  items_per_page
-    })).then(function (res) {
-      pageState.bottom_marker += items_per_page;
-      pageState.reached_end = res.reached_end;
-
-      // reset lock
-      pageState.next_loading_start = 0;
-
+      limit:  N.runtime.page_data.items_per_page
+    })).then(res => {
       return N.wire.emit('navigate.update', {
         $: $(N.runtime.render(module.apiPath + '.results', res)),
         locals: res,
         $replace: $('.search-results')
+      }).then(() => {
+        scrollable_list = new ScrollableList({
+          N,
+          list_selector:               '.search-results__list',
+          item_selector:               '.search-result',
+          placeholder_bottom_selector: '.search-results__loading-next',
+          get_content_id:              item => $(item).data('offset'),
+          load,
+          reached_top:                 true,
+          reached_bottom:              res.reached_end
+        });
       });
     }).catch(err => {
       N.wire.emit('error', err);
     });
   }
+});
+
+
+N.wire.on('navigate.exit:' + module.apiPath, function page_teardown() {
+  if (scrollable_list) scrollable_list.destroy();
+  scrollable_list = null;
+  search_params = null;
 });
 
 
@@ -107,53 +120,5 @@ N.wire.on(module.apiPath + ':search', function do_search(data) {
   return N.wire.emit('navigate.to', {
     apiPath: module.apiPath,
     params: { $query: _.pick(data.fields, query_fields) }
-  });
-});
-
-
-// Fetch more results when user scrolls down
-//
-N.wire.on(module.apiPath + ':load_next', function load_next() {
-  if (!pageState.search.query) return;
-  if (pageState.reached_end) return;
-
-  let now = Date.now();
-
-  // `next_loading_start` is the last request start time, which is reset to 0 on success
-  //
-  // Thus, successful requests can restart immediately, but failed ones
-  // will have to wait `LOAD_AFTER_ERROR` ms.
-  //
-  if (Math.abs(pageState.next_loading_start - now) < LOAD_AFTER_ERROR) return;
-
-  pageState.next_loading_start = now;
-
-  let items_per_page = N.runtime.page_data.items_per_page;
-
-  N.io.rpc('search.forum_topic.results', _.assign({}, pageState.search, {
-    skip:   pageState.bottom_marker,
-    limit:  items_per_page
-  })).then(function (res) {
-    pageState.reached_end = res.reached_end;
-
-    // if last search result is loaded, hide bottom placeholder
-    if (pageState.reached_end) {
-      $('.search-results__loading-next').addClass('d-none');
-    }
-
-    pageState.bottom_marker += items_per_page;
-
-    // reset lock
-    pageState.next_loading_start = 0;
-
-    if (!res.results.length) return;
-
-    return N.wire.emit('navigate.update', {
-      $: $(N.runtime.render(module.apiPath + '.' + res.type, res)),
-      locals: res,
-      $after: $('.search-results__list > :last')
-    });
-  }).catch(err => {
-    N.wire.emit('error', err);
   });
 });
