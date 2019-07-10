@@ -102,7 +102,7 @@ module.exports = function (N, collectionName) {
           [`value.${section_id}`]: is_hb ? 0 : 1,
           [`value_hb.${section_id}`]: 1
         }
-      },
+      }
     );
 
     if (!data) {
