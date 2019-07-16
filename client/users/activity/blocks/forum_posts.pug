@@ -1,0 +1,26 @@
+each result in self.results
+  .users-activity-item(
+    id='item' + result.post._id
+    data-item-id=result.post._id
+  )
+    header.users-activity-item__header
+      a.users-activity-item__title(
+        href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid, post_hid: result.post.hid })
+      )= result.topic.title
+
+      .users-activity-item__stat-narrow.d-sm-none
+        a.users-activity-item__stat-link.users-activity-item__m-stat-parent(
+          href=self.link_to('forum.section', { section_hid: result.section.hid })
+        )= result.section.title
+
+      ul.users-activity-item__stat
+        li.users-activity-item__stat-item
+          != self.timetag(result.post.ts, 'relative')
+
+        li.users-activity-item__stat-item.users-activity-item__m-stat-parent.d-none.d-sm-inline-block
+          a.users-activity-item__stat-link(
+            href=self.link_to('forum.section', { section_hid: result.section.hid })
+          )= result.section.title
+
+    .users-activity-item__content
+      .markup!= result.post.html

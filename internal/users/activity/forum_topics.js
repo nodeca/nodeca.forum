@@ -141,6 +141,9 @@ module.exports = function (N, apiPath) {
                                         .where('_id')
                                         .in(_.uniq(locals.sandbox.topics.map(topic => String(topic.section))))
                                         .lean(true);
+
+    locals.reached_top    = !locals.sandbox.first_id;
+    locals.reached_bottom = !locals.sandbox.last_id;
   });
 
 
@@ -199,9 +202,6 @@ module.exports = function (N, apiPath) {
 
       locals.results.push({ topic, section });
     });
-
-    locals.reached_top    = !locals.sandbox.first_id;
-    locals.reached_bottom = !locals.sandbox.last_id;
   });
 
 
