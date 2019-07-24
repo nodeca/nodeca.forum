@@ -1,10 +1,8 @@
 en-US:
   subject:
-    subject: "abuse report to forum post from #{user_name}"
-    subject_auto: abuse report to forum post (auto)
+    subject: "report from #{user} (forum post)"
   body:
-    header: "Complaint from user #{url}:"
-    header_auto: "Complaint (auto):"
-    to: "To post:"
+    header: "Report from user #{url}:"
+    to: "About forum post:"
     message_sent_to: "This message sent to: "
     report_topic: Topic with report.
