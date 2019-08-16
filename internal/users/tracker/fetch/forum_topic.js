@@ -185,8 +185,8 @@ module.exports = function (N, apiPath) {
       // Collect user ids
       //
       locals.users = locals.users || [];
-      locals.users = locals.users.concat(_.map(topics, cache + '.last_user'));
-      locals.users = locals.users.concat(_.map(topics, cache + '.first_user'));
+      locals.users = locals.users.concat(_.map(topics, 'cache.last_user'));
+      locals.users = locals.users.concat(_.map(topics, 'cache.first_user'));
 
       locals.res.read_marks = {};
       for (let id of topic_ids) locals.res.read_marks[id] = read_marks[id];
