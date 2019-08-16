@@ -120,17 +120,34 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Check if section is publicly visible,
+  // only allow bookmarks in public sections
+  //
+  N.wire.after(apiPath, async function check_section_public(env) {
+    let access_env = { params: {
+      sections: env.data.section,
+      user_info: '000000000000000000000000' // guest
+    } };
+
+    await N.wire.emit('internal:forum.access.section', access_env);
+
+    if (access_env.data.access_read) {
+      env.res.section_is_public = true;
+    }
+  });
+
+
   // Fill bookmarks
   //
   N.wire.after(apiPath, async function fill_bookmarks(env) {
     let postIds = env.data.topics.map(topic => topic.cache.first_post);
 
-    let bookmarks = await N.models.forum.PostBookmark.find()
+    let bookmarks = await N.models.users.Bookmark.find()
                               .where('user').equals(env.user_info.user_id)
-                              .where('post_id').in(postIds)
+                              .where('src').in(postIds)
                               .lean(true);
 
-    env.res.own_bookmarks = _.map(bookmarks, 'post_id');
+    env.res.own_bookmarks = _.map(bookmarks, 'src');
   });
 
 

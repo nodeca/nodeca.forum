@@ -21,6 +21,7 @@ article#content.forum-topic-root(
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
   class=(self.topic.st === topicStatuses.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''
+  class=(!self.section_is_public) ? 'forum-topic-root__m-no-bookmarks' : ''
 )
   -
     var navbar_args = {

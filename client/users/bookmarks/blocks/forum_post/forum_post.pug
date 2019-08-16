@@ -1,0 +1,55 @@
+article.users-bookmarks-item.users-bookmarks-item__m-with-content(
+  data-bookmark-id=self._id
+  id='item' + self._id
+)
+  header.users-bookmarks-item__header
+    .users-bookmarks-item__meta
+      a.users-bookmarks-item__title(
+        href=self.url
+      )= self.topic.title
+
+      .users-bookmarks-item__stat-narrow.d-sm-none
+        = self.t('source') + ': '
+        a.users-bookmarks-item__stat-link.users-bookmarks-item__m-stat-parent(
+          href=self.link_to('forum.section', { section_hid: self.section.hid })
+        )= self.section.title
+
+      ul.users-bookmarks-item__stat
+        li.users-bookmarks-item__stat-item
+          = self.t('source')
+
+        li.users-bookmarks-item__stat-item
+          != self.timetag(self.post.ts, 'relative')
+
+        li.users-bookmarks-item__stat-item.users-bookmarks-item__m-stat-parent.d-none.d-sm-inline-block
+          a.users-bookmarks-item__stat-link(
+            href=self.link_to('forum.section', { section_hid: self.section.hid })
+          )= self.section.title
+
+        li.users-bookmarks-item__stat-item
+          - var user = self.users[self.post.user]
+          if user
+            a.users-bookmarks-item__stat-link._ucard-popover(
+              href=self.link_to('users.member', { user_hid: user.hid })
+              data-user-id=self.post.user
+            )= user.nick
+          else if self.post.legacy_nick
+            = self.post.legacy_nick
+
+    if self.runtime.user_hid === self.user_hid
+      .users-bookmarks-item__controls
+        a.users-bookmarks-item__btn-delete.icon.icon-x(
+          href='#'
+          title=self.t('delete_bookmark')
+          data-on-click='users.bookmarks:delete'
+          data-item-id=self._id
+        )
+
+  .users-bookmarks-item__content
+    .markup!= self.post.html
+
+  .users-bookmarks-item__expand
+    a.users-bookmarks-item__expand-btn(
+      href=self.url
+      data-on-click='users.bookmarks:expand'
+    )= self.t('expand')

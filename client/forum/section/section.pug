@@ -9,6 +9,7 @@ article#content.forum-section-root(
     'end':  'forum.section:nav_to_end'
   }
   class=(self.pagination.chunk_offset > 0 ? '' : 'forum-section-root__m-first-page')
+  class=(!self.section_is_public) ? 'forum-section-root__m-no-bookmarks' : ''
   data-last-topic-hid= self.last_topic_hid
 )
 
