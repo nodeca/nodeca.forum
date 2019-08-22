@@ -85,42 +85,43 @@ function load(start, direction) {
 }
 
 
-// Use a separate debouncer that only fires when user stops scrolling,
-// so it's executed a lot less frequently.
-//
-// The reason is that `history.replaceState` is very slow in FF
-// on large pages: https://bugzilla.mozilla.org/show_bug.cgi?id=1250972
-//
-let update_url = _.debounce((item, index, item_offset) => {
-  let newHid = item ?
-               $(item).data('post-hid') :
-               ($('.forum-post:first').data('post-hid') || 1);
-
-  let href;
-  /* eslint-disable no-undefined */
-  let state = {
-    hid:    newHid,
-    offset: item ? item_offset : undefined
-  };
-
-  // save current hid to pageState, and only update url if hid is different,
-  // it protects url like /f1/topic23/page4 from being overwritten instantly
-  if (pageState.post_hid !== newHid) {
-    pageState.post_hid = newHid;
-
-    href = N.router.linkTo('forum.topic', {
-      section_hid:  pageState.section.hid,
-      topic_hid:    pageState.topic_hid,
-      post_hid:     pageState.post_hid
-    });
-  }
-
-  N.wire.emit('navigate.replace', { href, state })
-        .catch(err => N.wire.emit('error', err));
-}, 500);
-
+let update_url;
 
 function on_list_scroll(item, index, item_offset) {
+  // Use a separate debouncer that only fires when user stops scrolling,
+  // so it's executed a lot less frequently.
+  //
+  // The reason is that `history.replaceState` is very slow in FF
+  // on large pages: https://bugzilla.mozilla.org/show_bug.cgi?id=1250972
+  //
+  update_url = update_url || _.debounce((item, index, item_offset) => {
+    let newHid = item ?
+                 $(item).data('post-hid') :
+                 ($('.forum-post:first').data('post-hid') || 1);
+
+    let href;
+    /* eslint-disable no-undefined */
+    let state = {
+      hid:    newHid,
+      offset: item ? item_offset : undefined
+    };
+
+    // save current hid to pageState, and only update url if hid is different,
+    // it protects url like /f1/topic23/page4 from being overwritten instantly
+    if (pageState.post_hid !== newHid) {
+      pageState.post_hid = newHid;
+
+      href = N.router.linkTo('forum.topic', {
+        section_hid:  pageState.section.hid,
+        topic_hid:    pageState.topic_hid,
+        post_hid:     pageState.post_hid
+      });
+    }
+
+    N.wire.emit('navigate.replace', { href, state })
+          .catch(err => N.wire.emit('error', err));
+  }, 500);
+
   N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
     current: item ? $(item).data('post-hid') : ($('.forum-post:first').data('post-hid') || 1)
   }).catch(err => N.wire.emit('error', err));
@@ -225,7 +226,9 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 N.wire.on('navigate.exit:' + module.apiPath, function page_teardown() {
   scrollable_list.destroy();
   scrollable_list = null;
-  update_url.cancel();
+
+  if (update_url) update_url.cancel();
+
   pageState = {};
 });
 
