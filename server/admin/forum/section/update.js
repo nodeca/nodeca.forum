@@ -14,17 +14,16 @@ var _ = require('lodash');
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id:            { format: 'mongo', required: true },
-    parent:         { type: [ 'null', 'string' ], required: false },
-    display_order:  { type: 'number',           required: false },
-    title:          { type: 'string',           required: false },
-    description:    { type: 'string',           required: false },
-    is_category:    { type: 'boolean',          required: false },
-    is_enabled:     { type: 'boolean',          required: false },
-    is_writable:    { type: 'boolean',          required: false },
-    is_searchable:  { type: 'boolean',          required: false },
-    is_votable:     { type: 'boolean',          required: false },
-    is_counted:     { type: 'boolean',          required: false },
-    is_excludable:  { type: 'boolean',          required: false }
+    parent:         { type: [ 'null', 'string' ], required: true },
+    title:          { type: 'string',           required: true },
+    description:    { type: 'string',           required: true },
+    is_category:    { type: 'boolean',          required: true },
+    is_enabled:     { type: 'boolean',          required: true },
+    is_writable:    { type: 'boolean',          required: true },
+    is_searchable:  { type: 'boolean',          required: true },
+    is_votable:     { type: 'boolean',          required: true },
+    is_counted:     { type: 'boolean',          required: true },
+    is_excludable:  { type: 'boolean',          required: true }
   });
 
   N.wire.on(apiPath, async function section_update(env) {
@@ -40,16 +39,21 @@ module.exports = function (N, apiPath) {
 
     // Update specified fields.
     Object.keys(env.params).forEach(key => {
-      if (key !== '_id') { section.set(key, env.params[key]); }
+      if (key !== '_id' && key !== 'parent') { section.set(key, env.params[key]); }
     });
 
+    // Take extra care while updating 'parent' field:
+    // it is stored as 'undefined' in the database, but it's 'null' in params
+    if (String(section.parent || null) !== String(env.params.parent)) {
+      section.set('parent', env.params.parent);
+    }
+
     //
-    // If section's `parent` is changed, but new `display_order` is not
-    // specified, find free `display_order`.
+    // If section's `parent` is changed, find free `display_order`.
     //
     // NOTE: Used when user changes `parent` field via edit page.
     //
-    if (section.isModified('parent') || !_.has(env.params, 'display_order')) {
+    if (section.isModified('parent')) {
 
       // This is the most simple way to find max value of a field in Mongo.
       let result = await N.models.forum.Section

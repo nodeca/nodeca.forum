@@ -38,7 +38,7 @@ module.exports = function (N, apiPath) {
     // create hash table for _ids, where array index means display order
     var siblingOrder = {};
 
-    _.forEach(_ids, (value, index) => { siblingOrder[value] = index; });
+    _.forEach(_ids, (value, index) => { siblingOrder[value] = index + 1; });
 
     let sections = await N.models.forum.Section
                             .find({ _id: { $in: _ids } })
