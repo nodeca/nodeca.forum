@@ -111,7 +111,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
 
         N.MDEdit.hide();
 
-        N.wire.emit('navigate.update', { $: $result, locals: res }, () => {
+        N.wire.emit('navigate.content_update', { $: $result, locals: res }, () => {
           $post.replaceWith($result);
           setTimeout(() => $result.addClass('forum-post__m-flash'), 0);
         });

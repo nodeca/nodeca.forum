@@ -73,7 +73,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_init(data) {
         });
       });
 
-      return N.wire.emit('navigate.update', {
+      return N.wire.emit('navigate.content_update', {
         $: $(N.runtime.render(module.apiPath + '.results', res)),
         locals: res,
         $replace: $('.search-results')

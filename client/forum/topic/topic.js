@@ -382,7 +382,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        return N.wire.emit('navigate.update', {
+        return N.wire.emit('navigate.content_update', {
           $: $result,
           locals: res,
           $replace: $(`#post${postId}`)
@@ -408,7 +408,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
             .find('.forum-post__select-cb').prop('checked', true);
         }
 
-        return N.wire.emit('navigate.update', {
+        return N.wire.emit('navigate.content_update', {
           $: $result,
           locals: res,
           $replace: $(`#post${postId}`)
@@ -556,7 +556,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       .then(res => {
         let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        return N.wire.emit('navigate.update', {
+        return N.wire.emit('navigate.content_update', {
           $: $result,
           locals: res,
           $replace: $(`#post${postId}`)
@@ -663,7 +663,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
         let $result = $(N.runtime.render('forum.blocks.posts_list', res));
 
-        return N.wire.emit('navigate.update', {
+        return N.wire.emit('navigate.content_update', {
           $: $result,
           locals: res,
           $replace: $post
@@ -803,7 +803,7 @@ N.wire.on('navigate.done:' + module.apiPath, function set_quote_modifiers_on_ini
 });
 
 
-N.wire.on('navigate.update', function set_quote_modifiers_on_update(data) {
+N.wire.on('navigate.content_update', function set_quote_modifiers_on_update(data) {
   set_quote_modifiers(data.$);
 });
 
@@ -1007,7 +1007,7 @@ function update_selection_state(container) {
   });
 }
 
-N.wire.on('navigate.update', function update_selected_topics(data) {
+N.wire.on('navigate.content_update', function update_selected_topics(data) {
   if (!pageState.topic_hid) return; // not on topic page
 
   update_selection_state(data.$);

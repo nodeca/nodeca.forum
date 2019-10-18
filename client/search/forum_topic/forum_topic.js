@@ -67,7 +67,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_init(data) {
       skip:   0,
       limit:  N.runtime.page_data.items_per_page
     })).then(res => {
-      return N.wire.emit('navigate.update', {
+      return N.wire.emit('navigate.content_update', {
         $: $(N.runtime.render(module.apiPath + '.results', res)),
         locals: res,
         $replace: $('.search-results')

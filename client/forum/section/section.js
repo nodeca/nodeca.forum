@@ -355,7 +355,7 @@ function update_selection_state(container) {
   });
 }
 
-N.wire.on('navigate.update', function update_selected_topics(data) {
+N.wire.on('navigate.content_update', function update_selected_topics(data) {
   if (!pageState.hid) return; // not on section page
 
   $('.forum-section-root').toggleClass('forum-section-root__m-first-page', scrollable_list.reached_top);
