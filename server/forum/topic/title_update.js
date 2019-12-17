@@ -58,6 +58,8 @@ module.exports = function (N, apiPath) {
 
     // Can not modify topic in read only section. Should never happens - restricted on client
     if (!section.is_writable && !env.params.as_moderator) throw N.io.BAD_REQUEST;
+
+    env.data.section = section;
   });
 
 
