@@ -15,8 +15,8 @@ module.exports = function (N, apiPath) {
     $query:      {
       type: 'object',
       properties: {
-        prev: { 'enum': [ '' ] },
-        next: { 'enum': [ '' ] }
+        prev: { enum: [ '' ] },
+        next: { enum: [ '' ] }
       },
       required: false,
       additionalProperties: false

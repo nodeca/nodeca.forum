@@ -27,8 +27,8 @@ module.exports = function (N, apiPath) {
       type:   { type: 'string',  required: false },
       skip:   { type: 'integer', required: true, minimum: 0 },
       limit:  { type: 'integer', required: true, minimum: 0, maximum: MAX_LIMIT },
-      sort:   { 'enum': sort_types,   required: false },
-      period: { 'enum': period_types, required: false }
+      sort:   { enum: sort_types,   required: false },
+      period: { enum: period_types, required: false }
     }
   });
 

@@ -16,7 +16,7 @@ module.exports = function (N, collectionName) {
     //        value: Mixed
     //        own: Boolean
     //
-    data       : { type: Schema.Types.Mixed, 'default': {} }
+    data       : { type: Schema.Types.Mixed, default: {} }
   }, {
     versionKey: false
   });

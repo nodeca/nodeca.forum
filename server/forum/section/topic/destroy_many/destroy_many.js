@@ -41,7 +41,7 @@ module.exports = function (N, apiPath) {
       items: { type: 'integer', required: true }
     },
     reason: { type: 'string' },
-    method: { type: 'string', 'enum': [ 'hard', 'soft' ], required: true }
+    method: { type: 'string', enum: [ 'hard', 'soft' ], required: true }
   });
 
 
@@ -169,7 +169,7 @@ module.exports = function (N, apiPath) {
                           .lean(true);
 
     await N.models.users.Vote.updateMany(
-      { 'for': { $in: _.map(posts, '_id') } },
+      { for: { $in: _.map(posts, '_id') } },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } }
     );

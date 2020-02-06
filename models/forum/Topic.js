@@ -51,7 +51,7 @@ module.exports = function (N, collectionName) {
 
 
   let cache = {
-    post_count:    { type: Number, 'default': 0 },
+    post_count:    { type: Number, default: 0 },
 
     // First post
     first_post:    Schema.ObjectId,
@@ -95,13 +95,13 @@ module.exports = function (N, collectionName) {
 
     // Last assigned hid to the posts in this topic,
     // used to determine hid of a new post
-    last_post_counter: { type: Number, 'default': 0 },
+    last_post_counter: { type: Number, default: 0 },
 
     // Cache
     cache,
     cache_hb:       cache,
 
-    views_count:    { type: Number, 'default': 0 }
+    views_count:    { type: Number, default: 0 }
   }, {
     versionKey : false
   });

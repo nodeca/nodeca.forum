@@ -55,7 +55,7 @@ module.exports = function (N, apiPath) {
       env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
         { _id: topic._id },
         { st: statuses.PINNED, ste: topic.st },
-        { 'new': true }
+        { new: true }
       );
       return;
     }
@@ -64,7 +64,7 @@ module.exports = function (N, apiPath) {
     env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: topic._id },
       { st: topic.ste, $unset: { ste: 1 } },
-      { 'new': true }
+      { new: true }
     );
   });
 

@@ -96,7 +96,7 @@ module.exports = function (N, apiPath) {
       },
       { $set: {
         src_type: N.shared.content_type.FORUM_POST,
-        'public': true
+        public: true
       } },
       { upsert: true }
     );

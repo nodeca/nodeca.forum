@@ -129,7 +129,7 @@ async function addVotes(post) {
     let vote = new Vote({
       to:     post.user,
       from:   user._id,
-      'for':  post._id,
+      for:  post._id,
       type:   shared.content_type.FORUM_POST,
       value
     });

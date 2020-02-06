@@ -13,7 +13,7 @@ module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     topic_hid:    { type: 'integer', required: true },
     reason:       { type: 'string' },
-    method:       { type: 'string', 'enum': [ 'hard', 'soft' ], required: true },
+    method:       { type: 'string', enum: [ 'hard', 'soft' ], required: true },
     as_moderator: { type: 'boolean', required: true }
   });
 
@@ -131,7 +131,7 @@ module.exports = function (N, apiPath) {
     env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: topic._id },
       update,
-      { 'new': true }
+      { new: true }
     );
   });
 
@@ -174,7 +174,7 @@ module.exports = function (N, apiPath) {
       .lean(true);
 
     await N.models.users.Vote.updateMany(
-      { 'for': { $in: _.map(posts, '_id') } },
+      { for: { $in: _.map(posts, '_id') } },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } }
     );

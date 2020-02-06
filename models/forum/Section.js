@@ -22,8 +22,8 @@ module.exports = function (N, collectionName) {
   set_content_type('FORUM_SECTION', 3);
 
   let cache = {
-    topic_count:      { type: Number, 'default': 0 },
-    post_count:       { type: Number, 'default': 0 },
+    topic_count:      { type: Number, default: 0 },
+    post_count:       { type: Number, default: 0 },
 
     last_post:        Schema.ObjectId,
     last_topic:       Schema.ObjectId,
@@ -45,16 +45,16 @@ module.exports = function (N, collectionName) {
     parent:           Schema.ObjectId,
 
     // Options
-    is_category:      { type: Boolean, 'default': false }, // subsection or category
-    is_enabled:       { type: Boolean, 'default': true },  // hiden inactive
-    is_writable:      { type: Boolean, 'default': true },  // read-only archive
-    is_searchable:    { type: Boolean, 'default': true },
-    is_votable:       { type: Boolean, 'default': true },
-    is_counted:       { type: Boolean, 'default': true },  // inc user's counter, when posted here
-    is_excludable:    { type: Boolean, 'default': true },
+    is_category:      { type: Boolean, default: false }, // subsection or category
+    is_enabled:       { type: Boolean, default: true },  // hiden inactive
+    is_writable:      { type: Boolean, default: true },  // read-only archive
+    is_searchable:    { type: Boolean, default: true },
+    is_votable:       { type: Boolean, default: true },
+    is_counted:       { type: Boolean, default: true },  // inc user's counter, when posted here
+    is_excludable:    { type: Boolean, default: true },
 
     // Topic prefixes
-    is_prefix_required: { type: Boolean, 'default': false },
+    is_prefix_required: { type: Boolean, default: false },
     prefix_groups:    [ Schema.ObjectId ], // allowed groups of prefixes
 
     // Cache

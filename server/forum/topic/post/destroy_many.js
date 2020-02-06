@@ -41,7 +41,7 @@ module.exports = function (N, apiPath) {
       items: { format: 'mongo', required: true }
     },
     reason: { type: 'string' },
-    method: { type: 'string', 'enum': [ 'hard', 'soft' ], required: true }
+    method: { type: 'string', enum: [ 'hard', 'soft' ], required: true }
   });
 
 
@@ -166,7 +166,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function remove_votes(env) {
     await N.models.users.Vote.updateMany(
-      { 'for': { $in: _.map(env.data.posts, '_id') } },
+      { for: { $in: _.map(env.data.posts, '_id') } },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } }
     );

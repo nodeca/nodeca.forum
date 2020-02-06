@@ -147,7 +147,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function remove_votes(env) {
     await N.models.users.Vote.updateMany(
-      { 'for': { $in: _.map(env.data.posts, '_id') } },
+      { for: { $in: _.map(env.data.posts, '_id') } },
       // Just move vote `backup` field back to `value` field
       { $rename: { backup: 'value' } }
     );

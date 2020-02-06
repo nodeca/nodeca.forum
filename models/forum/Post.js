@@ -40,7 +40,7 @@ module.exports = function (N, collectionName) {
     to              : Schema.ObjectId,
     user            : Schema.ObjectId,
     legacy_nick     : String,  // only if user id is undefined, e.g. guests
-    ts              : { type: Date, 'default': Date.now },  // timestamp
+    ts              : { type: Date, default: Date.now },  // timestamp
     ip              : String,  // ip address
 
     // Data for displaying "replied to" link
@@ -63,11 +63,11 @@ module.exports = function (N, collectionName) {
   // Flag set if topic state isn't deleted or hard deleted;
   // used in counting user's activity to quickly determine if a post
   // should be counted (i.e. in a visible topic) or not
-    topic_exists    : { type: Boolean, 'default': true },
+    topic_exists    : { type: Boolean, default: true },
 
   // Aggregated votes count
-    votes           : { type: Number, 'default': 0 },
-    votes_hb        : { type: Number, 'default': 0 },
+    votes           : { type: Number, default: 0 },
+    votes_hb        : { type: Number, default: 0 },
 
   // An amount of edits made for this post
     edit_count      : Number,
@@ -76,7 +76,7 @@ module.exports = function (N, collectionName) {
     last_edit_ts    : Date,
 
   // Bookmarks count
-    bookmarks       : { type: Number, 'default': 0 },
+    bookmarks       : { type: Number, default: 0 },
 
     del_reason      : String,
     del_by          : Schema.ObjectId,
@@ -142,7 +142,7 @@ module.exports = function (N, collectionName) {
     let topic = await N.models.forum.Topic.findByIdAndUpdate(
       this.topic,
       { $inc: { last_post_counter: 1 } },
-      { 'new': true }
+      { new: true }
     );
 
     this.hid = topic.last_post_counter;

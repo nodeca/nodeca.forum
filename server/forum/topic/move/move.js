@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
     env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: env.data.topic._id },
       { $set: { section: env.data.section_to._id } },
-      { 'new': true }
+      { new: true }
     );
   });
 

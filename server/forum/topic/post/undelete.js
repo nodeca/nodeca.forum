@@ -79,7 +79,7 @@ module.exports = function (N, apiPath) {
     env.data.new_post = await N.models.forum.Post.findOneAndUpdate(
       { _id: post._id },
       update,
-      { 'new': true }
+      { new: true }
     );
   });
 
@@ -112,7 +112,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function restore_votes(env) {
     await N.models.users.Vote.updateMany(
-      { 'for': env.data.post._id },
+      { for: env.data.post._id },
       // Just move vote `backup` field back to `value` field
       { $rename: { backup: 'value' } }
     );
