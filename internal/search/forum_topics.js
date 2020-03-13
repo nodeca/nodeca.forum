@@ -38,8 +38,13 @@ module.exports = function (N, apiPath) {
     let params = [ sphinx_escape(locals.params.query) ];
 
     if (locals.params.section_hid) {
-      query += ' AND section_uid=?';
-      params.push(docid_sections(N, locals.params.section_hid));
+      let hids = locals.params.section_hid;
+      if (!Array.isArray(hids)) hids = [ hids ];
+
+      if (hids.length > 0) {
+        query += ` AND section_uid IN (${Array(hids.length).fill('?').join(',')})`;
+        params = params.concat(hids.map(hid => docid_sections(N, hid)));
+      }
     }
 
     if (locals.params.period > 0) {

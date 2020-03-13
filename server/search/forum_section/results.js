@@ -33,6 +33,35 @@ module.exports = function (N, apiPath) {
   });
 
 
+  // Fetch section and subsections (if any)
+  //
+  N.wire.before(apiPath, async function fetch_section(env) {
+    if (!env.params.hid) return;
+
+    let section = await N.models.forum.Section.findOne()
+                            .where('hid').equals(_.toFinite(env.params.hid))
+                            .lean(true);
+
+    if (!section) return;
+
+    let children = await N.models.forum.Section.getChildren(section._id, Infinity);
+
+    let hids = [ section.hid ];
+
+    if (children.length > 0) {
+      let s = await N.models.forum.Section.find()
+                        .where('_id').in(_.map(children, '_id'))
+                        .select('hid')
+                        .lean(true);
+
+      hids = hids.concat(_.map(s, 'hid'));
+    }
+
+    env.data.section = section;
+    env.data.section_hids = hids;
+  });
+
+
   N.wire.on(apiPath, async function search_execute(env) {
     let menu = _.get(N.config, 'search.forum_section.menu', {});
     let content_types = Object.keys(menu)
@@ -62,7 +91,7 @@ module.exports = function (N, apiPath) {
       let search_env = {
         params: {
           user_info:   env.user_info,
-          section_hid: _.toFinite(env.params.hid),
+          section_hid: env.data.section_hids || [],
           query:       env.params.query,
           period:      _.toFinite(env.params.period) || _.toFinite(period_types[0]),
           sort:        env.params.sort ? env.params.sort : sort_types[0],
@@ -96,7 +125,7 @@ module.exports = function (N, apiPath) {
         let search_env = {
           params: {
             user_info:   env.user_info,
-            section_hid: _.toFinite(env.params.hid),
+            section_hid: env.data.section_hids || [],
             query:       env.params.query,
             period:      _.toFinite(env.params.period) || _.toFinite(period_types[0]),
             sort:        env.params.sort ? env.params.sort : sort_types[0],
@@ -116,7 +145,7 @@ module.exports = function (N, apiPath) {
       }));
     }
 
-    env.res.hid  = _.toFinite(env.params.hid);
+    env.res.hid  = env.data.section && env.data.section.hid;
     env.res.type = env.params.type;
     env.res.skip = env.params.skip;
   });
