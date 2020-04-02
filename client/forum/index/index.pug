@@ -13,11 +13,6 @@ article#content.forum-index-root
             title=self.t('sections_exclude_title')
           )= self.excluded_sections.length
 
-          button.btn.btn-secondary.btn-xs.icon.icon-check(
-            type='button'
-            title= self.t('mark_all_read')
-          )
-
   .layout__container.container-fluid
     != self.partial('@users.blocks.announces')
 
