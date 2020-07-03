@@ -3,7 +3,6 @@
 
 
 const $       = require('nodeca.core/lib/parser/cheequery');
-const Promise = require('bluebird');
 
 
 module.exports = function (N, apiPath) {

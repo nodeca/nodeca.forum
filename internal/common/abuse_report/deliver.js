@@ -12,7 +12,6 @@
 
 
 const _       = require('lodash');
-const Promise = require('bluebird');
 const render  = require('nodeca.core/lib/system/render/common');
 
 
