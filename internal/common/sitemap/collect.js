@@ -3,10 +3,8 @@
 
 'use strict';
 
-const from2    = require('from2');
+const stream   = require('stream');
 const multi    = require('multistream');
-const pumpify  = require('pumpify');
-const through2 = require('through2');
 const userInfo = require('nodeca.users/lib/user_info');
 
 
@@ -27,33 +25,26 @@ module.exports = function (N, apiPath) {
 
     let sections_by_id = {};
 
-    sections.forEach(section => { sections_by_id[section._id] = section; });
+    for (let section of sections) sections_by_id[section._id] = section;
 
     let buffer = [];
 
     buffer.push({ loc: N.router.linkTo('forum.index', {}), lastmod: new Date() });
 
-    visible_sections.forEach(section => {
+    for (let section of visible_sections) {
       buffer.push({
         loc: N.router.linkTo('forum.section', {
           section_hid: section.hid
         }),
         lastmod: section.cache.last_ts
       });
-    });
+    }
 
-    let topic_stream = pumpify.obj(
-      N.models.forum.Topic.collection.find({
-        section:  { $in: visible_sections.map(section => section._id) },
-        st:       { $in: N.models.forum.Topic.statuses.LIST_VISIBLE }
-      }, {
-        section:            1,
-        hid:                1,
-        'cache.post_count': 1,
-        'cache.last_ts':    1
-      }).sort({ hid: 1 }).stream(),
+    let section_stream = stream.Readable.from(buffer);
 
-      through2.obj(function (topic, encoding, callback) {
+    let topic_stream = new stream.Transform({
+      objectMode: true,
+      transform(topic, encoding, callback) {
         let pages = Math.ceil(topic.cache.post_count / posts_per_page);
 
         for (let page = 1; page <= pages; page++) {
@@ -68,12 +59,25 @@ module.exports = function (N, apiPath) {
         }
 
         callback();
-      })
+      }
+    });
+
+    stream.pipeline(
+      N.models.forum.Topic.find()
+          .where('section').in(visible_sections.map(section => section._id))
+          .where('st').in(N.models.forum.Topic.statuses.LIST_VISIBLE)
+          .select('section hid cache.post_count cache.last_ts')
+          .sort('hid')
+          .lean(true)
+          .stream(),
+
+      topic_stream,
+      () => {}
     );
 
     data.streams.push({
       name: 'forum',
-      stream: multi.obj([ from2.obj(buffer), topic_stream ])
+      stream: multi.obj([ section_stream, topic_stream ])
     });
   });
 };
