@@ -10,7 +10,7 @@ ru-RU:
   open_topic_done: Тема открыта
   close_topic_done: Тема закрыта
 
-  more_posts: Больше постов
+  more_posts: Больше сообщений
   title_with_page: "#{title} - страница #{page}"
 
   del_reason: "(#{text})"
