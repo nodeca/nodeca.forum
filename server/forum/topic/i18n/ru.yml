@@ -1,0 +1,6 @@
+ru-RU:
+  title_with_page: "#{title} - страница #{page}"
+
+  destroy:
+    err_perm_expired: Вы не можете больше удалить эту тему
+    err_delete_topic_with_answers: Вы не можете удалить тему с ответами

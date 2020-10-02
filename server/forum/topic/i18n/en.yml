@@ -2,5 +2,5 @@ en-US:
   title_with_page: "#{title} - page #{page}"
 
   destroy:
-      err_perm_expired: You can not delete this topic anymore
-      err_delete_topic_with_answers: You can not delete topic with answers
+    err_perm_expired: You cannot delete this topic anymore
+    err_delete_topic_with_answers: You cannot delete topic with answers

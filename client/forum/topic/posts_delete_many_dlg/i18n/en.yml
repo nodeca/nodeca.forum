@@ -1,6 +1,6 @@
 en-US:
   title: Delete selected posts
-  confirmation_text: Are you sure you want to delete posts?
+  confirmation_text: Are you sure you wish to delete posts?
   reason_input_help: Deletion reason
   ok: OK
   cancel: Cancel

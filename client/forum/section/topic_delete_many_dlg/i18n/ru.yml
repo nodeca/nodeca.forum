@@ -1,0 +1,8 @@
+ru-RU:
+  title: Удалить выделенные темы
+  confirmation_text: Вы уверены, что хотите удалить темы?
+  reason_input_help: Причина удаления
+  ok: OK
+  cancel: Отмена
+  delete_soft: Мягкое удаление
+  delete_hard: Жёсткое удаление

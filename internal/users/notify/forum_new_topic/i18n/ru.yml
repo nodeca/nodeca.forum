@@ -1,0 +1,3 @@
+ru-RU:
+  subject: '#{project_name}: новая тема в "#{section_title}"'
+  reply: Ответить

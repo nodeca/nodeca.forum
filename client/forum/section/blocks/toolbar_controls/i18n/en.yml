@@ -1,8 +1,5 @@
 en-US:
   show_moderators: Moderators
-  #mod_actions: Moderation
-  #add_moderator: Add moderator
-  #announce: Announce
   mark_read: Mark all read
   topic_create: New topic
   subscription: Subscription

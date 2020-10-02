@@ -1,0 +1,8 @@
+ru-RU:
+  create_topic: "Новая тема в разделе &quot;<a href='#{section_url}'>#{section_title}</a>&quot;"
+
+  options_btn:
+    options: Опции
+
+  title_input:
+    topic_title: Название темы

@@ -1,5 +1,5 @@
 en-US:
   topics_tip: Topics
   posts_tip: Posts
-  empty: "No topics"
+  empty: No topics
   stat: "#{count} ((topic|topics)) · Last post #{last}"

@@ -18,26 +18,26 @@ en-US:
 
   tracking: Tracking
 
-  error_no_more_posts: Ups! No more posts in this topic.
+  error_no_more_posts: Oops! No more posts in this topic.
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
 
   msg_multiselect: Multiselect on
   many_delete_as_topic: First post selected, delete whole topic?
   many_posts_deleted: Deleted selected posts
   many_undelete_as_topic: First post selected, undelete whole topic?
-  many_undelete_confirm: Are you sure want undelete selected posts?
+  many_undelete_confirm: Are you sure you wish to undelete selected posts?
   many_posts_undeleted: Undeleted selected posts
 
   abuse_reported: Your report has been sent
   infraction_added: Infraction added
 
   old_post_reply_confirm: |
-    md:**This post is very old!** It was created #{count} days ago, and is probably outdated.
+    md:**This post is very old!** It was created #{count} ((day|days)):count ago, and is probably outdated.
 
     Are you sure you wish to reply?
 
   old_topic_reply_confirm: |
-    md:**This topic is very old!** Last post here was created #{count} days ago.
+    md:**This topic is very old!** Last post here was created #{count} ((day|days)):count ago.
 
     Your reply would bump this topic to the top of its list. Are you sure you wish to continue?
 

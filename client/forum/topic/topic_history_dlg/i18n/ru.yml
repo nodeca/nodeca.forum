@@ -1,0 +1,13 @@
+ru-RU:
+  title: История
+  role_task: Это действие было выполнено автоматически
+  role_moderator: Это действие было выполнено модератором
+  action_move: 'Тема перемещена из <a href="#{old_link}" target="_blank">#{old_title}</a> в <a href="#{new_link}" target="_blank">#{new_title}</a>'
+  action_open: Тема открыта
+  action_close: Тема закрыта
+  action_pin: Тема прикреплена
+  action_unpin: Тема откреплена
+  action_delete: Тема удалена
+  action_hard_delete: Тема жёстко удалена
+  action_undelete: Тема восстановлена
+  del_reason: "(#{text})"

@@ -1,17 +1,16 @@
 en-US:
   no_topics: No topics yet.
   title_with_page: "#{title} - page #{page}"
-  tracking: Tracking
 
   next_page: Older
   prev_page: Newer
 
   msg_multiselect: Multiselect on
   many_topics_deleted: Selected topics have been deleted
-  many_undelete_confirm: Are you sure you want to restore selected topics?
+  many_undelete_confirm: Are you sure you wish to restore selected topics?
   many_topics_undeleted: Selected topics have been restored
-  many_close_confirm: Are you sure you want to close selected topics?
-  many_open_confirm: Are you sure you want to open selected topics?
+  many_close_confirm: Are you sure you wish to close selected topics?
+  many_open_confirm: Are you sure you wish to open selected topics?
   many_topics_closed: Selected topics have been closed
   many_topics_opened: Selected topics have been opened
   many_topics_moved: Selected topics have been moved

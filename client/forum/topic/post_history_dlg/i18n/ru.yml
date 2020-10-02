@@ -1,0 +1,8 @@
+ru-RU:
+  title: История
+  role_task: Это действие было выполнено автоматически
+  role_moderator: Это действие было выполнено модератором
+  action_delete: Сообщение удалено
+  action_hard_delete: Сообщение жёстко удалено
+  action_undelete: Сообщение восстановлено
+  del_reason: "(#{text})"

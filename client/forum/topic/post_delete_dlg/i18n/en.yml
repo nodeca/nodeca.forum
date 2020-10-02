@@ -1,7 +1,7 @@
 en-US:
   title: Delete post
   title_moderator: 'Moderation: delete post'
-  confirmation_text: Are you sure you want to delete post?
+  confirmation_text: Are you sure you wish to delete this post?
   reason_input_help: Deletion reason
   ok: OK
   cancel: Cancel

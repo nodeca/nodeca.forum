@@ -1,0 +1,23 @@
+ru-RU:
+  page_separator: "страница #{value}"
+  report: Сообщить модератору
+  vote_up: Голосовать за
+  vote_down: Голосовать против
+  vote_details: Нажмите, чтоб посмотреть подробности
+  bookmark_add: Добавить в закладки
+  bookmark_remove: Убрать из закладок
+  ip_info: Информация об IP
+  add_infraction: Добавить нарушение
+  reply: Ответить
+  delete: Удалить
+  undelete: Восстановить
+  edit: Редактировать
+  last_edited: "Последний раз отредактировано #{date}"
+  del_reason: "Причина удаления: #{text}"
+  del_by: "Удалил:"
+  del_post_text: Сообщение удалено.
+  del_hard_post_text: Сообщение жёстко удалено.
+  hb_post_text: Hellbanned
+  expand: Раскрыть
+  multiselect_hint: Нажмите с shift для выбора диапазона
+  infraction_title: "#{points} ((очко|очка|очков)):points, добавлено #{date}"

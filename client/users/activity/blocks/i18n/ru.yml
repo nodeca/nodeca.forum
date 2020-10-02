@@ -1,0 +1,3 @@
+ru-RU:
+  forum_topics:
+    replies: "#{count} ((ответ|ответа|ответов))"

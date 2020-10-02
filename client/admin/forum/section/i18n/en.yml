@@ -1,5 +1,5 @@
 en-US:
   index:
     new_section: Create new section
-    message_confim_section_delete: 'Are you sure you want to delete "#{title}" section?'
+    message_confim_section_delete: 'Are you sure you wish to delete "#{title}" section?'
     error_no_user_with_such_nick: "Can't find user with such nick: #{nick}"

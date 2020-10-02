@@ -1,0 +1,15 @@
+ru-RU:
+  page_separator: "страница #{value}"
+  replies: "#{count} ((ответ|ответа|ответов))"
+  replies_tip: Ответы
+  views_tip: Просмотры
+  del_reason: "(#{text})"
+  del_by: "Удалил:"
+  new: новинка
+  pinned: Прикреплённая тема
+  closed: Закрытая тема
+  hellbanned: Hellbanned
+  ignored: Автор игнорируется
+  deleted: Тема удалена
+  bookmarked: Вы добавили эту тему в закладки
+  multiselect_hint: Нажмите с shift для выбора диапазона

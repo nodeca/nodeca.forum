@@ -1,7 +1,7 @@
 en-US:
   subject:
-    subject: "Report from #{user} (forum post)"
+    subject: "Report from #{user} (forum)"
   body:
     header: "Report from user #{url}:"
     to: "About [forum post](#{url}):"
-    message_sent_to: "This message sent to: "
+    message_sent_to: "This report was also sent to: "

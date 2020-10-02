@@ -1,0 +1,8 @@
+ru-RU:
+  title: Отписаться
+  message: "Вы получите меньше уведомлений для темы #{link}."
+  button:
+    tracking: Следить
+    watching: Наблюдать
+    normal: Уведомлять
+    muted: Без уведомлений

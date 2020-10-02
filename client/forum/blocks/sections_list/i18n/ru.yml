@@ -1,0 +1,5 @@
+ru-RU:
+  topics_tip: Темы
+  posts_tip: Сообщения
+  empty: Тем нет
+  stat: "#{count} ((тема|темы|тем)) · Последнее сообщение #{last}"

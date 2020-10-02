@@ -1,0 +1,5 @@
+ru-RU:
+  title: Поиск в разделе
+
+  results:
+    err_query_too_short: Запрос слишком короткий

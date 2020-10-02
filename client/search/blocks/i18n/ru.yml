@@ -1,0 +1,6 @@
+ru-RU:
+  forum_topics:
+    replies: "#{count} ((ответ|ответа|ответов))"
+    not_found: Темы не найдены.
+  forum_posts:
+    not_found: Сообщения не найдены.

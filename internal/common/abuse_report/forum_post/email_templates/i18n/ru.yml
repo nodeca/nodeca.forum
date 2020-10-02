@@ -1,0 +1,8 @@
+ru-RU:
+  subject:
+    subject: "жалоба от #{user} (форум)"
+  body:
+    header: "Жалоба от пользователя #{url}:"
+    to: "На сообщение на форуме:"
+    message_sent_to: "Эта жалоба также отправлена: "
+    report_topic: Тема с жалобой.

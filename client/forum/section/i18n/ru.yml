@@ -1,0 +1,18 @@
+ru-RU:
+  no_topics: Тем нет.
+  title_with_page: "#{title} - страница #{page}"
+
+  next_page: Раньше
+  prev_page: Позже
+
+  msg_multiselect: Множественный выбор
+  many_topics_deleted: Выбранные темы удалены
+  many_undelete_confirm: Вы уверены, что хотите восстановить выбранные темы?
+  many_topics_undeleted: Выбранные темы восстановлены
+  many_close_confirm: Вы уверены, что хотите закрыть выбранные темы?
+  many_open_confirm: Вы уверены, что хотите открыть выбранные темы?
+  many_topics_closed: Выбранные темы закрыты
+  many_topics_opened: Выбранные темы открыты
+  many_topics_moved: Выбранные темы перемещены
+
+  search_section: в разделе
