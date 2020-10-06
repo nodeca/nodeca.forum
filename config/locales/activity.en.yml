@@ -3,5 +3,5 @@ i18n:
     users:
       activity:
         menu:
-          forum_topics: 'Forum topics'
-          forum_posts: 'Forum posts'
+          forum_topics: Forum topics
+          forum_posts: Forum posts

@@ -45,5 +45,5 @@ ru-RU:
   search_section: в разделе
   search_topic: в теме
 
-  similar_topics: 'Похожие темы'
+  similar_topics: Похожие темы
   similar_topics_stat: '#{replies} ((ответ|ответа|ответов)):replies, #{date}'

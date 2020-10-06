@@ -1,0 +1,12 @@
+i18n:
+  ru-RU:
+    search:
+      general:
+        menu:
+          forum_topics: Темы на форуме
+          forum_posts: Сообщения на форуме
+
+      forum_section:
+        menu:
+          forum_topics: Темы на форуме
+          forum_posts: Сообщения на форуме

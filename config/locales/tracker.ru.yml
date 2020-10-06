@@ -1,0 +1,10 @@
+i18n:
+  ru-RU:
+    users:
+      tracker:
+        menu:
+          forum_topic: Форум
+
+      subscriptions:
+        forum_topic: Темы на форуме
+        forum_section: Разделы форума
