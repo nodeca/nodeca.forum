@@ -1,6 +1,5 @@
 ru-RU:
-  no_topics: Тем нет.
-  title_with_page: "#{title} - страница #{page}"
+  no_topics: Тем ещё нет.
 
   next_page: Раньше
   prev_page: Позже

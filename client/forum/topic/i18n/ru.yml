@@ -10,13 +10,9 @@ ru-RU:
   open_topic_done: Тема открыта
   close_topic_done: Тема закрыта
 
-  more_posts: Больше сообщений
-  title_with_page: "#{title} - страница #{page}"
-
   del_reason: "(#{text})"
   del_by: "Удалил:"
 
-  error_no_more_posts: Ой! В теме не осталось сообщений.
   err_title_too_short: "В названии должно быть не меньше #{count} ((символа|символов|символов))"
 
   msg_multiselect: Множественный выбор
@@ -27,7 +23,7 @@ ru-RU:
   many_posts_undeleted: Восстановить выбранные сообщения
 
   abuse_reported: Жалоба отправлена
-  infraction_added: Нарушение добавлено
+  infraction_added: Нарушение выдано
 
   old_post_reply_confirm: |
     md:**Это сообщение очень старое!** Оно было написано #{count} ((день|дня|дней)):count назад,

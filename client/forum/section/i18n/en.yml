@@ -1,6 +1,5 @@
 en-US:
   no_topics: No topics yet.
-  title_with_page: "#{title} - page #{page}"
 
   next_page: Older
   prev_page: Newer
