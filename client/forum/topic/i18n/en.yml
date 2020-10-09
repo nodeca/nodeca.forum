@@ -3,7 +3,7 @@ en-US:
 
   delete: Delete
   edit_title: Edit title
-  undelete_topic_done: Topic undeleted
+  undelete_topic_done: Topic restored
   pin_topic_done: Topic pinned
   unpin_topic_done: Topic unpinned
   move_topic_done: Topic moved
@@ -20,7 +20,7 @@ en-US:
   many_posts_deleted: Selected posts have been deleted
   many_undelete_as_topic: First post is selected, restore the entire topic?
   many_undelete_confirm: Are you sure you wish to restore selected posts?
-  many_posts_undeleted: Undeleted selected posts
+  many_posts_undeleted: Selected posts have been restored
 
   abuse_reported: Your report has been sent
   infraction_added: Infraction has been added

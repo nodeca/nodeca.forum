@@ -7,7 +7,7 @@ en-US:
   move: Move
   history: History (#{count})
   delete: Delete
-  undelete: Undelete
+  undelete: Restore
   post_add: Add reply
   subscription: Subscription
   subs_muted: Muted. You will never be notified of anything about this topic.
@@ -17,4 +17,4 @@ en-US:
   many_header: "With #{count} ((post|posts)):"
   many_unselect: Clear selection
   many_delete: Delete
-  many_undelete: Undelete
+  many_undelete: Restore

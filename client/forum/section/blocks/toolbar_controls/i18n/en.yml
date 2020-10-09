@@ -10,7 +10,7 @@ en-US:
   many_header: "With #{count} ((topic|topics)):"
   many_unselect: Clear selection
   many_delete: Delete
-  many_undelete: Undelete
+  many_undelete: Restore
   many_close: Close
   many_open: Open
   many_move: Move

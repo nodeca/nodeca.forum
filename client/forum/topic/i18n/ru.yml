@@ -17,10 +17,10 @@ ru-RU:
 
   msg_multiselect: Множественный выбор
   many_delete_as_topic: Выбрано первое сообщение, удалить всю тему?
-  many_posts_deleted: Удалить выбранные сообщения
+  many_posts_deleted: Выбранные сообщения удалены
   many_undelete_as_topic: Выбрано первое сообщение, восстановить всю тему?
   many_undelete_confirm: Вы уверены, что хотите восстановить выбранные сообщения?
-  many_posts_undeleted: Восстановить выбранные сообщения
+  many_posts_undeleted: Выбранные сообщения восстановлены
 
   abuse_reported: Жалоба отправлена
   infraction_added: Нарушение выдано

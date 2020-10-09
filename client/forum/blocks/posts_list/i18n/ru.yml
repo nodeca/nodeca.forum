@@ -20,4 +20,4 @@ ru-RU:
   hb_post_text: Hellbanned
   expand: Раскрыть
   multiselect_hint: Нажмите с shift для выбора диапазона
-  infraction_title: "#{points} ((очко|очка|очков)):points, добавлено #{date}"
+  infraction_title: "#{points} ((балл|балла|баллов)):points, добавлено #{date}"

@@ -9,4 +9,4 @@ en-US:
   destroy_many:
     err_no_posts: None of selected posts can be deleted
   undelete_many:
-    err_no_posts: None of selected posts can be undeleted
+    err_no_posts: None of selected posts can be restored

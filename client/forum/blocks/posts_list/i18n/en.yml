@@ -10,7 +10,7 @@ en-US:
   add_infraction: Add infraction
   reply: Reply
   delete: Delete
-  undelete: Undelete
+  undelete: Restore
   edit: Edit
   last_edited: "Last edited on #{date}"
   del_reason: "Deletion reason: #{text}"
