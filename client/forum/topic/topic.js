@@ -223,6 +223,32 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 });
 
 
+// Open move topic dialog when user goes to #move_to_XX anchor
+//
+N.wire.on('navigate.done:' + module.apiPath, function page_setup_move(data) {
+  let anchor = data.anchor || '';
+  let m;
+  if (!(m = anchor.match(/^#move_to_(\d+)$/))) return;
+
+  let params = { section_hid_from: pageState.section.hid, section_hid_default: +m[1] };
+
+  Promise.resolve()
+    .then(() => N.wire.emit('forum.topic.topic_move_dlg', params))
+    .then(() => {
+      let request = {
+        section_hid_from: params.section_hid_from,
+        section_hid_to: params.section_hid_to,
+        topic_hid: pageState.topic_hid
+      };
+
+      return N.io.rpc('forum.topic.move', request);
+    })
+    .then(() => N.wire.emit('notify.info', t('move_topic_done')))
+    .then(() => N.wire.emit('navigate.reload'))
+    .catch(err => N.wire.emit('error', err));
+});
+
+
 N.wire.on('navigate.exit:' + module.apiPath, function page_teardown() {
   scrollable_list.destroy();
   scrollable_list = null;
@@ -338,12 +364,22 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Click report button
   //
   N.wire.on(module.apiPath + ':report', function report(data) {
-    let params = { messages: t('@forum.abuse_report.messages') };
-    let postId = data.$this.data('post-id');
+    let params = { messages: t('@forum.abuse_report.messages'), current_section: pageState.section.hid };
+    let post_id = data.$this.data('post-id');
 
     return Promise.resolve()
       .then(() => N.wire.emit('common.blocks.abuse_report_dlg', params))
-      .then(() => N.io.rpc('forum.topic.post.abuse_report', { post_id: postId, message: params.message }))
+      .then(() => {
+        let rpc_args = { post_id };
+
+        if (params.move_to) {
+          rpc_args.move_to = params.move_to;
+        } else {
+          rpc_args.message = params.message;
+        }
+
+        return N.io.rpc('forum.topic.post.abuse_report', rpc_args);
+      })
       .then(() => N.wire.emit('notify.info', t('abuse_reported')));
   });
 

@@ -88,11 +88,41 @@ module.exports = function (N, apiPath) {
 
     locals.project_name = await N.settings.get('general_project_name');
     locals.report_text = params.report.text;
-    locals.src_url = N.router.linkTo('forum.topic', {
-      section_hid: params.data.section.hid,
-      topic_hid: params.data.topic.hid,
-      post_hid: params.data.post.hid
-    });
+
+    if (params.report.data && params.report.data.move_to) {
+      let move_to_section = await N.models.forum.Section
+                                      .findById(params.report.data.move_to)
+                                      .lean(true);
+
+      locals.move_from_link = N.router.linkTo('forum.section', {
+        section_hid: params.data.section.hid
+      });
+
+      locals.move_to_link = N.router.linkTo('forum.section', {
+        section_hid: move_to_section.hid
+      });
+
+      locals.move_from_title = params.data.section.title;
+      locals.move_to_title = move_to_section.title;
+
+      locals.src_title = params.data.topic.title;
+      locals.src_url = N.router.linkTo('forum.topic', {
+        section_hid: params.data.section.hid,
+        topic_hid: params.data.topic.hid
+      });
+      locals.move_link = N.router.linkTo('forum.topic', {
+        section_hid: params.data.section.hid,
+        topic_hid: params.data.topic.hid,
+        $anchor: `move_to_${move_to_section.hid}`
+      });
+    } else {
+      locals.src_url = N.router.linkTo('forum.topic', {
+        section_hid: params.data.section.hid,
+        topic_hid: params.data.topic.hid,
+        post_hid: params.data.post.hid
+      });
+    }
+
     locals.src_text = params.data.post.md;
     locals.src_html = params.data.post.html;
     locals.recipients = _.values(params.recipients);

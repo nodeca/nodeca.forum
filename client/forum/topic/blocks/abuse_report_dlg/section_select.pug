@@ -1,0 +1,20 @@
+mixin sections_tree(sections, deepness)
+  each section in sections
+
+    - var prefix = Array(deepness).join('\u2003\u2003');
+
+    option.topic-move__section(
+      class=self.section_hid_from === section.hid ? 'topic-move-section__m-current' : ''
+      disabled=section.is_category
+      value=section.hid
+      selected=(self.current_section_hid === section.hid)
+    )=prefix + section.title
+
+    if section.children && section.children.length
+      +sections_tree(section.children, deepness + 1)
+
+.form-group.abuse-report-dlg__custom-control
+  label= self.message
+
+  select.form-control.custom-select.abuse-report-dlg__forum-section-select(name='section_hid', tabindex='2')
+    +sections_tree(self.sections, 1)

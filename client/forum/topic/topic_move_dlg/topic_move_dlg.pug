@@ -7,7 +7,7 @@ mixin sections_tree(sections, deepness)
       class=self.section_hid_from === section.hid ? 'topic-move-section__m-current' : ''
       disabled=section.is_category
       value=section.hid
-      selected=(self.section_hid_from === section.hid)
+      selected=(self.section_hid_default === section.hid)
     )=prefix + section.title
 
     if section.children && section.children.length

@@ -6,8 +6,18 @@
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
-    post_id: { format: 'mongo', required: true },
-    message: { type: 'string', required: true }
+    properties: {
+      post_id: { format: 'mongo', required: true },
+      message: { type: 'string' },
+      move_to: { type: 'integer', minimum: 1 }
+    },
+
+    additionalProperties: false,
+
+    oneOf: [
+      { required: [ 'message' ] },
+      { required: [ 'move_to' ] }
+    ]
   });
 
 
@@ -24,6 +34,25 @@ module.exports = function (N, apiPath) {
     let can_report_abuse = await env.extras.settings.fetch('can_report_abuse');
 
     if (!can_report_abuse) throw N.io.FORBIDDEN;
+  });
+
+
+  // Check permissions if user wants to move this topic
+  //
+  N.wire.before(apiPath, async function subcall_section(env) {
+    if (!env.params.move_to) return;
+
+    env.data.move_to_section = await N.models.forum.Section.findOne()
+                                         .where('hid').equals(env.params.move_to)
+                                         .lean(true);
+
+    if (!env.data.move_to_section) throw N.io.NOT_FOUND;
+
+    let access_env = { params: { sections: env.data.move_to_section, user_info: env.user_info } };
+
+    await N.wire.emit('internal:forum.access.section', access_env);
+
+    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
   });
 
 
@@ -63,13 +92,25 @@ module.exports = function (N, apiPath) {
     params.link  = true;
     params.quote = true;
 
-    let report = new N.models.core.AbuseReport({
-      src: env.data.post._id,
-      type: N.shared.content_type.FORUM_POST,
-      text: env.params.message,
-      from: env.user_info.user_id,
-      params_ref: await N.models.core.MessageParams.setParams(params)
-    });
+    let report;
+
+    if (!env.data.move_to_section) {
+      report = new N.models.core.AbuseReport({
+        src: env.data.post._id,
+        type: N.shared.content_type.FORUM_POST,
+        text: env.params.message,
+        from: env.user_info.user_id,
+        params_ref: await N.models.core.MessageParams.setParams(params)
+      });
+    } else {
+      report = new N.models.core.AbuseReport({
+        src: env.data.post._id,
+        type: N.shared.content_type.FORUM_POST,
+        data: { move_to: env.data.move_to_section._id },
+        from: env.user_info.user_id,
+        params_ref: await N.models.core.MessageParams.setParams(params)
+      });
+    }
 
     await N.wire.emit('internal:common.abuse_report', { report });
   });
