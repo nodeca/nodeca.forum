@@ -134,6 +134,137 @@ module.exports = function (N, collectionName) {
     topic_exists: 1
   });
 
+
+  // Simultaneously create topic and first post in it.
+  //
+  // Usage:
+  //
+  //     let user_info = await userInfo(N, user_id)
+  //     let topic = new N.models.forum.Topic({ title })
+  //     let post  = new N.models.forum.Post({ section, md })
+  //     await post.createWithTopic(topic, user_info)
+  //
+  Post.methods.createWithTopic = async function (topic, user_info) {
+    /* eslint-disable-next-line consistent-this */
+    let post = this;
+
+    // fill section if it's missing
+    let section_id = post.section || topic.section;
+    post.section = post.section || section_id;
+    topic.section = topic.section || section_id;
+
+    // set statuses
+    if (!topic.st) {
+      if (user_info.hb) {
+        topic.st  = N.models.forum.Topic.statuses.HB;
+        topic.ste = N.models.forum.Topic.statuses.OPEN;
+      } else {
+        topic.st  = N.models.forum.Topic.statuses.OPEN;
+      }
+    }
+
+    if (!post.st) {
+      if (user_info.hb) {
+        post.st  = N.models.forum.Post.statuses.HB;
+        post.ste = N.models.forum.Post.statuses.VISIBLE;
+      } else {
+        post.st  = N.models.forum.Post.statuses.VISIBLE;
+      }
+    }
+
+    // set user id
+    post.user = post.user || user_info.user_id;
+    post.ts = post.ts || Date.now();
+
+    // fill cache
+    topic.cache.post_count = 1;
+
+    topic.cache.first_post = post._id;
+    topic.cache.first_ts = post.ts;
+    topic.cache.first_user = post.user;
+
+    topic.cache.last_post = post._id;
+    topic.cache.last_ts = post.ts;
+    topic.cache.last_post_hid = 1;
+    topic.cache.last_user = post.user;
+
+    Object.assign(topic.cache_hb, topic.cache);
+
+    // get parser options if not available
+    if (!post.params) {
+      post.params = await N.settings.getByCategory(
+        'forum_posts_markup',
+        { usergroup_ids: user_info.usergroups },
+        { alias: true });
+    }
+
+    // compile html if it's not available
+    if (!post.html) {
+      let parse_result = await N.parser.md2html({
+        text: post.md,
+        options: post.params,
+        user_info
+      });
+
+      post.html = parse_result.html;
+      post.imports = parse_result.imports;
+      post.import_users = parse_result.import_users;
+    }
+
+    // save topic and post
+    await topic.save();
+    post.topic = topic._id;
+    await post.save();
+
+    // schedule update tasks
+    await N.queue.forum_post_images_fetch(post._id).postpone();
+    await N.queue.forum_topics_search_update_with_posts([ topic._id ]).postpone();
+    await N.models.forum.Section.updateCache(topic.section);
+
+    await N.models.forum.UserTopicCount.inc(user_info.user_id, {
+      section_id: topic.section,
+      is_hb: user_info.hb
+    });
+
+    await N.models.forum.UserPostCount.inc(user_info.user_id, {
+      section_id: topic.section,
+      is_hb: user_info.hb
+    });
+
+    // add new topic notification for subscribers
+    let subscriptions = await N.models.users.Subscription.find()
+      .where('to').equals(topic.section)
+      .where('type').equals(N.models.users.Subscription.types.WATCHING)
+      .lean(true);
+
+    if (!subscriptions.length) return;
+
+    let subscribed_users = _.map(subscriptions, 'user');
+
+    let ignore = _.keyBy(
+      await N.models.users.Ignore.find()
+                .where('from').in(subscribed_users)
+                .where('to').equals(user_info.user_id)
+                .select('from to -_id')
+                .lean(true),
+      'from'
+    );
+
+    subscribed_users = subscribed_users.filter(user_id => !ignore[user_id]);
+
+    if (!subscribed_users.length) return;
+
+    await N.wire.emit('internal:users.notify', {
+      src: topic._id,
+      to: subscribed_users,
+      type: 'FORUM_NEW_TOPIC'
+    });
+
+    // mark current user as active
+    await N.wire.emit('internal:users.mark_user_active', { user_info });
+  };
+
+
   // Set 'hid' for the new post.
   //
   Post.pre('save', async function () {
