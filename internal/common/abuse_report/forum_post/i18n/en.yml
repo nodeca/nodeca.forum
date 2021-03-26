@@ -1,0 +1,13 @@
+en-US:
+  subject_log: 'Forum: report from #{author.user_nick}'
+  subject_email: '#{project_name} (forum): report from #{author.user_nick}'
+
+  header: "Report from user [#{name}](#{url}):"
+  src_description: "About [forum post](#{url}):"
+  move_from_to:
+    User suggests to move topic
+     "[#{src_title}](#{src_url})"
+     from "[#{move_from_title}](#{move_from_link})"
+     into "[#{move_to_title}](#{move_to_link})".
+  move_link_text: "Click this link if you think it is correct:"
+  report_topic: Topic with report.

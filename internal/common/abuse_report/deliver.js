@@ -5,8 +5,8 @@
 // - report - N.models.core.AbuseReport
 // - recipients - { user_id: user_info }
 // - locals - rendering data
-// - log_templates - { body, subject } - i18n path
-//
+// - subject_log
+// - template
 //
 'use strict';
 
@@ -26,22 +26,23 @@ module.exports = function (N, apiPath) {
     // If section id not specified - skip
     if (!section_id) return;
 
-    if (!params.log_templates) {
+    if (!params.template) {
       let type_name = _.invert(_.get(N, 'shared.content_type', {}))[params.report.type];
 
-      N.logger.warn(`Abuse report (${type_name}): log templates not specified`);
+      N.logger.warn(`Abuse report (${type_name}): template not specified`);
       return;
     }
 
     // Use default locale
+    let locale = N.config.locales[0];
     let helpers = {};
 
-    helpers.t = (phrase, params) => N.i18n.t(N.config.locales[0], phrase, params);
-    helpers.t.exists = phrase => N.i18n.hasPhrase(N.config.locales[0], phrase);
+    helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
+    helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
     helpers.link_to = (name, params) => N.router.linkTo(name, params) || '#';
 
-    let subject = render(N, params.log_templates.subject, params.locals, helpers);
-    let body = render(N, params.log_templates.body, params.locals, helpers);
+    let subject = helpers.t(params.subject_log, params.locals);
+    let body = render(N, params.template, params.locals, helpers);
 
     let section = await N.models.forum.Section.findOne()
                             .where('_id').equals(section_id)
