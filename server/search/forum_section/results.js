@@ -3,7 +3,8 @@
 
 'use strict';
 
-const _  = require('lodash');
+const _       = require('lodash');
+const memoize = require('promise-memoize');
 
 const sort_types   = [ 'date', 'rel' ];
 const period_types = [ '0', '7', '30', '365' ];
@@ -33,9 +34,28 @@ module.exports = function (N, apiPath) {
   });
 
 
+  /*
+   * filterVisibility(s_ids, g_ids, callback)
+   * - s_ids (array) - subsections ids to filter by access permissions
+   * - g_ids (array) - current user groups ids
+   *
+   * Returns  hash { _id: Boolean(visibility) } for selected subsections
+   */
+  let filterVisibility = memoize(function (s_ids, g_ids) {
+    let access_env = { params: { sections: s_ids, user_info: { usergroups: g_ids } } };
+
+    return N.wire.emit('internal:forum.access.section', access_env).then(() =>
+      s_ids.reduce((acc, _id, i) => {
+        acc[_id] = access_env.data.access_read[i];
+        return acc;
+      }, {})
+    );
+  }, { maxAge: 60000 });
+
+
   // Fetch section and subsections (if any)
   //
-  N.wire.before(apiPath, async function fetch_section(env) {
+  N.wire.before(apiPath, async function fetch_subsections(env) {
     if (!env.params.hid) return;
 
     let section = await N.models.forum.Section.findOne()
@@ -44,13 +64,27 @@ module.exports = function (N, apiPath) {
 
     if (!section) return;
 
-    let children = await N.models.forum.Section.getChildren(section._id, Infinity);
+    let subsections = await N.models.forum.Section.getChildren(section._id, Infinity);
 
-    let hids = [ section.hid ];
+    subsections.unshift(section);
 
-    if (children.length > 0) {
+    // sections order is always fixed, no needs to sort.
+    let s_ids = subsections.map(s => s._id.toString());
+
+    // groups should be sorted, to avoid cache duplication
+    let g_ids = env.user_info.usergroups.sort();
+
+    let visibility = await filterVisibility(s_ids, g_ids);
+
+    if (!visibility[section._id]) return;
+
+    subsections = _.filter(subsections, s => visibility[s._id]);
+
+    let hids = [];
+
+    if (subsections.length > 0) {
       let s = await N.models.forum.Section.find()
-                        .where('_id').in(_.map(children, '_id'))
+                        .where('_id').in(_.map(subsections, '_id'))
                         .select('hid')
                         .lean(true);
 

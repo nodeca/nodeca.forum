@@ -34,8 +34,11 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function execute_search(locals) {
     locals.sandbox = locals.sandbox || {};
 
-    let query  = 'SELECT object_id FROM forum_topics WHERE MATCH(?) AND public=1';
+    let query  = 'SELECT object_id FROM forum_topics WHERE MATCH(?)';
     let params = [ sphinx_escape(locals.params.query) ];
+
+    // Search across public messages by default unless section hid is specified
+    let allow_search_private = false;
 
     if (locals.params.section_hid) {
       let hids = locals.params.section_hid;
@@ -44,6 +47,7 @@ module.exports = function (N, apiPath) {
       if (hids.length > 0) {
         query += ` AND section_uid IN (${Array(hids.length).fill('?').join(',')})`;
         params = params.concat(hids.map(hid => docid_sections(N, hid)));
+        allow_search_private = true;
       }
     }
 
@@ -52,6 +56,10 @@ module.exports = function (N, apiPath) {
       // round timestamp to the lowest whole day
       params.push(Math.floor(Date.now() / (24 * 60 * 60 * 1000) - locals.params.period) * 24 * 60 * 60);
     }
+
+    // search everything public (available to guests) by default;
+    // if we have section list with checked permissions, search everything
+    query += allow_search_private ? ' AND visible=1' : ' AND public=1';
 
     // sort is either `date` or `rel`, sphinx searches by relevance by default
     if (locals.params.sort === 'date') {
