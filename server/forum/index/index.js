@@ -42,8 +42,10 @@ module.exports = function (N, apiPath) {
 
   // Fill head meta
   //
-  N.wire.after(apiPath, function set_forum_index_breadcrumbs(env) {
-    env.res.head.title = env.t('title');
+  N.wire.after(apiPath, async function forum_index(env) {
+    let project = await N.settings.get('general_project_name');
+
+    env.res.head.title = env.t('title', { project });
     env.res.head.canonical = N.router.linkTo('forum.index', env.params);
   });
 };
