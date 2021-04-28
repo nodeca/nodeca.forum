@@ -2,7 +2,7 @@ ru-RU:
   subject_log: 'Форум: жалоба от #{author.user_nick}'
   subject_email: '#{project_name} (форум): жалоба от #{author.user_nick}'
 
-  header: "Жалоба от пользователя #{url}:"
+  header: "Жалоба от [#{nick}](#{url}):"
   src_description: "На [сообщение](#{url}) на форуме:"
   move_from_to:
     Пользователь предлагает перенести тему

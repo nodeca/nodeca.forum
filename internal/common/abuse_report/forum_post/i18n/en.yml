@@ -2,7 +2,7 @@ en-US:
   subject_log: 'Forum: report from #{author.user_nick}'
   subject_email: '#{project_name} (forum): report from #{author.user_nick}'
 
-  header: "Report from user [#{name}](#{url}):"
+  header: "Report from [#{nick}](#{url}):"
   src_description: "About [forum post](#{url}):"
   move_from_to:
     User suggests to move topic
