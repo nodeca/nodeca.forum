@@ -1,4 +1,4 @@
 ru-RU:
   someone: Кто-то
-  subject: '#{project_name}: #{user_name} ответил на ваше сообщение'
+  subject: '#{project_name}: #{user} ответил на ваше сообщение'
   reply: Ответить

@@ -1,4 +1,4 @@
 en-US:
   someone: Someone
-  subject: '#{project_name}: #{user_name} replied to your post'
+  subject: '#{project_name}: #{user} replied to your post'
   reply: Reply
