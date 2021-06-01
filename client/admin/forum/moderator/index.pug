@@ -14,7 +14,7 @@
         each moderator in moderators
           .section-control
             .section-title
-              a(href="#", data-toggle="collapse", data-target='#moderator_' + moderator._id)= self.users[moderator._id].name
+              a(href="#", data-bs-toggle="collapse", data-bs-target='#moderator_' + moderator._id)= self.users[moderator._id].name
 
             ul.section-moderator-list.collapse.show(id='moderator_' + moderator._id)
               each section in moderator.sections

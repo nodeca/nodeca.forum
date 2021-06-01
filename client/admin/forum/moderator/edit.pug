@@ -17,7 +17,7 @@
       fieldset
 
         legend
-          .float-right(data-bind="visible: showRemoveButton")
+          .float-end(data-bind="visible: showRemoveButton")
             span.h5: a(href="#", data-bind="click: destroy") #{self.t('button_remove')}
 
           | #{self.moderator_name}

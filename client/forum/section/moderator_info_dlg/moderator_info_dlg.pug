@@ -3,7 +3,7 @@
     .modal-content
       .modal-header
         h4.modal-title= self.t('title')
-        button.close(type='button' tabindex='-1' data-dismiss='modal') &times;
+        button.btn-close(type='button' tabindex='-1' data-bs-dismiss='modal')
       .modal-body
         if self.moderators.length
           ul.moderator-info__list

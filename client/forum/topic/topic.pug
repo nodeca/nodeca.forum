@@ -69,7 +69,7 @@ article#content.forum-topic-root(
           self.section.is_writable;
 
       h1.forum-topic-title.page-head__title(itemprop='name')
-        .float-right
+        .float-end
           != self.partial('@forum.topic.blocks.toolbar_controls')
 
         span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
@@ -115,7 +115,7 @@ article#content.forum-topic-root(
     //- Topic Open/Close/... status clarified via CSS modifiers
     if self.settings.forum_can_reply && self.section.is_writable
       .forum-topic__reply
-        button.btn.btn-block.btn-link.icon.icon-plus.icon-space-after(
+        button.btn.btn-link.w-100.icon.icon-plus.icon-space-after(
           type='button'
           data-on-click='forum.topic:reply'
           title=self.t('post_add')

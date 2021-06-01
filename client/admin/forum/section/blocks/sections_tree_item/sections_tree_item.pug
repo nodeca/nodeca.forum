@@ -2,11 +2,11 @@
 //li.aforum-index__slist-item(data-id=self.section._id)
 //- Section's own control bar.
 .aforum-index__section
-  .float-right
+  .float-end
     span.aforum-index__section-mods.dropdown
       button.dropdown-toggle.btn.btn-link.btn-sm(
         type='button'
-        data-toggle='dropdown'
+        data-bs-toggle='dropdown'
       )
         = self.t('moderators_info', { count: moderators.length })
 

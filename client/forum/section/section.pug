@@ -46,7 +46,7 @@ article#content.forum-section-root(
     != self.partial('@users.blocks.announces')
 
     header.page-head
-      .float-right
+      .float-end
         != self.partial('@forum.section.blocks.toolbar_controls')
       h1.page-head__title(itemprop='name')= self.section.title
       p.page-head__descr.d-none.d-sm-block(itemprop='description')

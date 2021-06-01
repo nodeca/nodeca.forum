@@ -4,7 +4,7 @@ form#moderator_select.modal.form-horizontal.fade(autocomplete="off", role='dialo
 
       .modal-header
         h4.modal-title #{self.t('title')}
-        button.close(type='button', aria-hidden=true, data-dismiss="modal") &times;
+        button.btn-close(type='button', aria-hidden=true, data-bs-dismiss="modal")
 
       .modal-body
         .form-group.row
@@ -14,5 +14,5 @@ form#moderator_select.modal.form-horizontal.fade(autocomplete="off", role='dialo
             input.form-control(type="text", name="nick", placeholder=self.t('input_nick_placeholder'))
 
       .modal-footer
-        button.btn.btn-light(type='button', data-dismiss="modal") #{self.t('button_cancel')}
+        button.btn.btn-light(type='button', data-bs-dismiss="modal") #{self.t('button_cancel')}
         button.btn.btn-primary(type='submit') #{self.t('button_accept')}

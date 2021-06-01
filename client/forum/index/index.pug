@@ -22,19 +22,19 @@ article#content.forum-index-root
           h2.forum-category__title
             a.forum-category__link(
               href='#cat' + category.hid
-              data-toggle='collapse'
-              data-target='#cat_list_' + category.hid
+              data-bs-toggle='collapse'
+              data-bs-target='#cat_list_' + category.hid
             )
               = category.title
             a.forum-category__collapser.icon.icon-collapse(
               href='#cat' + category.hid
-              data-toggle='collapse'
-              data-target='#cat_list_' + category.hid
+              data-bs-toggle='collapse'
+              data-bs-target='#cat_list_' + category.hid
             )
             a.forum-category__collapser.icon.icon-expand(
               href='#cat' + category.hid
-              data-toggle='collapse'
-              data-target='#cat_list_' + category.hid
+              data-bs-toggle='collapse'
+              data-bs-target='#cat_list_' + category.hid
             )
 
         .forum-category__content(id='cat_list_' + category.hid, data-notify='#cat_box_' + category.hid, data-category-hid=category.hid).collapse.show

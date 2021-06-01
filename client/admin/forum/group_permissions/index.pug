@@ -12,7 +12,7 @@
         li.section-group
           .section-control
             .section-title
-              a(href="#", data-toggle="collapse", data-target='#section_' + section._id)= section.title
+              a(href="#", data-bs-toggle="collapse", data-bs-target='#section_' + section._id)= section.title
 
             ul.section-usergroup-list.collapse.show(id='section_' + section._id)
               each usergroup in self.usergroups
