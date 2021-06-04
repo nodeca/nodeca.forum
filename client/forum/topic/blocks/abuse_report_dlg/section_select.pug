@@ -13,8 +13,8 @@ mixin sections_tree(sections, deepness)
     if section.children && section.children.length
       +sections_tree(section.children, deepness + 1)
 
-.form-group.abuse-report-dlg__custom-control
-  label= self.message
+.abuse-report-dlg__custom-control.mb-3
+  label.form-label= self.message
 
-  select.form-control.custom-select.abuse-report-dlg__forum-section-select(name='section_hid', tabindex='2')
+  select.form-control.form-select.abuse-report-dlg__forum-section-select(name='section_hid', tabindex='2')
     +sections_tree(self.sections, 1)

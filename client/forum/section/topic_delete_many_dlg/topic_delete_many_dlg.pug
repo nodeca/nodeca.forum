@@ -7,10 +7,10 @@
           button.btn-close(type='button' tabindex='-1' data-bs-dismiss='modal')
         .modal-body
           p.text-danger=self.t('confirmation_text')
-          .form-group
+          .mb-3
             input.form-control(type='text' name='reason' tabindex='1' placeholder=self.t('reason_input_help'))
           if self.canDeleteHard
-            .form-group
+            .mb-3
               .form-check
                 label.form-check-label
                   input.form-check-input(type='radio' name='method' tabindex='2' value='soft' checked=true)

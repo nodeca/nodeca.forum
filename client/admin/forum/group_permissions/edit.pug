@@ -18,7 +18,7 @@
         legend #{self.usergroup_name}
 
         // ko foreach: settings
-        .form-group.row.form-group-hover(data-bind="css: { overriden: overriden, inherited: inherited }")
+        .row.form-group-hover.mb-3(data-bind="css: { overriden: overriden, inherited: inherited }")
 
           label.col-form-label.col-3(data-bind="text: localizedName, attr: { 'for': elementId }")
 
@@ -26,7 +26,7 @@
             // ko if: 'boolean' === type
             .switch
               input(type="checkbox", data-bind="checked: value, attr: { id: elementId }")
-              label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
+              label.form-label(data-yes=self.t('value_yes'), data-no=self.t('value_no'), data-bind="attr: { 'for': elementId }"): i
             // /ko
 
             // ko if: 'number' === type
@@ -44,7 +44,7 @@
                 = ' ' + self.t('checkbox_override')
         // /ko
 
-      .form-group.row
+      .row.mb-3
         .col-9.ml-auto
           button.btn.btn-primary(type="submit", data-bind="enable: isDirty")
             = self.t('button_save')

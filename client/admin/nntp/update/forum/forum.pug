@@ -13,17 +13,17 @@
       fieldset
         legend= self.t('legend_group_settings')
 
-        .form-group.row
+        .row.mb-3
           label.col-form-label.col-3= self.t('field_name')
           .col-4
             input.form-control(type='text', name='name', value=self.current_group.name)
 
-        .form-group.row
+        .row.mb-3
           label.col-form-label.col-3= self.t('field_source')
           .col-4
             if self.section
               a.form-control-plaintext(href=self.link_to('forum.section', { section_hid: self.section.hid }), target='_blank')= self.section.title
 
-      .form-group.row
+      .row.mb-3
         .col-9.ml-auto
           button.btn.btn-primary(type='submit')= self.t('button_save')

@@ -108,7 +108,7 @@ each topic, idx in self.topics
       = self.number_short(views)
 
     if multiselect_allowed
-      label.forum-topicline__select.forum-topicline__cell(title=self.t('multiselect_hint'))
+      label.form-label.forum-topicline__select.forum-topicline__cell(title=self.t('multiselect_hint'))
         input.forum-topicline__select-cb(
           type='checkbox'
           data-topic-hid=topic.hid

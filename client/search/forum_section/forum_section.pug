@@ -43,7 +43,7 @@ article#content.search-forum-section
         .search-form__options-inner
           .row
             .col-lg-3.col-md-4.col-sm-6.col-12.mb-2.mb-sm-0
-              select.form-control.custom-select(
+              select.form-control.form-select(
                 name='sort'
                 onchange="$('.search-form__submit').click();"
               )
@@ -51,7 +51,7 @@ article#content.search-forum-section
                   option(value=type, selected=(self.sort === type))= self.t('sort.' + type)
 
             .col-lg-3.col-md-4.col-sm-6.col-12
-              select.form-control.custom-select(
+              select.form-control.form-select(
                 name='period'
                 onchange="$('.search-form__submit').click();"
               )

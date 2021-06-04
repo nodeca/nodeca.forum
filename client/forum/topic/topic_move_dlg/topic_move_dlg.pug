@@ -21,8 +21,8 @@ mixin sections_tree(sections, deepness)
           h4.modal-title=self.t('title')
           button.btn-close(type='button' tabindex='-1' data-bs-dismiss='modal')
         .modal-body
-          label= self.t('section_input_name')
-          select.form-control.custom-select(name='section_hid' tabindex='1')
+          label.form-label= self.t('section_input_name')
+          select.form-control.form-select(name='section_hid' tabindex='1')
             +sections_tree(self.sections, 1)
         .modal-footer
           button.btn.btn-secondary(type='button' tabindex='4' data-bs-dismiss='modal')=self.t('cancel')

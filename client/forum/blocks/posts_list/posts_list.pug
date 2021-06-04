@@ -95,7 +95,7 @@ each post, post_idx in self.posts
               != self.timetag(post.ts, 'relative')
 
         if multiselect_allowed
-          label.forum-post__select(title=self.t('multiselect_hint'))
+          label.form-label.forum-post__select(title=self.t('multiselect_hint'))
             input.forum-post__select-cb(
               type='checkbox'
               data-post-id=post._id
@@ -342,7 +342,7 @@ each post, post_idx in self.posts
               != self.timetag(post.ts, 'relative')
 
         if multiselect_allowed
-          label.forum-post__select(title=self.t('multiselect_hint'))
+          label.form-label.forum-post__select(title=self.t('multiselect_hint'))
             input.forum-post__select-cb(
               type='checkbox'
               data-post-id=post._id

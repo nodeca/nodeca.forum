@@ -11,15 +11,15 @@
       fieldset
         legend= self.t('legend_group_settings')
 
-        .form-group.row
+        .row.mb-3
           label.col-form-label.col-3= self.t('field_name')
           .col-4
             input.form-control(type='text', name='name')
 
-        .form-group.row
+        .row.mb-3
           label.col-form-label.col-3= self.t('field_source')
           .col-4
-            select.form-control.custom-select(name='source')
+            select.form-control.form-select(name='source')
               option(value='000000000000000000000000')= self.t('value_source_none')
 
               each source in self.nntp_sources
@@ -27,6 +27,6 @@
 
                 option(value=source._id)= prefix + source.title
 
-      .form-group.row
+      .row.mb-3
         .col-9.ml-auto
           button.btn.btn-primary(type='submit')= self.t('button_save')
