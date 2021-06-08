@@ -10,7 +10,7 @@
       )
         = self.t('moderators_info', { count: moderators.length })
 
-      .dropdown-menu.dropdown-menu-right
+      .dropdown-menu.dropdown-menu-end
         each moderator_id in moderators
           a.dropdown-item(
             href=self.link_to('admin.forum.moderator.edit', { section_id: self.section._id, user_id: moderator_id })

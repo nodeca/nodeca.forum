@@ -235,7 +235,7 @@ each post, post_idx in self.posts
                   data-bs-toggle='dropdown'
                   role='button'
                 )
-                .dropdown-menu.dropdown-menu-right(role='menu')
+                .dropdown-menu.dropdown-menu-end(role='menu')
 
                   if self.settings.forum_mod_can_add_infractions && !self.infractions[post._id]
                     button.dropdown-item(
