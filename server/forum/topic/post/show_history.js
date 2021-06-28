@@ -128,16 +128,16 @@ module.exports = function (N, apiPath) {
       ts:   env.data.post.ts,
       role: N.models.forum.PostHistory.roles.USER
     } ].concat(
-      _.map(history, i => ({ user: i.user, ts: i.ts, role: i.role }))
+      history.map(i => ({ user: i.user, ts: i.ts, role: i.role }))
     );
 
-    let history_posts = _.map(history, 'post_data')
+    let history_posts = history.map(h => h.post_data)
                          .concat([ env.data.post ])
                          .map(sanitize_post);
 
     env.res.history = _.zip(history_meta, history_posts)
                        .map(([ meta, post ]) => ({ meta, post }));
 
-    env.data.users = (env.data.users || []).concat(_.map(env.res.history, 'meta.user'));
+    env.data.users = (env.data.users || []).concat(env.res.history.map(h => h.meta.user));
   });
 };

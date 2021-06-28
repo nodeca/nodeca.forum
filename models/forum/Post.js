@@ -239,7 +239,7 @@ module.exports = function (N, collectionName) {
 
     if (!subscriptions.length) return;
 
-    let subscribed_users = _.map(subscriptions, 'user');
+    let subscribed_users = subscriptions.map(s => s.user);
 
     let ignore = _.keyBy(
       await N.models.users.Ignore.find()

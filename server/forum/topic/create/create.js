@@ -206,7 +206,7 @@ module.exports = function (N, apiPath) {
     topic.cache.last_post_hid = 1;
     topic.cache.last_user = post.user;
 
-    _.assign(topic.cache_hb, topic.cache);
+    Object.assign(topic.cache_hb, topic.cache);
 
     await topic.save();
 
@@ -266,7 +266,7 @@ module.exports = function (N, apiPath) {
 
     if (!subscriptions.length) return;
 
-    let subscribed_users = _.map(subscriptions, 'user');
+    let subscribed_users = subscriptions.map(s => s.user);
 
     let ignore = _.keyBy(
       await N.models.users.Ignore.find()

@@ -302,11 +302,11 @@ module.exports = function (N, apiPath) {
 
     if (data.results && data.results.length > 0) {
       let topics = await N.models.forum.Topic.find()
-                             .where('_id').in(_.map(data.results, 'topic_id'))
+                             .where('_id').in(data.results.map(r => r.topic_id))
                              .lean(true);
 
       let sections = await N.models.forum.Section.find()
-                               .where('_id').in(_.uniq(_.map(topics, 'section').map(String)))
+                               .where('_id').in(_.uniq(topics.map(t => t.section)).map(String))
                                .lean(true);
 
       let access_env = { params: { topics, user_info: env.user_info, preload: sections } };

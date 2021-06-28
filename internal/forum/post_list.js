@@ -29,7 +29,6 @@
 'use strict';
 
 
-const _                = require('lodash');
 const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 const sanitize_post    = require('nodeca.forum/lib/sanitizers/post');
@@ -188,7 +187,7 @@ module.exports = function (N, apiPath) {
 
     if (!bookmarks.length) return;
 
-    env.res.own_bookmarks = _.map(bookmarks, 'src');
+    env.res.own_bookmarks = bookmarks.map(b => b.src);
   });
 
 

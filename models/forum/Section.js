@@ -162,7 +162,7 @@ module.exports = function (N, collectionName) {
 
           // create hash of trees for each section
           let result = sections.reduce((acc, s) => {
-            acc[s._id] = _.assign({ children: [] }, s);
+            acc[s._id] = Object.assign({ children: [] }, s);
             return acc;
           }, {});
 
@@ -226,7 +226,7 @@ module.exports = function (N, collectionName) {
       }
 
       section.children.forEach(childSection => {
-        children.push(_.assign({ level: curDeepness }, childSection));
+        children.push(Object.assign({ level: curDeepness }, childSection));
         fillChildren(childSection, curDeepness + 1, maxDeepness);
       });
     }

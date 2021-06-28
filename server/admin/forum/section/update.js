@@ -8,9 +8,6 @@
 'use strict';
 
 
-var _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id:            { format: 'mongo', required: true },
@@ -63,7 +60,7 @@ module.exports = function (N, apiPath) {
                             .limit(1)
                             .lean(true);
 
-      section.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
+      section.display_order = result.length === 0 ? 1 : result[0].display_order + 1;
     }
 
     await section.save();

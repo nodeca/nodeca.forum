@@ -3,9 +3,6 @@
 'use strict';
 
 
-const _       = require('lodash');
-
-
 module.exports = function (N) {
 
   // Re-calculate section cache for the specified section and its parents
@@ -28,7 +25,7 @@ module.exports = function (N) {
 
     if (!children.length) return result;
 
-    let sections = await Section.find({ _id: { $in: _.map(children, '_id') } });
+    let sections = await Section.find({ _id: { $in: children.map(s => s._id) } });
 
     // Pick the latest post (post with highest _id) out of all those
     // subsection caches.

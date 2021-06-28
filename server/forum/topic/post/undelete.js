@@ -3,9 +3,6 @@
 'use strict';
 
 
-const _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -74,7 +71,7 @@ module.exports = function (N, apiPath) {
       $unset: { del_reason: 1, prev_st: 1, del_by: 1 }
     };
 
-    _.assign(update, post.prev_st);
+    Object.assign(update, post.prev_st);
 
     env.data.new_post = await N.models.forum.Post.findOneAndUpdate(
       { _id: post._id },

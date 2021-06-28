@@ -3,7 +3,6 @@
 'use strict';
 
 
-const _                = require('lodash');
 const memoize          = require('promise-memoize');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
@@ -89,7 +88,7 @@ module.exports = function (N, apiPath) {
 
     let visibility = await filterVisibility(s_ids, g_ids);
 
-    env.data.subsections_info = _.filter(subsections, s => visibility[s._id]);
+    env.data.subsections_info = subsections.filter(s => visibility[s._id]);
   });
 
 
@@ -129,14 +128,14 @@ module.exports = function (N, apiPath) {
                             .lean(true);
 
     // sort result in the same order as ids
-    _.forEach(env.data.subsections_info, subsectionInfo => {
-      let foundSection = _.find(sections, s => s._id.equals(subsectionInfo._id));
+    for (let subsectionInfo of env.data.subsections_info) {
+      let foundSection = sections.find(s => s._id.equals(subsectionInfo._id));
 
-      if (!foundSection) return; // continue
+      if (!foundSection) continue;
 
       foundSection.level = subsectionInfo.level;
       env.data.subsections.push(foundSection);
-    });
+    }
   });
 
 

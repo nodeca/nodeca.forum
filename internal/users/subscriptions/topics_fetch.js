@@ -11,13 +11,13 @@ const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 module.exports = function (N) {
 
   N.wire.on('internal:users.subscriptions.fetch', async function subscriptions_fetch_topics(env) {
-    let subs = _.filter(env.data.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
+    let subs = env.data.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_TOPIC);
 
     // Fetch topics
-    let topics = await N.models.forum.Topic.find().where('_id').in(_.map(subs, 'to')).lean(true);
+    let topics = await N.models.forum.Topic.find().where('_id').in(subs.map(s => s.to)).lean(true);
 
     // Fetch sections
-    let sections = await N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
+    let sections = await N.models.forum.Section.find().where('_id').in(topics.map(t => t.section)).lean(true);
 
     // Check permissions subcall
     //
@@ -48,12 +48,12 @@ module.exports = function (N) {
     sections = _.keyBy(sections, '_id');
 
     env.res.forum_topics = topics;
-    env.res.forum_sections = _.assign(env.res.forum_sections || {}, sections);
+    env.res.forum_sections = Object.assign(env.res.forum_sections || {}, sections);
 
 
     // Fill missed subscriptions (for deleted topic)
     //
-    let missed = _.filter(subs, s => !topics[s.to] || !sections[topics[s.to].section]);
+    let missed = subs.filter(s => !topics[s.to] || !sections[topics[s.to].section]);
 
     env.data.missed_subscriptions = env.data.missed_subscriptions || [];
     env.data.missed_subscriptions = env.data.missed_subscriptions.concat(missed);

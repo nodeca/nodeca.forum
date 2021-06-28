@@ -59,7 +59,7 @@ module.exports = function (N, apiPath) {
       $unset: { del_reason: 1, prev_st: 1, del_by: 1 }
     };
 
-    _.assign(update, topic.prev_st);
+    Object.assign(update, topic.prev_st);
 
     env.data.new_topic = await N.models.forum.Topic.findOneAndUpdate(
       { _id: topic._id },
@@ -107,7 +107,7 @@ module.exports = function (N, apiPath) {
       .lean(true);
 
     await N.models.users.Vote.updateMany(
-      { for: { $in: _.map(posts, '_id') } },
+      { for: { $in: posts.map(p => p._id) } },
       // Just move vote `backup` field back to `value` field
       { $rename: { backup: 'value' } }
     );

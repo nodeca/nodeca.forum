@@ -94,17 +94,17 @@ module.exports = function (N, apiPath) {
       ts:   env.data.topic.cache.first_ts,
       role: N.models.forum.TopicHistory.roles.USER
     } ].concat(
-      _.map(history, i => ({ user: i.user, ts: i.ts, role: i.role }))
+      history.map(i => ({ user: i.user, ts: i.ts, role: i.role }))
     );
 
-    let history_topics = _.map(history, 'topic_data')
+    let history_topics = history.map(i => i.topic_data)
                           .concat([ env.data.topic ])
                           .map(sanitize_topic);
 
     env.res.history = _.zip(history_meta, history_topics)
                        .map(([ meta, topic ]) => ({ meta, topic }));
 
-    env.data.users = (env.data.users || []).concat(_.map(env.res.history, 'meta.user'));
+    env.data.users = (env.data.users || []).concat(env.res.history.map(i => i.meta.user));
   });
 
 
@@ -112,7 +112,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, async function fetch_sections(env) {
     let sections = [];
-    let section_ids = _.uniq(_.map(env.res.history, 'topic.section').filter(Boolean).map(String));
+    let section_ids = _.uniq(env.res.history.map(i => i.topic.section).filter(Boolean).map(String));
 
     if (section_ids) {
       sections = await N.models.forum.Section.find()

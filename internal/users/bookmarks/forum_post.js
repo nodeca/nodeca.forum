@@ -28,7 +28,7 @@ module.exports = function (N, apiPath) {
     locals.sandbox = {};
 
     locals.sandbox.posts = await N.models.forum.Post.find()
-                                     .where('_id').in(_.map(locals.params.bookmarks, 'src'))
+                                     .where('_id').in(locals.params.bookmarks.map(b => b.src))
                                      .lean(true);
 
     locals.sandbox.topics = await N.models.forum.Topic.find()
@@ -81,8 +81,8 @@ module.exports = function (N, apiPath) {
       return false;
     });
 
-    locals.sandbox.topics   = _.values(topics_used);
-    locals.sandbox.sections = _.values(sections_used);
+    locals.sandbox.topics   = Object.values(topics_used);
+    locals.sandbox.sections = Object.values(sections_used);
 
     // Refresh "public" field in bookmarks
     //

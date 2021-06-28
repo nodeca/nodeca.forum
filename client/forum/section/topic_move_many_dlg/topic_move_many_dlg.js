@@ -8,9 +8,6 @@
 'use strict';
 
 
-const _ = require('lodash');
-
-
 let $dialog;
 let params;
 let result;
@@ -43,7 +40,7 @@ N.wire.on(module.apiPath, function show_topic_move_many_dlg(options) {
   params = options;
 
   return N.io.rpc('forum.section.topic.move_many.sections', { section_hid: params.section_hid_from }).then(res => {
-    $dialog = $(N.runtime.render(module.apiPath, _.assign({ apiPath: module.apiPath }, params, res)));
+    $dialog = $(N.runtime.render(module.apiPath, Object.assign({ apiPath: module.apiPath }, params, res)));
 
     $('body').append($dialog);
 

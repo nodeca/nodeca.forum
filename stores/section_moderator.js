@@ -135,7 +135,7 @@ module.exports = function (N) {
         }
       });
 
-      if (_.isEmpty(user_settings)) {
+      if (Object.keys(user_settings).length === 0) {
         // Drop empty moderator entries.
         delete section_settings.data[params.user_id];
       } else {
@@ -179,8 +179,8 @@ module.exports = function (N) {
       Object.keys(section_settings.data).forEach(userId => {
         result.push({
           _id:       userId,
-          own:       _.filter(section_settings.data[userId], { own: true  }).length,
-          inherited: _.filter(section_settings.data[userId], { own: false }).length,
+          own:       Object.values(section_settings.data[userId]).filter(s => s.own === true).length,
+          inherited: Object.values(section_settings.data[userId]).filter(s => s.own === false).length,
           visible:   section_settings.data[userId].forum_mod_visible ?
                      section_settings.data[userId].forum_mod_visible.value :
                      this.getDefaultValue('forum_mod_visible')
@@ -265,8 +265,7 @@ module.exports = function (N) {
       let user_settings = section_settings.data[userId] || {};
 
       // Setting exists, and it is not inherited from another section.
-      if (user_settings[settingName] &&
-        user_settings[settingName].own) {
+      if (user_settings[settingName]?.own) {
         return user_settings[settingName];
       }
 
@@ -302,7 +301,7 @@ module.exports = function (N) {
       }
 
       if (section_settings.data) {
-        return _.uniq(_.keys(section_settings.data).concat(collectModeratorIds(sect.parent)));
+        return _.uniq(Object.keys(section_settings.data).concat(collectModeratorIds(sect.parent)));
       }
       return collectModeratorIds(sect.parent);
     }
@@ -340,8 +339,7 @@ module.exports = function (N) {
 
         this.keys.forEach(settingName => {
           // Do not touch own settings. We only update inherited settings.
-          if (user_settings[settingName] &&
-            user_settings[settingName].own) {
+          if (user_settings[settingName]?.own) {
             return;
           }
 
@@ -359,7 +357,7 @@ module.exports = function (N) {
           }
         });
 
-        if (_.isEmpty(user_settings)) {
+        if (Object.keys(user_settings).length === 0) {
           // Drop empty moderator entries.
           delete section_settings.data[userId];
         } else {

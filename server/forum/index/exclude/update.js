@@ -3,9 +3,6 @@
 'use strict';
 
 
-const _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -48,7 +45,7 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function save_excluded_sections(env) {
     await N.models.forum.ExcludedSections.updateOne(
       { user: env.user_info.user_id },
-      { excluded_sections: _.map(env.data.sections, '_id') || [] },
+      { excluded_sections: env.data.sections.map(s => s._id) },
       { upsert: true }
     );
   });

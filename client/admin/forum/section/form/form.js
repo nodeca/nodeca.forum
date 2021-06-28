@@ -28,11 +28,13 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
       currentSection = {};
 
   // Create observable fields on currentSection.
-  _.forEach(SECTION_FIELD_DEFAULTS, (defaultValue, key) => {
-    let value = _.has(data.current_section, key) ? data.current_section[key] : defaultValue;
+  for (let [ key, defaultValue ] of Object.entries(SECTION_FIELD_DEFAULTS)) {
+    let value = Object.prototype.hasOwnProperty.call(data.current_section, key) ?
+                data.current_section[key] :
+                defaultValue;
 
     currentSection[key] = ko.observable(value).extend({ dirty: isNewSection });
-  });
+  }
 
 
   // Collect allowedParents list using tree order.
@@ -48,7 +50,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
     let sections = data.allowed_parents.filter(section => parent === (section.parent || null));
 
     _.sortBy(sections, 'display_order').forEach(section => {
-      let prefix = '| ' + _.repeat('– ', section.level);
+      let prefix = '| ' + '– '.repeat(section.level);
 
       allowedParents.push({
         _id:   section._id,
@@ -73,15 +75,15 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view.copySettingsFrom.subscribe(selectedSourceId => {
     if (!selectedSourceId) {
       // Reset field values to defaults.
-      _.forEach(currentSection, (field, key) => {
-        if (_.has(SECTION_FIELD_DEFAULTS, key)) {
+      for (let [ key, field ] of Object.entries(currentSection)) {
+        if (Object.prototype.hasOwnProperty.call(SECTION_FIELD_DEFAULTS, key)) {
           field(SECTION_FIELD_DEFAULTS[key]);
         }
-      });
+      }
       return;
     }
 
-    let selectedSourceSection = _.find(data.allowed_parents, { _id: selectedSourceId });
+    let selectedSourceSection = data.allowed_parents.find(s => s._id === selectedSourceId);
 
     if (!selectedSourceSection) {
       N.logger.error('Cannot find section %j in page data.', selectedSourceId);
@@ -89,26 +91,26 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
     }
 
     // Copy field values.
-    _.forEach(currentSection, (field, key) => {
-      if (_.has(selectedSourceSection, key)) {
+    for (let [ key, field ] of Object.entries(currentSection)) {
+      if (Object.prototype.hasOwnProperty.call(selectedSourceSection, key)) {
         field(selectedSourceSection[key]);
       }
-    });
+    }
   });
 
   // Check if any field values of currentSection were changed.
-  view.isDirty = ko.computed(() => _.some(currentSection, field => field.isDirty()));
+  view.isDirty = ko.computed(() => Object.values(currentSection).some(field => field.isDirty()));
 
   // Save new section.
   view.create = function create() {
     let request = {};
 
-    _.forEach(currentSection, (field, key) => {
+    for (let [ key, field ] of Object.entries(currentSection)) {
       request[key] = field();
-    });
+    }
 
     N.io.rpc('admin.forum.section.create', request).then(() => {
-      _.forEach(currentSection, field => field.markClean());
+      for (let field of Object.values(currentSection)) field.markClean();
 
       N.wire.emit('notify.info', t('message_created'));
       return N.wire.emit('navigate.to', { apiPath: 'admin.forum.section.index' });
@@ -119,12 +121,12 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
   view.update = function update() {
     let request = { _id: data.current_section._id };
 
-    _.forEach(currentSection, (field, key) => {
+    for (let [ key, field ] of Object.entries(currentSection)) {
       request[key] = field();
-    });
+    }
 
     N.io.rpc('admin.forum.section.update', request).then(function () {
-      _.forEach(currentSection, field => field.markClean());
+      for (let field of Object.values(currentSection)) field.markClean();
 
       N.wire.emit('notify.info', t('message_updated'));
     }).catch(err => N.wire.emit('error', err));

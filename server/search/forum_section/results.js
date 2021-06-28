@@ -59,7 +59,7 @@ module.exports = function (N, apiPath) {
     if (!env.params.hid) return;
 
     let section = await N.models.forum.Section.findOne()
-                            .where('hid').equals(_.toFinite(env.params.hid))
+                            .where('hid').equals(Number(env.params.hid))
                             .lean(true);
 
     if (!section) return;
@@ -78,17 +78,17 @@ module.exports = function (N, apiPath) {
 
     if (!visibility[section._id]) return;
 
-    subsections = _.filter(subsections, s => visibility[s._id]);
+    subsections = subsections.filter(s => visibility[s._id]);
 
     let hids = [];
 
     if (subsections.length > 0) {
-      let s = await N.models.forum.Section.find()
-                        .where('_id').in(_.map(subsections, '_id'))
-                        .select('hid')
-                        .lean(true);
+      let _subsections = await N.models.forum.Section.find()
+                                   .where('_id').in(subsections.map(s => s._id))
+                                   .select('hid')
+                                   .lean(true);
 
-      hids = hids.concat(_.map(s, 'hid'));
+      hids = hids.concat(_subsections.map(s => s.hid));
     }
 
     env.data.section = section;
@@ -97,7 +97,7 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.on(apiPath, async function search_execute(env) {
-    let menu = _.get(N.config, 'search.forum_section.menu', {});
+    let menu = N.config.search?.forum_section?.menu || {};
     let content_types = Object.keys(menu)
                          .sort((a, b) => (menu[a].priority || 100) - (menu[b].priority || 100));
 
@@ -127,7 +127,7 @@ module.exports = function (N, apiPath) {
           user_info:   env.user_info,
           section_hid: env.data.section_hids || [],
           query:       env.params.query,
-          period:      _.toFinite(env.params.period) || _.toFinite(period_types[0]),
+          period:      Number(env.params.period) || Number(period_types[0]),
           sort:        env.params.sort ? env.params.sort : sort_types[0],
           limit:       env.params.limit,
           skip:        env.params.skip
@@ -161,7 +161,7 @@ module.exports = function (N, apiPath) {
             user_info:   env.user_info,
             section_hid: env.data.section_hids || [],
             query:       env.params.query,
-            period:      _.toFinite(env.params.period) || _.toFinite(period_types[0]),
+            period:      Number(env.params.period) || Number(period_types[0]),
             sort:        env.params.sort ? env.params.sort : sort_types[0],
             limit:       0,
             skip:        0

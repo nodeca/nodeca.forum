@@ -283,13 +283,13 @@ function updateTopicState() {
 
   let $topicRoot = $('.forum-topic-root');
 
-  _.forEach(modifiers, (state, modifier) => {
+  for (let [ modifier, state ] of Object.entries(modifiers)) {
     if (N.runtime.page_data.topic.st === state || N.runtime.page_data.topic.ste === state) {
       $topicRoot.addClass(modifier);
     } else {
       $topicRoot.removeClass(modifier);
     }
-  });
+  }
 }
 
 
@@ -436,7 +436,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return Promise.resolve()
       .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: pageState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
-        let $result = $(N.runtime.render('forum.blocks.posts_list', _.assign(res, { expand: true })));
+        let $result = $(N.runtime.render('forum.blocks.posts_list', Object.assign(res, { expand: true })));
 
         if (pageState.selected_posts.indexOf(postId) !== -1) {
           $result
@@ -859,14 +859,14 @@ let scrollPositionsKey;
 function uploadScrollPositionsImmediate() {
   bag.get(scrollPositionsKey).then(positions => {
     if (positions) {
-      _.forEach(positions, function (data, id) {
+      for (let [ id, data ] of Object.entries(positions)) {
         N.live.emit('private.forum.marker_set_pos', {
           content_id: id,
           position: data.pos,
           max: data.max,
           category_id: data.category_id
         });
-      });
+      }
 
       return bag.remove(scrollPositionsKey);
     }

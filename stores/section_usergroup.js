@@ -56,7 +56,7 @@ module.exports = function (N) {
         throw '`section_id` parameter is required for getting settings from `section_usergroup` store.';
       }
 
-      if (!_.isArray(params.usergroup_ids) || _.isEmpty(params.usergroup_ids)) {
+      if (!Array.isArray(params.usergroup_ids) || params.usergroup_ids.length === 0) {
         throw '`usergroup_ids` parameter required to be non-empty array for getting ' +
               'settings from `section_usergroup` store.';
       }
@@ -228,8 +228,7 @@ module.exports = function (N) {
       let usergroup_settings = section_settings.data[usergroupId] || {};
 
       // Setting exists, and it is not inherited from another section.
-      if (usergroup_settings[settingName] &&
-        usergroup_settings[settingName].own) {
+      if (usergroup_settings[settingName]?.own) {
         return usergroup_settings[settingName];
       }
 
@@ -274,8 +273,7 @@ module.exports = function (N) {
 
         self.keys.forEach(settingName => {
           // Do not touch own settings. We only update inherited settings.
-          if (usergroup_settings[settingName] &&
-            usergroup_settings[settingName].own) {
+          if (usergroup_settings[settingName]?.own) {
             return;
           }
 

@@ -11,7 +11,6 @@
 'use strict';
 
 
-const _        = require('lodash');
 const render   = require('nodeca.core/lib/system/render/common');
 const userInfo = require('nodeca.users/lib/user_info');
 
@@ -27,7 +26,7 @@ module.exports = function (N, apiPath) {
     if (!section_id) return;
 
     if (!params.template) {
-      let type_name = _.invert(_.get(N, 'shared.content_type', {}))[params.report.type];
+      let type_name = Object.entries(N.shared?.content_type || {}).find(([ , v ]) => v === params.report.type)?.[0];
 
       N.logger.warn(`Abuse report (${type_name}): template not specified`);
       return;

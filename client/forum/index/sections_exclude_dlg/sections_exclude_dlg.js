@@ -21,7 +21,7 @@ N.wire.once(module.apiPath, function init_handlers() {
   N.wire.on(module.apiPath + ':submit', function submit_sections_exclude_dlg() {
     let selected = [];
 
-    _.forEach($('.sections-exclude-dlg__section:selected'), el => {
+    $('.sections-exclude-dlg__section:selected').each((idx, el) => {
       selected.push($(el).val());
     });
 
@@ -52,7 +52,7 @@ N.wire.once(module.apiPath, function init_handlers() {
   // Get list of children sections _ids
   //
   function childrenList(section) {
-    let result = _.map(section.children || [], '_id');
+    let result = (section.children || []).map(s => s._id);
 
     for (var i = 0; i < (section.children || []).length; i++) {
       result = result.concat(childrenList(section.children[i]));
@@ -84,7 +84,7 @@ N.wire.once(module.apiPath, function init_handlers() {
   // Unselect all
   //
   N.wire.on(module.apiPath + ':unselect_all', function unselect_all_sections_exclude_dlg() {
-    _.forEach($('.sections-exclude-dlg__section:selected'), el => {
+    $('.sections-exclude-dlg__section:selected').each((idx, el) => {
       $(el).prop('selected', false);
     });
   });
@@ -111,7 +111,7 @@ N.wire.once(module.apiPath, function init_handlers() {
     //
     let selected = [];
 
-    _.forEach($('.sections-exclude-dlg__section:selected'), el => {
+    $('.sections-exclude-dlg__section:selected').each((idx, el) => {
       selected.push($(el).val());
     });
 
@@ -155,7 +155,7 @@ let resizeDialog = _.throttle(function () {
 N.wire.on(module.apiPath, function show_sections_exclude_dlg(options) {
   let $window = $(window);
   params = options;
-  $dialog = $(N.runtime.render(module.apiPath, _.assign({ apiPath: module.apiPath }, params)));
+  $dialog = $(N.runtime.render(module.apiPath, Object.assign({ apiPath: module.apiPath }, params)));
 
   $('body').append($dialog);
 

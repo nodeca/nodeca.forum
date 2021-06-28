@@ -117,7 +117,7 @@ module.exports = function (N, apiPath) {
   // Update user topic counters
   //
   N.wire.after(apiPath, async function update_user_topics(env) {
-    let users = _.map(env.data.topics, 'cache.first_user');
+    let users = env.data.topics.map(t => t.cache?.first_user);
 
     users = _.uniq(users.map(String));
 
@@ -133,7 +133,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_user_topics(env) {
     let users = _.map(
       await N.models.forum.Post.find()
-                .where('topic').in(_.map(env.data.topics, '_id'))
+                .where('topic').in(env.data.topics.map(t => t._id))
                 .select('user')
                 .lean(true),
       'user'

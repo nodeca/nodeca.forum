@@ -54,7 +54,7 @@ module.exports = function (N) {
                             .limit(count)
                             .lean(true);
 
-      env.data.topics_ids = _.map(results, '_id').reverse();
+      env.data.topics_ids = results.map(r => r._id).reverse();
     }
 
     // Add pinned topics if we're reached start of the section
@@ -73,7 +73,7 @@ module.exports = function (N) {
                               .lean(true);
 
       // Put pinned topics IDs to start of `env.data.topics_ids`
-      env.data.topics_ids = _.map(topics, '_id').concat(env.data.topics_ids);
+      env.data.topics_ids = topics.map(t => t._id).concat(env.data.topics_ids);
     }
   };
 };

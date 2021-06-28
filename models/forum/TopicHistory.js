@@ -128,7 +128,7 @@ module.exports = function (N, collectionName) {
     // (this fetches large numbers of smaller documents, index only)
     //
     let history_ids = await N.models.forum.TopicHistory.find()
-                                .where('topic').in(_.map(changes, 'new_topic._id'))
+                                .where('topic').in(changes.map(c => c.new_topic._id))
                                 .select('topic _id')
                                 .sort('_id')
                                 .lean(true);
@@ -154,7 +154,7 @@ module.exports = function (N, collectionName) {
     //
     let last_history_entry = _.keyBy(
       await N.models.forum.TopicHistory.find()
-                .where('_id').in(_.map(Object.values(history), 'last').filter(Boolean))
+                .where('_id').in(Object.values(history).map(h => h.last).filter(Boolean))
                 .lean(true),
       'topic'
     );

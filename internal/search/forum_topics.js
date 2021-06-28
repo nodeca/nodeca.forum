@@ -88,7 +88,7 @@ module.exports = function (N, apiPath) {
 
       let topics = _.keyBy(
         await N.models.forum.Topic.find()
-                  .where('_id').in(_.map(results, 'object_id'))
+                  .where('_id').in(results.map(r => r.object_id))
                   .lean(true),
         '_id'
       );
@@ -138,7 +138,7 @@ module.exports = function (N, apiPath) {
       return false;
     });
 
-    locals.sandbox.sections = _.values(sections_used);
+    locals.sandbox.sections = Object.values(sections_used);
   });
 
 

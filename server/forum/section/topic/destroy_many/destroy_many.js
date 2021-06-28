@@ -150,7 +150,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function change_topic_status_in_posts(env) {
     return N.models.forum.Post.updateMany(
-      { topic: { $in: _.map(env.data.topics, '_id') } },
+      { topic: { $in: env.data.topics.map(t => t._id) } },
       { $set: { topic_exists: false } }
     );
   });
@@ -163,13 +163,13 @@ module.exports = function (N, apiPath) {
 
     // IDs list can be very large for big topics, but this should work
     let posts = await N.models.forum.Post.find()
-                          .where('topic').in(_.map(env.data.topics, '_id'))
+                          .where('topic').in(env.data.topics.map(t => t._id))
                           .where('st').in([ statuses.VISIBLE, statuses.HB ])
                           .select('_id')
                           .lean(true);
 
     await N.models.users.Vote.updateMany(
-      { for: { $in: _.map(posts, '_id') } },
+      { for: { $in: posts.map(p => p._id) } },
       // Just move vote `value` field to `backup` field
       { $rename: { value: 'backup' } }
     );
@@ -186,7 +186,7 @@ module.exports = function (N, apiPath) {
   // Update user topic counters
   //
   N.wire.after(apiPath, async function update_user_topics(env) {
-    let users = _.map(env.data.topics, 'cache.first_user');
+    let users = env.data.topics.map(t => t.cache?.first_user);
 
     await N.models.forum.UserTopicCount.recount(
       _.uniq(users.map(String))
@@ -200,7 +200,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_user_topics(env) {
     let users = _.map(
       await N.models.forum.Post.find()
-                .where('topic').in(_.map(env.data.topics, '_id'))
+                .where('topic').in(env.data.topics.map(t => t._id))
                 .select('user')
                 .lean(true),
       'user'

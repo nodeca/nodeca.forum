@@ -175,7 +175,7 @@ module.exports = function (N, apiPath) {
       return false;
     });
 
-    locals.sandbox.sections = _.values(sections_used);
+    locals.sandbox.sections = Object.values(sections_used);
   });
 
 

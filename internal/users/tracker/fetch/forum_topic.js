@@ -30,8 +30,8 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function tracker_fetch_topics(locals) {
     locals.res = {};
 
-    let topic_subs = _.filter(locals.params.subscriptions, { to_type: N.shared.content_type.FORUM_TOPIC });
-    let sect_subs = _.filter(locals.params.subscriptions, { to_type: N.shared.content_type.FORUM_SECTION });
+    let topic_subs = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_TOPIC);
+    let sect_subs  = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_SECTION);
 
     let content_read_marks_expire = await N.settings.get('content_read_marks_expire');
     let min_cut = new Date(Date.now() - (content_read_marks_expire * 24 * 60 * 60 * 1000));
@@ -49,7 +49,7 @@ module.exports = function (N, apiPath) {
 
     if (topic_subs.length !== 0) {
       topics = await N.models.forum.Topic.find()
-                        .where('_id').in(_.map(topic_subs, 'to'))
+                        .where('_id').in(topic_subs.map(s => s.to))
                         .where(cache + '.last_ts').gt(min_cut)
                         .lean(true);
     }
@@ -58,12 +58,12 @@ module.exports = function (N, apiPath) {
     // Fetch topics by section subscriptions
     //
     if (sect_subs.length !== 0) {
-      let cuts = await N.models.users.Marker.cuts(locals.params.user_info.user_id, _.map(sect_subs, 'to'));
+      let cuts = await N.models.users.Marker.cuts(locals.params.user_info.user_id, sect_subs.map(s => s.to));
       let queryParts = [];
 
-      _.forEach(cuts, (cutTs, id) => {
+      for (let [ id, cutTs ] of Object.entries(cuts)) {
         queryParts.push({ section: id, _id: { $gt: new ObjectId(Math.round(cutTs / 1000)) } });
-      });
+      }
 
       topics = topics.concat(await N.models.forum.Topic.find({ $or: queryParts }).lean(true) || []);
       topics = _.uniqBy(topics, topic => String(topic._id));
@@ -86,7 +86,7 @@ module.exports = function (N, apiPath) {
     topics = topics.filter(topic => read_marks[topic._id].isNew || read_marks[topic._id].next !== -1);
 
     // Fetch sections
-    let sections = await N.models.forum.Section.find().where('_id').in(_.map(topics, 'section')).lean(true);
+    let sections = await N.models.forum.Section.find().where('_id').in(topics.map(t => t.section)).lean(true);
 
 
     // Check permissions subcall
@@ -106,7 +106,7 @@ module.exports = function (N, apiPath) {
     //
     let topic_subs_by_id = _.keyBy(topic_subs, 'to');
 
-    let first_users = topics.map(topic => _.get(topic, cache + '.first_user')).filter(Boolean);
+    let first_users = topics.map(topic => topic[cache]?.first_user).filter(Boolean);
 
     let ignored = _.keyBy(
       await N.models.users.Ignore.find()
@@ -119,7 +119,7 @@ module.exports = function (N, apiPath) {
 
     topics = topics.filter(topic => {
       // Topic starter is ignored, and topic is not subscribed to
-      if (ignored[_.get(topic, cache + '.first_user')] &&
+      if (ignored[topic.cache?.first_user] &&
           !topic_subs_by_id[topic._id]) {
 
         return false;
@@ -127,8 +127,8 @@ module.exports = function (N, apiPath) {
 
       // Last poster is ignored, and there is only one unread message
       // (topic still shows up if ignored user leaves multiple messages)
-      if (ignored[_.get(topic, cache + '.last_user')] &&
-          read_marks[topic._id].position >= _.get(topic, cache + '.last_post_hid') - 1) {
+      if (ignored[topic.cache?.last_user] &&
+          read_marks[topic._id].position >= (topic.cache?.last_post_hid || 1) - 1) {
 
         return false;
       }
@@ -185,8 +185,8 @@ module.exports = function (N, apiPath) {
       // Collect user ids
       //
       locals.users = locals.users || [];
-      locals.users = locals.users.concat(_.map(topics, 'cache.last_user'));
-      locals.users = locals.users.concat(_.map(topics, 'cache.first_user'));
+      locals.users = locals.users.concat(topics.map(t => t.cache?.first_user).filter(Boolean));
+      locals.users = locals.users.concat(topics.map(t => t.cache?.last_user).filter(Boolean));
 
       locals.res.read_marks = {};
       for (let id of topic_ids) locals.res.read_marks[id] = read_marks[id];

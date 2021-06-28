@@ -15,7 +15,6 @@
 'use strict';
 
 
-const _        = require('lodash');
 const userInfo = require('nodeca.users/lib/user_info');
 
 
@@ -53,7 +52,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, async function fetch_recipients(params) {
     let section_moderator_store = N.settings.getStore('section_moderator');
     let recipients = await section_moderator_store.getModeratorsInfo(params.data.section);
-    let recipients_ids = _.map(recipients, '_id');
+    let recipients_ids = recipients.map(r => r._id);
 
     // If no moderators found - send message to all administrators
     if (!recipients_ids.length) {
@@ -63,7 +62,7 @@ module.exports = function (N, apiPath) {
                             .where('usergroups').equals(admin_group_id)
                             .select('_id')
                             .lean(true);
-      recipients_ids = _.map(recipients, '_id');
+      recipients_ids = recipients.map(r => r._id);
     }
 
     params.recipients = await userInfo(N, recipients_ids);

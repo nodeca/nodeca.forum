@@ -26,7 +26,6 @@
 'use strict';
 
 
-const _                = require('lodash');
 const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
@@ -110,13 +109,13 @@ module.exports = function (N, apiPath) {
 
     // Sort in `env.data.topics_ids` order.
     // May be slow on large topics volumes
-    env.data.topics_ids.forEach(id => {
-      let topic = _.find(topics, t => t._id.equals(id));
+    for (let id of env.data.topics_ids) {
+      let topic = topics.find(t => t._id.equals(id));
 
       if (topic) {
         env.data.topics.push(topic);
       }
-    });
+    }
   });
 
 
@@ -147,7 +146,7 @@ module.exports = function (N, apiPath) {
                               .where('src').in(postIds)
                               .lean(true);
 
-    env.res.own_bookmarks = _.map(bookmarks, 'src');
+    env.res.own_bookmarks = bookmarks.map(b => b.src);
   });
 
 
@@ -165,7 +164,7 @@ module.exports = function (N, apiPath) {
                           .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
                           .lean(true);
 
-    env.res.subscriptions = _.map(subscriptions, 'to');
+    env.res.subscriptions = subscriptions.map(s => s.to);
   });
 
 

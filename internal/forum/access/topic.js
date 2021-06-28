@@ -160,7 +160,7 @@ module.exports = function (N, apiPath) {
     });
 
     // If `params.topics` is not array - `data.access_read` should be also not an array
-    if (!_.isArray(locals.params.topics)) {
+    if (!Array.isArray(locals.params.topics)) {
       locals.data.access_read = locals.data.access_read[0];
     }
   });

@@ -18,7 +18,7 @@ const _ = require('lodash');
 module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, async function fetch_infraction_info(info_env) {
-    let posts_ids = _.map(info_env.infractions.filter(i => i.src_type === N.shared.content_type.FORUM_POST), 'src');
+    let posts_ids = info_env.infractions.filter(i => i.src_type === N.shared.content_type.FORUM_POST).map(i => i.src);
 
     if (!posts_ids.length) return;
 
@@ -32,13 +32,13 @@ module.exports = function (N, apiPath) {
     // Fetch topics
     //
     let topics = await N.models.forum.Topic.find()
-                          .where('_id').in(_.map(posts, 'topic'))
+                          .where('_id').in(posts.map(p => p.topic))
                           .lean(true);
 
     // Fetch sections
     //
     let sections = await N.models.forum.Section.find()
-                            .where('_id').in(_.map(topics, 'section'))
+                            .where('_id').in(topics.map(t => t.section))
                             .lean(true);
 
     // Check permissions to see posts

@@ -10,7 +10,6 @@
  *
  */
 
-const _         = require('lodash');
 const charlatan = require('charlatan');
 const ObjectId  = require('mongoose').Types.ObjectId;
 
@@ -190,7 +189,7 @@ async function createTopic(section, post_count) {
   topic.cache.last_ts       = last_post.ts;
   topic.cache.last_user     = last_post.user;
 
-  _.assign(topic.cache_hb, topic.cache);
+  Object.assign(topic.cache_hb, topic.cache);
 
   // Update cache for this topic
   //
@@ -289,7 +288,7 @@ async function updateSectionStat(section) {
   let sum = await Topic.aggregate([
     {
       $match: {
-        section: { $in: _.map(sections.concat([ section ]), '_id') }
+        section: { $in: sections.concat([ section ]).map(s => s._id) }
       }
     },
     {

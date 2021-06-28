@@ -26,7 +26,7 @@ function load(start, direction) {
   if (direction !== 'bottom') return null;
   if (!search_params || !search_params.query) return null;
 
-  return N.io.rpc('search.forum_section.results', _.assign({}, search_params, {
+  return N.io.rpc('search.forum_section.results', Object.assign({}, search_params, {
     skip:   start,
     limit:  N.runtime.page_data.items_per_page
   })).then(res => {
@@ -63,13 +63,13 @@ N.wire.on('navigate.done:' + module.apiPath, function page_init(data) {
 
   // Load results if possible
   if (search_params.query) {
-    N.io.rpc('search.forum_section.results', _.assign({}, search_params, {
+    N.io.rpc('search.forum_section.results', Object.assign({}, search_params, {
       skip:   0,
       limit:  N.runtime.page_data.items_per_page
     })).then(res => {
       res.tabs.forEach(tab => {
         tab.link = N.router.linkTo('search.forum_section', {
-          $query: _.assign({}, search_params, { type: tab.type })
+          $query: Object.assign({}, search_params, { type: tab.type })
         });
       });
 

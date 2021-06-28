@@ -55,7 +55,7 @@ module.exports = function (N) {
                             .limit(count)
                             .lean(true);
 
-      env.data.topics_ids = _.map(results, '_id');
+      env.data.topics_ids = results.map(r => r._id);
     }
   };
 };

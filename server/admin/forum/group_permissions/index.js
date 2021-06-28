@@ -4,9 +4,6 @@
 'use strict';
 
 
-const _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {});
 
@@ -62,8 +59,8 @@ module.exports = function (N, apiPath) {
           { skipCache: true, extended: true }
         );
 
-        section.own_settings_count[usergroup._id]       = _.filter(settings, { own: true  }).length;
-        section.inherited_settings_count[usergroup._id] = _.filter(settings, { own: false }).length;
+        section.own_settings_count[usergroup._id]       = Object.values(settings).filter(s => s.own === true).length;
+        section.inherited_settings_count[usergroup._id] = Object.values(settings).filter(s => s.own === false).length;
       }
     }
 

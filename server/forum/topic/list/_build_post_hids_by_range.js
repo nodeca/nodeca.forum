@@ -23,9 +23,6 @@
 'use strict';
 
 
-const _       = require('lodash');
-
-
 module.exports = function (N) {
 
   // Shortcut
@@ -124,6 +121,6 @@ module.exports = function (N) {
                           .sort('hid')
                           .lean(true);
 
-    env.data.posts_hids = _.map(posts, 'hid');
+    env.data.posts_hids = posts.map(p => p.hid);
   };
 };

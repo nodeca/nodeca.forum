@@ -4,7 +4,6 @@
 
 'use strict';
 
-const _  = require('lodash');
 
 const sort_types   = [ 'date', 'rel' ];
 const period_types = [ '0', '7', '30', '365' ];
@@ -30,7 +29,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, async function fetch_section(env) {
     let section = await N.models.forum.Section
-                            .findOne({ hid: _.toFinite(env.params.$query.hid) })
+                            .findOne({ hid: Number(env.params.$query.hid) })
                             .lean(true);
 
     if (!section) throw N.io.NOT_FOUND;
@@ -51,7 +50,7 @@ module.exports = function (N, apiPath) {
 
 
   N.wire.on(apiPath, function search_general(env) {
-    let menu = _.get(N.config, 'search.forum_section.menu', {});
+    let menu = N.config.search?.forum_section?.menu || {};
     let content_types = Object.keys(menu)
                          .sort((a, b) => (menu[a].priority || 100) - (menu[b].priority || 100));
     let type = env.params.$query.type || content_types[0];
@@ -67,7 +66,7 @@ module.exports = function (N, apiPath) {
     env.res.query  = env.params.$query.query;
     env.res.sort   = env.params.$query.sort;
     env.res.period = env.params.$query.period;
-    env.res.hid    = _.toFinite(env.params.$query.hid);
+    env.res.hid    = Number(env.params.$query.hid);
 
     env.res.type          = type;
     env.res.sort_types    = sort_types;

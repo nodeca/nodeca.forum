@@ -61,7 +61,7 @@ module.exports = function (N, collectionName) {
       )
     );
 
-    return _.sum(counters);
+    return counters.reduce((a, b) => a + b, 0);
   }
 
 

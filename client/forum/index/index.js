@@ -1,7 +1,6 @@
 'use strict';
 
 
-const _    = require('lodash');
 const _bag = require('bagjs');
 
 
@@ -137,7 +136,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     return Promise.resolve()
       .then(() => N.io.rpc('forum.index.exclude.sections', {}))
       .then(res => {
-        _.assign(params, res);
+        Object.assign(params, res);
         return N.wire.emit('forum.index.sections_exclude_dlg', params);
       })
       .then(() => N.io.rpc('forum.index.exclude.update', { sections_ids: params.selected }))

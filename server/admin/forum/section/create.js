@@ -4,9 +4,6 @@
 'use strict';
 
 
-const _     = require('lodash');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     parent:         { type: [ 'null', 'string' ], required: true },
@@ -52,7 +49,7 @@ module.exports = function (N, apiPath) {
                           .limit(1)
                           .lean(true);
 
-    newSection.display_order = _.isEmpty(result) ? 1 : result[0].display_order + 1;
+    newSection.display_order = result.length === 0 ? 1 : result[0].display_order + 1;
 
     // Save new section into the database.
     await newSection.save();

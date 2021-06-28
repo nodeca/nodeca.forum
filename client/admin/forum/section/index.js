@@ -125,7 +125,7 @@ N.wire.on('admin.forum.section.create_moderator', function section_add_moderator
   let nick = data.fields.nick;
 
   return N.io.rpc('admin.core.user_lookup', { nick, strict: true }).then(res => {
-    if (_.isEmpty(res)) {
+    if (res.length === 0) {
       N.wire.emit('notify', t('error_no_user_with_such_nick', { nick }));
       return;
     }

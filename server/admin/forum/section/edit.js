@@ -3,9 +3,6 @@
 'use strict';
 
 
-const _  = require('lodash');
-
-
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     _id: { format: 'mongo', required: true }
@@ -29,7 +26,7 @@ module.exports = function (N, apiPath) {
     let allSections = await N.models.forum.Section.getChildren();
 
     // exclude current section
-    env.data.allowed_parents = _.filter(allSections, section => !section._id.equals(env.params._id));
+    env.data.allowed_parents = allSections.filter(section => !section._id.equals(env.params._id));
   });
 
 
@@ -45,7 +42,7 @@ module.exports = function (N, apiPath) {
 
     // sort result in the same order as ids
     env.data.allowed_parents.forEach(allowedParent => {
-      let foundSection = _.find(sections, section => section._id.equals(allowedParent._id));
+      let foundSection = sections.find(section => section._id.equals(allowedParent._id));
 
       foundSection.level = allowedParent.level;
       env.res.allowed_parents.push(foundSection);
