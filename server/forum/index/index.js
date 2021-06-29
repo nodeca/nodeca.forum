@@ -22,7 +22,7 @@ module.exports = function (N, apiPath) {
                           .where('user').equals(env.user_info.user_id)
                           .lean(true);
 
-    env.res.excluded_sections = env.data.excluded_sections = (result || {}).excluded_sections || [];
+    env.res.excluded_sections = env.data.excluded_sections = result?.excluded_sections || [];
   });
 
 

@@ -179,7 +179,7 @@ module.exports = function (N, apiPath) {
       }));
     }
 
-    env.res.hid  = env.data.section && env.data.section.hid;
+    env.res.hid  = env.data.section?.hid;
     env.res.type = env.params.type;
     env.res.skip = env.params.skip;
   });

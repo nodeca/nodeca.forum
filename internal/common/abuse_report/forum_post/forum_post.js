@@ -84,7 +84,7 @@ module.exports = function (N, apiPath) {
     locals.project_name = await N.settings.get('general_project_name');
     locals.report_text = params.report.text;
 
-    if (params.report.data && params.report.data.move_to) {
+    if (params.report.data?.move_to) {
       let move_to_section = await N.models.forum.Section
                                       .findById(params.report.data.move_to)
                                       .lean(true);

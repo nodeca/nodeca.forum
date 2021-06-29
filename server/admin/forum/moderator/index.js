@@ -49,9 +49,7 @@ module.exports = function (N, apiPath) {
       for (let j = 0; j < moderators.length; j++) {
         let moderator = moderators[j];
 
-        if (Object.prototype.hasOwnProperty.call(sectionsByModerator, moderator._id)) {
-          sectionsByModerator[moderator._id] = [];
-        }
+        if (!sectionsByModerator[moderator._id]) sectionsByModerator[moderator._id] = [];
 
         sectionsByModerator[moderator._id].push({
           _id:       section._id,

@@ -164,7 +164,7 @@ module.exports = function (N, apiPath) {
                                 .findOne({ user: env.user_info.user_id, to: env.data.section._id })
                                 .lean(true);
 
-    env.res.subscription = subscription ? subscription.type : null;
+    env.res.subscription = subscription?.type;
   });
 
 

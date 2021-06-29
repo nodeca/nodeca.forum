@@ -32,7 +32,7 @@ module.exports = function (N, apiPath) {
       let needsUpdate = result.html !== post.html;
 
       for (let field of [ 'imports', 'import_users' ]) {
-        if (result[field] && result[field].length !== 0) {
+        if (result[field]?.length) {
           updateData.$set[field] = result[field];
           needsUpdate = needsUpdate || JSON.stringify(result[field]) !== JSON.stringify(post[field]);
         } else {

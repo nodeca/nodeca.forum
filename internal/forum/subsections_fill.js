@@ -77,7 +77,7 @@ module.exports = function (N, apiPath) {
 
     // - get all sections for index (to be able check excluded by user)
     // - get 2 levels [0,1] for section
-    let subsections = await N.models.forum.Section.getChildren(env.data.section ? env.data.section._id : null,
+    let subsections = await N.models.forum.Section.getChildren(env.data.section?._id,
                                                                env.data.section ? 2 : -1);
 
     // sections order is always fixed, no needs to sort.
@@ -154,7 +154,7 @@ module.exports = function (N, apiPath) {
 
     // Collect users from subsections. Only first & second levels required
     // Calculate deepness limit, depending on `forum index` or `forum.section`
-    let max_subsection_level = Number((env.data.section || {}).level) + 2;
+    let max_subsection_level = Number(env.data.section?.level || 0) + 2;
 
     env.data.subsections.forEach(function (doc) {
       // queue users only for first 2 levels (those are not displayed on level 3)
@@ -166,7 +166,7 @@ module.exports = function (N, apiPath) {
     });
 
     // build response tree
-    let root = (env.data.section || {})._id || null;
+    let root = env.data.section?._id;
     env.res.subsections = to_tree(env.data.subsections, root);
   });
 };

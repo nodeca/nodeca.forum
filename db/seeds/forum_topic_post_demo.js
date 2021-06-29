@@ -300,7 +300,7 @@ async function updateSectionStat(section) {
     }
   ]).exec();
 
-  if (sum && sum[0]) {
+  if (sum?.[0]) {
     postCount  = sum[0].post_count;
     topicCount = sum[0].topic_count;
   } else {

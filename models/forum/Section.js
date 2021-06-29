@@ -189,7 +189,7 @@ module.exports = function (N, collectionName) {
       let parentList = [];
       let current = sections[sectionID].parent;
 
-      while (current && current._id) {
+      while (current?._id) {
         parentList.unshift(current._id);
         current = current.parent;
       }

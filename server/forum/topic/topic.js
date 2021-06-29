@@ -90,7 +90,7 @@ module.exports = function (N, apiPath) {
                           .findOne({ user: env.user_info.user_id, to: env.data.topic._id })
                           .lean(true);
 
-    env.res.subscription = subscription ? subscription.type : null;
+    env.res.subscription = subscription?.type;
   });
 
 
@@ -114,7 +114,7 @@ module.exports = function (N, apiPath) {
         chunk_offset: posts_per_page * (page_current - 1)
       };
 
-      env.res.current_post_hid = env.res.posts[0] && env.res.posts[0].hid;
+      env.res.current_post_hid = env.res.posts[0]?.hid;
 
       return;
     }
@@ -300,7 +300,7 @@ module.exports = function (N, apiPath) {
       return;
     }
 
-    if (data.results && data.results.length > 0) {
+    if (data.results?.length) {
       let topics = await N.models.forum.Topic.find()
                              .where('_id').in(data.results.map(r => r.topic_id))
                              .lean(true);

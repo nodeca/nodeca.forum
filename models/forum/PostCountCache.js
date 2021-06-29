@@ -111,7 +111,7 @@ module.exports = function (N, collectionName) {
     update.$set[path] = cached_hid_value;
 
     // Remove all previous version keys if exists
-    Object.keys((cache || {}).data || {}).forEach(cache_version => {
+    Object.keys(cache?.data || {}).forEach(cache_version => {
       if (cache_version < (version || 0)) {
         update.$unset = update.$unset || {};
         update.$unset['data.' + cache_version] = '';

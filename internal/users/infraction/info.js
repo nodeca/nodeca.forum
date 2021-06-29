@@ -18,8 +18,8 @@ const _ = require('lodash');
 module.exports = function (N, apiPath) {
 
   N.wire.on(apiPath, async function fetch_infraction_info(info_env) {
-    let posts_ids = info_env.infractions.filter(i => i.src_type === N.shared.content_type.FORUM_POST).map(i => i.src);
-
+    let posts_ids = info_env.infractions.filter(i => i.src_type === N.shared.content_type.FORUM_POST)
+                            .map(i => i.src);
     if (!posts_ids.length) return;
 
 
