@@ -29,7 +29,7 @@ N.wire.on(module.apiPath + '.setup', function page_setup(data) {
 
   // Create observable fields on currentSection.
   for (let [ key, defaultValue ] of Object.entries(SECTION_FIELD_DEFAULTS)) {
-    let value = Object.prototype.hasOwnProperty.call(data.current_section, key) ?
+    let value = Object.prototype.hasOwnProperty.call(data.current_section || {}, key) ?
                 data.current_section[key] :
                 defaultValue;
 
