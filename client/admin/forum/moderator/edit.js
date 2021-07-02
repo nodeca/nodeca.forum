@@ -36,7 +36,7 @@ function Setting(name, schema, value, overriden) {
       }
 
       // Use defaults.
-      return schema['default'];
+      return schema.default;
     },
     write(value) {
       this.overriden(true);
@@ -84,7 +84,7 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
 
     } else {
       // Use defaults.
-      value = schema['default'];
+      value = schema.default;
     }
 
     return new Setting(name, schema, value, overriden);
