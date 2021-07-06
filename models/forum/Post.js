@@ -9,13 +9,16 @@ const Schema         = Mongoose.Schema;
 module.exports = function (N, collectionName) {
 
   function set_content_type(name, value) {
-    let duplicate = _.invert(_.get(N, 'shared.content_type', {}))[value];
+    N.shared = N.shared || {};
+    N.shared.content_type = N.shared.content_type || {};
+
+    let duplicate = Object.entries(N.shared.content_type).find(([ , v ]) => v === value)?.[0];
 
     if (typeof duplicate !== 'undefined') {
       throw new Error(`Duplicate content type id=${value} for ${name} and ${duplicate}`);
     }
 
-    _.set(N, 'shared.content_type.' + name, value);
+    N.shared.content_type[name] = value;
   }
 
   set_content_type('FORUM_POST', 1);

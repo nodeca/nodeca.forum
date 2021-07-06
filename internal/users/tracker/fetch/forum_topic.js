@@ -152,7 +152,7 @@ module.exports = function (N, apiPath) {
     if (locals.params.limit > 0) {
       if (locals.params.start) items = items.filter(item => item.last_ts.valueOf() < locals.params.start);
 
-      let items_sorted = _.orderBy(items, 'last_ts', 'desc');
+      let items_sorted  = items.sort((a, b) => b.last_ts - a.last_ts);
       let items_on_page = items_sorted.slice(0, locals.params.limit);
 
       locals.items = items_on_page;

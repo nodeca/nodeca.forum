@@ -101,8 +101,14 @@ module.exports = function (N, apiPath) {
                           .concat([ env.data.topic ])
                           .map(sanitize_topic);
 
-    env.res.history = _.zip(history_meta, history_topics)
-                       .map(([ meta, topic ]) => ({ meta, topic }));
+    env.res.history = [];
+
+    for (let i = 0; i < history_topics.length; i++) {
+      env.res.history.push({
+        meta: history_meta[i],
+        topic: history_topics[i]
+      });
+    }
 
     env.data.users = (env.data.users || []).concat(env.res.history.map(i => i.meta.user));
   });

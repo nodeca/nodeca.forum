@@ -78,7 +78,7 @@ module.exports = function (N) {
       return N.wire.emit('internal:forum.access.post', access_env)
         .then(() => {
           if (!access_env.data.access_read) {
-            local_env.to = _.without(local_env.to, user_id);
+            local_env.to = local_env.to.filter(x => x !== user_id);
           }
         });
     }));

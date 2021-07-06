@@ -200,16 +200,15 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_user(env) {
     await N.models.forum.UserTopicCount.recount(env.data.topic.cache.first_user, env.data.topic.section);
 
-    let users = _.map(
+    let users = (
       await N.models.forum.Post.find()
                 .where('topic').equals(env.data.topic._id)
                 .select('user')
-                .lean(true),
-      'user'
-    );
+                .lean(true)
+    ).map(x => x.user);
 
     await N.models.forum.UserPostCount.recount(
-      _.uniq(users.map(String))
+      [ ...new Set(users.map(String)) ]
        .map(user_id => [ user_id, env.data.topic.section ])
     );
   });

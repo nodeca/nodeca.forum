@@ -3,9 +3,6 @@
 'use strict';
 
 
-const _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -119,7 +116,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function update_user_topics(env) {
     let users = env.data.topics.map(t => t.cache?.first_user);
 
-    users = _.uniq(users.map(String));
+    users = [ ...new Set(users.map(String)) ];
 
     await N.models.forum.UserTopicCount.recount(
       [].concat(users.map(user_id => [ user_id, env.data.section_from._id ]))
@@ -131,15 +128,14 @@ module.exports = function (N, apiPath) {
   // Update user post counters
   //
   N.wire.after(apiPath, async function update_user_topics(env) {
-    let users = _.map(
+    let users = (
       await N.models.forum.Post.find()
                 .where('topic').in(env.data.topics.map(t => t._id))
                 .select('user')
-                .lean(true),
-      'user'
-    );
+                .lean(true)
+    ).map(x => x.user);
 
-    users = _.uniq(users.map(String));
+    users = [ ...new Set(users.map(String)) ];
 
     await N.models.forum.UserPostCount.recount(
       [].concat(users.map(user_id => [ user_id, env.data.section_from._id ]))

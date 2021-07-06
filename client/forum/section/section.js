@@ -456,7 +456,7 @@ N.wire.once('navigate.done:' + module.apiPath, function section_topics_selection
       // Unselect
       //
       data.$this.closest('.forum-topicline').removeClass('forum-topicline__m-selected');
-      pageState.selected_topics = _.without(pageState.selected_topics, topicHid);
+      pageState.selected_topics = pageState.selected_topics.filter(x => x !== topicHid);
     }
 
     save_selected_topics();

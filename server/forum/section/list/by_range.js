@@ -2,8 +2,6 @@
 //
 'use strict';
 
-const _  = require('lodash');
-
 
 // Max topics to fetch before and after
 const LIMIT = 50;
@@ -60,7 +58,7 @@ module.exports = function (N, apiPath) {
     env.res.head = env.res.head || {};
 
     let cache    = env.user_info.hb ? 'cache_hb' : 'cache';
-    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+    let statuses = env.data.topics_visible_statuses.filter(x => x !== N.models.forum.Topic.statuses.PINNED);
 
     //
     // Fetch topic after last one, turn it into a link to the next page
@@ -116,7 +114,7 @@ module.exports = function (N, apiPath) {
   N.wire.after(apiPath, async function fetch_pagination(env) {
     let topics_per_page = await env.extras.settings.fetch('topics_per_page');
 
-    let statuses = _.without(env.data.topics_visible_statuses, N.models.forum.Topic.statuses.PINNED);
+    let statuses = env.data.topics_visible_statuses.filter(x => x !== N.models.forum.Topic.statuses.PINNED);
 
     //
     // Count total amount of visible topics in the section

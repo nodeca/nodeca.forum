@@ -201,7 +201,7 @@ module.exports = function (N, apiPath) {
     let users = env.data.posts.map(p => p.user);
 
     await N.models.forum.UserPostCount.recount(
-      _.uniq(users.map(String))
+      [ ...new Set(users.map(String)) ]
        .map(user_id => [ user_id, env.data.topic.section ])
     );
   });

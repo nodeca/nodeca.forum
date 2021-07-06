@@ -3,7 +3,6 @@
 'use strict';
 
 
-const _        = require('lodash');
 const Mongoose = require('mongoose');
 const Schema   = Mongoose.Schema;
 
@@ -18,7 +17,7 @@ const CACHE_STEP_SIZE = 100;
 
 module.exports = function (N, collectionName) {
 
-  var PostCountCache = new Schema({
+  let PostCountCache = new Schema({
     // Source _id
     src: Schema.ObjectId,
 
@@ -40,10 +39,10 @@ module.exports = function (N, collectionName) {
   // We don't use `$in` because it is slow. Parallel requests with strict equality is faster.
   //
   async function countFn(src, hid, cut_from, with_hb) {
-    var Post = N.models.forum.Post;
+    let Post = N.models.forum.Post;
 
     // Posts with this statuses are counted on page (others are shown, but not counted)
-    var countable_statuses = [ Post.statuses.VISIBLE ];
+    let countable_statuses = [ Post.statuses.VISIBLE ];
 
     // For hellbanned users - count hellbanned posts too
     if (with_hb) {
@@ -75,7 +74,7 @@ module.exports = function (N, collectionName) {
   //
   PostCountCache.statics.getCount = async function (src, version, hid, hb) {
 
-    var cached_hid = hid - hid % CACHE_STEP_SIZE;
+    let cached_hid = hid - hid % CACHE_STEP_SIZE;
 
     // Use direct count for small numbers
     if (cached_hid === 0) {
@@ -87,20 +86,20 @@ module.exports = function (N, collectionName) {
                           .findOne({ src })
                           .lean(true);
 
-    let path = [ 'data', (version || 0), (hb ? 'hb' : 'normal'), cached_hid ].join('.');
-
     // Has cache - use it
-    if (_.has(cache, path)) {
+    let existing_cache = cache?.data?.[version || 0]?.[hb ? 'hb' : 'normal'] || {};
+
+    if (existing_cache.hasOwnProperty(cached_hid)) {
 
       // If required hid equals to cached one - return cached value
       if (hid === cached_hid) {
-        return _.get(cache, path);
+        return existing_cache[cached_hid];
       }
 
       // Get count between cached hid and required one
       let cnt = await countFn(src, hid, cached_hid, hb);
 
-      return cnt + _.get(cache, path);
+      return cnt + existing_cache[cached_hid];
     }
 
     // If cache does not exists - use direct count and rebuild cache mark
@@ -108,6 +107,7 @@ module.exports = function (N, collectionName) {
 
     let update = { $set: { src } };
 
+    let path = [ 'data', (version || 0), (hb ? 'hb' : 'normal'), cached_hid ].join('.');
     update.$set[path] = cached_hid_value;
 
     // Remove all previous version keys if exists

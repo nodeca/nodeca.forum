@@ -189,7 +189,7 @@ module.exports = function (N, apiPath) {
     let users = env.data.topics.map(t => t.cache?.first_user);
 
     await N.models.forum.UserTopicCount.recount(
-      _.uniq(users.map(String))
+      [ ...new Set(users.map(String)) ]
        .map(user_id => [ user_id, env.data.section._id ])
     );
   });
@@ -198,16 +198,15 @@ module.exports = function (N, apiPath) {
   // Update user post counters
   //
   N.wire.after(apiPath, async function update_user_topics(env) {
-    let users = _.map(
+    let users = (
       await N.models.forum.Post.find()
                 .where('topic').in(env.data.topics.map(t => t._id))
                 .select('user')
-                .lean(true),
-      'user'
-    );
+                .lean(true)
+    ).map(x => x.user);
 
     await N.models.forum.UserPostCount.recount(
-      _.uniq(users.map(String))
+      [ ...new Set(users.map(String)) ]
        .map(user_id => [ user_id, env.data.section._id ])
     );
   });

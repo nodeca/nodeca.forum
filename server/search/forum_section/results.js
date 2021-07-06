@@ -3,7 +3,6 @@
 
 'use strict';
 
-const _       = require('lodash');
 const memoize = require('promise-memoize');
 
 const sort_types   = [ 'date', 'rel' ];
@@ -153,7 +152,7 @@ module.exports = function (N, apiPath) {
       // set result count for current tab
       counts[env.params.type] = active_tab_count;
 
-      let other_tabs = _.without(content_types, env.params.type);
+      let other_tabs = content_types.filter(x => x !== env.params.type);
 
       await Promise.all(other_tabs.map(async type => {
         let search_env = {

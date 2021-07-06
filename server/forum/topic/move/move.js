@@ -3,9 +3,6 @@
 'use strict';
 
 
-const _ = require('lodash');
-
-
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
@@ -138,15 +135,14 @@ module.exports = function (N, apiPath) {
       [ env.data.topic.cache.first_user, env.data.section_to._id ]
     ]);
 
-    let users = _.map(
+    let users = (
       await N.models.forum.Post.find()
                 .where('topic').equals(env.data.topic._id)
                 .select('user')
-                .lean(true),
-      'user'
-    );
+                .lean(true)
+    ).map(x => x.user);
 
-    users = _.uniq(users.map(String));
+    users = [ ...new Set(users.map(String)) ];
 
     await N.models.forum.UserPostCount.recount(
       [].concat(users.map(user_id => [ user_id, env.data.section_from._id ]))

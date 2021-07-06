@@ -24,9 +24,6 @@
 'use strict';
 
 
-const _       = require('lodash');
-
-
 module.exports = function (N) {
 
   // Shortcut
@@ -48,7 +45,7 @@ module.exports = function (N) {
 
       let results = await query
                             .where('section').equals(env.data.section._id)
-                            .where('st').in(_.without(env.data.topics_visible_statuses, Topic.statuses.PINNED))
+                            .where('st').in(env.data.topics_visible_statuses.filter(x => x !== Topic.statuses.PINNED))
                             .select('_id')
                             .sort(`${lookup_key}`)
                             .limit(count)
