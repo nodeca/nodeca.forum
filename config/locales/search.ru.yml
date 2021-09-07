@@ -3,10 +3,10 @@ i18n:
     search:
       general:
         menu:
-          forum_topics: Темы на форуме
-          forum_posts: Сообщения на форуме
+          forum_topics: 'Форум: темы'
+          forum_posts: 'Форум: сообщения'
 
       forum_section:
         menu:
-          forum_topics: Темы на форуме
-          forum_posts: Сообщения на форуме
+          forum_topics: 'Форум: темы'
+          forum_posts: 'Форум: сообщения'

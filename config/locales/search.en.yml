@@ -3,10 +3,10 @@ i18n:
     search:
       general:
         menu:
-          forum_topics: Forum topics
-          forum_posts: Forum posts
+          forum_topics: 'Forum: topics'
+          forum_posts: 'Forum: posts'
 
       forum_section:
         menu:
-          forum_topics: Forum topics
-          forum_posts: Forum posts
+          forum_topics: 'Forum: topics'
+          forum_posts: 'Forum: posts'
