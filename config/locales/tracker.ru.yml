@@ -6,5 +6,5 @@ i18n:
           forum_topic: Форум
 
       subscriptions:
-        forum_topic: Темы на форуме
-        forum_section: Разделы форума
+        forum_topic: 'Форум: темы'
+        forum_section: 'Форум: разделы'

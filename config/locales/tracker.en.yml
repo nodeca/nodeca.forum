@@ -6,5 +6,5 @@ i18n:
           forum_topic: Forum
 
       subscriptions:
-        forum_topic: Forum topics
-        forum_section: Forum sections
+        forum_topic: 'Forum: topics'
+        forum_section: 'Forum: sections'

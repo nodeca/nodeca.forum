@@ -3,5 +3,5 @@ i18n:
     users:
       activity:
         menu:
-          forum_topics: Темы на форуме
-          forum_posts: Сообщения на форуме
+          forum_topics: 'Форум: темы'
+          forum_posts: 'Форум: сообщения'

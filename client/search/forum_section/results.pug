@@ -1,15 +1,16 @@
 .search-results
-  .search-results__nav.nav.nav-tabs-underlined
+  ul.content-tabs
     - function counter(n) { return Number(n) > 1000 ? '1000+' : n; }
 
     each tab in self.tabs
-      a.nav-link(
-        href=tab.link
-        class=(self.type === tab.type ? 'active' : '')
-      )
-        = self.t('@search.forum_section.menu.' + tab.type)
-        span.search-results__tab-counter(title=tab.count)
-          = '(' + counter(tab.count) + ')'
+      li.content-tabs-item
+        a.content-tabs-link(
+          href=tab.link
+          class=(self.type === tab.type ? 'active' : '')
+        )
+          = self.t('@search.forum_section.menu.' + tab.type)
+          span.content-tabs-counter(title=tab.count)
+            = counter(tab.count)
 
   .search-results__list
     != self.partial('@search.blocks.' + self.type)
