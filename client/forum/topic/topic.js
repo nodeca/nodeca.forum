@@ -962,6 +962,10 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
 
   // avoid executing it on first tick because of initial scrollTop()
   setTimeout(function () {
+    // remember scroll position on init,
+    // needed if user navigates to a specific post then moves away without scrolling
+    scrollPositionTracker();
+
     $window.on('scroll', scrollPositionTracker);
   }, 1);
 });
