@@ -918,14 +918,14 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     // Last completely visible post on page to mark it as read
     let read = $($posts[lastVisibleIdx]).data('post-hid');
 
-    if (lastVisibleIdx === $posts.length - 1) {
+    /*if (lastVisibleIdx === $posts.length - 1) {
       // Adjust for ignored posts at the end:
       //
       // If user reads last visible post in DOM, we mark last
       // loaded post instead
       //
-      read = pageState.bottom_marker;
-    }
+      read = ...; // TODO: no data available for this
+    }*/
 
     // Current scroll (topic hid) position
     let pos;
