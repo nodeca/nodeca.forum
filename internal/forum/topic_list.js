@@ -177,7 +177,7 @@ module.exports = function (N, apiPath) {
       data.push({
         categoryId: topic.section,
         contentId: topic._id,
-        lastPostNumber: topic.last_post_counter,
+        lastPostNumber: topic.cache.last_post_hid,
         lastPostTs: topic.cache.last_ts
       });
     });
