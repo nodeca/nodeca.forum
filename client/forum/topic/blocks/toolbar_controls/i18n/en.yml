@@ -9,6 +9,8 @@ en-US:
   delete: Delete
   undelete: Restore
   post_add: Add reply
+  tracker: Tracker
+  search: Search in topic
   subscription: Subscription
   subs_muted: Muted. You will never be notified of anything about this topic.
   subs_normal: Normal. You will be notified if someone mentions your @name or replies to your message.

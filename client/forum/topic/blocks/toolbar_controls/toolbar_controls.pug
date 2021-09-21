@@ -12,6 +12,11 @@ if self.settings.forum_can_reply && isOpen && self.section.is_writable
   - items.push('post_add')
 
 if self.runtime.is_member
+  - items.push('tracker')
+
+- items.push('search')
+
+if self.runtime.is_member
   - items.push('subscription')
 
 
@@ -142,6 +147,16 @@ if self.selected_cnt
                 type='button'
                 data-on-click='forum.topic:reply'
               )= self.t('post_add')
+
+            when 'tracker'
+              a.dropdown-item(
+                href=self.link_to('users.tracker')
+              )= self.t('tracker')
+
+            when 'search'
+              a.dropdown-item(
+                href=self.link_to('search.forum_topic', { $query: { hid: self.topic.hid } })
+              )= self.t('search')
 
             when 'subscription'
               button.dropdown-item(

@@ -122,6 +122,14 @@ article#content.forum-topic-root(
         )
           = self.t('post_add')
 
+    if self.runtime.is_member
+      .forum-topic__tracker-link
+        a.btn.btn-link.w-100(
+          href=self.link_to('users.tracker')
+          title=self.t('tracker_link')
+        )
+          = self.t('tracker_link')
+
     nav.forum-topic__footer-pagination.js-hide
       - var link_params  = { section_hid: self.section.hid, topic_hid: self.topic.hid }
       - var page_current = Math.floor(self.pagination.chunk_offset / self.pagination.per_page) + 1;
