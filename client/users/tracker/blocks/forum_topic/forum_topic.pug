@@ -27,15 +27,15 @@ else
 
     .user-tracker-item__microstat
       a.user-tracker-item__microstat-category(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
+      a.user-tracker-item__microstat-time.d-sm-none(
+        href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
+      )
+        != self.timetag(topic.cache.last_ts, 'relative')
       if user.hid
         a.user-tracker-item__microstat-author._ucard-popover(
           href=self.link_to('users.member', { user_hid: user.hid })
           data-user-id=user._id
         )= user.name
-      a.user-tracker-item__microstat-time.d-sm-none(
-        href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
-      )
-        != self.timetag(topic.cache.last_ts, 'relative')
 
     //- cover all space with link for small screens
     a.user-tracker-item__overlay.d-md-none(href=href)
