@@ -25,6 +25,8 @@ else
     h2.user-tracker-item__title
       a.user-tracker-item__title-link(href=href)= topic.title
 
+      .user-tracker-item__new-marker= self.t('new')
+
     .user-tracker-item__microstat
       a.user-tracker-item__microstat-category(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
       a.user-tracker-item__microstat-time(
