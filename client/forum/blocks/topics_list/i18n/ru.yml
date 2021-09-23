@@ -5,7 +5,7 @@ ru-RU:
   views_tip: Просмотры
   del_reason: "(#{text})"
   del_by: "Удалил:"
-  new: новинка
+  new: new
   pinned: Прикреплённая тема
   closed: Закрытая тема
   hellbanned: Hellbanned
