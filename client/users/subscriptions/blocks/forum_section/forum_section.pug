@@ -1,25 +1,26 @@
-- var section = self.forum_sections[self.item.to];
-- var href = self.link_to('forum.section', { section_hid: section.hid });
+each item in self.items
+  - var section = self.forum_sections[item.to];
+  - var href = self.link_to('forum.section', { section_hid: section.hid });
 
-.user-subscriptions-item.user-subscriptions-item__m-forum-section.user-subscriptions-item__m-no-markers
-  .user-subscriptions-item__content
-    h2.user-subscriptions-item__title
-      a.user-subscriptions-item__title-link(href=href)= section.title
+  .user-subscriptions-item.user-subscriptions-item__m-forum-section.user-subscriptions-item__m-no-markers
+    .user-subscriptions-item__content
+      h2.user-subscriptions-item__title
+        a.user-subscriptions-item__title-link(href=href)= section.title
 
-    //- cover all space with link for small screens
-    a.user-subscriptions-item__overlay.d-md-none(href=href)
+      //- cover all space with link for small screens
+      a.user-subscriptions-item__overlay.d-md-none(href=href)
 
-  .user-subscriptions-item__controls
-    button.user-subscriptions-item__btn-edit.btn.btn-outline-secondary.btn-sm.btn-square.icon.d-none.d-sm-inline-block(
-      title=self.t('edit_subscription')
-      data-on-click='users.subscriptions:update'
-      data-subscription=self.item
-      data-block-name=self.block_name
-      class=self.icon(self.item.type)
-    )
-    button.user-subscriptions-item__btn-delete.btn.btn-outline-secondary.btn-sm.btn-square.icon.icon-x(
-      title=self.t('delete_subscription')
-      data-on-click='users.subscriptions:delete'
-      data-subscription=self.item
-      data-block-name=self.block_name
-    )
+    .user-subscriptions-item__controls
+      button.user-subscriptions-item__btn-edit.btn.btn-outline-secondary.btn-sm.btn-square.icon.d-none.d-sm-inline-block(
+        title=self.t('edit_subscription')
+        data-on-click='users.subscriptions:update'
+        data-subscription=item
+        data-block-name=self.block_name
+        class=self.icon(item.type)
+      )
+      button.user-subscriptions-item__btn-delete.btn.btn-outline-secondary.btn-sm.btn-square.icon.icon-x(
+        title=self.t('delete_subscription')
+        data-on-click='users.subscriptions:delete'
+        data-subscription=item
+        data-block-name=self.block_name
+      )

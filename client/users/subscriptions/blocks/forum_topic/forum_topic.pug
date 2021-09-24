@@ -1,49 +1,50 @@
-- var topic = self.forum_topics[self.item.to];
-- var section = self.forum_sections[topic.section];
-- var mark = self.read_marks[topic._id];
-- var href;
+each item in self.items.sort(function (a, b) { return new Date(self.forum_topics[b.to].cache.last_ts) - new Date(self.forum_topics[a.to].cache.last_ts) })
+  - var topic = self.forum_topics[item.to];
+  - var section = self.forum_sections[topic.section];
+  - var mark = self.read_marks[topic._id];
+  - var href;
 
-if (mark.next !== -1)
-  //- If there are unread messages in topic - go to first unread
-  - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.next });
+  if (mark.next !== -1)
+    //- If there are unread messages in topic - go to first unread
+    - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.next });
 
-else if (mark.position !== -1)
-  //- If we have position info - go to last position
-  - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.position });
+  else if (mark.position !== -1)
+    //- If we have position info - go to last position
+    - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.position });
 
-else
-  //- Go to first post in topic
-  - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
+  else
+    //- Go to first post in topic
+    - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
 
-.user-subscriptions-item.user-subscriptions-item__m-forum-topic(
-  class=mark.isNew ? 'user-subscriptions-item__m-new' : ''
-  class=mark.next !== -1 ? 'user-subscriptions-item__m-unread' : ''
-)
-  .user-subscriptions-item__content
-    h2.user-subscriptions-item__title
-      a.user-subscriptions-item__title-link(href=href)= topic.title
+  .user-subscriptions-item.user-subscriptions-item__m-forum-topic(
+    class=mark.isNew ? 'user-subscriptions-item__m-new' : ''
+    class=mark.next !== -1 ? 'user-subscriptions-item__m-unread' : ''
+  )
+    .user-subscriptions-item__content
+      h2.user-subscriptions-item__title
+        a.user-subscriptions-item__title-link(href=href)= topic.title
 
-      .user-subscriptions-item__new-marker= self.t('new')
+        .user-subscriptions-item__new-marker= self.t('new')
 
-    .user-subscriptions-item__microstat
-      a.user-subscriptions-item__microstat-category(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
+      .user-subscriptions-item__microstat
+        a.user-subscriptions-item__microstat-category(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
 
-    .user-subscriptions-item__unread-marker
+      .user-subscriptions-item__unread-marker
 
-    //- cover all space with link for small screens
-    a.user-subscriptions-item__overlay.d-md-none(href=href)
+      //- cover all space with link for small screens
+      a.user-subscriptions-item__overlay.d-md-none(href=href)
 
-  .user-subscriptions-item__controls
-    button.user-subscriptions-item__btn-edit.btn.btn-outline-secondary.btn-sm.btn-square.icon.d-none.d-sm-inline-block(
-      title=self.t('edit_subscription')
-      data-on-click='users.subscriptions:update'
-      data-subscription=self.item
-      data-block-name=self.block_name
-      class=self.icon(self.item.type)
-    )
-    button.user-subscriptions-item__btn-delete.btn.btn-outline-secondary.btn-sm.btn-square.icon.icon-x(
-      title=self.t('delete_subscription')
-      data-on-click='users.subscriptions:delete'
-      data-subscription=self.item
-      data-block-name=self.block_name
-    )
+    .user-subscriptions-item__controls
+      button.user-subscriptions-item__btn-edit.btn.btn-outline-secondary.btn-sm.btn-square.icon.d-none.d-sm-inline-block(
+        title=self.t('edit_subscription')
+        data-on-click='users.subscriptions:update'
+        data-subscription=item
+        data-block-name=self.block_name
+        class=self.icon(item.type)
+      )
+      button.user-subscriptions-item__btn-delete.btn.btn-outline-secondary.btn-sm.btn-square.icon.icon-x(
+        title=self.t('delete_subscription')
+        data-on-click='users.subscriptions:delete'
+        data-subscription=item
+        data-block-name=self.block_name
+      )
