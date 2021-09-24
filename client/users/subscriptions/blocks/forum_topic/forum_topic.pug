@@ -1,6 +1,6 @@
 - var topic = self.forum_topics[self.item.to];
 - var section = self.forum_sections[topic.section];
-- var mark = { next: -1 };// TODO: self.read_marks[topic._id];
+- var mark = self.read_marks[topic._id];
 - var href;
 
 if (mark.next !== -1)
