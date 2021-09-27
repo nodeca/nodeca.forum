@@ -30,8 +30,14 @@ module.exports = function (N, apiPath) {
   N.wire.on(apiPath, async function tracker_fetch_topics(locals) {
     locals.res = {};
 
-    let topic_subs = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_TOPIC);
-    let sect_subs  = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_SECTION);
+    let topic_subs = [];
+
+    // return all subscribed topics on the first page
+    if (!locals.params.start) {
+      topic_subs = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_TOPIC);
+    }
+
+    let sect_subs = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_SECTION);
 
     let content_read_marks_expire = await N.settings.get('content_read_marks_expire');
     let min_cut = new Date(Date.now() - (content_read_marks_expire * 24 * 60 * 60 * 1000));
@@ -147,13 +153,27 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    locals.count = items.length;
+    // return this number for first page only
+    if (!locals.params.start) {
+      locals.count = items.length;
+    }
 
     if (locals.params.limit > 0) {
       if (locals.params.start) items = items.filter(item => item.last_ts.valueOf() < locals.params.start);
 
-      let items_sorted  = items.sort((a, b) => b.last_ts - a.last_ts);
-      let items_on_page = items_sorted.slice(0, locals.params.limit);
+      let items_sorted  = items.sort((a, b) => {
+        let a_new = read_marks[a.id].isNew;
+        let b_new = read_marks[b.id].isNew;
+        if (a_new !== b_new) return a_new ? 1 : -1;
+        return b.last_ts - a.last_ts;
+      });
+
+      let items_on_page = [];
+      for (let item of items_sorted) {
+        items_on_page.push(item);
+        // show all subscribed topics with new messages plus at least 1 new topic
+        if (items_on_page.length >= locals.params.limit && read_marks[item.id].isNew) break;
+      }
 
       locals.items = items_on_page;
       locals.next = items_sorted.length > items_on_page.length ?

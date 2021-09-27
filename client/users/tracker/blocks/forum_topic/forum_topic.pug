@@ -1,48 +1,55 @@
-- var topic = self.forum_topics[self.item.id];
-- var section = self.forum_sections[topic.section];
-- var user = self.users[topic.cache.last_user];
-- var mark = self.read_marks[topic._id];
-- var href;
+- var prev_mark;
 
-if (mark.next !== -1)
-  //- If there are unread messages in topic - go to first unread
-  - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.next });
+each item in self.items
+  - var topic = self.forum_topics[item.id];
+  - var section = self.forum_sections[topic.section];
+  - var user = self.users[topic.cache.last_user];
+  - var mark = self.read_marks[topic._id];
+  - var href;
 
-else if (mark.position !== -1)
-  //- If we have position info - go to last position
-  - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.position });
+  if (prev_mark && !prev_mark.isNew && mark.isNew)
+    footer.user-tracker__separator= self.t('new_topics')
+  - prev_mark = mark;
 
-else
-  //- Go to first post in topic
-  - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
+  if (mark.next !== -1)
+    //- If there are unread messages in topic - go to first unread
+    - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.next });
 
-.user-tracker-item.user-tracker-item__m-forum-topic(
-  class=mark.isNew ? 'user-tracker-item__m-new' : ''
-  class=mark.next !== -1 ? 'user-tracker-item__m-unread' : ''
-  data-last-ts=new Date(self.item.last_ts).valueOf()
-)
-  .user-tracker-item__content
-    h2.user-tracker-item__title
-      a.user-tracker-item__title-link(href=href)= topic.title
+  else if (mark.position !== -1)
+    //- If we have position info - go to last position
+    - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: mark.position });
 
-      .user-tracker-item__new-marker= self.t('new')
+  else
+    //- Go to first post in topic
+    - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
 
-    .user-tracker-item__microstat
-      a.user-tracker-item__microstat-category(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
-      a.user-tracker-item__microstat-time(
+  .user-tracker-item.user-tracker-item__m-forum-topic(
+    class=mark.isNew ? 'user-tracker-item__m-new' : ''
+    class=mark.next !== -1 ? 'user-tracker-item__m-unread' : ''
+    data-last-ts=new Date(item.last_ts).valueOf()
+  )
+    .user-tracker-item__content
+      h2.user-tracker-item__title
+        a.user-tracker-item__title-link(href=href)= topic.title
+
+        .user-tracker-item__new-marker= self.t('new')
+
+      .user-tracker-item__microstat
+        a.user-tracker-item__microstat-category(href=self.link_to('forum.section', { section_hid: section.hid }))=section.title
+        a.user-tracker-item__microstat-time(
+          href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
+        )
+          != self.timetag(topic.cache.last_ts, 'relative')
+        if user.hid
+          a.user-tracker-item__microstat-author._ucard-popover(
+            href=self.link_to('users.member', { user_hid: user.hid })
+            data-user-id=user._id
+          )= user.name
+
+      //- cover all space with link for small screens
+      a.user-tracker-item__overlay.d-md-none(href=href)
+
+    .user-tracker-item__stat-time
+      a.user-tracker-item__stat-link(
         href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
-      )
-        != self.timetag(topic.cache.last_ts, 'relative')
-      if user.hid
-        a.user-tracker-item__microstat-author._ucard-popover(
-          href=self.link_to('users.member', { user_hid: user.hid })
-          data-user-id=user._id
-        )= user.name
-
-    //- cover all space with link for small screens
-    a.user-tracker-item__overlay.d-md-none(href=href)
-
-  .user-tracker-item__stat-time
-    a.user-tracker-item__stat-link(
-      href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
-    )!= self.timetag(topic.cache.last_ts, 'relative')
+      )!= self.timetag(topic.cache.last_ts, 'relative')
