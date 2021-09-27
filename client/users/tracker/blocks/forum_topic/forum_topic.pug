@@ -8,7 +8,7 @@ each item in self.items
   - var href;
 
   if (prev_mark && !prev_mark.isNew && mark.isNew)
-    footer.user-tracker__separator= self.t('new_topics')
+    .user-tracker__separator= self.t('new_topics')
   - prev_mark = mark;
 
   if (mark.next !== -1)
