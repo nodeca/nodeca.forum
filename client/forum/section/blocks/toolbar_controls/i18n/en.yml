@@ -2,6 +2,7 @@ en-US:
   show_moderators: Moderators
   mark_read: Mark all read
   topic_create: New topic
+  search: Search in section
   subscription: Subscription
   subs_muted: Muted. You will never be notified of anything about this section.
   subs_normal: Normal. You will be notified if someone mentions your @name in new thread.

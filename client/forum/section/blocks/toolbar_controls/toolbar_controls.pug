@@ -6,6 +6,8 @@
 if self.settings.forum_can_start_topics && self.section.is_writable
   - items.push('topic_create')
 
+- items.push('search')
+
 if self.runtime.is_member
   - items.push('mark_read')
   - items.push('subscription')
@@ -109,6 +111,11 @@ if items.length > 0 && items[items.length - 1] === 'header'
                 data-on-click='forum.section:mark_read'
                 data-section-hid=self.section.hid
               )= self.t('mark_read')
+
+            when 'search'
+              a.dropdown-item(
+                href=self.link_to('search.forum_section', { $query: { hid: self.section.hid } })
+              )= self.t('search')
 
             when 'subscription'
               button.dropdown-item(
