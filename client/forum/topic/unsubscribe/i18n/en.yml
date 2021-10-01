@@ -2,7 +2,7 @@ en-US:
   title: Unsubscribe
   message: "You will now receive less notifications for topic #{link}."
   button:
-    tracking: Tracking
-    watching: Watching
-    normal: Normal
+    watching: Urgent
+    tracking: Normal
+    normal: No subscription
     muted: Muted
