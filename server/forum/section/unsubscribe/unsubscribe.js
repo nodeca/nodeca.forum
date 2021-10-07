@@ -1,6 +1,6 @@
 // Update subscription type and show unsubscribe section page
 //
-// `WATCHING|TRACKING -> NORMAL -> MUTED`
+// `WATCHING|TRACKING -> NORMAL`
 //
 'use strict';
 
@@ -66,9 +66,6 @@ module.exports = function (N, apiPath) {
     if ([ Subscription.types.WATCHING, Subscription.types.TRACKING ].indexOf(curType) !== -1) {
       // `WATCHING|TRACKING -> NORMAL`
       updatedType = Subscription.types.NORMAL;
-    } else if (curType === Subscription.types.NORMAL) {
-      // `NORMAL -> MUTED`
-      updatedType = Subscription.types.MUTED;
     } else {
       // Nothing to update here, just fill subscription type
       env.res.subscription = curType;

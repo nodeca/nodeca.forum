@@ -17,6 +17,12 @@ module.exports = function (N, apiPath) {
     if (Object.values(N.models.users.Subscription.types).indexOf(env.params.type) === -1) {
       throw N.io.BAD_REQUEST;
     }
+
+    // MUTED subscription isn't available for forums (only forum topics),
+    // guard against user changing request manually from js console somehow
+    if (env.params.type === N.models.users.Subscription.types.MUTED) {
+      return N.io.BAD_REQUEST;
+    }
   });
 
 

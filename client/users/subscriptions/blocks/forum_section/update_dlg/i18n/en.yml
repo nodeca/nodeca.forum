@@ -1,9 +1,7 @@
 en-US:
-  muted: Muted
-  muted_desc: You will never be notified of anything about this section.
-  normal: Normal
-  normal_desc: You will be notified if someone mentions your @name in a new topic.
-  tracking: Tracking
-  tracking_desc: You will see section updates in your subscriptions list.
-  watching: Watching
-  watching_desc: You will be notified immediately on every new topic.
+  normal: No subscription
+  normal_desc: You will not receive notifications about new topics.
+  tracking: Normal
+  tracking_desc: You will see new topics in tracker.
+  watching: Urgent
+  watching_desc: You will see new topics in tracker and receive email notifications.

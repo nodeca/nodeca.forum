@@ -12,10 +12,10 @@ en-US:
   tracker: Tracker
   search: Search in topic
   subscription: Subscription
-  subs_muted: Muted. You will never be notified of anything about this topic.
-  subs_normal: Normal. You will be notified if someone mentions your @name or replies to your message.
-  subs_tracking: Tracking. You will see topic updates in your subscriptions list.
-  subs_watching: Watching. You will be notified immediately on every new message.
+  subs_muted: Muted. Prohibit any possible notifications about this topic.
+  subs_normal: No subscription. You will be notified only if someone replies to your message.
+  subs_tracking: Normal. You will see updated topics in tracker.
+  subs_watching: Urgent. You will see updated topics in tracker and receive email notifications.
   many_header: "With #{count} ((post|posts)):"
   many_unselect: Clear selection
   many_delete: Delete

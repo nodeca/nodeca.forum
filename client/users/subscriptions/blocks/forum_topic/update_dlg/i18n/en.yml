@@ -1,9 +1,9 @@
 en-US:
   muted: Muted
-  muted_desc: You will never be notified of anything about this topic.
-  normal: Normal
-  normal_desc: You will be notified if someone mentions your @name or replies to your message.
-  tracking: Tracking
-  tracking_desc: You will see topic updates in your subscriptions list.
-  watching: Watching
-  watching_desc: You will be notified immediately on every new message.
+  muted_desc: Prohibit any possible notifications about this topic.
+  normal: No subscription
+  normal_desc: You will be notified only if someone replies to your message.
+  tracking: Normal
+  tracking_desc: You will see updated topics in tracker.
+  watching: Urgent
+  watching_desc: You will see updated topics in tracker and receive email notifications.
