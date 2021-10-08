@@ -638,7 +638,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
     return Promise.resolve()
       .then(() => N.wire.emit('forum.topic.topic_subscription', params))
-      .then(() => N.io.rpc('forum.topic.subscribe', { topic_hid: hid, type: params.subscription }))
+      .then(() => N.io.rpc('forum.topic.change_subscription', { topic_hid: hid, type: params.subscription }))
       .then(() => {
         N.runtime.page_data.subscription = params.subscription;
       })

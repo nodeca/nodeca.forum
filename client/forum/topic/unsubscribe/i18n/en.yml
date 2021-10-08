@@ -1,8 +1,3 @@
 en-US:
-  title: Unsubscribe
-  message: "You will now receive less notifications for topic #{link}."
-  button:
-    watching: Urgent
-    tracking: Normal
-    normal: No subscription
-    muted: Muted
+  title: Unsubscribed from new posts
+  message: "You will no longer receive notifications about new posts in topic #{link}."

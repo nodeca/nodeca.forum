@@ -1,14 +1,15 @@
-#content.forum-section-unsubscribe
+- var to_type = '$$ N.models.users.Subscription.types.NORMAL $$'
+
+#content.forum-section-unsubscribe(data-type=to_type, data-section-hid=self.section.hid)
   != self.partial('@common.blocks.navbar.logo_apps')
 
   .layout__container.container-fluid
     != self.partial('@users.blocks.announces')
 
     header.page-head
-      h1.page-head__title(itemprop='name')= self.t('title')
+      h1.page-head__title.page-loading__content(itemprop='name')= self.t('title')
+      .icon.icon-loading-placeholder.page-loading__progress
 
     - var url = self.link_to('forum.section', { section_hid: self.section.hid });
     - var link = '<a href="' + pug.escape(url) + '">' + pug.escape(self.section.title) + '</a>';
-    != self.partial('button')
-    = ' '
-    != self.t('message', { link: link })
+    .page-loading__content!= self.t('message', { link: link })

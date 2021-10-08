@@ -1,0 +1,3 @@
+en-US:
+  title: Notifications muted
+  message: "All notifications in topic #{link} are now muted, even if someone replies to your post."

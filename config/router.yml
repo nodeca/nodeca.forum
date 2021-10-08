@@ -13,7 +13,7 @@ router:
           type: integer
 
     forum.section.unsubscribe:
-      "/unsubscribe/f{section_hid}":
+      "/f{section_hid}/unsubscribe":
         section_hid:
           match: /\d+/
           type: integer
@@ -44,7 +44,16 @@ router:
           default: 1
 
     forum.topic.unsubscribe:
-      "/unsubscribe/f{section_hid}/topic{topic_hid}":
+      "/f{section_hid}/topic{topic_hid}/unsubscribe":
+        section_hid:
+          match: /\d+/
+          type: integer
+        topic_hid:
+          match: /\d+/
+          type: integer
+
+    forum.topic.mute:
+      "/f{section_hid}/topic{topic_hid}/mute":
         section_hid:
           match: /\d+/
           type: integer

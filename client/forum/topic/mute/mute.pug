@@ -1,6 +1,6 @@
-- var to_type = '$$ N.models.users.Subscription.types.NORMAL $$'
+- var to_type = '$$ N.models.users.Subscription.types.MUTED $$'
 
-#content.forum-topic-unsubscribe(data-type=to_type, data-topic-hid=self.topic.hid)
+#content.forum-topic-mute(data-type=to_type, data-topic-hid=self.topic.hid)
   != self.partial('@common.blocks.navbar.logo_apps')
 
   .layout__container.container-fluid

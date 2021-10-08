@@ -1,6 +1,4 @@
-// Update subscription type and show unsubscribe topic page
-//
-// `WATCHING|TRACKING -> NORMAL -> MUTED`
+// Show unsubscribe topic page
 //
 'use strict';
 
@@ -59,51 +57,9 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch subscription
-  //
-  N.wire.before(apiPath, async function fetch_subscription(env) {
-    env.data.subscription = await N.models.users.Subscription
-                                      .findOne({ user: env.user_info.user_id, to: env.data.topic._id })
-                                      .lean(true);
-  });
-
-
-  // Update subscription type
-  //
-  N.wire.on(apiPath, async function update_subscription_type(env) {
-    // Shortcut
-    let Subscription = N.models.users.Subscription;
-
-    let curType = env.data.subscription ? env.data.subscription.type : Subscription.types.NORMAL;
-    let updatedType;
-
-    if ([ Subscription.types.WATCHING, Subscription.types.TRACKING ].indexOf(curType) !== -1) {
-      // `WATCHING|TRACKING -> NORMAL`
-      updatedType = Subscription.types.NORMAL;
-    } else if (curType === Subscription.types.NORMAL) {
-      // `NORMAL -> MUTED`
-      updatedType = Subscription.types.MUTED;
-    } else {
-      // Nothing to update here, just fill subscription type
-      env.res.subscription = curType;
-      return;
-    }
-
-    // Fill subscription type
-    env.res.subscription = updatedType;
-
-    // Update with `upsert` to avoid duplicates
-    await Subscription.updateOne(
-      { user: env.user_info.user_id, to: env.data.topic._id },
-      { type: updatedType, to_type: N.shared.content_type.FORUM_TOPIC },
-      { upsert: true }
-    );
-  });
-
-
   // Fill section
   //
-  N.wire.after(apiPath, async function fill_section(env) {
+  N.wire.on(apiPath, async function fill_section(env) {
     env.res.section = await sanitize_section(N, env.data.section, env.user_info);
   });
 

@@ -1,7 +1,3 @@
 en-US:
-  title: Unsubscribe
-  message: "You will now receive less notifications for section #{link}."
-  button:
-    watching: Urgent
-    tracking: Normal
-    normal: No subscription
+  title: Unsubscribed from section
+  message: "You will no longer receive notifications about new topics in section #{link}."
