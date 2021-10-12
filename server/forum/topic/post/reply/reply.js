@@ -3,7 +3,6 @@
 'use strict';
 
 
-const _ = require('lodash');
 const $ = require('nodeca.core/lib/parser/cheequery');
 
 
@@ -295,57 +294,40 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Add reply notification for parent post owner
-  //
-  N.wire.after(apiPath, async function add_reply_notification(env) {
-    if (!env.data.new_post.to) return;
-
-    let ignore_data = await N.models.users.Ignore.findOne()
-                               .where('from').equals(env.data.new_post.to_user)
-                               .where('to').equals(env.user_info.user_id)
-                               .select('from to -_id')
-                               .lean(true);
-
-    if (ignore_data) return;
-
-    await N.wire.emit('internal:users.notify', {
-      src: env.data.new_post._id,
-      to: env.data.new_post.to_user,
-      type: 'FORUM_REPLY'
-    });
-  });
-
-
+  // Add reply notification for parent post owner,
   // Add new post notification for subscribers
   //
-  N.wire.after(apiPath, async function add_new_post_notification(env) {
+  N.wire.after(apiPath, async function add_notifications(env) {
     let subscriptions = await N.models.users.Subscription.find()
-      .where('to').equals(env.data.topic._id)
-      .where('type').equals(N.models.users.Subscription.types.WATCHING)
-      .lean(true);
+                                  .where('to').equals(env.data.topic._id)
+                                  .where('type').equals(N.models.users.Subscription.types.WATCHING)
+                                  .where('to_type').equals(N.shared.content_type.FORUM_TOPIC)
+                                  .lean(true);
 
-    if (!subscriptions.length) return;
+    let subscribed_users = subscriptions.map(x => x.user);
 
-    let subscribed_users = subscriptions.map(s => s.user);
+    if (env.data.new_post.to) {
+      let reply_notify = await N.settings.get('reply_notify', { user_id: env.data.new_post.to });
 
-    let ignore = _.keyBy(
-      await N.models.users.Ignore.find()
-                .where('from').in(subscribed_users)
-                .where('to').equals(env.user_info.user_id)
-                .select('from to -_id')
-                .lean(true),
-      'from'
-    );
+      if (reply_notify) {
+        await N.wire.emit('internal:users.notify', {
+          src: env.data.new_post._id,
+          to: env.data.new_post.to_user,
+          type: 'FORUM_REPLY'
+        });
 
-    subscribed_users = subscribed_users.filter(user_id => !ignore[user_id]);
+        // avoid sending both reply and new_comment notification to the same user
+        subscribed_users = subscribed_users.filter(user_id => String(user_id) !== String(env.data.new_post.to));
+      }
+    }
 
-    if (!subscribed_users.length) return;
-
-    await N.wire.emit('internal:users.notify', {
-      src: env.data.new_post._id,
-      to: subscribed_users,
-      type: 'FORUM_NEW_POST'
-    });
+    if (subscribed_users.length) {
+      await N.wire.emit('internal:users.notify', {
+        src: env.data.new_post._id,
+        to: subscribed_users,
+        type: 'FORUM_NEW_POST'
+      });
+    }
   });
 
 
