@@ -321,7 +321,26 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Mark user as active
+  // Automatically subscribe to this topic, unless user already subscribed
+  //
+  N.wire.after(apiPath, async function auto_subscription(env) {
+    let type_name = await env.extras.settings.fetch('default_subscription_mode');
+    if (type_name === 'NORMAL') return;
+
+    await N.models.users.Subscription.updateOne(
+      { user: env.user_info.user_id, to: env.data.topic._id },
+      {
+        // if document exists, it won't be changed
+        $setOnInsert: {
+          type: N.models.users.Subscription.types[type_name],
+          to_type: N.shared.content_type.FORUM_TOPIC
+        }
+      },
+      { upsert: true });
+  });
+
+
+  // Mark user as active, so it won't get auto-deleted later if user no longer visits the site
   //
   N.wire.after(apiPath, async function set_active_flag(env) {
     await N.wire.emit('internal:users.mark_user_active', env);

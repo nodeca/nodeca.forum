@@ -258,26 +258,32 @@ module.exports = function (N, apiPath) {
   // Add new topic notification for subscribers
   //
   N.wire.after(apiPath, async function add_new_post_notification(env) {
-    let subscriptions = await N.models.users.Subscription.find()
-      .where('to').equals(env.data.section._id)
-      .where('type').equals(N.models.users.Subscription.types.WATCHING)
-      .lean(true);
-
-    if (!subscriptions.length) return;
-
-    let subscribed_users = subscriptions.map(s => s.user);
-
-    if (!subscribed_users.length) return;
-
     await N.wire.emit('internal:users.notify', {
       src: env.data.new_topic._id,
-      to: subscribed_users,
       type: 'FORUM_NEW_TOPIC'
     });
   });
 
+  // Automatically subscribe to this topic, unless user already subscribed
+  //
+  N.wire.after(apiPath, async function auto_subscription(env) {
+    let type_name = await env.extras.settings.fetch('default_subscription_mode');
+    if (type_name === 'NORMAL') return;
 
-  // Mark user as active
+    await N.models.users.Subscription.updateOne(
+      { user: env.user_info.user_id, to: env.data.new_topic._id },
+      {
+        // if document exists, it won't be changed
+        $setOnInsert: {
+          type: N.models.users.Subscription.types[type_name],
+          to_type: N.shared.content_type.FORUM_TOPIC
+        }
+      },
+      { upsert: true });
+  });
+
+
+  // Mark user as active, so it won't get auto-deleted later if user no longer visits the site
   //
   N.wire.after(apiPath, async function set_active_flag(env) {
     await N.wire.emit('internal:users.mark_user_active', env);
