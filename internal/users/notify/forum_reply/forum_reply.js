@@ -16,104 +16,92 @@ module.exports = function (N) {
   // 3. no longer has access to this topic
   // 4. ignores author of this post
   //
-  N.wire.on('internal:users.notify.deliver', async function notify_deliver_froum_reply(local_env) {
+  N.wire.on('internal:users.notify.deliver', async function notify_deliver_forum_reply(local_env) {
     if (local_env.type !== 'FORUM_REPLY') return;
 
     // Fetch post
     //
-    let post = await N.models.forum.Post
-                        .findOne()
-                        .where('_id').equals(local_env.src)
-                        .lean(true);
-
-    // If post not exists - terminate
+    let post = await N.models.forum.Post.findById(local_env.src).lean(true);
     if (!post) return;
 
     // Fetch topic
     //
-    let topic = await N.models.forum.Topic
-                          .findOne()
-                          .where('_id').equals(post.topic)
-                          .lean(true);
-
-    // If topic not exists - terminate
+    let topic = await N.models.forum.Topic.findById(post.topic).lean(true);
     if (!topic) return;
 
     // Fetch section
     //
-    let section = await N.models.forum.Section
-                            .findOne()
-                            .where('_id').equals(topic.section)
-                            .lean(true);
-
-    // If section not exists - terminate async here
+    let section = await N.models.forum.Section.findById(topic.section).lean(true);
     if (!section) return;
+
+    // Fetch parent post
+    if (!post.to) return;
+
+    let parent_post = await N.models.forum.Post.findById(post.to).lean(true);
+    if (!parent_post) return;
 
     // Fetch answer author
     //
-    let user = await N.models.users.User
-                        .findOne()
-                        .where('_id').equals(post.user)
-                        .lean(true);
+    let user = await N.models.users.User.findById(post.user).lean(true);
+    if (!user) return;
+
+    let from_user_id = String(post.user);
+
+    let user_ids = new Set([ String(parent_post.user) ]);
+
+    // Apply ignores (list of users who already received this notification earlier)
+    for (let user_id of local_env.ignore || []) user_ids.delete(user_id);
 
     // Fetch user info
-    //
-    let users_info = await user_info(N, local_env.to);
-
+    let users_info = await user_info(N, Array.from(user_ids));
 
     // 1. filter by post owner (don't send notification if user reply to own post)
     //
-    local_env.to = local_env.to.filter(user_id => String(user_id) !== String(post.user));
+    user_ids.delete(from_user_id);
 
     // 2. filter users who muted this topic
     //
-    let Subscription = N.models.users.Subscription;
+    let muted = await N.models.users.Subscription.find()
+                          .where('user').in(Array.from(user_ids))
+                          .where('to').equals(topic._id)
+                          .where('type').equals(N.models.users.Subscription.types.MUTED)
+                          .lean(true);
 
-    let subscriptions = await Subscription
-                                .find()
-                                .where('user').in(local_env.to)
-                                .where('to').equals(topic._id)
-                                .where('type').equals(Subscription.types.MUTED)
-                                .lean(true);
-
-    let muted = new Set(subscriptions.map(x => String(x.user)));
-
-    local_env.to = local_env.to.filter(user_id => !muted.has(String(user_id)));
+    for (let sub of muted) {
+      user_ids.delete(String(sub.user));
+    }
 
     // 3. filter users by access
     //
-    await Promise.all(local_env.to.slice().map(user_id => {
+    for (let user_id of user_ids) {
       let access_env = { params: {
         posts: post,
         user_info: users_info[user_id],
         preload: [ topic ]
       } };
 
-      return N.wire.emit('internal:forum.access.post', access_env)
-        .then(() => {
-          if (!access_env.data.access_read) {
-            local_env.to = local_env.to.filter(x => x !== user_id);
-          }
-        });
-    }));
+      await N.wire.emit('internal:forum.access.post', access_env);
+
+      if (!access_env.data.access_read) user_ids.delete(user_id);
+    }
 
     // 4. filter out ignored users
     //
     let ignore_data = await N.models.users.Ignore.find()
-                                .where('from').in(local_env.to)
-                                .where('to').equals(post.user)
+                                .where('from').in(Array.from(user_ids))
+                                .where('to').equals(from_user_id)
                                 .select('from to -_id')
                                 .lean(true);
 
-    let ignored = new Set(ignore_data.map(x => String(x.from)));
-
-    local_env.to = local_env.to.filter(user_id => !ignored.has(String(user_id)));
+    for (let ignore of ignore_data) {
+      user_ids.delete(String(ignore.from));
+    }
 
     // Render messages
     //
     let general_project_name = await N.settings.get('general_project_name');
 
-    local_env.to.forEach(user_id => {
+    for (let user_id of user_ids) {
       let locale = users_info[user_id].locale || N.config.locales[0];
       let helpers = {};
 
@@ -139,6 +127,6 @@ module.exports = function (N) {
       let text = render(N, 'users.notify.forum_reply', { post_html: post.html, link: url }, helpers);
 
       local_env.messages[user_id] = { subject, text, url, unsubscribe };
-    });
+    }
   });
 };
