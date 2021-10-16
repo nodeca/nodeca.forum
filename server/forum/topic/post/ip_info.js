@@ -3,8 +3,8 @@
 'use strict';
 
 
-const promisify = require('util').promisify;
-const reverse = promisify(require('dns').reverse);
+const { promisify } = require('util');
+const { reverse } = require('dns/promises');
 const whois   = promisify(require('whois').lookup);
 
 
