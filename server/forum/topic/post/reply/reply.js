@@ -29,8 +29,10 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, async function fetch_topic(env) {
     let topic = await N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
+    let topicStatuses = N.models.forum.Topic.statuses;
 
     if (!topic) throw N.io.NOT_FOUND;
+    if (topic.st !== topicStatuses.OPEN && topic.ste !== topicStatuses.OPEN) throw N.io.NOT_FOUND;
 
     env.data.topic = topic;
   });

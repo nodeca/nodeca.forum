@@ -325,6 +325,21 @@ function delete_topic(as_moderator) {
 
 N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 
+  // Check if user can create a post here
+  //
+  N.wire.before(module.apiPath + ':reply', { priority: -20 }, function reply_permission_check() {
+    if (!N.runtime.page_data.settings.forum_can_reply || !N.runtime.page_data.section.is_writable) {
+      N.wire.emit('notify', t('err_section_not_writable'));
+      throw 'CANCELED';
+    }
+
+    if (N.runtime.page_data.topic.st !== topicStatuses.OPEN && N.runtime.page_data.topic.ste !== topicStatuses.OPEN) {
+      N.wire.emit('notify', t('err_topic_closed'));
+      throw 'CANCELED';
+    }
+  });
+
+
   // Display confirmation when answering in an inactive topic
   //
   N.wire.before(module.apiPath + ':reply', function old_reply_confirm(data) {
@@ -336,8 +351,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       });
     }
 
-    if (data.$this.data('post-id')) {
-      let post_time = new Date(data.$this.data('post-ts')).getTime();
+    if (data.$this.closest('.forum-post').data('post-id')) {
+      let post_time = new Date(data.$this.closest('.forum-post').data('post-ts')).getTime();
       let post_older_than_days = Math.floor((Date.now() - post_time) / (24 * 60 * 60 * 1000));
 
       if (post_older_than_days >= N.runtime.page_data.settings.forum_reply_old_post_threshold) {
@@ -355,8 +370,8 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
       topic_hid:   pageState.topic_hid,
       topic_title: N.runtime.page_data.topic.title,
       section_hid: pageState.section.hid,
-      post_id:     data.$this.data('post-id'),
-      post_hid:    data.$this.data('post-hid')
+      post_id:     data.$this.closest('.forum-post').data('post-id'),
+      post_hid:    data.$this.closest('.forum-post').data('post-hid')
     });
   });
 
@@ -785,6 +800,19 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         topic_hid:    pageState.topic_hid,
         post_hid:     pageState.max_post
       }
+    });
+  });
+
+
+  // Open an editor when user selects post text and presses "quote" button
+  //
+  N.wire.before('common.blocks.markup.selection:quote', function open_editor_on_selection_quote(data) {
+    if (!pageState.topic_hid) return; // not on topic page
+    if (N.MDEdit?.__layout__) return; // editor already opened
+
+    return N.wire.emit(module.apiPath + ':reply', {
+      event: data.event,
+      $this: $(data.markup_node)
     });
   });
 });

@@ -13,6 +13,8 @@ ru-RU:
   del_reason: "(#{text})"
   del_by: "Удалил:"
 
+  err_section_not_writable: Вы не можете отвечать в этом разделе
+  err_topic_closed: Вы не можете ответить потому, что тема закрыта
   err_title_too_short: "В названии должно быть не меньше #{count} ((символа|символов|символов))"
 
   msg_multiselect: Множественный выбор

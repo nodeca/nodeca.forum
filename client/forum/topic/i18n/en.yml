@@ -13,6 +13,8 @@ en-US:
   del_reason: "(#{text})"
   del_by: "Deleted by:"
 
+  err_section_not_writable: You cannot reply in this section
+  err_topic_closed: You cannot reply because topic is closed
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
 
   msg_multiselect: Multiselect on
