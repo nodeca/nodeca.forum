@@ -45,16 +45,14 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, async function fetch_section_info(env) {
     let section = await N.models.forum.Section.findOne({ hid: env.params.section_hid }).lean(true);
 
-    if (!section) throw N.io.NOT_FOUND;
-    if (!section.is_enabled) throw N.io.NOT_FOUND;
+    if (!section || !section.is_enabled || section.is_category || !section.is_writable) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_section_not_writable')
+      };
+    }
 
     env.data.section = section;
-
-    // Can not create topic in category. Should never happens - restricted on client
-    if (section.is_category) throw N.io.BAD_REQUEST;
-
-    // Can not create topic in read only section. Should never happens - restricted on client
-    if (!section.is_writable) throw N.io.BAD_REQUEST;
   });
 
 
@@ -65,7 +63,12 @@ module.exports = function (N, apiPath) {
 
     let canStartTopics = await env.extras.settings.fetch('forum_can_start_topics');
 
-    if (!canStartTopics) throw N.io.FORBIDDEN;
+    if (!canStartTopics) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_section_not_writable')
+      };
+    }
   });
 
 

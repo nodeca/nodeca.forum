@@ -29,39 +29,15 @@ module.exports = function (N, apiPath) {
   //
   N.wire.before(apiPath, async function fetch_topic(env) {
     let topic = await N.models.forum.Topic.findOne({ hid: env.params.topic_hid }).lean(true);
-    let topicStatuses = N.models.forum.Topic.statuses;
 
-    if (!topic) throw N.io.NOT_FOUND;
-    if (topic.st !== topicStatuses.OPEN && topic.ste !== topicStatuses.OPEN) throw N.io.NOT_FOUND;
+    if (!topic) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_invalid_topic')
+      };
+    }
 
     env.data.topic = topic;
-  });
-
-
-  // Fetch section info
-  //
-  N.wire.before(apiPath, async function fetch_section_info(env) {
-    let section = await N.models.forum.Section.findById(env.data.topic.section)
-                            .lean(true);
-
-    if (!section) throw N.io.NOT_FOUND;
-    if (!section.is_enabled) throw N.io.NOT_FOUND;
-
-    env.data.section = section;
-
-    // Can not create post in read only section. Should never happens - restricted on client
-    if (!section.is_writable) throw N.io.BAD_REQUEST;
-  });
-
-
-  // Check permission to reply in this section
-  //
-  N.wire.before(apiPath, async function check_can_reply(env) {
-    env.extras.settings.params.section_id = env.data.section._id;
-
-    let forum_can_reply = await env.extras.settings.fetch('forum_can_reply');
-
-    if (!forum_can_reply) throw N.io.NOT_FOUND;
   });
 
 
@@ -72,7 +48,59 @@ module.exports = function (N, apiPath) {
 
     await N.wire.emit('internal:forum.access.topic', access_env);
 
-    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
+    if (!access_env.data.access_read) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_invalid_topic')
+      };
+    }
+  });
+
+
+  // Fetch section info
+  //
+  N.wire.before(apiPath, async function fetch_section_info(env) {
+    let section = await N.models.forum.Section.findById(env.data.topic.section)
+                            .lean(true);
+
+    if (!section || !section.is_enabled || !section.is_writable) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_section_not_writable')
+      };
+    }
+
+    env.data.section = section;
+  });
+
+
+  // Check permission to reply in this section
+  //
+  N.wire.before(apiPath, async function check_can_reply(env) {
+    env.extras.settings.params.section_id = env.data.section._id;
+
+    let forum_can_reply = await env.extras.settings.fetch('forum_can_reply');
+
+    if (!forum_can_reply) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_section_not_writable')
+      };
+    }
+  });
+
+
+  // Check if topic is open
+  //
+  N.wire.before(apiPath, async function check_topic_open(env) {
+    let topicStatuses = N.models.forum.Topic.statuses;
+
+    if (env.data.topic.st !== topicStatuses.OPEN && env.data.topic.ste !== topicStatuses.OPEN) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_topic_closed')
+      };
+    }
   });
 
 
@@ -86,7 +114,7 @@ module.exports = function (N, apiPath) {
     if (!post) {
       throw {
         code: N.io.CLIENT_ERROR,
-        message: env.t('error_invalid_parent_post')
+        message: env.t('err_invalid_parent_post')
       };
     }
 
@@ -103,7 +131,7 @@ module.exports = function (N, apiPath) {
     if (!access_env.data.access_read) {
       throw {
         code: N.io.CLIENT_ERROR,
-        message: env.t('error_invalid_parent_post')
+        message: env.t('err_invalid_parent_post')
       };
     }
   });

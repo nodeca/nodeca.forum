@@ -1,5 +1,8 @@
 en-US:
-  error_invalid_parent_post: You are trying to reply to a non-existing post.
+  err_section_not_writable: You cannot reply in this section
+  err_invalid_topic: You are trying to reply in a non-existing topic
+  err_topic_closed: You cannot reply because topic is closed
+  err_invalid_parent_post: You are trying to reply to a non-existing post
   err_text_too_short: "Post text should have at least #{count} ((character|characters))"
   err_too_many_images: "Post can't have more than #{count} ((image|images))"
   err_too_many_emojis: "Post can't have more than #{count} ((emoticon|emoticons))"

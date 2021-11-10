@@ -1,4 +1,5 @@
 en-US:
+  err_section_not_writable: You cannot create topics in this section
   err_text_too_short: "Post text should have at least #{count} ((character|characters))"
   err_title_too_short: "Title should have at least #{count} ((character|characters))"
   err_too_many_images: "Post can't have more than #{count} ((image|images))"
