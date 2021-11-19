@@ -808,12 +808,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   //
   N.wire.before('common.blocks.markup.selection:quote', function open_editor_on_selection_quote(data) {
     if (!pageState.topic_hid) return; // not on topic page
-    if (N.MDEdit?.__layout__) return; // editor already opened
+    if (N.MDEdit?.exists()) return; // editor already opened
 
     return N.wire.emit(module.apiPath + ':reply', {
       event: data.event,
       $this: $(data.markup_node)
-    });
+    }).then(() => new Promise(resolve => {
+      // wait for draft to fully load
+      N.MDEdit.__layout__.on('ready.nd.mdedit', resolve);
+    }));
   });
 });
 
