@@ -15,9 +15,10 @@ en-US:
   last_edited: "Last edited on #{date}"
   del_reason: "Deletion reason: #{text}"
   del_by: "Deleted by:"
+  ignored_post_text: Ignored
   del_post_text: Post deleted.
   del_hard_post_text: Post hard deleted.
   hb_post_text: Hellbanned
-  expand: Expand
+  expand: Show
   multiselect_hint: Click with shift to start range selection
   infraction_title: "#{points} ((point|points)):points, added at #{date}"

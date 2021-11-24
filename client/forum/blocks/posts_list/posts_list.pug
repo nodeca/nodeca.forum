@@ -13,15 +13,14 @@
 each post, post_idx in self.posts
   - var user = self.users[post.user];
   - var visible = [ postStatuses.DELETED, postStatuses.DELETED_HARD, postStatuses.HB ].indexOf(post.st) === -1;
-  - var collapsed = !self.expand && !visible;
+  - var show_as_deleted_or_hb = !self.expand && !visible;
+  - var show_as_ignored = !self.expand && self.ignored_users[post.user] && !self.settings.forum_show_ignored;
 
   each block in self.posts_list_before_post || []
     != self.partial('@forum.blocks.posts_list.' + block, { post_idx: post_idx, post_counter: post_counter })
 
-  if (self.ignored_users[post.user] && !self.settings.forum_show_ignored && self.current_post_hid !== post.hid)
-    //- skip posts created by ignored users (current post is always visible)
-
-  else if !collapsed
+  if !show_as_deleted_or_hb && !show_as_ignored
+    //- show normal forum posts (not deleted, hb, or ignored)
 
     article.forum-post.clearfix(
       id='post' + post._id
@@ -270,9 +269,10 @@ each post, post_idx in self.posts
                     )= self.t('undelete')
 
 
-  else
+  if show_as_deleted_or_hb
+    //- show deleted or hellbanned posts to moderators (collapsed form)
 
-    article.forum-post.forum-post__m-collapsed.clearfix(
+    article.forum-post.forum-post__m-show-as-deleted.clearfix(
       id='post' + post._id
       class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
       class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
@@ -388,6 +388,92 @@ each post, post_idx in self.posts
               data-post-id=post._id
             )
               span.icon.icon-expand
+
+
+  if show_as_ignored
+    //- show ignored posts to regular users (collapsed form),
+    //- moderators will see those posts in normal form
+
+    article.forum-post.forum-post__m-show-as-ignored.clearfix(
+      id='post' + post._id
+      class=(post.st === postStatuses.DELETED) ? 'forum-post__m-deleted' : ''
+      class=(post.st === postStatuses.DELETED_HARD) ? 'forum-post__m-deleted-hard' : ''
+      class=(post.st === postStatuses.HB) ? 'forum-post__m-hb' : ''
+      class=(self.ignored_users[post.user]) ? 'forum-post__m-ignored' : ''
+      data-post-id=post._id
+      data-post-hid=post.hid
+      data-user-hid=user ? user.hid : ''
+      itemscope
+      itemtype='http://schema.org/WebPageElement'
+    )
+      footer.forum-post__meta
+
+        //- avatar copy for small screens
+        .forum-post__meta-avatar
+          if user
+            a.forum-post__userpic(href=self.link_to('users.member', { user_hid: user.hid }))
+              img.forum-post__userpic-img-sm(alt=user.name)&attributes(self.avatar(user, 'md'))
+          else if post.legacy_nick
+            span.forum-post__userpic
+              img.forum-post__userpic-img-sm(alt=post.legacy_nick)&attributes(self.avatar(post.legacy_nick, 'md'))
+          else
+            .forum-post__userpic-img-sm
+
+        .forum-post__meta-flex
+          .forum-post__meta-author
+            if user
+              a.forum-post__author._ucard-popover(
+                href=self.link_to('users.member', { user_hid: user.hid })
+                data-user-id=post.user
+                data-user-ref='fp:'+post._id
+                class=user.css
+              ) #{user.name}
+            else if post.legacy_nick
+              span.forum-post__author=post.legacy_nick
+
+          .forum-post__meta-info
+            if post.to && post.to_user && self.users[post.to_user]
+              if !post_idx || self.posts[post_idx - 1]._id !== post.to
+                - var _reply_to_params = {};
+                - _reply_to_params.section_hid = post.to_fhid || self.section.hid;
+                - _reply_to_params.topic_hid   = post.to_thid || self.topic.hid;
+                - _reply_to_params.post_hid    = post.to_phid;
+
+                - var _reply_to_anchor = self.link_to('forum.topic', _reply_to_params);
+                - var _reply_to_user = self.users[post.to_user]
+
+                a.forum-post__reply-to-link(href=_reply_to_anchor)
+                  span.icon.icon-reply-for.icon-space-after
+                  img.forum-post__reply-to-avatar(alt=_reply_to_user.name)&attributes(self.avatar(_reply_to_user, 'sm'))
+                  = _reply_to_user.nick
+
+            if post.edit_count
+              a.forum-post__history.icon.icon-history.icon-space-after(
+                href='#'
+                title=self.t('last_edited', { date: self.date(post.last_edit_ts, 'datetime') })
+                data-on-click='forum.topic:post_history'
+                data-post-id=post._id
+                data-post-hid=post.hid
+              )= post.edit_count
+
+            - var _post_anchor = self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: post.hid });
+            a.forum-post__link(href=_post_anchor)
+              != self.timetag(post.ts, 'relative')
+
+        if multiselect_allowed
+          label.form-label.forum-post__select(title=self.t('multiselect_hint'))
+            input.forum-post__select-cb(
+              type='checkbox'
+              data-post-id=post._id
+              data-on-change='forum.topic:post_check')
+
+      .forum-post__content-ignored
+        .forum-post__ignored.icon.icon-ignore.icon-space-after= self.t('ignored_post_text')
+
+        a.forum-post__show-ignored(
+          data-on-click='forum.topic:post_expand'
+          data-post-id=post._id
+        )= self.t('expand')
 
   each block in self.posts_list_after_post || []
     != self.partial('@forum.blocks.posts_list.' + block, { post_idx: post_idx, post_counter: post_counter })
