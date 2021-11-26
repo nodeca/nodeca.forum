@@ -269,7 +269,7 @@ each post, post_idx in self.posts
                     )= self.t('undelete')
 
 
-  if show_as_deleted_or_hb
+  if show_as_deleted_or_hb && !show_as_ignored
     //- show deleted or hellbanned posts to moderators (collapsed form)
 
     article.forum-post.forum-post__m-show-as-deleted.clearfix(
