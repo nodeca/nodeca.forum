@@ -5,7 +5,10 @@
 .forum-sections
   each section in self.subsections
     - var last_ts = section.cache.last_ts
-    .forum-section(id='cat' + section.hid)
+    .forum-section(
+      id='cat' + section.hid
+      class= self.subsections_cuts[section._id] < +new Date(last_ts) ? 'forum-section__m-unread' : ''
+    )
 
       //- Add 'unread' class & #id below, for new data
       .forum-section__summary

@@ -148,7 +148,7 @@ module.exports = function (N, apiPath) {
 
   // Fill response data
   //
-  N.wire.after(apiPath, function subsections_fill_response(env) {
+  N.wire.after(apiPath, async function subsections_fill_response(env) {
 
     env.data.users = env.data.users || [];
 
@@ -168,5 +168,9 @@ module.exports = function (N, apiPath) {
     // build response tree
     let root = env.data.section?._id;
     env.res.subsections = to_tree(env.data.subsections, root);
+
+    // data used to detect what sections have new or unread topics
+    env.res.subsections_cuts = await N.models.users.Marker.cuts(
+      env.user_info.user_id, env.data.subsections.map(s => s._id));
   });
 };
