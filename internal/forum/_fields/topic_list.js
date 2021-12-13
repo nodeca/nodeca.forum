@@ -10,6 +10,7 @@ module.exports = {
     'forum_mod_can_hard_delete_topics',
     'forum_mod_can_see_hard_deleted_topics',
     'forum_can_start_topics',
+    'highlight_all_unread',
     'posts_per_page'
   ]
 };
