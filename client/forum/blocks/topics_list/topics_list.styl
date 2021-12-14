@@ -220,3 +220,19 @@
 
 .forum-topicline__m-selected
   background-color #ffd
+
+//
+// Separator
+//
+.forum-topiclist__separator
+  align-items baseline
+  font-size $font-size-xs
+  color $body-color-secondary + 20%
+  display flex
+  gap .75rem
+
+  &::before, &::after
+    border-top 1px solid $decorator-color
+    padding-bottom .25em
+    flex 1 1 auto
+    content ''

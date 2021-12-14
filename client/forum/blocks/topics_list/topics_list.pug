@@ -7,8 +7,18 @@
 
 //- show many operations checkbox
 - var multiselect_allowed = self.settings.forum_mod_can_delete_topics || self.settings.forum_mod_can_close_topic;
+- var prev_last_ts = self.prev_last_ts;
+
+mixin separator(prev_ts, next_ts)
+  if !self.settings.highlight_all_unread && prev_ts && next_ts && prev_ts > self.section_cut && self.section_cut >= next_ts
+    .forum-topiclist__separator= self.t('past_separator')
 
 each topic, idx in self.topics
+  //- show separator between unread and old topics
+  - var curr_last_ts = +new Date(topic.cache.last_ts);
+  +separator(prev_last_ts, curr_last_ts)
+  - prev_last_ts = curr_last_ts;
+
   - var fp_user = self.users[topic.cache.first_user] || {}
   - var lp_user = self.users[topic.cache.last_user] || {}
   - var fp_ts   = topic.cache.first_ts
@@ -33,6 +43,7 @@ each topic, idx in self.topics
     class=(self.ignored_users[topic.cache.first_user] ? 'forum-topicline__m-ignored' : '')
     data-topic-hid=topic.hid
     data-last-post=topic.cache.last_post
+    data-last-ts=curr_last_ts
     id='topic' + topic.hid
   )
     .forum-topicline__summary.forum-topicline__cell
@@ -116,3 +127,6 @@ each topic, idx in self.topics
           type='checkbox'
           data-topic-hid=topic.hid
           data-on-change='forum.section:topic_check')
+
+//- show separator between unread and old topics (between pages for prefetch)
++separator(prev_last_ts, self.next_last_ts)

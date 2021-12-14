@@ -30,8 +30,17 @@ function load(start, direction) {
     return N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
       max: pageState.topic_count
     }).then(() => {
+      // data needed to display separator on the border between pages
+      if (direction === 'top')    res.next_last_ts = $('.forum-topicline:first').data('last-ts');
+      if (direction === 'bottom') res.prev_last_ts = $('.forum-topicline:last').data('last-ts');
+
+      let $html = $(N.runtime.render('forum.blocks.topics_list', res));
+
+      // if separator already exists, leave its position as is
+      if ($('.forum-topiclist__separator').length) $html = $html.not('.forum-topiclist__separator');
+
       return {
-        $html: $(N.runtime.render('forum.blocks.topics_list', res)),
+        $html,
         locals: res,
         offset: res.pagination.chunk_offset,
         reached_end: res.topics.length !== N.runtime.page_data.pagination.per_page
@@ -260,6 +269,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
         $('.forum-topicline.forum-topicline__m-new, .forum-topicline.forum-topicline__m-unread')
           .removeClass('forum-topicline__m-new')
           .removeClass('forum-topicline__m-unread');
+        $('.forum-topiclist__separator').remove();
       });
   });
 
