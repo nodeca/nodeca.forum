@@ -2,12 +2,15 @@
 //
 'use strict';
 
+const memoize = require('promise-memoize');
+
 
 module.exports = function (N, apiPath) {
 
   N.validate(apiPath, {
     // section hid
-    hid: { type: 'integer', required: true }
+    hid: { type: 'integer', required: true },
+    ts:  { type: 'integer', required: true }
   });
 
 
@@ -18,31 +21,64 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Fetch section
+  /*
+   * filterVisibility(s_ids, g_ids, callback)
+   * - s_ids (array) - subsections ids to filter by access permissions
+   * - g_ids (array) - current user groups ids
+   *
+   * Returns  hash { _id: Boolean(visibility) } for selected subsections
+   */
+  let filterVisibility = memoize(function (s_ids, g_ids) {
+    let access_env = { params: { sections: s_ids, user_info: { usergroups: g_ids } } };
+
+    return N.wire.emit('internal:forum.access.section', access_env).then(() =>
+      s_ids.reduce((acc, _id, i) => {
+        acc[_id] = access_env.data.access_read[i];
+        return acc;
+      }, {})
+    );
+  }, { maxAge: 60000 });
+
+
+  // Fetch section and subsections
   //
   N.wire.before(apiPath, async function fetch_section(env) {
-    env.data.section = await N.models.forum.Section
+    let section = await N.models.forum.Section
                                 .findOne({ hid: env.params.hid })
                                 .lean(true);
 
-    if (!env.data.section) throw N.io.NOT_FOUND;
-  });
+    if (!section) throw N.io.NOT_FOUND;
 
+    let subsections = await N.models.forum.Section.getChildren(section._id, Infinity);
 
-  // Subcall forum.access.section
-  //
-  N.wire.before(apiPath, async function subcall_section(env) {
-    let access_env = { params: { sections: env.data.section, user_info: env.user_info } };
+    subsections.unshift(section);
 
-    await N.wire.emit('internal:forum.access.section', access_env);
+    // sections order is always fixed, no needs to sort.
+    let s_ids = subsections.map(s => s._id.toString());
 
-    if (!access_env.data.access_read) throw N.io.NOT_FOUND;
+    // groups should be sorted, to avoid cache duplication
+    let g_ids = env.user_info.usergroups.sort();
+
+    let visibility = await filterVisibility(s_ids, g_ids);
+
+    if (!visibility[section._id]) throw N.io.NOT_FOUND;
+
+    subsections = subsections.filter(s => visibility[s._id]);
+
+    env.data.section_ids = subsections.map(s => s._id);
   });
 
 
   // Mark topics as read
   //
   N.wire.on(apiPath, async function mark_topics_read(env) {
-    await N.models.users.Marker.markAll(env.user_info.user_id, env.data.section._id);
+    let cuts = await N.models.users.Marker.cuts(env.user_info.user_id, env.data.section_ids);
+    let now = Date.now();
+
+    for (let section_id of env.data.section_ids) {
+      if (now > env.params.ts && env.params.ts > cuts[section_id]) {
+        await N.models.users.Marker.markAll(env.user_info.user_id, section_id, env.params.ts);
+      }
+    }
   });
 };

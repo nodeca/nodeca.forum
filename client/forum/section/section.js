@@ -7,10 +7,11 @@ const ScrollableList = require('nodeca.core/lib/app/scrollable_list');
 
 // Page state
 //
-// - hid:                current section hid
-// - current_offset:     offset of the current topic (first in the viewport)
-// - topic_count:        total amount of topics
-// - selected_topics:    array of selected topics in current topic
+// - hid:                  current section hid
+// - current_offset:       offset of the current topic (first in the viewport)
+// - topic_count:          total amount of topics
+// - selected_topics:      array of selected topics in current topic
+// - topic_list_update_ts: date when topic list was last fetched (required for mark all read)
 //
 let pageState = {};
 let scrollable_list;
@@ -25,6 +26,7 @@ function load(start, direction) {
     before:       direction === 'top' ? N.runtime.page_data.pagination.per_page : 0,
     after:        direction === 'bottom' ? N.runtime.page_data.pagination.per_page : 0
   }).then(res => {
+    pageState.topic_list_update_ts = res.topic_list_update_ts;
     pageState.topic_count = res.pagination.total;
 
     return N.wire.emit('common.blocks.navbar.blocks.page_progress:update', {
@@ -112,10 +114,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup(data) {
   let pagination     = N.runtime.page_data.pagination,
       last_topic_hid = $('.forum-section-root').data('last-topic-hid');
 
-  pageState.hid                = data.params.section_hid;
-  pageState.current_offset     = -1;
-  pageState.topic_count        = pagination.total;
-  pageState.selected_topics    = [];
+  pageState.hid                  = data.params.section_hid;
+  pageState.current_offset       = -1;
+  pageState.topic_count          = pagination.total;
+  pageState.selected_topics      = [];
+  pageState.topic_list_update_ts = N.runtime.page_data.topic_list_update_ts;
 
   let navbar_height = parseInt($('body').css('margin-top'), 10) + parseInt($('body').css('padding-top'), 10);
 
@@ -264,11 +267,15 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
   // Click mark all read
   //
   N.wire.on(module.apiPath + ':mark_read', function reply(data) {
-    return N.io.rpc('forum.section.mark_read', { hid: data.$this.data('section-hid') })
+    return N.io.rpc('forum.section.mark_read', {
+      hid: data.$this.data('section-hid'),
+      ts: pageState.topic_list_update_ts
+    })
       .then(() => {
         $('.forum-topicline.forum-topicline__m-new, .forum-topicline.forum-topicline__m-unread')
           .removeClass('forum-topicline__m-new')
           .removeClass('forum-topicline__m-unread');
+        $('.forum-section.forum-section__m-unread').removeClass('forum-section__m-unread');
         $('.forum-topiclist__separator').remove();
       });
   });
