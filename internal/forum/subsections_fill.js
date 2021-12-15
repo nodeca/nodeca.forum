@@ -170,6 +170,8 @@ module.exports = function (N, apiPath) {
     env.res.subsections = to_tree(env.data.subsections, root);
 
     // data used to detect what sections have new or unread topics
+    env.res.settings = env.res.settings || {};
+    env.res.settings.highlight_all_unread = await env.extras.settings.fetch('highlight_all_unread');
     env.res.subsections_cuts = await N.models.users.Marker.cuts(
       env.user_info.user_id, env.data.subsections.map(s => s._id));
   });
