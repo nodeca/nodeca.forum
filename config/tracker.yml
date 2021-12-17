@@ -2,12 +2,15 @@ users:
   tracker:
     menu:
       forum_topic:
+        marker_type: forum_topic
         priority: 10
 
   subscriptions:
     forum_topic:
       to_type: FORUM_TOPIC
+      marker_type: forum_topic
       priority: 10
     forum_section:
       to_type: FORUM_SECTION
+      marker_type: forum_topic
       priority: 20

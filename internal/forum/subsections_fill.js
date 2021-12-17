@@ -173,6 +173,6 @@ module.exports = function (N, apiPath) {
     env.res.settings = env.res.settings || {};
     env.res.settings.highlight_all_unread = await env.extras.settings.fetch('highlight_all_unread');
     env.res.subsections_cuts = await N.models.users.Marker.cuts(
-      env.user_info.user_id, env.data.subsections.map(s => s._id));
+      env.user_info.user_id, env.data.subsections.map(s => s._id), 'forum_topic');
   });
 };

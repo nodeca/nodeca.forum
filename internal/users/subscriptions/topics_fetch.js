@@ -65,7 +65,7 @@ module.exports = function (N) {
       lastPostTs: topic.cache.last_ts
     }));
 
-    let read_marks = await N.models.users.Marker.info(env.user_info.user_id, data);
+    let read_marks = await N.models.users.Marker.info(env.user_info.user_id, data, 'forum_topic');
     env.res.read_marks = Object.assign(env.res.read_marks || {}, read_marks);
 
     topics = _.keyBy(topics, '_id');

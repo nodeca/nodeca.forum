@@ -182,7 +182,7 @@ module.exports = function (N, apiPath) {
       });
     });
 
-    env.res.read_marks = await N.models.users.Marker.info(env.user_info.user_id, data);
+    env.res.read_marks = await N.models.users.Marker.info(env.user_info.user_id, data, 'forum_topic');
   });
 
 
@@ -230,10 +230,10 @@ module.exports = function (N, apiPath) {
 
     // data used to render separator between unread and old topics
     env.res.section_cut = (await N.models.users.Marker.cuts(
-      env.user_info.user_id, [ env.data.section._id ]
+      env.user_info.user_id, [ env.data.section._id ], 'forum_topic'
     ))[env.data.section._id];
 
     // last time topic list was updated on the client, this is required for "mark all" button
-    env.res.topic_list_update_ts = Date.now();
+    env.res.mark_cut_ts = Date.now();
   });
 };

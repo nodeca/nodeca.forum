@@ -72,12 +72,12 @@ module.exports = function (N, apiPath) {
   // Mark topics as read
   //
   N.wire.on(apiPath, async function mark_topics_read(env) {
-    let cuts = await N.models.users.Marker.cuts(env.user_info.user_id, env.data.section_ids);
+    let cuts = await N.models.users.Marker.cuts(env.user_info.user_id, env.data.section_ids, 'forum_topic');
     let now = Date.now();
 
     for (let section_id of env.data.section_ids) {
       if (now > env.params.ts && env.params.ts > cuts[section_id]) {
-        await N.models.users.Marker.markAll(env.user_info.user_id, section_id, env.params.ts);
+        await N.models.users.Marker.markByCategory(env.user_info.user_id, section_id, env.params.ts);
       }
     }
   });
