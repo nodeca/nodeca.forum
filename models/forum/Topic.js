@@ -24,6 +24,8 @@ module.exports = function (N, collectionName) {
 
   set_content_type('FORUM_TOPIC', 2);
 
+  N.shared.marker_types = (N.shared.marker_types || []).concat([ 'forum_topic' ]);
+
   // Topic statuses are optimized for paged fetches & indexes
   // Some statises can have extended info in additionsl field:
   //
