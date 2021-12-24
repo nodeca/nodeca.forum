@@ -305,10 +305,10 @@ module.exports = function (N, apiPath) {
     await N.models.users.Marker.setPos(
       env.user_info.user_id,
       env.data.topic._id,
-      env.data.new_post.hid,
-      env.data.new_post.hid,
       env.data.topic.section,
-      'forum_topic'
+      'forum_topic',
+      env.data.new_post.hid,
+      env.data.new_post.hid
     );
   });
 

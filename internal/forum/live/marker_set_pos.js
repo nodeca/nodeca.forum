@@ -31,10 +31,10 @@ module.exports = function (N) {
     await N.models.users.Marker.setPos(
       user_info.user_id,
       data.message.data.content_id,
-      data.message.data.position,
-      data.message.data.max,
       data.message.data.category_id,
-      'forum_topic'
+      'forum_topic',
+      data.message.data.position,
+      data.message.data.max
     );
   });
 };
