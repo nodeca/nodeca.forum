@@ -21,7 +21,7 @@ const MAX_LIMIT = 50;
 module.exports = function (N, apiPath) {
   N.validate(apiPath, {
     properties: {
-      hid:    { type: 'string',  required: true },
+      hid:    { format: 'pos_int_str',  required: true },
       query:  { type: 'string',  required: true },
       skip:   { type: 'integer', required: true, minimum: 0 },
       limit:  { type: 'integer', required: true, minimum: 0, maximum: MAX_LIMIT },

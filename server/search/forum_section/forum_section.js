@@ -15,7 +15,7 @@ module.exports = function (N, apiPath) {
       type: 'object',
       required: true,
       properties: {
-        hid:     { type: 'string', required: true },
+        hid:     { format: 'pos_int_str', required: true },
         query:   { type: 'string' },
         type:    { type: 'string' },
         sort:    { enum: sort_types },
