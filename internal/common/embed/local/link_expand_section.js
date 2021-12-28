@@ -22,7 +22,7 @@ module.exports = function (N) {
     if (!match) return;
 
     let section = await N.models.forum.Section
-                            .findOne({ section_hid: match.params.section_hid })
+                            .findOne({ hid: match.params.section_hid })
                             .lean(true);
     if (section) {
       data.html = render(N, 'common.blocks.markup.internal_link', {
