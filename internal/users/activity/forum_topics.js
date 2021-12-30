@@ -62,7 +62,7 @@ module.exports = function (N, apiPath) {
     }
 
     let query = N.models.forum.Topic.findOne()
-                               .where('cache.last_user').equals(locals.params.user_id)
+                               .where('cache.first_user').equals(locals.params.user_id)
                                .where('section').in(locals.sandbox.visible_sections)
                                .where('st').in(locals.sandbox.countable_statuses)
                                .skip(locals.params.before)
@@ -93,7 +93,7 @@ module.exports = function (N, apiPath) {
     }
 
     let query = N.models.forum.Topic.findOne()
-                               .where('cache.last_user').equals(locals.params.user_id)
+                               .where('cache.first_user').equals(locals.params.user_id)
                                .where('section').in(locals.sandbox.visible_sections)
                                .where('st').in(locals.sandbox.countable_statuses)
                                .skip(locals.params.after)
