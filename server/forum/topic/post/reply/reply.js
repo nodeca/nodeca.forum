@@ -331,7 +331,7 @@ module.exports = function (N, apiPath) {
     let ignore = [];
 
     if (env.data.new_post.to) {
-      let reply_notify = await N.settings.get('reply_notify', { user_id: env.data.new_post.to });
+      let reply_notify = await N.settings.get('reply_notify', { user_id: env.data.new_post.to_user });
 
       if (reply_notify) {
         await N.wire.emit('internal:users.notify', {
