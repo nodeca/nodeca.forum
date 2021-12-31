@@ -159,28 +159,52 @@ module.exports = function (N, apiPath) {
   //
   N.wire.on(apiPath, async function check_post_access(locals) {
     let Post = N.models.forum.Post;
-    let params = {
-      user_id: locals.data.user_info.user_id,
-      usergroup_ids: locals.data.user_info.usergroups
-    };
+    let setting_names = [
+      'can_see_hellbanned',
+      'forum_mod_can_delete_topics',
+      'forum_mod_can_see_hard_deleted_topics'
+    ];
 
-    let can_see_hellbanned = await N.settings.get('can_see_hellbanned', params, {});
+    function check(post, i) {
+      if (locals.data.access_read[i] === false) return Promise.resolve();
 
-    locals.data.post_ids.forEach((id, i) => {
-      if (locals.data.access_read[i] === false) return; // continue
+      let section_id = locals.cache[post?.topic]?.section;
 
-      let post = locals.cache[id];
-
-      let allow_access = (post.st === Post.statuses.VISIBLE || post.ste === Post.statuses.VISIBLE);
-
-      if (post.st === Post.statuses.HB) {
-        allow_access = allow_access && (locals.data.user_info.hb || can_see_hellbanned);
-      }
-
-      if (!allow_access) {
+      if (!post || !section_id) {
         locals.data.access_read[i] = false;
+        return Promise.resolve();
       }
-    });
+
+      let params = {
+        user_id: locals.data.user_info.user_id,
+        usergroup_ids: locals.data.user_info.usergroups,
+        section_id
+      };
+
+      return N.settings.get(setting_names, params, {})
+        .then(settings => {
+
+          let postVisibleSt = [ Post.statuses.VISIBLE ];
+
+          if (locals.data.user_info.hb || settings.can_see_hellbanned) {
+            postVisibleSt.push(Post.statuses.HB);
+          }
+
+          if (settings.forum_mod_can_delete_topics) {
+            postVisibleSt.push(Post.statuses.DELETED);
+          }
+
+          if (settings.forum_mod_can_see_hard_deleted_topics) {
+            postVisibleSt.push(Post.statuses.DELETED_HARD);
+          }
+
+          if (postVisibleSt.indexOf(post.st) === -1) {
+            locals.data.access_read[i] = false;
+          }
+        });
+    }
+
+    await Promise.all(locals.data.post_ids.map((id, i) => check(locals.cache[id], i)));
   });
 
 
