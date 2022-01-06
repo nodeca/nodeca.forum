@@ -31,6 +31,7 @@ module.exports = function (N, apiPath) {
   N.wire.before(apiPath, async function fetch_topic(env) {
     env.data.topic = await N.models.forum.Topic
                               .findOne({ hid: env.params.topic_hid })
+                              .where('section').equals(env.data.section_from._id)
                               .lean(true);
 
     if (!env.data.topic) throw N.io.NOT_FOUND;

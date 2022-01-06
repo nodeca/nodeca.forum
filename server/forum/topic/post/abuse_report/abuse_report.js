@@ -94,11 +94,11 @@ module.exports = function (N, apiPath) {
 
     let report;
 
-    if (!env.data.move_to_section) {
+    if (env.data.move_to_section) {
       report = new N.models.core.AbuseReport({
         src: env.data.post._id,
         type: N.shared.content_type.FORUM_POST,
-        text: env.params.message,
+        data: { move_to: env.data.move_to_section._id },
         from: env.user_info.user_id,
         params_ref: await N.models.core.MessageParams.setParams(params)
       });
@@ -106,7 +106,7 @@ module.exports = function (N, apiPath) {
       report = new N.models.core.AbuseReport({
         src: env.data.post._id,
         type: N.shared.content_type.FORUM_POST,
-        data: { move_to: env.data.move_to_section._id },
+        text: env.params.message,
         from: env.user_info.user_id,
         params_ref: await N.models.core.MessageParams.setParams(params)
       });

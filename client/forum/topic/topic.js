@@ -244,7 +244,11 @@ N.wire.on('navigate.done:' + module.apiPath, function page_setup_move(data) {
       return N.io.rpc('forum.topic.move', request);
     })
     .then(() => N.wire.emit('notify.info', t('move_topic_done')))
-    .then(() => N.wire.emit('navigate.reload'))
+    .then(() => {
+      let section_hid = params.section_hid_to;
+      let topic_hid = pageState.topic_hid;
+      return N.wire.emit('navigate.to', N.router.linkTo('forum.topic', { section_hid, topic_hid }));
+    })
     .catch(err => N.wire.emit('error', err));
 });
 
