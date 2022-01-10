@@ -1,4 +1,6 @@
 ru-RU:
   someone: Кто-то
+  topic: Тема
   subject: '#{project_name}: #{user} ответил на ваше сообщение'
-  reply: Ответить
+  visit: Перейти
+  unsubscribe: Отписаться

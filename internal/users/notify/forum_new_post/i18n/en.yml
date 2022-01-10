@@ -1,3 +1,5 @@
 en-US:
+  topic: Topic
   subject: '#{project_name}: new reply in topic "#{topic_title}"'
-  reply: Reply
+  visit: Visit
+  unsubscribe: Unsubscribe

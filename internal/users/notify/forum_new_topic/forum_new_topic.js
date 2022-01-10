@@ -15,7 +15,7 @@ module.exports = function (N) {
   // 2. no longer has access to this section
   // 3. ignores sender of this message
   //
-  N.wire.on('internal:users.notify.deliver', async function notify_deliver_forum_post(local_env) {
+  N.wire.on('internal:users.notify.deliver', async function notify_deliver_forum_topic(local_env) {
     if (local_env.type !== 'FORUM_NEW_TOPIC') return;
 
     // Fetch topic
@@ -92,6 +92,7 @@ module.exports = function (N) {
 
       helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
       helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
+      helpers.asset_body = path => N.assets.asset_body(path);
 
       let subject = N.i18n.t(locale, 'users.notify.forum_new_topic.subject', {
         project_name: general_project_name,
@@ -108,9 +109,14 @@ module.exports = function (N) {
         section_hid: section.hid
       });
 
-      let text = render(N, 'users.notify.forum_new_topic', { post_html: post.html, link: url }, helpers);
+      let text = render(N, 'users.notify.forum_new_topic', {
+        title: topic.title,
+        post_html: post.html,
+        url,
+        unsubscribe
+      }, helpers);
 
-      local_env.messages[user_id] = { subject, text, url, unsubscribe };
+      local_env.messages[user_id] = { subject, text };
     }
   });
 };

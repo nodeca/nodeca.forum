@@ -1,4 +1,6 @@
 en-US:
   someone: Someone
+  topic: Topic
   subject: '#{project_name}: #{user} replied to your post'
-  reply: Reply
+  visit: Visit
+  unsubscribe: Unsubscribe

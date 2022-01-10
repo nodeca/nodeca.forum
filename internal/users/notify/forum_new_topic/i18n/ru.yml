@@ -1,3 +1,5 @@
 ru-RU:
+  topic: Тема
   subject: '#{project_name}: новая тема в "#{section_title}"'
-  reply: Ответить
+  visit: Перейти
+  unsubscribe: Отписаться

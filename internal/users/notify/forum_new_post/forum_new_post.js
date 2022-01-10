@@ -93,6 +93,7 @@ module.exports = function (N) {
 
       helpers.t = (phrase, params) => N.i18n.t(locale, phrase, params);
       helpers.t.exists = phrase => N.i18n.hasPhrase(locale, phrase);
+      helpers.asset_body = path => N.assets.asset_body(path);
 
       let subject = N.i18n.t(locale, 'users.notify.forum_new_post.subject', {
         project_name: general_project_name,
@@ -110,9 +111,14 @@ module.exports = function (N) {
         topic_hid: topic.hid
       });
 
-      let text = render(N, 'users.notify.forum_new_post', { post_html: post.html, link: url }, helpers);
+      let text = render(N, 'users.notify.forum_new_post', {
+        title: topic.title,
+        post_html: post.html,
+        url,
+        unsubscribe
+      }, helpers);
 
-      local_env.messages[user_id] = { subject, text, url, unsubscribe };
+      local_env.messages[user_id] = { subject, text };
     }
   });
 };
