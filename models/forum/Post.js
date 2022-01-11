@@ -33,6 +33,7 @@ module.exports = function (N, collectionName) {
 
 
   statuses.LIST_DELETABLE = [ statuses.VISIBLE, statuses.HB, statuses.PENDING ];
+  statuses.LIST_HARD_DELETABLE = [ ...statuses.LIST_DELETABLE, statuses.DELETED ];
 
   let Post = new Schema({
     topic           : Schema.ObjectId,

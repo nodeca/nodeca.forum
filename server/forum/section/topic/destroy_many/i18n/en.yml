@@ -1,2 +1,3 @@
 en-US:
-  err_no_topics: None of selected topics can be deleted
+  err_no_topics_soft: None of selected topics can be deleted
+  err_no_topics_hard: None of selected topics can be hard deleted

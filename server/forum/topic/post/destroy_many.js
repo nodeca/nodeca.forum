@@ -98,13 +98,22 @@ module.exports = function (N, apiPath) {
   // Fetch posts
   //
   N.wire.before(apiPath, async function fetch_posts(env) {
+    let deletable_st = env.params.method === 'hard' ?
+                       statuses.LIST_HARD_DELETABLE :
+                       statuses.LIST_DELETABLE;
+
     env.data.posts = await N.models.forum.Post.find()
                               .where('_id').in(env.params.posts_ids)
                               .where('topic').equals(env.data.topic._id)
-                              .where('st').in(statuses.LIST_DELETABLE)
+                              .where('st').in(deletable_st)
                               .lean(true);
 
-    if (!env.data.posts.length) throw { code: N.io.CLIENT_ERROR, message: env.t('err_no_posts') };
+    if (!env.data.posts.length) {
+      throw {
+        code: N.io.CLIENT_ERROR,
+        message: env.t('err_no_posts_' + (env.params.method === 'hard' ? 'hard' : 'soft'))
+      };
+    }
   });
 
 

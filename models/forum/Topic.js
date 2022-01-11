@@ -48,6 +48,7 @@ module.exports = function (N, collectionName) {
   // List of `st` values with which the topic is can be deleted
   //
   statuses.LIST_DELETABLE = [ statuses.OPEN, statuses.CLOSED, statuses.PINNED, statuses.PENDING, statuses.HB ];
+  statuses.LIST_HARD_DELETABLE = [ ...statuses.LIST_DELETABLE, statuses.DELETED ];
 
   // List of `st` values with which the topic is can be closed
   //
