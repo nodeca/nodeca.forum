@@ -1,3 +1,5 @@
+- var type_muted = '$$ N.models.users.Subscription.types.MUTED $$';
+
 each item in self.items.sort(function (a, b) { return new Date(self.forum_topics[b.to].cache.last_ts) - new Date(self.forum_topics[a.to].cache.last_ts) })
   - var topic = self.forum_topics[item.to];
   - var section = self.forum_sections[topic.section];
@@ -17,8 +19,8 @@ each item in self.items.sort(function (a, b) { return new Date(self.forum_topics
     - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
 
   .user-subscriptions-item.user-subscriptions-item__m-forum-topic(
-    class=mark.isNew ? 'user-subscriptions-item__m-new' : ''
-    class=mark.next !== -1 ? 'user-subscriptions-item__m-unread' : ''
+    class=mark.isNew       && item.type !== type_muted ? 'user-subscriptions-item__m-new' : ''
+    class=mark.next !== -1 && item.type !== type_muted ? 'user-subscriptions-item__m-unread' : ''
   )
     .user-subscriptions-item__content
       h2.user-subscriptions-item__title
