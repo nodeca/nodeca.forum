@@ -1,0 +1,144 @@
+- var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+- var menu_rnd_id = 'rnd' + self.get_label_uid()
+
+- var items = []
+
+if self.settings.forum_can_start_topics && self.section.is_writable
+  - items.push('topic_create')
+
+- items.push('search')
+
+if self.runtime.is_member
+  - items.push('mark_read')
+  - items.push('subscription')
+  - items.push('show_moderators')
+
+
+if self.selected_cnt
+  if items.length > 0
+    - items.push('divider')
+  - items.push('many_header')
+  - items.push('many_unselect')
+  if self.settings.forum_mod_can_delete_topics
+    - items.push('many_delete')
+    - items.push('many_undelete')
+  if self.settings.forum_mod_can_close_topic
+    - items.push('many_open')
+    - items.push('many_close')
+  if self.settings.forum_mod_can_delete_topics
+    - items.push('many_move')
+
+//- If last item is header - remove it
+if items.length > 0 && items[items.length - 1] === 'header'
+  - items.pop()
+
+.page-actions__dropdown
+  if items.length > 0
+
+    button.btn.btn-secondary.btn-square.icon.icon-dropdown.dropdown-toggle(
+      type='button'
+      id=menu_rnd_id
+      aria-haspopup='true'
+      aria-expanded='false'
+      data-bs-toggle='dropdown'
+    )
+
+    .dropdown-menu.dropdown-menu-end(aria-labelledby=menu_rnd_id)
+
+      each item in items
+        case item
+
+          when 'topic_create'
+            //- this menu element should be shown in navbar OR on small screen
+            button.dropdown-item.hidden-page-head(
+              type='button'
+              data-on-click='forum.section:create'
+              data-section-hid=self.section.hid
+              data-section-title=self.section.title
+            )= self.t('topic_create')
+
+            button.dropdown-item.d-sm-none.hidden-nav-alt(
+              type='button'
+              data-on-click='forum.section:create'
+              data-section-hid=self.section.hid
+              data-section-title=self.section.title
+            )= self.t('topic_create')
+
+          when 'mark_read'
+            button.dropdown-item.d-sm-none(
+              type='button'
+              data-on-click='forum.section:mark_read'
+              data-section-hid=self.section.hid
+            )= self.t('mark_read')
+
+          when 'search'
+            a.dropdown-item(
+              href=self.link_to('search.forum_section', { $query: { hid: self.section.hid } })
+            )= self.t('search')
+
+          when 'subscription'
+            - var subscriptionIcon = 'icon-track-normal'
+            if (self.subscription === subscriptionTypes.TRACKING)
+              - subscriptionIcon = 'icon-track-tracking'
+            else if (self.subscription === subscriptionTypes.WATCHING)
+              - subscriptionIcon = 'icon-track-watching'
+
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:subscription'
+              data-section-hid=self.section.hid
+              data-section-subscription=self.subscription
+            )
+              if self.subscription && self.subscription !== subscriptionTypes.NORMAL
+                span.icon.icon-space-after(class=subscriptionIcon)
+              = self.t('subscription')
+
+          when 'show_moderators'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:show_moderators'
+              data-section-hid=self.section.hid
+            )= self.t('show_moderators')
+
+          when 'divider'
+            .dropdown-divider
+
+          when 'many_header'
+            .dropdown-header=self.t('many_header', { count: self.selected_cnt })
+
+          when 'many_unselect'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:topics_unselect'
+            )=self.t('many_unselect')
+
+          when 'many_delete'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:delete_many'
+            )= self.t('many_delete')
+
+          when 'many_undelete'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:undelete_many'
+            )= self.t('many_undelete')
+
+          when 'many_close'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:close_many'
+            )= self.t('many_close')
+
+          when 'many_open'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:open_many'
+            )= self.t('many_open')
+
+          when 'many_move'
+            button.dropdown-item(
+              type='button'
+              data-on-click='forum.section:move_many'
+            )= self.t('many_move')
+

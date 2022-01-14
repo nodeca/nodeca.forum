@@ -27,7 +27,7 @@ article#content.forum-topic-root(
     var navbar_args = {
       title:    self.topic.title,
       level_up: self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.topic.hid }),
-      toolbar:  'forum.topic.blocks.toolbar_controls',
+      toolbar:  'forum.topic.blocks.page_actions.dropdown',
       on_jump:  'forum.topic:nav_to_post',
       progress: {
         link_top:    self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: 1 }),
@@ -70,7 +70,7 @@ article#content.forum-topic-root(
 
       h1.forum-topic-title.page-head__title(itemprop='name')
         .float-end
-          != self.partial('@forum.topic.blocks.toolbar_controls')
+          != self.partial('@forum.topic.blocks.page_actions')
 
         span.forum-topic__closed-mark.icon.icon-closed.icon-space-after(title=self.t('closed'))
 

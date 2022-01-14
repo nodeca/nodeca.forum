@@ -1,0 +1,41 @@
+- var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+
+.page-actions
+  if self.settings.forum_can_start_topics && self.section.is_writable
+    button.btn.btn-primary.btn-square.d-none.d-sm-inline-block.icon.icon-plus(
+      type='button'
+      data-on-click='forum.section:create'
+      data-section-hid=self.section.hid
+      data-section-title=self.section.title
+      title=self.t('topic_create')
+    )
+
+  if self.runtime.is_member
+    button.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon.icon-check(
+      type='button'
+      data-on-click='forum.section:mark_read'
+      data-section-hid=self.section.hid
+      title=self.t('mark_read')
+    )
+
+  - var subscriptionIcon = 'icon-track-normal'
+  - var subscriptionTitle = self.t('subs_normal')
+
+  if (self.subscription === subscriptionTypes.TRACKING)
+    - subscriptionIcon = 'icon-track-tracking'
+    - subscriptionTitle = self.t('subs_tracking')
+  else if (self.subscription === subscriptionTypes.WATCHING)
+    - subscriptionIcon = 'icon-track-watching'
+    - subscriptionTitle = self.t('subs_watching')
+
+  if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
+    button.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon(
+      type='button'
+      title=subscriptionTitle
+      class=subscriptionIcon
+      data-on-click='forum.section:subscription'
+      data-section-hid=self.section.hid
+      data-section-subscription=self.subscription
+    )
+
+  != self.partial('dropdown')

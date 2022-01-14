@@ -1,0 +1,25 @@
+en-US:
+  post_add: Add reply
+  subs_muted: Muted. Prohibit any possible notifications about this topic.
+  subs_normal: No subscription. You will be notified only if someone replies to your message.
+  subs_tracking: Normal. You will see updated topics in tracker.
+  subs_watching: Urgent. You will see updated topics in tracker and receive email notifications.
+
+  dropdown:
+    mod_actions: Moderation
+    close: Close
+    open: Open
+    pin: Pin
+    unpin: Unpin
+    move: Move
+    history: History (#{count})
+    delete: Delete
+    undelete: Restore
+    post_add: Add reply
+    tracker: Tracker
+    search: Search in topic
+    subscription: Subscription
+    many_header: "With #{count} ((post|posts)):"
+    many_unselect: Clear selection
+    many_delete: Delete
+    many_undelete: Restore

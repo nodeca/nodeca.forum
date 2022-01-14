@@ -1,0 +1,36 @@
+- var subscriptionTypes = '$$ JSON.stringify(N.models.users.Subscription.types) $$'
+- var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
+- var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
+
+.page-actions
+  if self.settings.forum_can_reply && isOpen && self.section.is_writable
+    button.btn.btn-primary.btn-square.d-none.d-sm-inline-block.icon.icon-plus(
+      type='button'
+      data-on-click='forum.topic:reply'
+      title=self.t('post_add')
+    )
+
+  - var subscriptionIcon = 'icon-track-normal'
+  - var subscriptionTitle = self.t('subs_normal')
+
+  if (self.subscription === subscriptionTypes.MUTED)
+    - subscriptionIcon = 'icon-track-muted'
+    - subscriptionTitle = self.t('subs_muted')
+  else if (self.subscription === subscriptionTypes.TRACKING)
+    - subscriptionIcon = 'icon-track-tracking'
+    - subscriptionTitle = self.t('subs_tracking')
+  else if (self.subscription === subscriptionTypes.WATCHING)
+    - subscriptionIcon = 'icon-track-watching'
+    - subscriptionTitle = self.t('subs_watching')
+
+  if (self.subscription && self.subscription !== subscriptionTypes.NORMAL)
+    button.btn.btn-secondary.btn-square.d-none.d-sm-inline-block.icon(
+      type='button'
+      title=subscriptionTitle
+      class=subscriptionIcon
+      data-on-click='forum.topic:subscription'
+      data-topic-hid=self.topic.hid
+      data-topic-subscription=self.subscription
+    )
+
+  != self.partial('dropdown')

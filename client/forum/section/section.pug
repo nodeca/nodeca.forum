@@ -20,7 +20,7 @@ article#content.forum-section-root(
       level_up: self.parent_hid && self.section_level >= 2 ?
                 self.link_to('forum.section', { section_hid: self.parent_hid }) + '#cat' + self.section.hid :
                 self.link_to('forum.index') + '#cat' + self.section.hid,
-      toolbar:  'forum.section.blocks.toolbar_controls',
+      toolbar:  'forum.section.blocks.page_actions.dropdown',
       progress: {
         link_top:    self.link_to('forum.section', { section_hid: self.section.hid }),
         link_bottom: self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.last_topic_hid }),
@@ -48,7 +48,7 @@ article#content.forum-section-root(
 
     header.page-head
       .float-end
-        != self.partial('@forum.section.blocks.toolbar_controls')
+        != self.partial('@forum.section.blocks.page_actions')
       h1.page-head__title(itemprop='name')= self.section.title
       p.page-head__descr.d-none.d-sm-block(itemprop='description')
         | #{self.section.description}
