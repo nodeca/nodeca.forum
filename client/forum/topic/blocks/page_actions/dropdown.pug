@@ -7,10 +7,6 @@
 
 - var items = []
 
-
-if self.settings.forum_can_reply && isOpen && self.section.is_writable
-  - items.push('post_add')
-
 if self.runtime.is_member
   - items.push('tracker')
 
@@ -105,18 +101,6 @@ if self.selected_cnt
               data-on-click='forum.topic:topic_history'
               data-topic-id=self.topic._id
             )= self.t('history', self.topic.edit_count)
-
-          when 'post_add'
-            //- this menu element should be shown in navbar OR on small screen
-            button.dropdown-item.hidden-page-head(
-              type='button'
-              data-on-click='forum.topic:reply'
-            )= self.t('post_add')
-
-            button.dropdown-item.d-sm-none.hidden-nav-alt(
-              type='button'
-              data-on-click='forum.topic:reply'
-            )= self.t('post_add')
 
           when 'tracker'
             a.dropdown-item(

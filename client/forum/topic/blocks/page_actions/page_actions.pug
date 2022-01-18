@@ -3,13 +3,6 @@
 - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 
 .page-actions
-  if self.settings.forum_can_reply && isOpen && self.section.is_writable
-    button.btn.btn-primary.btn-square.d-none.d-sm-inline-block.icon.icon-plus(
-      type='button'
-      data-on-click='forum.topic:reply'
-      title=self.t('post_add')
-    )
-
   - var subscriptionIcon = 'icon-track-normal'
   - var subscriptionTitle = self.t('subs_normal')
 

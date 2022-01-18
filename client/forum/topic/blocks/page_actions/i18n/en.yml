@@ -1,5 +1,4 @@
 en-US:
-  post_add: Add reply
   subs_muted: Muted. Prohibit any possible notifications about this topic.
   subs_normal: No subscription. You will be notified only if someone replies to your message.
   subs_tracking: Normal. You will see updated topics in tracker.
@@ -15,7 +14,6 @@ en-US:
     history: History (#{count})
     delete: Delete
     undelete: Restore
-    post_add: Add reply
     tracker: Tracker
     search: Search in topic
     subscription: Subscription
