@@ -13,6 +13,7 @@ en-US:
     move: Move
     history: History (#{count})
     delete: Delete
+    mod_delete: Delete topic
     undelete: Restore
     tracker: Tracker
     search: Search in topic

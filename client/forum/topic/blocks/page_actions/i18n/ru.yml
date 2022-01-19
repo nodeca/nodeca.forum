@@ -13,6 +13,7 @@ ru-RU:
     move: Переместить
     history: История (#{count})
     delete: Удалить
+    mod_delete: Удалить тему
     undelete: Восстановить
     tracker: Трекер
     search: Поиск в теме
