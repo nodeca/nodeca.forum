@@ -574,7 +574,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
           $title.text(value);
 
           // update title in navbar
-          $('.navbar-alt__title').text(value);
+          $('.navbar__title').text(value);
 
           N.runtime.page_data.topic.edit_count = res.topic.edit_count;
 
