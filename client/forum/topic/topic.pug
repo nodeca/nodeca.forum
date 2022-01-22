@@ -50,7 +50,7 @@ article#content.forum-topic-root(
     };
 
   != self.partial('@common.blocks.navbar.levelup_progress_apps', navbar_args)
-  != self.partial('@common.blocks.navbar.alt_levelup_progress_title_toolbar', navbar_args)
+  != self.partial('@common.blocks.navbar.alt_levelup_progress_title', navbar_args)
 
   nav.breadcrumbs-container
     .layout__container.container-fluid
@@ -93,10 +93,10 @@ article#content.forum-topic-root(
         - var delUser = self.users[self.topic.del_by] || {}
         p.page-head__descr.forum-topic-title__meta-deleted
           =self.t('del_by')
-          | 
+          |
           a(href=self.link_to('users.member', { user_hid: delUser.hid }))=delUser.name
           if self.topic.del_reason
-            | 
+            |
             =self.t('del_reason', { text: self.topic.del_reason })
 
     .forum-topic__loading-prev.nojs-hide(
