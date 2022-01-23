@@ -24,17 +24,18 @@ article#content.forum-topic-root(
   class=(!self.section_is_public) ? 'forum-topic-root__m-no-bookmarks' : ''
 )
   -
-    var navbar_args = {
-      title:    self.topic.title,
+    const navbar_base = {
       level_up: self.link_to('forum.section', { section_hid: self.section.hid, topic_hid: self.topic.hid }),
-      extra_buttons: 'forum.topic.blocks.page_actions.dropdown',
       on_jump:  'forum.topic:nav_to_post',
       progress: {
         link_top:    self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: 1 }),
         link_bottom: self.link_to('forum.topic', { section_hid: self.section.hid, topic_hid: self.topic.hid, post_hid: self.topic.cache.last_post_hid }),
         current:     self.current_post_hid || 0,
         total:       self.topic.cache.last_post_hid
-      },
+      }
+    };
+
+    const navbar_primary = {
       search_areas: [
         {
           title: self.t('search_section'),
@@ -49,8 +50,13 @@ article#content.forum-topic-root(
       ]
     };
 
-  != self.partial('@common.blocks.navbar.levelup_progress_apps', navbar_args)
-  != self.partial('@common.blocks.navbar.alt_levelup_progress_title', navbar_args)
+    const navbar_alt = {
+      title: self.topic.title,
+      extra_buttons: 'forum.topic.blocks.page_actions.dropdown'
+    };
+
+  != self.partial('@common.blocks.navbar.levelup_progress_apps', { ...navbar_base, ...navbar_primary })
+  != self.partial('@common.blocks.navbar.alt_levelup_progress_title', { ...navbar_base, ...navbar_alt })
 
   nav.breadcrumbs-container
     .layout__container.container-fluid
