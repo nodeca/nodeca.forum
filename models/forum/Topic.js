@@ -127,6 +127,10 @@ module.exports = function (N, collectionName) {
   Topic.index({ section: 1, st: 1, 'cache.last_post':    -1, _id: 1 });
   Topic.index({ section: 1, st: 1, 'cache_hb.last_post': -1, _id: 1 });
 
+  // look for all topics updated last week, filtered by sections
+  Topic.index({ 'cache.last_post':    -1, section: 1 });
+  Topic.index({ 'cache_hb.last_post': -1, section: 1 });
+
   // lookup _id by hid (for routing)
   Topic.index({ hid: 1 });
 

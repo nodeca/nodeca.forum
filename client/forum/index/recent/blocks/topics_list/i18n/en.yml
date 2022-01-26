@@ -1,0 +1,7 @@
+en-US:
+  replies: "#{count} ((reply|replies))"
+  replies_tip: Replies
+  views_tip: Views
+  new: new
+  closed: Closed topic
+  bookmarked: You bookmarked this topic

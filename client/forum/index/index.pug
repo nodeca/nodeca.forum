@@ -13,6 +13,11 @@ article#content.forum-index-root
             title=self.t('sections_exclude_title')
           )= self.excluded_sections.length
 
+        a.btn.btn-secondary.btn-xs(
+          href= self.link_to('forum.index.recent')
+          title=self.t('new_topics_title')
+        )= self.t('new_topics')
+
   .layout__container.container-fluid
     != self.partial('@users.blocks.announces')
 

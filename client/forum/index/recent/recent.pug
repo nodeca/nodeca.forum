@@ -1,0 +1,32 @@
+- self.add_raw_data('mark_cut_ts', self.mark_cut_ts)
+
+article#content.forum-index-recent
+  != self.partial('@common.blocks.navbar.logo_apps', { search_tab: 'forum_topics' })
+  != self.partial('@common.blocks.navbar.alt_logo_apps', { extra_buttons: 'forum.index.recent.blocks.page_actions' })
+
+  nav.breadcrumbs-container
+    .layout__container.container-fluid
+      != self.partial('@common.blocks.breadcrumbs')
+
+      span.breadcrumbs-controls
+        if self.runtime.is_member
+          button.btn.btn-secondary.btn-xs.icon.icon-sliders.icon-space-after(
+            type='button'
+            data-on-click='forum.index.recent:exclude'
+            title=self.t('sections_exclude_title')
+          )= self.excluded_sections.length
+
+  .layout__container.container-fluid
+    != self.partial('@users.blocks.announces')
+
+    header.page-head
+      .float-end
+        != self.partial('@forum.index.recent.blocks.page_actions')
+      h1.page-head__title(itemprop='name')= self.t('title')
+
+    if self.topics && self.topics.length
+      .forum-topiclist
+        != self.partial('blocks.topics_list')
+    else
+      p.forum-index-recent__notopics
+        != self.t('no_topics')

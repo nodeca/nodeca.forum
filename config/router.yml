@@ -3,6 +3,9 @@ router:
     forum.index:
       "/": ~
 
+    forum.index.recent:
+      "/forum_recent": ~
+
     forum.section:
       "/f{section_hid}(/{topic_hid})":
         section_hid:

@@ -1,0 +1,7 @@
+ru-RU:
+  replies: "#{count} ((ответ|ответа|ответов))"
+  replies_tip: Ответы
+  views_tip: Просмотры
+  new: new
+  closed: Закрытая тема
+  bookmarked: Вы добавили эту тему в закладки

@@ -1,0 +1,84 @@
+- var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
+- self.users = self.users || {};
+
+each topic, idx in self.topics
+  - var fp_user = self.users[topic.cache.first_user] || {}
+  - var lp_user = self.users[topic.cache.last_user] || {}
+  - var fp_ts   = topic.cache.first_ts
+  - var lp_ts   = topic.cache.last_ts
+  - var replies = topic.cache.post_count - 1;
+  - var views   = topic.views_count;
+  -
+    var is_unread = false;
+    if (self.read_marks[topic._id].next !== -1) is_unread = true;
+    if (self.read_marks[topic._id].isNew) is_unread = true;
+    if (!self.settings.highlight_all_unread && self.subscriptions.indexOf(topic._id) === -1) is_unread = false;
+
+  .forum-topicline(
+    class=([ topic.st, topic.ste ].indexOf(topicStatuses.CLOSED) !== -1) ? 'forum-topicline__m-closed' : ''
+    class=(self.own_bookmarks.indexOf(topic.cache.first_post) !== -1) ? 'forum-topicline__m-bookmarked' : ''
+    class=is_unread ? 'forum-topicline__m-unread' : ''
+    class=(self.read_marks[topic._id].isNew) ? 'forum-topicline__m-new' : ''
+    data-topic-hid=topic.hid
+    data-last-post=topic.cache.last_post
+    id='topic' + topic.hid
+  )
+    .forum-topicline__summary.forum-topicline__cell
+      - var href;
+      - var section = self.sections[topic.section];
+
+      if (self.read_marks[topic._id].next !== -1)
+        //- If there are unread messages in topic - go to first unread
+        - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].next });
+
+      else if (self.read_marks[topic._id].position !== -1)
+        //- If we have position info - go to last position
+        - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: self.read_marks[topic._id].position });
+
+      else
+        //- Go to first post in topic
+        - href = self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid });
+
+      h2.forum-topicline__title
+        span.forum-topicline__bookmarked-marker.icon.icon-bookmark.icon-space-after(title=self.t('bookmarked'))
+        span.forum-topicline__closed-marker.icon.icon-closed.icon-space-after(title=self.t('closed'))
+
+        a.forum-topicline__title-link(href=href)= topic.title
+
+        .forum-topicline__new-marker= self.t('new')
+
+      .forum-topicline__microstat
+        span.forum-topicline__microstat-replies.d-sm-none
+          = self.t('replies', replies)
+
+        a.forum-topicline__microstat-time(
+          href=self.link_to('forum.topic', { section_hid: section.hid, topic_hid: topic.hid, post_hid: topic.cache.last_post_hid })
+        )
+          != self.timetag(lp_ts, 'relative')
+
+        a.forum-topicline__microstat-section._ucard-popover(
+          href=self.link_to('forum_section', { section_hid: section.hid })
+        )= section.title
+
+        if lp_user.hid
+          a.forum-topicline__microstat-author._ucard-popover(
+            href=self.link_to('users.member', { user_hid: lp_user.hid })
+            data-user-id=lp_user._id
+          )= lp_user.name
+
+      .forum-topicline__unread-marker
+
+      //- cover all space with link for small screens
+      a.forum-topicline__overlay.d-md-none(href=href)
+
+    .forum-topicline__stat.forum-topicline__cell.d-none.d-sm-block(
+      title=self.t('replies_tip')
+    )
+      span.icon.icon-replies.icon-space-after
+      = self.number_short(replies)
+
+    .forum-topicline__stat.forum-topicline__cell.d-none.d-md-block(
+      title=self.t('views_tip')
+    )
+      span.icon.icon-views.icon-space-after
+      = self.number_short(views)
