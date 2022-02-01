@@ -330,7 +330,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
 //
 
 
-const bag = require('bagjs')({ prefix: 'nodeca' });
+const bkv = require('bkv').shared();
 let selected_topics_key;
 // Flag shift key pressed
 let shift_key_pressed = false;
@@ -362,9 +362,9 @@ function key_down(event) {
 function save_selected_topics_immediate() {
   if (pageState.selected_topics.length) {
     // Expire after 1 day
-    bag.set(selected_topics_key, pageState.selected_topics, 60 * 60 * 24).catch(() => {});
+    bkv.set(selected_topics_key, pageState.selected_topics, 60 * 60 * 24);
   } else {
-    bag.remove(selected_topics_key).catch(() => {});
+    bkv.remove(selected_topics_key);
   }
 }
 const save_selected_topics = _.debounce(save_selected_topics_immediate, 500);
@@ -397,15 +397,13 @@ N.wire.on('navigate.done:' + module.apiPath, function section_load_previously_se
     .on('keydown', key_down);
 
   // Don't need wait here
-  bag.get(selected_topics_key)
+  bkv.get(selected_topics_key, [])
     .then(hids => {
-      hids = hids || [];
       pageState.selected_topics = hids;
       update_selection_state($(document));
 
       return hids.length ? updateSectionState() : null;
-    })
-    .catch(() => {}); // Suppress storage errors
+    });
 });
 
 

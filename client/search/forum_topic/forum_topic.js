@@ -4,7 +4,7 @@
 'use strict';
 
 const _              = require('lodash');
-const bag            = require('bagjs')({ prefix: 'nodeca' });
+const bkv            = require('bkv').shared();
 const ScrollableList = require('nodeca.core/lib/app/scrollable_list');
 
 const OPTIONS_STORE_KEY = 'search_form_expanded';
@@ -42,10 +42,9 @@ function load(start, direction) {
 }
 
 
-N.wire.on('navigate.done:' + module.apiPath, function form_init() {
-  return bag.get(OPTIONS_STORE_KEY).then(expanded => {
-    if (expanded) $('#search_options').addClass('show');
-  }).catch(() => {}); // suppress storage errors
+N.wire.on('navigate.done:' + module.apiPath, async function form_init() {
+  const expanded = await bkv.get(OPTIONS_STORE_KEY);
+  if (expanded) $('#search_options').addClass('show');
 });
 
 // Execute search if it's defined in query
@@ -99,14 +98,13 @@ N.wire.on('navigate.exit:' + module.apiPath, function page_teardown() {
 
 // Toggle form options
 //
-N.wire.on(module.apiPath + ':search_options', function do_options() {
+N.wire.on(module.apiPath + ':search_options', async function do_options() {
   let expanded = !$('#search_options').hasClass('show');
 
   if (expanded) $('#search_options').collapse('show');
   else $('#search_options').collapse('hide');
 
-  return bag.set(OPTIONS_STORE_KEY, expanded)
-            .catch(() => {}); // suppress storage errors
+  await bkv.set(OPTIONS_STORE_KEY, expanded);
 });
 
 

@@ -1,9 +1,5 @@
 'use strict';
 
-
-const _bag = require('bagjs');
-
-
 // Scroll to the element, so it would be positioned in the viewport
 //
 //  - el    - Element to scroll
@@ -29,56 +25,50 @@ function scrollIntoView(el, coef) {
 /////////////////////////////////////////////////////////////////////
 // init on page load
 //
-let bag;
+const bkv = require('bkv').create();
 let collapsed_categories;
 
-N.wire.once('navigate.done:' + module.apiPath, function init_bagjs() {
-  bag = _bag({ prefix: 'nodeca', stores: [ 'localstorage' ] });
-});
-
-// 'hide.bs.collapse' event handler, stores category state in bag.js
+// 'hide.bs.collapse' event handler, stores category state
 function on_category_collapse_hide(event) {
-  let bag_key = `forum_index_collapse_${N.runtime.user_hid}`;
+  let store_key = `forum_index_collapse_${N.runtime.user_hid}`;
   let hid = $(event.target).data('category-hid');
 
   collapsed_categories[hid] = true;
-  bag.set(bag_key, collapsed_categories).catch(() => {});
+  bkv.set(store_key, collapsed_categories);
 }
 
-// 'show.bs.collapse' event handler, stores category state in bag.js
+// 'show.bs.collapse' event handler, stores category state
 function on_category_collapse_show(event) {
-  let bag_key = `forum_index_collapse_${N.runtime.user_hid}`;
+  let store_key = `forum_index_collapse_${N.runtime.user_hid}`;
   let hid = $(event.target).data('category-hid');
 
   delete collapsed_categories[hid];
-  bag.set(bag_key, collapsed_categories).catch(() => {});
+  bkv.set(store_key, collapsed_categories);
 }
 
-N.wire.on('navigate.done:' + module.apiPath, function restore_category_collapse_state() {
-  let bag_key = `forum_index_collapse_${N.runtime.user_hid}`;
+N.wire.on('navigate.done:' + module.apiPath, async function restore_category_collapse_state() {
+  let store_key = `forum_index_collapse_${N.runtime.user_hid}`;
 
-  return bag.get(bag_key).catch(() => {}).then(c => {
-    // Collapse categories that were previously collapsed on last page load
-    //
-    collapsed_categories = c || {};
+  // Collapse categories that were previously collapsed on last page load
 
-    for (let hid of Object.keys(collapsed_categories)) {
-      // - manually toggle classes to avoid triggering bootstrap animation
-      // - set temporary class to disable opacity transitions
-      $(`#cat_box_${Number(hid)}`).addClass('collapsed no-animation');
-      $(`#cat_list_${Number(hid)}`).removeClass('show');
-      // remove transitions blocker on next tick
-      setTimeout(() => {
-        $(`#cat_box_${Number(hid)}`).removeClass('no-animation');
-      }, 0);
-    }
+  collapsed_categories = await bkv.get(store_key, {});
 
-    // Remember collapse state when user clicks on a category
-    //
-    $('.forum-category__content')
-      .on('hide.bs.collapse', on_category_collapse_hide)
-      .on('show.bs.collapse', on_category_collapse_show);
-  });
+  for (let hid of Object.keys(collapsed_categories)) {
+    // - manually toggle classes to avoid triggering bootstrap animation
+    // - set temporary class to disable opacity transitions
+    $(`#cat_box_${Number(hid)}`).addClass('collapsed no-animation');
+    $(`#cat_list_${Number(hid)}`).removeClass('show');
+    // remove transitions blocker on next tick
+    setTimeout(() => {
+      $(`#cat_box_${Number(hid)}`).removeClass('no-animation');
+    }, 0);
+  }
+
+  // Remember collapse state when user clicks on a category
+  //
+  $('.forum-category__content')
+    .on('hide.bs.collapse', on_category_collapse_hide)
+    .on('show.bs.collapse', on_category_collapse_show);
 });
 
 N.wire.on('navigate.exit:' + module.apiPath, function remove_collapse_handlers() {

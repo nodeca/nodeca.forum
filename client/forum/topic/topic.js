@@ -6,7 +6,7 @@
 const _              = require('lodash');
 const charcount      = require('charcount');
 const topicStatuses  = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$';
-const bag            = require('bagjs')({ prefix: 'nodeca' });
+const bkv            = require('bkv').shared();
 const ScrollableList = require('nodeca.core/lib/app/scrollable_list');
 
 
@@ -899,7 +899,7 @@ let scrollPositionsKey;
 
 
 function uploadScrollPositionsImmediate() {
-  bag.get(scrollPositionsKey).then(positions => {
+  bkv.get(scrollPositionsKey).then(positions => {
     if (positions) {
       for (let [ id, data ] of Object.entries(positions)) {
         N.live.emit('private.forum.marker_set_pos', {
@@ -910,10 +910,9 @@ function uploadScrollPositionsImmediate() {
         });
       }
 
-      return bag.remove(scrollPositionsKey);
+      return bkv.remove(scrollPositionsKey);
     }
-  })
-  .catch(() => {}); // Suppress storage errors
+  });
 }
 
 const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
@@ -979,7 +978,7 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     lastRead = read;
 
     // Save current position locally and request upload
-    bag.get(scrollPositionsKey).then(positions => {
+    bkv.get(scrollPositionsKey).then(positions => {
       positions = positions || {};
       positions[N.runtime.page_data.topic._id] = {
         pos,
@@ -988,9 +987,8 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
       };
 
       // Expire after 7 days
-      return bag.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => uploadScrollPositions());
-    })
-    .catch(() => {}); // Suppress storage errors
+      return bkv.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => uploadScrollPositions());
+    });
   }, 300, { maxWait: 300 });
 
   // avoid executing it on first tick because of initial scrollTop()
@@ -1063,9 +1061,9 @@ function key_down(event) {
 function save_selected_posts_immediate() {
   if (pageState.selected_posts.length) {
     // Expire after 1 day
-    bag.set(selected_posts_key, pageState.selected_posts, 60 * 60 * 24).catch(() => {});
+    bkv.set(selected_posts_key, pageState.selected_posts, 60 * 60 * 24);
   } else {
-    bag.remove(selected_posts_key).catch(() => {});
+    bkv.remove(selected_posts_key);
   }
 }
 const save_selected_posts = _.debounce(save_selected_posts_immediate, 500);
@@ -1097,15 +1095,13 @@ N.wire.on('navigate.done:' + module.apiPath, function topic_load_previously_sele
     .on('keydown', key_down);
 
   // Don't need wait here
-  bag.get(selected_posts_key)
+  bkv.get(selected_posts_key, [])
     .then(ids => {
-      ids = ids || [];
       pageState.selected_posts = ids;
       update_selection_state($(document));
 
       return ids.length ? updateTopicState() : null;
-    })
-    .catch(() => {}); // Suppress storage errors
+    });
 });
 
 
