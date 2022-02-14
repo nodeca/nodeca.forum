@@ -895,27 +895,6 @@ N.wire.on('navigate.exit:' + module.apiPath, function set_quote_modifiers_teardo
 // Save scroll position
 //
 let scrollPositionTracker = null;
-let scrollPositionsKey;
-
-
-function uploadScrollPositionsImmediate() {
-  bkv.get(scrollPositionsKey).then(positions => {
-    if (positions) {
-      for (let [ id, data ] of Object.entries(positions)) {
-        N.live.emit('private.forum.marker_set_pos', {
-          content_id: id,
-          position: data.pos,
-          max: data.max,
-          category_id: data.category_id
-        });
-      }
-
-      return bkv.remove(scrollPositionsKey);
-    }
-  });
-}
-
-const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
 
 
 // Track scroll position
@@ -923,8 +902,6 @@ const uploadScrollPositions = _.debounce(uploadScrollPositionsImmediate, 2000);
 N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init() {
   // Skip for guests
   if (!N.runtime.is_member) return;
-
-  scrollPositionsKey = `topics_scroll_${N.runtime.user_hid}`;
 
   let lastPos = -1;
   let lastRead = -1;
@@ -977,18 +954,13 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
     lastPos = pos;
     lastRead = read;
 
-    // Save current position locally and request upload
-    bkv.get(scrollPositionsKey).then(positions => {
-      positions = positions || {};
-      positions[N.runtime.page_data.topic._id] = {
-        pos,
-        max: read,
-        category_id: N.runtime.page_data.topic.section
-      };
-
-      // Expire after 7 days
-      return bkv.set(scrollPositionsKey, positions, 7 * 24 * 60 * 60).then(() => uploadScrollPositions());
-    });
+    N.markers.set(
+      N.runtime.page_data.topic._id, // content_id
+      N.runtime.page_data.topic.section, // category_id
+      'forum_topic', // type
+      pos, // position
+      read // max
+    );
   }, 300, { maxWait: 300 });
 
   // avoid executing it on first tick because of initial scrollTop()
@@ -999,17 +971,6 @@ N.wire.on('navigate.done:' + module.apiPath, function save_scroll_position_init(
 
     $window.on('scroll', scrollPositionTracker);
   }, 1);
-});
-
-
-// Try upload scroll positions on `navigate.exit`
-//
-N.wire.on('navigate.exit:' + module.apiPath, function save_scroll_position_on_exit() {
-  // Skip for guests
-  if (!N.runtime.is_member) return;
-
-  uploadScrollPositions.cancel();
-  uploadScrollPositionsImmediate();
 });
 
 
