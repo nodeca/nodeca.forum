@@ -54,7 +54,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_options() {
 //
 N.wire.on(module.apiPath + ':begin', function show_editor(data) {
   let $editor = N.MDEdit.show({
-    draftKey: [ 'post_reply', N.runtime.user_hid, data.topic_hid, data.post_hid || '' ].join('_')
+    draftKey: `post_reply_${N.runtime.user_hid}_${data.topic_hid}_${data.post_hid || ''}`
   });
 
   updateOptions();
