@@ -301,6 +301,11 @@ function updateTopicState() {
       $topicRoot.removeClass(modifier);
     }
   }
+
+  $topicRoot.toggleClass('forum-topic-root__m-hide-reply', !(
+    $topicRoot.hasClass('forum-topic-root__m-open') ||
+    ($topicRoot.hasClass('forum-topic-root__m-closed') && N.runtime.page_data.settings.forum_mod_can_close_topic)
+  ));
 }
 
 
@@ -345,6 +350,17 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     }
 
     if (N.runtime.page_data.topic.st !== topicStatuses.OPEN && N.runtime.page_data.topic.ste !== topicStatuses.OPEN) {
+
+      if ((N.runtime.page_data.topic.st === topicStatuses.CLOSED ||
+          N.runtime.page_data.topic.ste === topicStatuses.CLOSED)
+         && N.runtime.page_data.settings.forum_mod_can_close_topic) {
+
+        // allow moderators to post in closed topics after confirmation
+        return N.wire.emit('common.blocks.confirm', {
+          html: t('closed_topic_reply_confirm')
+        });
+      }
+
       N.wire.emit('notify', t('err_topic_closed'));
       throw 'CANCELED';
     }

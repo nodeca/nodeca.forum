@@ -10,6 +10,7 @@
 
 - var isOpen = (self.topic.st === topicStatuses.OPEN || self.topic.ste === topicStatuses.OPEN);
 - var isClosed = (self.topic.st === topicStatuses.CLOSED || self.topic.ste === topicStatuses.CLOSED);
+- var canReply = isOpen || (isClosed && self.settings.forum_mod_can_close_topic);
 
 article#content.forum-topic-root(
   data-keymap= {
@@ -18,6 +19,7 @@ article#content.forum-topic-root(
   }
   class=isOpen ? 'forum-topic-root__m-open' : ''
   class=isClosed ? 'forum-topic-root__m-closed' : ''
+  class=canReply ? '' : 'forum-topic-root__m-hide-reply'
   class=(self.topic.st === topicStatuses.DELETED) ? 'forum-topic-root__m-deleted' : ''
   class=(self.topic.st === topicStatuses.DELETED_HARD) ? 'forum-topic-root__m-deleted-hard' : ''
   class=(self.topic.st === topicStatuses.PINNED) ? 'forum-topic-root__m-pinned' : ''

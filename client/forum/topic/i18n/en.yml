@@ -37,6 +37,11 @@ en-US:
 
     Your reply would bump this topic to the top of its list. Are you sure you wish to continue?
 
+  closed_topic_reply_confirm: |
+    md:**This topic is closed!**
+
+    Are you sure you wish to reply?
+
   post_add: Add post
   tracker_link: Go to tracker
 

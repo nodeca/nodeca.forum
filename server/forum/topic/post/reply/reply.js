@@ -96,10 +96,16 @@ module.exports = function (N, apiPath) {
     let topicStatuses = N.models.forum.Topic.statuses;
 
     if (env.data.topic.st !== topicStatuses.OPEN && env.data.topic.ste !== topicStatuses.OPEN) {
-      throw {
-        code: N.io.CLIENT_ERROR,
-        message: env.t('err_topic_closed')
-      };
+      let forum_mod_can_close_topic = await env.extras.settings.fetch('forum_mod_can_close_topic');
+
+      if (forum_mod_can_close_topic) {
+        // allow moderators to post in closed topics after confirmation
+      } else {
+        throw {
+          code: N.io.CLIENT_ERROR,
+          message: env.t('err_topic_closed')
+        };
+      }
     }
   });
 
