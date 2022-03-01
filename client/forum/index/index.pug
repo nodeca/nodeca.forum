@@ -19,7 +19,7 @@ article#content.forum-index-root
         )= self.t('new_topics')
 
   .layout__container.container-fluid
-    != self.partial('@users.blocks.announces')
+    != self.partial('@common.blocks.announces')
 
     each category in (self.subsections || [])
       article.forum-category(id='cat_box_' + category.hid)
