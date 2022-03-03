@@ -454,7 +454,7 @@ N.wire.once('navigate.done:' + module.apiPath, function page_once() {
     let params = { post_id: postId };
 
     return Promise.resolve()
-      .then(() => N.wire.emit('users.blocks.add_infraction_dlg', params))
+      .then(() => N.wire.emit('common.blocks.add_infraction_dlg', params))
       .then(() => N.io.rpc('forum.topic.post.add_infraction', params))
       .then(() => N.io.rpc('forum.topic.list.by_ids', { topic_hid: pageState.topic_hid, posts_ids: [ postId ] }))
       .then(res => {
