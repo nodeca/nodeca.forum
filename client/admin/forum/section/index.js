@@ -117,7 +117,7 @@ N.wire.on('admin.forum.section.select_moderator_nick', function section_select_m
   });
 
   // Show dialog.
-  $moderatorSelectDialog.appendTo('#content').modal({ backdrop: false });
+  $moderatorSelectDialog.appendTo('#content').modal({ backdrop: false }).modal('show');
 });
 
 
