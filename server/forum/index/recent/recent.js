@@ -211,7 +211,7 @@ module.exports = function (N, apiPath) {
 
     let subscriptions = await N.models.users.Subscription.find()
                           .where('user').equals(env.user_info.user_id)
-                          .where('to').in(env.data.topics_ids)
+                          .where('to').in(env.data.topics.map(x => x._id))
                           .where('type').in(N.models.users.Subscription.types.LIST_SUBSCRIBED)
                           .lean(true);
 
