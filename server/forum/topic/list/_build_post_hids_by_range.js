@@ -30,9 +30,9 @@ module.exports = function (N) {
 
   // Select starting post hid
   //
-  function select_visible_before(env) {
+  async function select_visible_before(env) {
     let posts_count = env.params.before;
-    if (posts_count <= 0) return Promise.resolve(null);
+    if (posts_count <= 0) return env.params.post_hid - 1;
 
     // Posts with this statuses are counted on page (others are shown, but not counted)
     let countable_statuses = [ Post.statuses.VISIBLE ];
@@ -42,7 +42,7 @@ module.exports = function (N) {
       countable_statuses.push(Post.statuses.HB);
     }
 
-    return Post.find()
+    let countable = await Post.find()
       .where('topic').equals(env.data.topic._id)
       .where('st').in(countable_statuses)
       .where('hid').lt(env.params.post_hid)
@@ -50,27 +50,28 @@ module.exports = function (N) {
       .sort({ hid: -1 })
       .limit(posts_count + 1)
       .lean(true)
-      .then(countable => {
-        let result = null;
+      .exec();
 
-        if (countable.length) {
-          result = countable[countable.length - 1].hid;
+    let result = null;
 
-          if (countable.length < posts_count + 1) {
-            // we reached the last post, so it should be included as well
-            result--;
-          }
-        }
+    if (countable.length) {
+      result = countable[countable.length - 1].hid;
 
-        return result;
-      });
+      if (countable.length < posts_count + 1) {
+        // we reached the last post, so it should be included as well;
+        // also include all removed posts afterwards
+        result = null;
+      }
+    }
+
+    return result;
   }
 
   // Select ending post hid
   //
-  function select_visible_after(env) {
+  async function select_visible_after(env) {
     let posts_count = env.params.after;
-    if (posts_count <= 0) return Promise.resolve(null);
+    if (posts_count <= 0) return env.params.post_hid + 1;
 
     // Posts with this statuses are counted on page (others are shown, but not counted)
     let countable_statuses = [ Post.statuses.VISIBLE ];
@@ -80,7 +81,7 @@ module.exports = function (N) {
       countable_statuses.push(Post.statuses.HB);
     }
 
-    return Post.find()
+    let countable = await Post.find()
       .where('topic').equals(env.data.topic._id)
       .where('st').in(countable_statuses)
       .where('hid').gt(env.params.post_hid)
@@ -88,38 +89,42 @@ module.exports = function (N) {
       .sort({ hid: 1 })
       .limit(posts_count + 1)
       .lean(true)
-      .then(countable => {
-        let result = null;
+      .exec();
 
-        if (countable.length) {
-          result = countable[countable.length - 1].hid;
+    let result = null;
 
-          if (countable.length < posts_count + 1) {
-            // we reached the last post, so it should be included as well
-            result++;
-          }
-        }
+    if (countable.length) {
+      result = countable[countable.length - 1].hid;
 
-        return result;
-      });
+      if (countable.length < posts_count + 1) {
+        // we reached the last post, so it should be included as well;
+        // also include all removed posts afterwards
+        result = null;
+      }
+    }
+
+    return result;
   }
 
   return async function buildPostHids(env) {
-    let results = await Promise.all([ select_visible_before(env), select_visible_after(env) ]);
-
-    let select_from = results[0] !== null ? results[0] : env.params.post_hid - 1;
-    let select_to   = results[1] !== null ? results[1] : env.params.post_hid + 1;
+    let [ select_from, select_to ] = await Promise.all([
+      select_visible_before(env),
+      select_visible_after(env)
+    ]);
 
     // select posts from the range calculated above
     // (post with hid=env.params.post_hid is always selected)
-    let posts = await Post.find()
-                          .where('topic').equals(env.data.topic._id)
-                          .where('st').in(env.data.posts_visible_statuses)
-                          .where('hid').gt(select_from)
-                          .where('hid').lt(select_to)
-                          .select('hid -_id')
-                          .sort('hid')
-                          .lean(true);
+    let query = Post.find()
+                    .where('topic').equals(env.data.topic._id)
+                    .where('st').in(env.data.posts_visible_statuses)
+                    .select('hid -_id')
+                    .sort('hid')
+                    .lean(true);
+
+    if (select_from !== null) query = query.where('hid').gt(select_from);
+    if (select_to   !== null) query = query.where('hid').lt(select_to);
+
+    let posts = await query.exec();
 
     env.data.posts_hids = posts.map(p => p.hid);
   };
