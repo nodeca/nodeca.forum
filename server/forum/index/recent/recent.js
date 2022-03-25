@@ -238,6 +238,7 @@ module.exports = function (N, apiPath) {
   //
   N.wire.after(apiPath, function forum_meta(env) {
     env.res.head.title = env.t('title');
+    env.res.head.robots = 'noindex,follow';
     env.res.mark_cut_ts = Date.now();
   });
 };
