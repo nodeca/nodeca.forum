@@ -69,7 +69,7 @@ module.exports = function (N, apiPath) {
           .select('section hid cache.post_count cache.last_ts')
           .sort('hid')
           .lean(true)
-          .stream(),
+          .cursor(),
 
       topic_stream,
       () => {}
