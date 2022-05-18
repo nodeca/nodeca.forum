@@ -14,7 +14,8 @@ module.exports = function (N, apiPath) {
     txt:                      { type: 'string', required: true },
     option_no_mlinks:         { type: 'boolean', required: true },
     option_no_emojis:         { type: 'boolean', required: true },
-    option_no_quote_collapse: { type: 'boolean', required: true }
+    option_no_quote_collapse: { type: 'boolean', required: true },
+    option_breaks:            { type: 'boolean', required: true }
   });
 
 
@@ -162,6 +163,10 @@ module.exports = function (N, apiPath) {
 
     if (env.params.option_no_quote_collapse) {
       settings.quote_collapse = false;
+    }
+
+    if (env.params.option_breaks) {
+      settings.breaks = true;
     }
 
     env.data.parse_options = settings;
