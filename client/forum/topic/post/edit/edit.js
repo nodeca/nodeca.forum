@@ -131,7 +131,7 @@ N.wire.on(module.apiPath + ':begin', function show_editor(data) {
 // Open options dialog
 //
 N.wire.on(module.apiPath + ':options', function show_options_dlg() {
-  N.wire.emit('common.blocks.editor_options_dlg', options.user_settings, function () {
-    updateOptions();
-  });
+  return N.wire.emit('common.blocks.editor_options_dlg', options.user_settings)
+    .then(updateOptions)
+    .then(() => N.io.rpc('users.set_md_options', options.user_settings));
 });
