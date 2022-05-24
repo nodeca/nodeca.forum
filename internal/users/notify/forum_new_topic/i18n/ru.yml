@@ -2,4 +2,5 @@ ru-RU:
   topic: Тема
   subject: '#{project_name}: новая тема в "#{section_title}"'
   visit: Перейти
+  reply_notice: Это сообщение сгенерировано автоматически. Пожалуйста, не отвечайте на него.
   unsubscribe: Отписаться

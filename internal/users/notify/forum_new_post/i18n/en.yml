@@ -2,4 +2,5 @@ en-US:
   topic: Topic
   subject: '#{project_name}: new reply in topic "#{topic_title}"'
   visit: Visit
+  reply_notice: This message is generated automatically. Please, don't reply to it.
   unsubscribe: Unsubscribe

@@ -3,4 +3,5 @@ en-US:
   topic: Topic
   subject: '#{project_name}: #{user} replied to your post'
   visit: Visit
+  reply_notice: This message is generated automatically. Please, don't reply to it.
   unsubscribe: Unsubscribe
