@@ -3,8 +3,9 @@
 'use strict';
 
 
-const $         = require('nodeca.core/lib/parser/cheequery');
-const charcount = require('charcount');
+const $           = require('nodeca.core/lib/parser/cheequery');
+const check_title = require('nodeca.users/lib/check_title');
+const charcount   = require('charcount');
 
 
 module.exports = function (N, apiPath) {
@@ -27,17 +28,35 @@ module.exports = function (N, apiPath) {
   });
 
 
-  // Check title length
+  // Check title
   //
-  N.wire.before(apiPath, async function check_title_length(env) {
+  //  - return an error if title is too short (< 10)
+  //  - return an error if title is too long (> 100)
+  //  - return an error if title has unicode emoji
+  //  - normalize title
+  //    - trim spaces on both ends
+  //    - replace multiple ending punctuations with one (???, !!!)
+  //    - convert title to lowercase if title has too many (5+ consecutive) uppercase letters
+  //
+  N.wire.before(apiPath, async function check_and_normalize_title(env) {
+    let title = check_title.normalize_title(env.params.title);
     let min_length = await env.extras.settings.fetch('forum_topic_title_min_length');
+    let max_length = await env.extras.settings.fetch('forum_topic_title_max_length');
+    let title_length = charcount(title);
+    let error = null;
 
-    if (charcount(env.params.title.trim()) < min_length) {
+    if (title_length < min_length)    error = env.t('err_title_too_short', min_length);
+    if (title_length > max_length)    error = env.t('err_title_too_long', max_length);
+    if (check_title.has_emoji(title)) error = env.t('err_title_emojis');
+
+    if (error) {
       throw {
         code: N.io.CLIENT_ERROR,
-        message: env.t('err_title_too_short', min_length)
+        message: error
       };
     }
+
+    env.data.title = title;
   });
 
 
@@ -190,7 +209,7 @@ module.exports = function (N, apiPath) {
     }
 
     // Fill topic data
-    topic.title = env.params.title.trim();
+    topic.title = env.data.title;
     topic.section = env.data.section._id;
 
     if (env.user_info.hb) {

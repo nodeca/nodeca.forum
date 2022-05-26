@@ -4,3 +4,8 @@ en-US:
   destroy:
     err_perm_expired: You cannot delete this topic anymore
     err_delete_topic_with_answers: You cannot delete topic with answers
+
+  title_update:
+    err_title_too_short: "Title should have at least #{count} ((character|characters))"
+    err_title_too_long: "Title should have no more than #{count} ((character|characters))"
+    err_title_emojis: "Title should not have any emoticons"

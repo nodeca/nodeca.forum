@@ -21,6 +21,12 @@ setting_schemas:
       category_key: topic
       default: 10
 
+    forum_topic_title_max_length:
+      type: number
+      group_key: forum_editor
+      category_key: topic
+      default: 100
+
     forum_post_min_length:
       type: number
       group_key: forum_editor

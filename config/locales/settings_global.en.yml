@@ -13,7 +13,8 @@ i18n:
           forum_posts_markup: Forum posts markup
 
         setting_names:
-          forum_topic_title_min_length: Min title length
+          forum_topic_title_min_length: Min topic title length
+          forum_topic_title_max_length: Max topic title length
           forum_post_min_length: Min post text length
           forum_post_max_images: Max number of images in a post
           forum_post_max_emojis: Max number of emoticons in a post

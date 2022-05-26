@@ -4,3 +4,8 @@ ru-RU:
   destroy:
     err_perm_expired: Вы не можете больше удалить эту тему
     err_delete_topic_with_answers: Вы не можете удалить тему с ответами
+
+  title_update:
+    err_title_too_short: "В названии должно быть не меньше #{count} ((символа|символов|символов))"
+    err_title_too_long: "В названии должно быть не более #{count} ((символа|символов|символов))"
+    err_title_emojis: "В названии не должно быть смайликов"
