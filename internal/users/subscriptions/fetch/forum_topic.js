@@ -2,15 +2,17 @@
 //
 // In:
 //
-//  - env.user_info
-//  - env.subscriptions
+//  - params.user_info
+//  - params.subscriptions
+//  - params.count_only
 //
 // Out:
 //
-//  - env.data.missed_subscriptions - list of subscriptions for deleted topics
-//                                    (those subscriptions will be deleted later)
-//  - env.res.read_marks
-//  - env.res.forum_topics, env.res.forum_sections - template-specific data
+//  - count
+//  - items
+//  - missed_subscriptions - list of subscriptions for deleted topics
+//                           (those subscriptions will be deleted later)
+//  - res   - misc data (specific to template, merged with env.res)
 //
 'use strict';
 
@@ -20,10 +22,14 @@ const sanitize_topic   = require('nodeca.forum/lib/sanitizers/topic');
 const sanitize_section = require('nodeca.forum/lib/sanitizers/section');
 
 
-module.exports = function (N) {
+module.exports = function (N, apiPath) {
 
-  N.wire.on('internal:users.subscriptions.fetch', async function subscriptions_fetch_topics(env) {
-    let subs = env.data.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_TOPIC);
+  N.wire.on(apiPath, async function subscriptions_fetch_topics(locals) {
+    let subs = locals.params.subscriptions.filter(s => s.to_type === N.shared.content_type.FORUM_TOPIC);
+
+    locals.count = subs.length;
+    locals.res = {};
+    if (!locals.count || locals.params.count_only) return;
 
     // Fetch topics
     let topics = await N.models.forum.Topic.find().where('_id').in(subs.map(s => s.to)).lean(true);
@@ -35,7 +41,7 @@ module.exports = function (N) {
     //
     let access_env = { params: {
       topics,
-      user_info: env.user_info,
+      user_info: locals.params.user_info,
       preload: sections
     } };
 
@@ -51,10 +57,10 @@ module.exports = function (N) {
 
 
     // Sanitize topics
-    topics = await sanitize_topic(N, topics, env.user_info);
+    topics = await sanitize_topic(N, topics, locals.params.user_info);
 
     // Sanitize sections
-    sections = await sanitize_section(N, sections, env.user_info);
+    sections = await sanitize_section(N, sections, locals.params.user_info);
 
     // Fetch read marks
     //
@@ -65,21 +71,22 @@ module.exports = function (N) {
       lastPostTs: topic.cache.last_ts
     }));
 
-    let read_marks = await N.models.users.Marker.info(env.user_info.user_id, data, 'forum_topic');
-    env.res.read_marks = Object.assign(env.res.read_marks || {}, read_marks);
+    let read_marks = await N.models.users.Marker.info(locals.params.user_info.user_id, data, 'forum_topic');
+    locals.res.read_marks = Object.assign(locals.res.read_marks || {}, read_marks);
 
     topics = _.keyBy(topics, '_id');
     sections = _.keyBy(sections, '_id');
 
-    env.res.forum_topics = topics;
-    env.res.forum_sections = Object.assign(env.res.forum_sections || {}, sections);
+    locals.res.forum_topics = topics;
+    locals.res.forum_sections = Object.assign(locals.res.forum_sections || {}, sections);
+    locals.items = subs;
 
 
     // Fill missed subscriptions (for deleted topic)
     //
     let missed = subs.filter(s => !topics[s.to] || !sections[topics[s.to].section]);
 
-    env.data.missed_subscriptions = env.data.missed_subscriptions || [];
-    env.data.missed_subscriptions = env.data.missed_subscriptions.concat(missed);
+    locals.missed_subscriptions = locals.missed_subscriptions || [];
+    locals.missed_subscriptions = locals.missed_subscriptions.concat(missed);
   });
 };
