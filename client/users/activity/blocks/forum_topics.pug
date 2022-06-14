@@ -1,7 +1,11 @@
+- var topicStatuses = '$$ JSON.stringify(N.models.forum.Topic.statuses) $$'
+
 each result in self.results
+  - var show_as_deleted = result.topic.st === topicStatuses.DELETED || result.topic.st === topicStatuses.DELETED_HARD;
   .users-activity-item(
     id='item' + result.topic._id
     data-item-id=result.topic._id
+    class= show_as_deleted ? 'users-activity-item__m-deleted' : ''
   )
     a.users-activity-item__title(
       href=self.link_to('forum.topic', { section_hid: result.section.hid, topic_hid: result.topic.hid })

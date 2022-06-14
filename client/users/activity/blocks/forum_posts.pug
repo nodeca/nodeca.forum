@@ -1,7 +1,11 @@
+- var postStatuses = '$$ JSON.stringify(N.models.forum.Post.statuses) $$'
+
 each result in self.results
+  - var show_as_deleted = result.post.st === postStatuses.DELETED || result.post.st === postStatuses.DELETED_HARD;
   article.users-activity-item.users-activity-item__m-with-content(
     id='item' + result.post._id
     data-item-id=result.post._id
+    class= show_as_deleted ? 'users-activity-item__m-deleted' : ''
   )
     header.users-activity-item__header
       a.users-activity-item__title(
