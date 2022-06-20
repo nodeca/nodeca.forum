@@ -475,6 +475,18 @@ each post, post_idx in self.posts
           data-post-id=post._id
         )= self.t('expand')
 
+  if post.hid < self.current_post_hid && self.posts[post_idx + 1].hid > self.current_post_hid
+    article.forum-post.forum-post__m-deleted.forum-post__m-no-meta.clearfix(
+      id='post000000000000000000000000'
+      data-post-id='000000000000000000000000'
+      data-post-hid=self.current_post_hid
+      data-user-hid=''
+      itemscope
+      itemtype='http://schema.org/WebPageElement'
+    )
+      .forum-post__content-collapsed
+        =self.t('del_post_text')
+
   each block in self.posts_list_after_post || []
     != self.partial('@forum.blocks.posts_list.' + block, { post_idx: post_idx, post_counter: post_counter })
 
