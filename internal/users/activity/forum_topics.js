@@ -14,6 +14,8 @@
 // - users - array of user ids needed to fetch
 // - reached_top
 // - reached_bottom
+// - last_item_id
+// - pagination
 //
 
 'use strict';
@@ -219,5 +221,47 @@ module.exports = function (N, apiPath) {
     });
 
     locals.users = Object.keys(users);
+  });
+
+
+  // Fetch pagination and last topic id
+  //
+  N.wire.after(apiPath, async function fetch_pagination(locals) {
+    //
+    // Count total amount of visible topics
+    //
+    let topic_count = await N.models.forum.Topic.countDocuments()
+                                .where('cache.first_user').equals(locals.params.user_id)
+                                .where('section').in(locals.sandbox.visible_sections)
+                                .where('st').in(locals.sandbox.countable_statuses);
+
+    //
+    // Count an amount of visible topics before the first one
+    //
+    let topic_offset = 0;
+
+    if (locals.results.length) {
+      topic_offset = await N.models.forum.Topic.countDocuments()
+                               .where('cache.first_user').equals(locals.params.user_id)
+                               .where('section').in(locals.sandbox.visible_sections)
+                               .where('st').in(locals.sandbox.countable_statuses)
+                               .where('_id').gt(locals.results[0].topic._id);
+    }
+
+    let last_topic = await N.models.forum.Topic.findOne()
+                               .where('cache.first_user').equals(locals.params.user_id)
+                               .where('section').in(locals.sandbox.visible_sections)
+                               .where('st').in(locals.sandbox.countable_statuses)
+                               .sort('_id')
+                               .select('_id')
+                               .lean(true);
+
+    locals.pagination = {
+      total:        topic_count,
+      per_page:     20, // unused
+      chunk_offset: topic_offset
+    };
+
+    locals.last_item_id = last_topic?._id;
   });
 };
