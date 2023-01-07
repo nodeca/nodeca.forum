@@ -56,7 +56,7 @@ N.wire.before(module.apiPath + ':begin', function fetch_options(data) {
           no_mlinks:         !postData.params.link_to_title && !postData.params.link_to_snippet,
           no_emojis:         !postData.params.emoji,
           no_quote_collapse: !postData.params.quote_collapse,
-          breaks:            postData.params.breaks
+          breaks:            !!postData.params.breaks
         }
       };
 
